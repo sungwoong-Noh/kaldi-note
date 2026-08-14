@@ -18,6 +18,15 @@ allowed-tools: Bash, Read, Grep, Glob, AskUserQuestion
 
 # 진행 순서
 
+## 0단계: 병렬 세션 확인
+
+**다른 세션이 지금 돌고 있는지 사람에게 묻는다.**
+
+- **혼자다** → 그대로 진행. worktree 불필요
+- **다른 세션이 있다** → `EnterWorktree`로 격리된 작업 공간을 만든 뒤 진행한다. 같은 디렉터리에서 두 세션이 돌면 한쪽의 `git switch`가 다른 쪽 파일을 갈아치운다
+
+**백엔드 세션이 이미 돌고 있는데 나도 백엔드라면 멈추고 알린다.** PostgreSQL 5432 포트와 Testcontainers 재사용 컨테이너를 공유해서 테스트 데이터가 섞인다. (`docs/conventions/handover.md`의 "병렬 작업" 참조)
+
 ## 1단계: 위치 파악
 
 ```bash

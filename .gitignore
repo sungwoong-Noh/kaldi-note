@@ -32,8 +32,9 @@ frontend/next-env.d.ts
 *.log
 
 # ── Claude Code ────────────────────────────────────────
-# .claude/commands/ 는 팀 자산이므로 커밋한다. 개인 설정만 제외.
+# .claude/commands/ 는 팀 자산이므로 커밋한다. 개인 설정과 worktree만 제외.
 .claude/settings.local.json
+.claude/worktrees/
 
 # ── 에디터 / OS ────────────────────────────────────────
 .DS_Store

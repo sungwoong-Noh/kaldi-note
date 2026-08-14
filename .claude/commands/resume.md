@@ -86,6 +86,10 @@ Step 1~8, 예상 산출물: users/follows 스키마 + 엔티티 + 리포지토�
 
 ## 5단계: 브랜치 준비 (승인 후)
 
+세션 종류에 맞는 스킬을 확인하라 — `docs/conventions/handover.md`의 "세션 종류와 흐름" 표에 **쓰는 스킬**과 **쓰지 말 것**이 정리돼 있다.
+
+특히 `superpowers:executing-plans`·`using-git-worktrees`·`subagent-driven-development`는 **이 프로젝트에서 쓰지 않는다.** 이유는 같은 문서에 있다.
+
 새 태스크를 시작한다면:
 
 ```bash

@@ -13,13 +13,27 @@
 
 세션은 성격에 따라 셋으로 나뉜다. **한 세션에 두 성격을 섞지 않는다.**
 
-| 세션 | 하는 일 | 산출물 | 브랜치 | 계획 문서에서 건드리는 것 |
+| 세션 | 하는 일 · 산출물 | 브랜치 | 계획 문서 | 쓰는 스킬 |
 |---|---|---|---|---|
-| **설계** | `/interview` → 스펙 → 계획 작성 | `docs/specs/`, `docs/plans/` | `docs/spec-<기능>` | **본문만** |
-| **구현** | 계획의 태스크 실행 (TDD) | 코드 + 테스트 | `feat/task-NN-<이름>` | **체크박스만** |
-| **디자인** | IA, 와이어프레임 | `docs/design/` | `design/<이름>` | 건드리지 않음 |
+| **설계** | `/interview` → 스펙 → 계획<br>`docs/specs/`, `docs/plans/` | `docs/spec-<기능>` | **본문만** | `superpowers:brainstorming`<br>`superpowers:writing-plans` |
+| **구현** | 계획의 태스크 실행 (TDD)<br>코드 + 테스트 | `feat/task-NN-<이름>` | **체크박스만** | `superpowers:test-driven-development`<br>`superpowers:verification-before-completion`<br>`superpowers:systematic-debugging`<br>`/code-review`, `/simplify`<br>`/security-review` (인증 태스크 후) |
+| **디자인** | IA, 와이어프레임<br>`docs/design/` | `design/<이름>` | 건드리지 않음 | `pencil` MCP (`.pen` 와이어프레임)<br>`dataviz` (SCA 차트)<br>`ui-ux-pro-max:ui-styling` |
 
 **계획 문서의 체크박스는 구현 세션만 건드린다.** 설계 세션이 본문을, 구현 세션이 체크박스를 담당하면 같은 파일을 고쳐도 충돌이 거의 나지 않는다.
+
+### 쓰지 말 것 — 이 프로젝트와 충돌하는 스킬
+
+| 스킬 | 왜 안 되는가 |
+|---|---|
+| `superpowers:using-git-worktrees` | **항상** 격리 워크스페이스를 만든다. 이 프로젝트는 순차 작업이면 worktree가 불필요하고, 백엔드가 여러 워크스페이스로 갈라지면 5432 포트와 Testcontainers 재사용 컨테이너를 놓고 충돌한다 |
+| `superpowers:executing-plans` | Step 1의 첫 항목이 위 스킬 호출이다. 계획을 실행할 때마다 worktree를 만들게 된다 |
+| `superpowers:subagent-driven-development` | 태스크마다 서브에이전트를 띄운다. 이 프로젝트는 `/resume`·`/handover`로 세션을 나누는 쪽을 택했다. 둘을 섞으면 체크박스와 JOURNAL을 누가 갱신하는지가 흐려진다 |
+
+**병렬 작업의 worktree는 `EnterWorktree`로 직접 만든다.** 위 "병렬 작업" 절 참조.
+
+### 스킬을 새로 만들지 않는다
+
+커피 도메인 규칙(반올림 스케일, SCA 상수, 단위 네이밍)을 프로젝트 전용 스킬로 뽑고 싶어질 수 있다. **하지 마라.** 그건 이미 `backend/CLAUDE.md`에 있고, 스킬로 또 만들면 두 곳이 어긋난다. 이 프로젝트가 계속 피해온 실패 방식이다.
 
 ### 무엇부터 할지 정하는 법
 

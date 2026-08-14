@@ -1,0 +1,40 @@
+# ── 시크릿 ─────────────────────────────────────────────
+# OAuth 클라이언트 시크릿, JWT 서명 키, DB 비밀번호는 절대 커밋하지 않는다.
+# 실수로 커밋했다면 해당 키를 즉시 폐기·재발급한다 (히스토리 삭제만으로는 안전하지 않다).
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+backend/src/main/resources/application-prod.yml
+
+# ── 백엔드 (Gradle / Java) ─────────────────────────────
+backend/build/
+backend/.gradle/
+backend/out/
+backend/bin/
+!backend/gradle/wrapper/gradle-wrapper.jar
+
+# ── 프론트엔드 (Node / Next.js) ────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/dist/
+frontend/.vercel/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+frontend/next-env.d.ts
+
+# ── 로컬 데이터 ────────────────────────────────────────
+/data/
+*.log
+
+# ── 에디터 / OS ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.swp

@@ -18,6 +18,15 @@ allowed-tools: Bash, Read, Grep, Glob, AskUserQuestion
 
 # 진행 순서
 
+## 0단계: 병렬 세션 확인
+
+**다른 세션이 지금 돌고 있는지 사람에게 묻는다.**
+
+- **혼자다** → 그대로 진행. worktree 불필요
+- **다른 세션이 있다** → `EnterWorktree`로 격리된 작업 공간을 만든 뒤 진행한다. 같은 디렉터리에서 두 세션이 돌면 한쪽의 `git switch`가 다른 쪽 파일을 갈아치운다
+
+**백엔드 세션이 이미 돌고 있는데 나도 백엔드라면 멈추고 알린다.** PostgreSQL 5432 포트와 Testcontainers 재사용 컨테이너를 공유해서 테스트 데이터가 섞인다. (`docs/conventions/handover.md`의 "병렬 작업" 참조)
+
 ## 1단계: 위치 파악
 
 ```bash
@@ -76,6 +85,10 @@ Step 1~8, 예상 산출물: users/follows 스키마 + 엔티티 + 리포지토�
 그다음 `AskUserQuestion`으로 **이대로 진행할지** 확인받는다. 승인 전에는 파일을 만들지 않는다.
 
 ## 5단계: 브랜치 준비 (승인 후)
+
+세션 종류에 맞는 스킬을 확인하라 — `docs/conventions/handover.md`의 "세션 종류와 흐름" 표에 **쓰는 스킬**과 **쓰지 말 것**이 정리돼 있다.
+
+특히 `superpowers:executing-plans`·`using-git-worktrees`·`subagent-driven-development`는 **이 프로젝트에서 쓰지 않는다.** 이유는 같은 문서에 있다.
 
 새 태스크를 시작한다면:
 

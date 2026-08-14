@@ -8,13 +8,13 @@
 
 **Tech Stack:** Java 21 · Spring Boot 4.1.x · Spring Security 7 · Spring Data JPA · PostgreSQL 17 · Flyway · Testcontainers · Gradle (Kotlin DSL)
 
-**Spec:** `docs/design/2026-08-14-architecture.md`
+**Spec:**
+- `docs/specs/2026-08-14-grind-conversion.md` — 분쇄도 환산 (AC 21개)
+- `docs/specs/2026-08-14-extraction-analysis.md` — 추출 수율/SCA 분석 (AC 25개)
+- `docs/design/2026-08-14-architecture.md` — 전체 아키텍처 (AC 없음, 배경 문서)
 
-> ⚠️ **이 계획은 `docs/conventions/workflow.md`의 작업 규칙이 정해지기 전에 작성됐다.**
-> 기능 스펙(AC를 가진 `docs/specs/` 문서) 없이 아키텍처 문서에서 바로 도출됐고, 따라서 **AC 커버리지 매핑 표가 없다.**
-> Plan 1의 대부분(스캐폴딩·보안 배선·시드 데이터)은 사용자에게 보이는 동작이 아닌 기반 공사라 스펙 대상이 아니지만,
-> **Task 2(`grind`)와 Task 3(`extraction`)은 도메인 동작 그 자체**이므로 스펙이 있어야 한다.
-> 두 기능의 스펙을 소급 작성한 뒤 이 계획에 AC 매핑을 추가한다. **Plan 2부터는 스펙 → 계획 → 코드 순서를 지킨다.**
+> Plan 1의 나머지(스캐폴딩·인증·시드 데이터)는 사용자에게 보이는 동작이 아닌 기반 공사라 기능 스펙 대상이 아니다.
+> **Plan 2부터는 모든 기능이 스펙 → 계획 → 코드 순서를 거친다.**
 
 **작업 위치:** 이 계획의 모든 경로는 **`backend/` 기준**이다. 명령어는 `backend/` 디렉터리에서 실행한다.
 
@@ -49,6 +49,39 @@
 | 추출 수율 EY(%) | 1 | HALF_UP |
 | 브루 비율 (1:N의 N) | 1 | HALF_UP |
 | 중량(g) | 1 | HALF_UP |
+
+---
+
+## AC 커버리지 매핑
+
+> 두 스펙의 인수 조건 46개가 어느 태스크에서 검증되는지의 대응표다. **테스트의 `@DisplayName`에 AC ID를 반드시 남긴다.** `./scripts/check-spec-coverage.sh`가 이를 검사한다.
+
+### 분쇄도 환산 (`AC-GRIND-*`, 21개)
+
+| AC | 요약 | 태스크 | 검증 |
+|---|---|---|---|
+| 01~03 | 마이크론 환산, 영점 보정, 반올림 | Task 2 | 단위 |
+| 04~06 | 그라인더 간 환산, 반올림, 동일 그라인더 | Task 2 | 단위 |
+| 07 | 항상 추정치 + 경고 문구 | Task 2, 11 | 단위 + API |
+| 10~11 | 하한·상한 경계 허용 | Task 11 | API |
+| 12~13 | 상한 초과·하한 미만 거부 (400) | Task 11 | API |
+| 14 | 영점이 하한이 되는 경우 | Task 2 | 단위 |
+| 15~16 | min·max가 null이거나 max=0이면 검증 생략 | Task 2 | 단위 |
+| 20~21 | 결과 범위 초과 플래그 | Task 11 | API |
+| 30~31 | 환산 불가 (422) | Task 11 | API |
+| 32~34 | 없는 그라인더(404), 미인증(401), 필수 필드 누락(400) | Task 11 | API |
+
+### 추출 분석 (`AC-EXT-*`, 25개)
+
+| AC | 요약 | 태스크 | 검증 |
+|---|---|---|---|
+| 01~08 | 비율·수율 계산, 구간 분류, 진단 문구 | Task 3 | 단위 |
+| 10~13 | 수율 경계 18.0 / 22.0 / 17.9 / 22.1 | Task 3 | 단위 |
+| 14~17 | TDS 경계 1.15 / 1.35 / 1.14 / 1.36 | Task 3 | 단위 |
+| 18~19 | 물리 한계 30.0 허용 / 30.1 거부 | Task 3 | 단위 |
+| 30~36 | 입력 검증 6종 + 경계 허용 1종 | Task 3 | 단위 |
+
+**AC 46개 = 매핑 46개.** 누락 없음.
 
 ---
 
@@ -420,21 +453,27 @@ Expected: `clean check` 통과.
 
 ## Task 2: `grind` — 분쇄도 환산 순수 도메인
 
+**Spec:** `docs/specs/2026-08-14-grind-conversion.md`
+**Covers:** AC-GRIND-01 ~ 07, 14 ~ 16 (나머지는 Task 11의 API 테스트에서 검증)
+
 **Files:**
-- Create: `src/main/java/com/kaldinote/grind/domain/GrindSpec.java`
-- Create: `src/main/java/com/kaldinote/grind/domain/GrindConversion.java`
-- Create: `src/main/java/com/kaldinote/grind/domain/GrindNotConvertibleException.java`
-- Create: `src/main/java/com/kaldinote/grind/domain/GrindConverter.java`
-- Test: `src/test/java/com/kaldinote/grind/domain/GrindConverterTest.java`
+- Create: `backend/src/main/java/com/kaldinote/grind/domain/GrindSpec.java`
+- Create: `backend/src/main/java/com/kaldinote/grind/domain/GrindConversion.java`
+- Create: `backend/src/main/java/com/kaldinote/grind/domain/GrindNotConvertibleException.java`
+- Create: `backend/src/main/java/com/kaldinote/grind/domain/GrindSettingOutOfRangeException.java`
+- Create: `backend/src/main/java/com/kaldinote/grind/domain/GrindConverter.java`
+- Test: `backend/src/test/java/com/kaldinote/grind/domain/GrindConverterTest.java`
 
 **Interfaces:**
 - Consumes: 없음. 이 패키지는 Spring·JPA에 전혀 의존하지 않는다.
 - Produces:
-  - `GrindSpec(BigDecimal micronsPerClick, BigDecimal zeroPointOffsetClicks)` — `micronsPerClick`은 null 가능(무단계 그라인더)
+  - `GrindSpec(BigDecimal micronsPerClick, BigDecimal zeroPointOffsetClicks, BigDecimal minSetting, BigDecimal maxSetting)` — `micronsPerClick`·`minSetting`·`maxSetting`은 null 가능
   - `GrindSpec#convertible() → boolean`
+  - `GrindSpec#effectiveMinSetting() → BigDecimal` — `max(minSetting, zeroPointOffsetClicks)`
+  - `GrindSpec#rangeChecked() → boolean` — min·max가 유효할 때만 true
   - `GrindConverter#toMicron(GrindSpec, BigDecimal setting) → BigDecimal`
   - `GrindConverter#convert(GrindSpec source, BigDecimal sourceSetting, GrindSpec target) → GrindConversion`
-  - `GrindConversion(BigDecimal sourceSetting, BigDecimal micron, BigDecimal targetSetting, boolean estimated, String warning)`
+  - `GrindConversion(BigDecimal sourceSetting, BigDecimal micron, BigDecimal targetSetting, boolean targetOutOfRange, boolean estimated, String warning)`
   - `GrindConverter.ESTIMATE_WARNING` — 상수 문자열
   - Task 11의 `GrindConversionService`가 이 API를 그대로 호출한다.
 
@@ -442,145 +481,210 @@ Expected: `clean check` 통과.
 ```
 micron    = (setting - zeroPointOffsetClicks) × micronsPerClick
 converted = micron / target.micronsPerClick + target.zeroPointOffsetClicks
+하한       = max(minSetting, zeroPointOffsetClicks)   ← 영점 미만도 여기서 걸린다
 ```
+
+**범위 검증 정책:** 경계는 **양쪽 포함 `[하한, maxSetting]`**. `minSetting`·`maxSetting`이 null이거나 `maxSetting`이 0이면 검증을 생략한다.
+
+> **`GrindSpec`이 min·max를 갖는 이유:** 범위 검증까지 순수 도메인에서 단위 테스트로 검증하기 위해서다. 엔티티를 끌어오면 이 패키지의 무의존 원칙이 깨진다.
 
 - [ ] **Step 1: 실패하는 테스트 작성**
 
-`src/test/java/com/kaldinote/grind/domain/GrindConverterTest.java`:
+`backend/src/test/java/com/kaldinote/grind/domain/GrindConverterTest.java`:
 
 ```java
 package com.kaldinote.grind.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 class GrindConverterTest {
 
-    private final GrindConverter converter = new GrindConverter();
+  private final GrindConverter converter = new GrindConverter();
 
-    /** Comandante C40: 30µm/click, 영점 보정 없음 */
-    private static final GrindSpec C40 =
-            new GrindSpec(new BigDecimal("30"), BigDecimal.ZERO);
-    /** 1Zpresso K-Plus: 22µm/click, 영점 보정 없음 */
-    private static final GrindSpec K_PLUS =
-            new GrindSpec(new BigDecimal("22"), BigDecimal.ZERO);
-    /** 무단계 그라인더 — 클릭당 마이크론을 알 수 없어 환산 불가 */
-    private static final GrindSpec STEPLESS =
-            new GrindSpec(null, BigDecimal.ZERO);
+  /** Comandante C40: 30µm/click, 영점 0, 0~50 */
+  private static final GrindSpec C40 =
+      new GrindSpec(bd("30"), BigDecimal.ZERO, bd("0"), bd("50"));
+  /** 1Zpresso K-Plus: 22µm/click, 영점 0, 0~90 */
+  private static final GrindSpec K_PLUS =
+      new GrindSpec(bd("22"), BigDecimal.ZERO, bd("0"), bd("90"));
+  /** 무단계 그라인더 — 클릭당 마이크론을 알 수 없어 환산 불가 */
+  private static final GrindSpec STEPLESS =
+      new GrindSpec(null, BigDecimal.ZERO, bd("0"), bd("0"));
 
-    @Nested
-    @DisplayName("마이크론 환산")
-    class ToMicron {
+  private static BigDecimal bd(String v) {
+    return new BigDecimal(v);
+  }
 
-        @Test
-        void C40_22클릭은_660마이크론이다() {
-            BigDecimal micron = converter.toMicron(C40, new BigDecimal("22"));
+  @Nested
+  @DisplayName("마이크론 환산")
+  class ToMicron {
 
-            assertThat(micron).isEqualByComparingTo("660");
-        }
-
-        @Test
-        void 영점_보정이_있으면_보정만큼_빼고_계산한다() {
-            // 3클릭부터 버가 닿는 그라인더: 10클릭 → (10-3)×30 = 210µm
-            GrindSpec offsetGrinder = new GrindSpec(new BigDecimal("30"), new BigDecimal("3"));
-
-            assertThat(converter.toMicron(offsetGrinder, new BigDecimal("10")))
-                    .isEqualByComparingTo("210");
-        }
-
-        @Test
-        void 마이크론은_소수점없이_반올림한다() {
-            GrindSpec odd = new GrindSpec(new BigDecimal("22.5"), BigDecimal.ZERO);
-
-            // 7 × 22.5 = 157.5 → 158
-            assertThat(converter.toMicron(odd, new BigDecimal("7")))
-                    .isEqualByComparingTo("158");
-        }
-
-        @Test
-        void 영점보다_낮은_설정값은_거부한다() {
-            GrindSpec offsetGrinder = new GrindSpec(new BigDecimal("30"), new BigDecimal("3"));
-
-            assertThatThrownBy(() -> converter.toMicron(offsetGrinder, new BigDecimal("2")))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("영점");
-        }
-
-        @Test
-        void 클릭당_마이크론을_모르면_환산할_수_없다() {
-            assertThatThrownBy(() -> converter.toMicron(STEPLESS, new BigDecimal("10")))
-                    .isInstanceOf(GrindNotConvertibleException.class);
-        }
+    @Test
+    @DisplayName("AC-GRIND-01 · 설정값을 마이크론으로 환산한다")
+    void C40_22클릭은_660마이크론이다() {
+      assertThat(converter.toMicron(C40, bd("22"))).isEqualByComparingTo("660");
     }
 
-    @Nested
-    @DisplayName("그라인더 간 환산")
-    class Convert {
+    @Test
+    @DisplayName("AC-GRIND-02 · 영점 보정만큼 빼고 계산한다")
+    void 영점_보정이_있으면_보정만큼_빼고_계산한다() {
+      GrindSpec offsetGrinder = new GrindSpec(bd("30"), bd("3"), null, null);
 
-        @Test
-        void C40_22클릭은_K_Plus_30클릭에_해당한다() {
-            GrindConversion result = converter.convert(C40, new BigDecimal("22"), K_PLUS);
-
-            assertThat(result.sourceSetting()).isEqualByComparingTo("22");
-            assertThat(result.micron()).isEqualByComparingTo("660");
-            assertThat(result.targetSetting()).isEqualByComparingTo("30.0");
-        }
-
-        @Test
-        void 환산_결과는_언제나_추정치로_표시된다() {
-            GrindConversion result = converter.convert(C40, new BigDecimal("22"), K_PLUS);
-
-            assertThat(result.estimated()).isTrue();
-            assertThat(result.warning()).isEqualTo(GrindConverter.ESTIMATE_WARNING);
-        }
-
-        @Test
-        void 대상_설정값은_소수_첫째자리까지_반올림한다() {
-            // C40 30클릭 = 900µm → 900 / 22 = 40.909... → 40.9
-            GrindConversion result = converter.convert(C40, new BigDecimal("30"), K_PLUS);
-
-            assertThat(result.targetSetting()).isEqualByComparingTo("40.9");
-        }
-
-        @Test
-        void 같은_그라인더끼리는_설정값이_그대로_나온다() {
-            GrindConversion result = converter.convert(C40, new BigDecimal("22"), C40);
-
-            assertThat(result.targetSetting()).isEqualByComparingTo("22.0");
-        }
-
-        @Test
-        void 대상_그라인더가_무단계면_환산할_수_없다() {
-            assertThatThrownBy(() -> converter.convert(C40, new BigDecimal("22"), STEPLESS))
-                    .isInstanceOf(GrindNotConvertibleException.class);
-        }
+      assertThat(converter.toMicron(offsetGrinder, bd("10"))).isEqualByComparingTo("210");
     }
 
-    @Nested
-    @DisplayName("환산 가능 여부 판정")
-    class Convertible {
+    @Test
+    @DisplayName("AC-GRIND-03 · 마이크론은 소수점 없이 반올림한다")
+    void 마이크론은_소수점없이_반올림한다() {
+      GrindSpec odd = new GrindSpec(bd("22.5"), BigDecimal.ZERO, null, null);
 
-        @Test
-        void 클릭당_마이크론이_있으면_환산_가능하다() {
-            assertThat(C40.convertible()).isTrue();
-        }
-
-        @Test
-        void 클릭당_마이크론이_없으면_환산_불가다() {
-            assertThat(STEPLESS.convertible()).isFalse();
-        }
-
-        @Test
-        void 클릭당_마이크론이_0이하면_환산_불가다() {
-            assertThat(new GrindSpec(BigDecimal.ZERO, BigDecimal.ZERO).convertible()).isFalse();
-        }
+      // 7 × 22.5 = 157.5 → HALF_UP → 158
+      assertThat(converter.toMicron(odd, bd("7"))).isEqualByComparingTo("158");
     }
+  }
+
+  @Nested
+  @DisplayName("그라인더 간 환산")
+  class Convert {
+
+    @Test
+    @DisplayName("AC-GRIND-04 · 그라인더 간 설정값을 환산한다")
+    void C40_22클릭은_K_Plus_30클릭에_해당한다() {
+      GrindConversion result = converter.convert(C40, bd("22"), K_PLUS);
+
+      assertThat(result.sourceSetting()).isEqualByComparingTo("22");
+      assertThat(result.micron()).isEqualByComparingTo("660");
+      assertThat(result.targetSetting()).isEqualByComparingTo("30.0");
+    }
+
+    @Test
+    @DisplayName("AC-GRIND-05 · 대상 설정값은 소수 첫째 자리까지 반올림한다")
+    void 대상_설정값은_소수_첫째자리까지_반올림한다() {
+      // C40 30클릭 = 900µm → 900 / 22 = 40.909... → 40.9
+      assertThat(converter.convert(C40, bd("30"), K_PLUS).targetSetting())
+          .isEqualByComparingTo("40.9");
+    }
+
+    @Test
+    @DisplayName("AC-GRIND-06 · 같은 그라인더끼리는 설정값이 보존된다")
+    void 같은_그라인더끼리는_설정값이_그대로_나온다() {
+      assertThat(converter.convert(C40, bd("22"), C40).targetSetting())
+          .isEqualByComparingTo("22.0");
+    }
+
+    @Test
+    @DisplayName("AC-GRIND-07 · 환산 결과는 언제나 추정치로 표시된다")
+    void 환산_결과는_언제나_추정치로_표시된다() {
+      GrindConversion result = converter.convert(C40, bd("22"), K_PLUS);
+
+      assertThat(result.estimated()).isTrue();
+      assertThat(result.warning()).isEqualTo(GrindConverter.ESTIMATE_WARNING);
+    }
+
+    @Test
+    @DisplayName("AC-GRIND-21 · 결과가 대상 범위 안이면 플래그가 내려간다")
+    void 결과가_대상_범위_안이면_플래그가_false다() {
+      assertThat(converter.convert(C40, bd("22"), K_PLUS).targetOutOfRange()).isFalse();
+    }
+
+    @Test
+    @DisplayName("AC-GRIND-20 · 결과가 대상 범위를 넘으면 플래그를 세우고 값은 돌려준다")
+    void 결과가_대상_범위를_넘으면_플래그가_true다() {
+      // K-Plus 90클릭 = 1980µm → C40 66.0클릭. C40의 최대는 50이다.
+      GrindConversion result = converter.convert(K_PLUS, bd("90"), C40);
+
+      assertThat(result.targetSetting()).isEqualByComparingTo("66.0");
+      assertThat(result.targetOutOfRange()).isTrue();
+    }
+  }
+
+  @Nested
+  @DisplayName("범위 검증")
+  class RangeValidation {
+
+    @Test
+    @DisplayName("AC-GRIND-14 · 영점이 min_setting보다 크면 영점이 하한이 된다")
+    void 영점보다_낮은_설정값은_거부한다() {
+      // min_setting은 0이지만 영점이 3이므로 하한은 3이다
+      GrindSpec offsetGrinder = new GrindSpec(bd("30"), bd("3"), bd("0"), bd("50"));
+
+      assertThatThrownBy(() -> converter.toMicron(offsetGrinder, bd("2")))
+          .isInstanceOf(GrindSettingOutOfRangeException.class);
+    }
+
+    @Test
+    @DisplayName("AC-GRIND-15 · min·max가 null이면 범위를 검증하지 않는다")
+    void min과_max가_null이면_범위를_검증하지_않는다() {
+      GrindSpec noRange = new GrindSpec(bd("30"), BigDecimal.ZERO, null, null);
+
+      assertThat(converter.toMicron(noRange, bd("999"))).isEqualByComparingTo("29970");
+    }
+
+    @Test
+    @DisplayName("AC-GRIND-16 · max_setting이 0이면 범위를 검증하지 않는다")
+    void max가_0이면_범위를_검증하지_않는다() {
+      GrindSpec zeroMax = new GrindSpec(bd("30"), BigDecimal.ZERO, bd("0"), bd("0"));
+
+      assertThat(converter.toMicron(zeroMax, bd("20"))).isEqualByComparingTo("600");
+    }
+
+    @Test
+    void 상한을_넘으면_거부한다() {
+      assertThatThrownBy(() -> converter.toMicron(C40, bd("51")))
+          .isInstanceOf(GrindSettingOutOfRangeException.class);
+    }
+
+    @Test
+    void 하한_아래는_거부한다() {
+      assertThatThrownBy(() -> converter.toMicron(C40, bd("-1")))
+          .isInstanceOf(GrindSettingOutOfRangeException.class);
+    }
+
+    @Test
+    void 경계값은_양쪽_다_허용한다() {
+      assertThat(converter.toMicron(C40, bd("0"))).isEqualByComparingTo("0");
+      assertThat(converter.toMicron(C40, bd("50"))).isEqualByComparingTo("1500");
+    }
+  }
+
+  @Nested
+  @DisplayName("환산 가능 여부 판정")
+  class Convertible {
+
+    @Test
+    void 클릭당_마이크론이_있으면_환산_가능하다() {
+      assertThat(C40.convertible()).isTrue();
+    }
+
+    @Test
+    void 클릭당_마이크론이_없으면_환산_불가다() {
+      assertThat(STEPLESS.convertible()).isFalse();
+    }
+
+    @Test
+    void 클릭당_마이크론이_0이하면_환산_불가다() {
+      assertThat(new GrindSpec(BigDecimal.ZERO, BigDecimal.ZERO, null, null).convertible())
+          .isFalse();
+    }
+
+    @Test
+    void 원본이_환산_불가면_예외를_던진다() {
+      assertThatThrownBy(() -> converter.toMicron(STEPLESS, bd("10")))
+          .isInstanceOf(GrindNotConvertibleException.class);
+    }
+
+    @Test
+    void 대상이_환산_불가면_예외를_던진다() {
+      assertThatThrownBy(() -> converter.convert(C40, bd("22"), STEPLESS))
+          .isInstanceOf(GrindNotConvertibleException.class);
+    }
+  }
 }
 ```
 
@@ -590,11 +694,11 @@ class GrindConverterTest {
 ./gradlew test --tests '*GrindConverterTest'
 ```
 
-Expected: 컴파일 실패. `GrindSpec`, `GrindConverter`, `GrindConversion`, `GrindNotConvertibleException` 심볼 없음.
+Expected: 컴파일 실패. `GrindSpec`, `GrindConverter`, `GrindConversion`, `GrindNotConvertibleException`, `GrindSettingOutOfRangeException` 심볼 없음.
 
 - [ ] **Step 3: VO와 예외 작성**
 
-`src/main/java/com/kaldinote/grind/domain/GrindSpec.java`:
+`backend/src/main/java/com/kaldinote/grind/domain/GrindSpec.java`:
 
 ```java
 package com.kaldinote.grind.domain;
@@ -605,23 +709,51 @@ import java.util.Objects;
 /**
  * 그라인더의 분쇄도 환산 특성.
  *
+ * <p>범위 검증까지 순수 도메인에서 단위 테스트로 검증하기 위해 min·max를 함께 갖는다.
+ * 엔티티를 끌어오면 이 패키지의 무의존 원칙이 깨진다.
+ *
  * @param micronsPerClick       클릭 1칸당 입자 크기 변화량(µm). 무단계 그라인더는 null
  * @param zeroPointOffsetClicks 버가 맞닿는 영점의 클릭 값. 대부분 0
+ * @param minSetting            제조사 사양의 최소 설정값. 모르면 null
+ * @param maxSetting            제조사 사양의 최대 설정값. 모르면 null
  */
-public record GrindSpec(BigDecimal micronsPerClick, BigDecimal zeroPointOffsetClicks) {
+public record GrindSpec(
+    BigDecimal micronsPerClick,
+    BigDecimal zeroPointOffsetClicks,
+    BigDecimal minSetting,
+    BigDecimal maxSetting) {
 
-    public GrindSpec {
-        Objects.requireNonNull(zeroPointOffsetClicks, "zeroPointOffsetClicks는 null일 수 없습니다");
-    }
+  public GrindSpec {
+    Objects.requireNonNull(zeroPointOffsetClicks, "zeroPointOffsetClicks는 null일 수 없습니다");
+  }
 
-    /** 클릭당 마이크론을 알아야만 다른 그라인더로 환산할 수 있다. */
-    public boolean convertible() {
-        return micronsPerClick != null && micronsPerClick.signum() > 0;
+  /** 클릭당 마이크론을 알아야만 다른 그라인더로 환산할 수 있다. */
+  public boolean convertible() {
+    return micronsPerClick != null && micronsPerClick.signum() > 0;
+  }
+
+  /**
+   * 범위를 검증할 수 있는가. min·max가 null이거나 max가 0이면 사양을 모르는 것으로 보고
+   * 검증을 생략한다.
+   */
+  public boolean rangeChecked() {
+    return minSetting != null && maxSetting != null && maxSetting.signum() > 0;
+  }
+
+  /**
+   * 실제 하한. min_setting이 0이어도 영점이 3이면 3보다 낮은 값은 마이크론이 음수가 된다.
+   * 둘 중 큰 값이 하한이다.
+   */
+  public BigDecimal effectiveMinSetting() {
+    if (minSetting == null) {
+      return zeroPointOffsetClicks;
     }
+    return minSetting.max(zeroPointOffsetClicks);
+  }
 }
 ```
 
-`src/main/java/com/kaldinote/grind/domain/GrindConversion.java`:
+`backend/src/main/java/com/kaldinote/grind/domain/GrindConversion.java`:
 
 ```java
 package com.kaldinote.grind.domain;
@@ -631,35 +763,51 @@ import java.math.BigDecimal;
 /**
  * 그라인더 간 분쇄도 환산 결과.
  *
+ * @param targetOutOfRange 환산 결과가 대상 그라인더의 사양 범위를 벗어났는가.
+ *     "내 그라인더로는 이 굵기가 안 나온다"는 정보이므로 막지 않고 알려준다.
  * @param estimated 항상 true. 버 형상·입도 분포가 달라 정확한 등가 변환은 성립하지 않는다.
  * @param warning   UI가 반드시 노출해야 하는 경고 문구
  */
 public record GrindConversion(
-        BigDecimal sourceSetting,
-        BigDecimal micron,
-        BigDecimal targetSetting,
-        boolean estimated,
-        String warning
-) {}
+    BigDecimal sourceSetting,
+    BigDecimal micron,
+    BigDecimal targetSetting,
+    boolean targetOutOfRange,
+    boolean estimated,
+    String warning) {}
 ```
 
-`src/main/java/com/kaldinote/grind/domain/GrindNotConvertibleException.java`:
+`backend/src/main/java/com/kaldinote/grind/domain/GrindNotConvertibleException.java`:
 
 ```java
 package com.kaldinote.grind.domain;
 
-/** 클릭당 마이크론 정보가 없어 환산할 수 없을 때 발생한다. */
+/** 클릭당 마이크론 정보가 없어 환산할 수 없을 때 발생한다. HTTP 422로 매핑된다. */
 public class GrindNotConvertibleException extends RuntimeException {
 
-    public GrindNotConvertibleException(String message) {
-        super(message);
-    }
+  public GrindNotConvertibleException(String message) {
+    super(message);
+  }
+}
+```
+
+`backend/src/main/java/com/kaldinote/grind/domain/GrindSettingOutOfRangeException.java`:
+
+```java
+package com.kaldinote.grind.domain;
+
+/** 설정값이 그라인더의 사양 범위를 벗어났을 때 발생한다. HTTP 400으로 매핑된다. */
+public class GrindSettingOutOfRangeException extends RuntimeException {
+
+  public GrindSettingOutOfRangeException(String message) {
+    super(message);
+  }
 }
 ```
 
 - [ ] **Step 4: 변환기 구현**
 
-`src/main/java/com/kaldinote/grind/domain/GrindConverter.java`:
+`backend/src/main/java/com/kaldinote/grind/domain/GrindConverter.java`:
 
 ```java
 package com.kaldinote.grind.domain;
@@ -678,47 +826,75 @@ import java.math.RoundingMode;
  */
 public class GrindConverter {
 
-    public static final String ESTIMATE_WARNING =
-            "버 형상과 입도 분포가 달라 정확한 등가 변환은 불가능합니다. 시작점으로만 사용하세요.";
+  public static final String ESTIMATE_WARNING =
+      "버 형상과 입도 분포가 달라 정확한 등가 변환은 불가능합니다. 시작점으로만 사용하세요.";
 
-    private static final int MICRON_SCALE = 0;
-    private static final int SETTING_SCALE = 1;
-    /** 나눗셈 중간 정밀도. 최종 반올림 전 오차를 흡수한다. */
-    private static final int DIVISION_SCALE = 6;
+  private static final int MICRON_SCALE = 0;
+  private static final int SETTING_SCALE = 1;
+  /** 나눗셈 중간 정밀도. 최종 반올림 전 오차를 흡수한다. */
+  private static final int DIVISION_SCALE = 6;
 
-    public BigDecimal toMicron(GrindSpec spec, BigDecimal setting) {
-        requireConvertible(spec, "원본");
+  public BigDecimal toMicron(GrindSpec spec, BigDecimal setting) {
+    requireConvertible(spec, "원본");
+    requireInRange(spec, setting);
 
-        BigDecimal effectiveClicks = setting.subtract(spec.zeroPointOffsetClicks());
-        if (effectiveClicks.signum() < 0) {
-            throw new IllegalArgumentException(
-                    "설정값이 영점보다 낮습니다. setting=%s, 영점=%s"
-                            .formatted(setting, spec.zeroPointOffsetClicks()));
-        }
-        return effectiveClicks.multiply(spec.micronsPerClick())
-                .setScale(MICRON_SCALE, RoundingMode.HALF_UP);
+    return setting
+        .subtract(spec.zeroPointOffsetClicks())
+        .multiply(spec.micronsPerClick())
+        .setScale(MICRON_SCALE, RoundingMode.HALF_UP);
+  }
+
+  public GrindConversion convert(GrindSpec source, BigDecimal sourceSetting, GrindSpec target) {
+    requireConvertible(target, "대상");
+
+    BigDecimal micron = toMicron(source, sourceSetting);
+    BigDecimal targetSetting =
+        micron
+            .divide(target.micronsPerClick(), DIVISION_SCALE, RoundingMode.HALF_UP)
+            .add(target.zeroPointOffsetClicks())
+            .setScale(SETTING_SCALE, RoundingMode.HALF_UP);
+
+    return new GrindConversion(
+        sourceSetting,
+        micron,
+        targetSetting,
+        outOfRange(target, targetSetting),
+        true,
+        ESTIMATE_WARNING);
+  }
+
+  private void requireConvertible(GrindSpec spec, String label) {
+    if (!spec.convertible()) {
+      throw new GrindNotConvertibleException(
+          "%s 그라인더의 클릭당 마이크론 정보가 없어 환산할 수 없습니다.".formatted(label));
     }
+  }
 
-    public GrindConversion convert(GrindSpec source, BigDecimal sourceSetting, GrindSpec target) {
-        requireConvertible(target, "대상");
-
-        BigDecimal micron = toMicron(source, sourceSetting);
-        BigDecimal targetSetting = micron
-                .divide(target.micronsPerClick(), DIVISION_SCALE, RoundingMode.HALF_UP)
-                .add(target.zeroPointOffsetClicks())
-                .setScale(SETTING_SCALE, RoundingMode.HALF_UP);
-
-        return new GrindConversion(sourceSetting, micron, targetSetting, true, ESTIMATE_WARNING);
+  /** 경계는 양쪽 포함. 사양을 모르는 그라인더(rangeChecked=false)는 검증하지 않는다. */
+  private void requireInRange(GrindSpec spec, BigDecimal setting) {
+    BigDecimal min = spec.effectiveMinSetting();
+    if (setting.compareTo(min) < 0) {
+      throw new GrindSettingOutOfRangeException(
+          "설정값 %s는 이 그라인더의 하한 %s보다 낮습니다.".formatted(setting, min));
     }
-
-    private void requireConvertible(GrindSpec spec, String label) {
-        if (!spec.convertible()) {
-            throw new GrindNotConvertibleException(
-                    "%s 그라인더의 클릭당 마이크론 정보가 없어 환산할 수 없습니다.".formatted(label));
-        }
+    if (spec.rangeChecked() && setting.compareTo(spec.maxSetting()) > 0) {
+      throw new GrindSettingOutOfRangeException(
+          "설정값 %s는 이 그라인더의 상한 %s를 넘습니다.".formatted(setting, spec.maxSetting()));
     }
+  }
+
+  /** 결과가 대상 범위를 벗어났는지. 막지 않고 알려주기만 한다. */
+  private boolean outOfRange(GrindSpec target, BigDecimal targetSetting) {
+    if (!target.rangeChecked()) {
+      return false;
+    }
+    return targetSetting.compareTo(target.effectiveMinSetting()) < 0
+        || targetSetting.compareTo(target.maxSetting()) > 0;
+  }
 }
 ```
+
+> **`requireInRange`의 하한 검사가 `rangeChecked()` 밖에 있는 이유:** 영점 미만은 마이크론이 음수가 되므로, 사양을 모르는 그라인더라도 반드시 막아야 한다. 상한만 사양에 의존한다.
 
 - [ ] **Step 5: 테스트 실행 — 통과 확인**
 
@@ -726,222 +902,326 @@ public class GrindConverter {
 ./gradlew test --tests '*GrindConverterTest'
 ```
 
-Expected: PASS, 12 tests.
+Expected: PASS, 18 tests.
 
 - [ ] **Step 6: 커밋**
 
 ```bash
-git add src/main/java/com/kaldinote/grind src/test/java/com/kaldinote/grind
-git commit -m "feat: 분쇄도 환산 순수 도메인 추가 (그라인더 간 환산은 언제나 추정치)"
+cd .. && git add backend/src && git commit -m "feat(grind): 분쇄도 환산 순수 도메인 추가 (환산은 언제나 추정치, 범위 검증 포함)" && cd backend
 ```
 
 ---
 
 ## Task 3: `extraction` — 추출 수율 / SCA 좌표 순수 도메인
 
+**Spec:** `docs/specs/2026-08-14-extraction-analysis.md`
+**Covers:** AC-EXT-01 ~ 36 (전체 25개). 이 스펙은 HTTP를 다루지 않으므로 전부 단위 테스트로 검증된다.
+
 **Files:**
-- Create: `src/main/java/com/kaldinote/extraction/domain/BrewMeasurement.java`
-- Create: `src/main/java/com/kaldinote/extraction/domain/StrengthZone.java`
-- Create: `src/main/java/com/kaldinote/extraction/domain/ExtractionZone.java`
-- Create: `src/main/java/com/kaldinote/extraction/domain/ExtractionAnalysis.java`
-- Create: `src/main/java/com/kaldinote/extraction/domain/ExtractionAnalyzer.java`
-- Test: `src/test/java/com/kaldinote/extraction/domain/ExtractionAnalyzerTest.java`
+- Create: `backend/src/main/java/com/kaldinote/extraction/domain/BrewMeasurement.java`
+- Create: `backend/src/main/java/com/kaldinote/extraction/domain/InvalidBrewMeasurementException.java`
+- Create: `backend/src/main/java/com/kaldinote/extraction/domain/StrengthZone.java`
+- Create: `backend/src/main/java/com/kaldinote/extraction/domain/ExtractionZone.java`
+- Create: `backend/src/main/java/com/kaldinote/extraction/domain/ExtractionAnalysis.java`
+- Create: `backend/src/main/java/com/kaldinote/extraction/domain/ExtractionAnalyzer.java`
+- Test: `backend/src/test/java/com/kaldinote/extraction/domain/ExtractionAnalyzerTest.java`
 
 **Interfaces:**
 - Consumes: 없음. Spring·JPA 의존 없음.
 - Produces:
-  - `BrewMeasurement(BigDecimal doseG, BigDecimal waterG, BigDecimal beverageWeightG, BigDecimal tdsPercent)` — `beverageWeightG`와 `tdsPercent`는 null 가능
+  - `BrewMeasurement(BigDecimal doseG, BigDecimal waterG, BigDecimal beverageWeightG, BigDecimal tdsPercent)` — 뒤 두 개는 null 가능
+  - `BrewMeasurement#yieldMeasurable() → boolean`
   - `ExtractionAnalyzer#analyze(BrewMeasurement) → ExtractionAnalysis`
   - `ExtractionAnalysis(BigDecimal brewRatio, BigDecimal extractionYieldPercent, StrengthZone strengthZone, ExtractionZone extractionZone, String diagnosis)`
   - `ExtractionAnalysis#measured() → boolean`
-  - Plan 2의 `BrewLogService`가 이 API를 호출해 응답 DTO를 채운다.
+  - `InvalidBrewMeasurementException`
+  - Plan 2의 `BrewLogService`가 이 API를 호출해 응답 DTO를 채운다. `ErrorCode.INVALID_BREW_MEASUREMENT`(400)로 매핑한다.
 
 **계산 규칙:**
 ```
-brewRatio = waterG / doseG                       (1:N의 N)
+brewRatio = waterG / doseG                        (1:N의 N)
 EY(%)     = (beverageWeightG × tdsPercent) / doseG
 ```
 SCA 이상 구간: TDS **1.15 이상 1.35 이하**, EY **18.0 이상 22.0 이하** (경계 포함).
+**구간 분류와 물리 한계 판정은 모두 반올림된 EY 값을 기준으로 한다.**
+
+**입력 검증** — 위반 시 전부 `InvalidBrewMeasurementException`:
+
+| 규칙 | 위치 |
+|---|---|
+| `doseG > 0` | `BrewMeasurement` 생성자 |
+| `waterG > 0` | `BrewMeasurement` 생성자 |
+| `beverageWeightG > 0` (null은 정상) | `BrewMeasurement` 생성자 |
+| `0 < tdsPercent < 100` (null은 정상) | `BrewMeasurement` 생성자 |
+| `beverageWeightG ≤ waterG` | `BrewMeasurement` 생성자 |
+| `EY ≤ 30.0` | `ExtractionAnalyzer#analyze` (계산 후에만 알 수 있다) |
+
+> 로스팅 원두는 약 28~30%만 수용성이다. EY가 30%를 넘으면 측정값 오입력이다 — TDS를 `1.25` 대신 `12.5`로 적는 실수가 흔하다.
 
 - [ ] **Step 1: 실패하는 테스트 작성**
 
-`src/test/java/com/kaldinote/extraction/domain/ExtractionAnalyzerTest.java`:
+`backend/src/test/java/com/kaldinote/extraction/domain/ExtractionAnalyzerTest.java`:
 
 ```java
 package com.kaldinote.extraction.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 class ExtractionAnalyzerTest {
 
-    private final ExtractionAnalyzer analyzer = new ExtractionAnalyzer();
+  private final ExtractionAnalyzer analyzer = new ExtractionAnalyzer();
 
-    private static BrewMeasurement measurement(String dose, String water, String beverage, String tds) {
-        return new BrewMeasurement(
-                new BigDecimal(dose),
-                new BigDecimal(water),
-                beverage == null ? null : new BigDecimal(beverage),
-                tds == null ? null : new BigDecimal(tds));
+  private static BrewMeasurement measurement(
+      String dose, String water, String beverage, String tds) {
+    return new BrewMeasurement(
+        new BigDecimal(dose),
+        new BigDecimal(water),
+        beverage == null ? null : new BigDecimal(beverage),
+        tds == null ? null : new BigDecimal(tds));
+  }
+
+  @Nested
+  @DisplayName("브루 비율")
+  class BrewRatio {
+
+    @Test
+    @DisplayName("AC-EXT-01 · 브루 비율은 물량을 원두량으로 나눈 값이다")
+    void 물량을_원두량으로_나눈_값이다() {
+      // 250 / 15 = 16.666... → 16.7
+      assertThat(analyzer.analyze(measurement("15", "250", null, null)).brewRatio())
+          .isEqualByComparingTo("16.7");
     }
 
-    @Nested
-    @DisplayName("브루 비율")
-    class BrewRatio {
+    @Test
+    @DisplayName("AC-EXT-02 · TDS가 없어도 비율은 항상 계산된다")
+    void TDS가_없어도_비율은_항상_계산된다() {
+      ExtractionAnalysis result = analyzer.analyze(measurement("20", "300", null, null));
 
-        @Test
-        void 물량을_원두량으로_나눈_값이다() {
-            // 15g / 250g → 1:16.666... → 16.7
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", null, null));
+      assertThat(result.brewRatio()).isEqualByComparingTo("15.0");
+      assertThat(result.measured()).isFalse();
+    }
+  }
 
-            assertThat(result.brewRatio()).isEqualByComparingTo("16.7");
-        }
+  @Nested
+  @DisplayName("추출 수율")
+  class Yield {
 
-        @Test
-        void TDS가_없어도_비율은_항상_계산된다() {
-            ExtractionAnalysis result = analyzer.analyze(measurement("20", "300", null, null));
+    @Test
+    @DisplayName("AC-EXT-03 · 음료 중량과 TDS로 수율을 계산한다")
+    void 음료중량과_TDS로_수율을_계산한다() {
+      // (250 × 1.35) / 15 = 22.5
+      ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "250", "1.35"));
 
-            assertThat(result.brewRatio()).isEqualByComparingTo("15.0");
-            assertThat(result.measured()).isFalse();
-        }
+      assertThat(result.extractionYieldPercent()).isEqualByComparingTo("22.5");
+      assertThat(result.measured()).isTrue();
     }
 
-    @Nested
-    @DisplayName("추출 수율")
-    class Yield {
+    @Test
+    @DisplayName("AC-EXT-04 · 두 축이 모두 이상 구간이면 IDEAL로 분류된다")
+    void 이상적인_추출은_IDEAL_구간에_들어간다() {
+      // (240 × 1.25) / 15 = 20.0
+      ExtractionAnalysis result = analyzer.analyze(measurement("15", "300", "240", "1.25"));
 
-        @Test
-        void 음료중량과_TDS로_수율을_계산한다() {
-            // (250 × 1.35) / 15 = 22.5
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "250", "1.35"));
-
-            assertThat(result.extractionYieldPercent()).isEqualByComparingTo("22.5");
-            assertThat(result.measured()).isTrue();
-        }
-
-        @Test
-        void 이상적인_추출은_IDEAL_구간에_들어간다() {
-            // (240 × 1.25) / 15 = 20.0
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "240", "1.25"));
-
-            assertThat(result.extractionYieldPercent()).isEqualByComparingTo("20.0");
-            assertThat(result.extractionZone()).isEqualTo(ExtractionZone.IDEAL);
-            assertThat(result.strengthZone()).isEqualTo(StrengthZone.IDEAL);
-        }
-
-        @Test
-        void TDS가_없으면_수율과_구간이_모두_null이다() {
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "240", null));
-
-            assertThat(result.extractionYieldPercent()).isNull();
-            assertThat(result.extractionZone()).isNull();
-            assertThat(result.strengthZone()).isNull();
-            assertThat(result.diagnosis()).contains("TDS");
-        }
-
-        @Test
-        void 음료중량이_없으면_수율을_계산하지_않는다() {
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", null, "1.25"));
-
-            assertThat(result.extractionYieldPercent()).isNull();
-        }
+      assertThat(result.extractionYieldPercent()).isEqualByComparingTo("20.0");
+      assertThat(result.extractionZone()).isEqualTo(ExtractionZone.IDEAL);
+      assertThat(result.strengthZone()).isEqualTo(StrengthZone.IDEAL);
     }
 
-    @Nested
-    @DisplayName("SCA 구간 경계값")
-    class Boundaries {
+    @Test
+    @DisplayName("AC-EXT-05 · TDS가 없으면 수율과 구간이 모두 null이다")
+    void TDS가_없으면_수율과_구간이_모두_null이다() {
+      ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "240", null));
 
-        @Test
-        void 수율_18_0은_IDEAL이다() {
-            // (216 × 1.25) / 15 = 18.0
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "216", "1.25"));
-
-            assertThat(result.extractionYieldPercent()).isEqualByComparingTo("18.0");
-            assertThat(result.extractionZone()).isEqualTo(ExtractionZone.IDEAL);
-        }
-
-        @Test
-        void 수율_22_0은_IDEAL이다() {
-            // (264 × 1.25) / 15 = 22.0
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "264", "1.25"));
-
-            assertThat(result.extractionYieldPercent()).isEqualByComparingTo("22.0");
-            assertThat(result.extractionZone()).isEqualTo(ExtractionZone.IDEAL);
-        }
-
-        @Test
-        void 수율_17_9는_과소추출이다() {
-            // (214.8 × 1.25) / 15 = 17.9
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "214.8", "1.25"));
-
-            assertThat(result.extractionZone()).isEqualTo(ExtractionZone.UNDER);
-            assertThat(result.diagnosis()).contains("곱게");
-        }
-
-        @Test
-        void 수율_22_1은_과다추출이다() {
-            // (265.2 × 1.25) / 15 = 22.1
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "265.2", "1.25"));
-
-            assertThat(result.extractionZone()).isEqualTo(ExtractionZone.OVER);
-            assertThat(result.diagnosis()).contains("굵게");
-        }
-
-        @Test
-        void TDS_1_15는_IDEAL이다() {
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "250", "1.15"));
-
-            assertThat(result.strengthZone()).isEqualTo(StrengthZone.IDEAL);
-        }
-
-        @Test
-        void TDS_1_35는_IDEAL이다() {
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "250", "1.35"));
-
-            assertThat(result.strengthZone()).isEqualTo(StrengthZone.IDEAL);
-        }
-
-        @Test
-        void TDS_1_14는_농도가_옅다() {
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "250", "1.14"));
-
-            assertThat(result.strengthZone()).isEqualTo(StrengthZone.WEAK);
-        }
-
-        @Test
-        void TDS_1_36은_농도가_진하다() {
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "250", "1.36"));
-
-            assertThat(result.strengthZone()).isEqualTo(StrengthZone.STRONG);
-        }
+      assertThat(result.extractionYieldPercent()).isNull();
+      assertThat(result.extractionZone()).isNull();
+      assertThat(result.strengthZone()).isNull();
+      assertThat(result.diagnosis()).contains("TDS");
     }
 
-    @Nested
-    @DisplayName("진단 문구")
-    class Diagnosis {
-
-        @Test
-        void 이상_구간이면_기준으로_삼으라고_안내한다() {
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "240", "1.25"));
-
-            assertThat(result.diagnosis()).contains("이상적");
-        }
-
-        @Test
-        void 추출과_농도가_모두_벗어나면_두_진단을_함께_준다() {
-            // (300 × 1.40) / 15 = 28.0 → 과다추출 + 진한 농도
-            ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", "300", "1.40"));
-
-            assertThat(result.extractionZone()).isEqualTo(ExtractionZone.OVER);
-            assertThat(result.strengthZone()).isEqualTo(StrengthZone.STRONG);
-            assertThat(result.diagnosis()).contains("굵게").contains("물을 늘려");
-        }
+    @Test
+    @DisplayName("AC-EXT-06 · 음료 중량이 없으면 수율을 계산하지 않는다")
+    void 음료중량이_없으면_수율을_계산하지_않는다() {
+      assertThat(analyzer.analyze(measurement("15", "250", null, "1.25")).extractionYieldPercent())
+          .isNull();
     }
+  }
+
+  @Nested
+  @DisplayName("SCA 구간 경계값")
+  class Boundaries {
+
+    @Test
+    @DisplayName("AC-EXT-10 · 수율 18.0은 이상 구간에 포함된다")
+    void 수율_18_0은_IDEAL이다() {
+      // (216 × 1.25) / 15 = 18.0
+      ExtractionAnalysis result = analyzer.analyze(measurement("15", "300", "216", "1.25"));
+
+      assertThat(result.extractionYieldPercent()).isEqualByComparingTo("18.0");
+      assertThat(result.extractionZone()).isEqualTo(ExtractionZone.IDEAL);
+    }
+
+    @Test
+    @DisplayName("AC-EXT-11 · 수율 22.0은 이상 구간에 포함된다")
+    void 수율_22_0은_IDEAL이다() {
+      // (264 × 1.25) / 15 = 22.0
+      ExtractionAnalysis result = analyzer.analyze(measurement("15", "300", "264", "1.25"));
+
+      assertThat(result.extractionYieldPercent()).isEqualByComparingTo("22.0");
+      assertThat(result.extractionZone()).isEqualTo(ExtractionZone.IDEAL);
+    }
+
+    @Test
+    @DisplayName("AC-EXT-12 · 수율 17.9는 과소추출이다")
+    void 수율_17_9는_과소추출이다() {
+      // (214.8 × 1.25) / 15 = 17.9
+      ExtractionAnalysis result = analyzer.analyze(measurement("15", "300", "214.8", "1.25"));
+
+      assertThat(result.extractionZone()).isEqualTo(ExtractionZone.UNDER);
+      assertThat(result.diagnosis()).contains("곱게");
+    }
+
+    @Test
+    @DisplayName("AC-EXT-13 · 수율 22.1은 과다추출이다")
+    void 수율_22_1은_과다추출이다() {
+      // (265.2 × 1.25) / 15 = 22.1
+      ExtractionAnalysis result = analyzer.analyze(measurement("15", "300", "265.2", "1.25"));
+
+      assertThat(result.extractionZone()).isEqualTo(ExtractionZone.OVER);
+      assertThat(result.diagnosis()).contains("굵게");
+    }
+
+    @Test
+    @DisplayName("AC-EXT-14 · TDS 1.15는 이상 구간에 포함된다")
+    void TDS_1_15는_IDEAL이다() {
+      assertThat(analyzer.analyze(measurement("15", "300", "250", "1.15")).strengthZone())
+          .isEqualTo(StrengthZone.IDEAL);
+    }
+
+    @Test
+    @DisplayName("AC-EXT-15 · TDS 1.35는 이상 구간에 포함된다")
+    void TDS_1_35는_IDEAL이다() {
+      assertThat(analyzer.analyze(measurement("15", "300", "250", "1.35")).strengthZone())
+          .isEqualTo(StrengthZone.IDEAL);
+    }
+
+    @Test
+    @DisplayName("AC-EXT-16 · TDS 1.14는 농도가 옅다")
+    void TDS_1_14는_농도가_옅다() {
+      ExtractionAnalysis result = analyzer.analyze(measurement("15", "300", "250", "1.14"));
+
+      assertThat(result.strengthZone()).isEqualTo(StrengthZone.WEAK);
+      assertThat(result.diagnosis()).contains("물을 줄여");
+    }
+
+    @Test
+    @DisplayName("AC-EXT-17 · TDS 1.36은 농도가 진하다")
+    void TDS_1_36은_농도가_진하다() {
+      assertThat(analyzer.analyze(measurement("15", "300", "250", "1.36")).strengthZone())
+          .isEqualTo(StrengthZone.STRONG);
+    }
+
+    @Test
+    @DisplayName("AC-EXT-18 · 수율 30.0은 허용된다")
+    void 수율_30_0은_허용된다() {
+      // (250 × 1.8) / 15 = 30.0 — 물리 한계의 경계는 포함
+      assertThat(analyzer.analyze(measurement("15", "300", "250", "1.8")).extractionYieldPercent())
+          .isEqualByComparingTo("30.0");
+    }
+
+    @Test
+    @DisplayName("AC-EXT-19 · 수율이 30.0을 넘으면 거부한다")
+    void 수율이_30을_넘으면_거부한다() {
+      // (251 × 1.8) / 15 = 30.12 → 30.1
+      assertThatThrownBy(() -> analyzer.analyze(measurement("15", "300", "251", "1.8")))
+          .isInstanceOf(InvalidBrewMeasurementException.class);
+    }
+  }
+
+  @Nested
+  @DisplayName("진단 문구")
+  class Diagnosis {
+
+    @Test
+    @DisplayName("AC-EXT-07 · 이상 구간이면 기준으로 삼으라고 안내한다")
+    void 이상_구간이면_기준으로_삼으라고_안내한다() {
+      assertThat(analyzer.analyze(measurement("15", "300", "240", "1.25")).diagnosis())
+          .contains("이상적");
+    }
+
+    @Test
+    @DisplayName("AC-EXT-08 · 추출과 농도가 모두 벗어나면 두 진단을 함께 준다")
+    void 추출과_농도가_모두_벗어나면_두_진단을_함께_준다() {
+      // (240 × 1.45) / 15 = 23.2 → 과다추출 + 진한 농도
+      ExtractionAnalysis result = analyzer.analyze(measurement("15", "300", "240", "1.45"));
+
+      assertThat(result.extractionYieldPercent()).isEqualByComparingTo("23.2");
+      assertThat(result.extractionZone()).isEqualTo(ExtractionZone.OVER);
+      assertThat(result.strengthZone()).isEqualTo(StrengthZone.STRONG);
+      assertThat(result.diagnosis()).contains("굵게").contains("물을 늘려");
+    }
+  }
+
+  @Nested
+  @DisplayName("입력 검증")
+  class Validation {
+
+    @Test
+    @DisplayName("AC-EXT-30 · 원두량이 0 이하면 거부한다")
+    void 원두량이_0이면_거부한다() {
+      assertThatThrownBy(() -> measurement("0", "250", null, null))
+          .isInstanceOf(InvalidBrewMeasurementException.class);
+    }
+
+    @Test
+    @DisplayName("AC-EXT-31 · 물량이 0 이하면 거부한다")
+    void 물량이_0이면_거부한다() {
+      assertThatThrownBy(() -> measurement("15", "0", null, null))
+          .isInstanceOf(InvalidBrewMeasurementException.class);
+    }
+
+    @Test
+    @DisplayName("AC-EXT-32 · 음료 중량이 0 이하면 거부한다")
+    void 음료중량이_0이면_거부한다() {
+      assertThatThrownBy(() -> measurement("15", "250", "0", "1.25"))
+          .isInstanceOf(InvalidBrewMeasurementException.class);
+    }
+
+    @Test
+    @DisplayName("AC-EXT-33 · TDS가 0 이하면 거부한다")
+    void TDS가_0이면_거부한다() {
+      assertThatThrownBy(() -> measurement("15", "250", "240", "0"))
+          .isInstanceOf(InvalidBrewMeasurementException.class);
+    }
+
+    @Test
+    @DisplayName("AC-EXT-34 · TDS가 100 이상이면 거부한다")
+    void TDS가_100이면_거부한다() {
+      assertThatThrownBy(() -> measurement("15", "250", "240", "100"))
+          .isInstanceOf(InvalidBrewMeasurementException.class);
+    }
+
+    @Test
+    @DisplayName("AC-EXT-35 · 음료가 물보다 많으면 거부한다")
+    void 음료가_물보다_많으면_거부한다() {
+      // 원두가 물을 머금으므로 음료가 부은 물보다 많을 수 없다
+      assertThatThrownBy(() -> measurement("15", "250", "251", "1.25"))
+          .isInstanceOf(InvalidBrewMeasurementException.class);
+    }
+
+    @Test
+    @DisplayName("AC-EXT-36 · 음료와 물이 같은 것은 허용한다")
+    void 음료와_물이_같으면_허용한다() {
+      // (250 × 1.25) / 15 = 20.833... → 20.8
+      assertThat(analyzer.analyze(measurement("15", "250", "250", "1.25")).extractionYieldPercent())
+          .isEqualByComparingTo("20.8");
+    }
+  }
 }
 ```
 
@@ -955,7 +1235,26 @@ Expected: 컴파일 실패. `BrewMeasurement` 등 심볼 없음.
 
 - [ ] **Step 3: VO와 enum 작성**
 
-`src/main/java/com/kaldinote/extraction/domain/BrewMeasurement.java`:
+`backend/src/main/java/com/kaldinote/extraction/domain/InvalidBrewMeasurementException.java`:
+
+```java
+package com.kaldinote.extraction.domain;
+
+/**
+ * 추출 측정값이 물리적으로 불가능할 때 발생한다. HTTP 400으로 매핑된다.
+ *
+ * <p>{@code IllegalArgumentException}을 쓰지 않는 이유: 그 예외를 통째로 잡는 핸들러를 두면
+ * 다른 곳의 진짜 프로그래밍 버그까지 400으로 숨겨서 500이 나야 할 상황을 조용히 넘긴다.
+ */
+public class InvalidBrewMeasurementException extends RuntimeException {
+
+  public InvalidBrewMeasurementException(String message) {
+    super(message);
+  }
+}
+```
+
+`backend/src/main/java/com/kaldinote/extraction/domain/BrewMeasurement.java`:
 
 ```java
 package com.kaldinote.extraction.domain;
@@ -970,49 +1269,73 @@ import java.util.Objects;
  * @param tdsPercent      리프랙토미터 측정 TDS(%). 없으면 null — 없는 게 기본값이다
  */
 public record BrewMeasurement(
-        BigDecimal doseG,
-        BigDecimal waterG,
-        BigDecimal beverageWeightG,
-        BigDecimal tdsPercent
-) {
-    public BrewMeasurement {
-        Objects.requireNonNull(doseG, "doseG는 null일 수 없습니다");
-        Objects.requireNonNull(waterG, "waterG는 null일 수 없습니다");
-        if (doseG.signum() <= 0) {
-            throw new IllegalArgumentException("doseG는 0보다 커야 합니다: " + doseG);
-        }
+    BigDecimal doseG, BigDecimal waterG, BigDecimal beverageWeightG, BigDecimal tdsPercent) {
+
+  private static final BigDecimal TDS_UPPER_EXCLUSIVE = new BigDecimal("100");
+
+  public BrewMeasurement {
+    Objects.requireNonNull(doseG, "doseG는 null일 수 없습니다");
+    Objects.requireNonNull(waterG, "waterG는 null일 수 없습니다");
+
+    requirePositive(doseG, "원두량");
+    requirePositive(waterG, "물량");
+
+    if (beverageWeightG != null) {
+      requirePositive(beverageWeightG, "음료 중량");
+      // 원두가 물을 머금으므로 음료가 부은 물보다 많을 수 없다. 같은 값은 허용한다.
+      if (beverageWeightG.compareTo(waterG) > 0) {
+        throw new InvalidBrewMeasurementException(
+            "음료 중량(%s g)이 물량(%s g)보다 많을 수 없습니다.".formatted(beverageWeightG, waterG));
+      }
     }
 
-    /** 수율 계산에 필요한 값이 모두 있는가. */
-    public boolean yieldMeasurable() {
-        return beverageWeightG != null && tdsPercent != null;
+    if (tdsPercent != null) {
+      requirePositive(tdsPercent, "TDS");
+      if (tdsPercent.compareTo(TDS_UPPER_EXCLUSIVE) >= 0) {
+        throw new InvalidBrewMeasurementException(
+            "TDS는 퍼센트값이므로 100 미만이어야 합니다: %s".formatted(tdsPercent));
+      }
     }
+  }
+
+  private static void requirePositive(BigDecimal value, String label) {
+    if (value.signum() <= 0) {
+      throw new InvalidBrewMeasurementException("%s은(는) 0보다 커야 합니다: %s".formatted(label, value));
+    }
+  }
+
+  /** 수율 계산에 필요한 값이 모두 있는가. */
+  public boolean yieldMeasurable() {
+    return beverageWeightG != null && tdsPercent != null;
+  }
 }
 ```
 
-`src/main/java/com/kaldinote/extraction/domain/StrengthZone.java`:
+`StrengthZone.java` / `ExtractionZone.java`:
 
 ```java
 package com.kaldinote.extraction.domain;
 
 /** SCA Brewing Control Chart 세로축 — 농도(TDS). */
 public enum StrengthZone {
-    WEAK, IDEAL, STRONG
+  WEAK,
+  IDEAL,
+  STRONG
 }
 ```
-
-`src/main/java/com/kaldinote/extraction/domain/ExtractionZone.java`:
 
 ```java
 package com.kaldinote.extraction.domain;
 
 /** SCA Brewing Control Chart 가로축 — 추출 수율. */
 public enum ExtractionZone {
-    UNDER, IDEAL, OVER
+  UNDER,
+  IDEAL,
+  OVER
 }
 ```
 
-`src/main/java/com/kaldinote/extraction/domain/ExtractionAnalysis.java`:
+`backend/src/main/java/com/kaldinote/extraction/domain/ExtractionAnalysis.java`:
 
 ```java
 package com.kaldinote.extraction.domain;
@@ -1027,21 +1350,21 @@ import java.math.BigDecimal;
  * 리프랙토미터가 없는 게 기본 상황이므로 이 상태에서도 앱은 온전히 동작해야 한다.
  */
 public record ExtractionAnalysis(
-        BigDecimal brewRatio,
-        BigDecimal extractionYieldPercent,
-        StrengthZone strengthZone,
-        ExtractionZone extractionZone,
-        String diagnosis
-) {
-    public boolean measured() {
-        return extractionYieldPercent != null;
-    }
+    BigDecimal brewRatio,
+    BigDecimal extractionYieldPercent,
+    StrengthZone strengthZone,
+    ExtractionZone extractionZone,
+    String diagnosis) {
+
+  public boolean measured() {
+    return extractionYieldPercent != null;
+  }
 }
 ```
 
 - [ ] **Step 4: 분석기 구현**
 
-`src/main/java/com/kaldinote/extraction/domain/ExtractionAnalyzer.java`:
+`backend/src/main/java/com/kaldinote/extraction/domain/ExtractionAnalyzer.java`:
 
 ```java
 package com.kaldinote.extraction.domain;
@@ -1054,90 +1377,99 @@ import java.math.RoundingMode;
  *
  * <p>EY(%) = (음료중량_g × TDS%) / 원두량_g
  * <p>이상 구간: TDS 1.15~1.35%, EY 18~22% (경계 포함)
+ *
+ * <p>구간 분류와 물리 한계 판정은 모두 반올림된 EY 값을 기준으로 한다.
  */
 public class ExtractionAnalyzer {
 
-    public static final BigDecimal TDS_MIN = new BigDecimal("1.15");
-    public static final BigDecimal TDS_MAX = new BigDecimal("1.35");
-    public static final BigDecimal EY_MIN = new BigDecimal("18.0");
-    public static final BigDecimal EY_MAX = new BigDecimal("22.0");
+  public static final BigDecimal TDS_MIN = new BigDecimal("1.15");
+  public static final BigDecimal TDS_MAX = new BigDecimal("1.35");
+  public static final BigDecimal EY_MIN = new BigDecimal("18.0");
+  public static final BigDecimal EY_MAX = new BigDecimal("22.0");
+  /** 로스팅 원두는 약 28~30%만 수용성이다. 이를 넘으면 측정값 오입력이다. */
+  public static final BigDecimal EY_PHYSICAL_LIMIT = new BigDecimal("30.0");
 
-    private static final int RATIO_SCALE = 1;
-    private static final int YIELD_SCALE = 1;
-    private static final int DIVISION_SCALE = 6;
+  private static final int RATIO_SCALE = 1;
+  private static final int YIELD_SCALE = 1;
+  private static final int DIVISION_SCALE = 6;
 
-    private static final String NO_TDS =
-            "TDS 측정값이 없어 추출 수율을 계산할 수 없습니다. 비율과 관능 평가로 판단하세요.";
-    private static final String IDEAL =
-            "이상적인 구간입니다. 이 레시피를 기준으로 삼으세요.";
-    private static final String UNDER_EXTRACTED =
-            "추출이 부족합니다. 분쇄를 곱게 하거나 물 온도를 올리거나 추출 시간을 늘려보세요.";
-    private static final String OVER_EXTRACTED =
-            "과다추출입니다. 분쇄를 굵게 하거나 물 온도를 낮추거나 추출 시간을 줄여보세요.";
-    private static final String TOO_WEAK =
-            "농도가 옅습니다. 물을 줄여 비율을 진하게 조정해보세요.";
-    private static final String TOO_STRONG =
-            "농도가 진합니다. 물을 늘려 비율을 옅게 조정해보세요.";
+  private static final String NO_TDS =
+      "TDS 측정값이 없어 추출 수율을 계산할 수 없습니다. 비율과 관능 평가로 판단하세요.";
+  private static final String IDEAL = "이상적인 구간입니다. 이 레시피를 기준으로 삼으세요.";
+  private static final String UNDER_EXTRACTED =
+      "추출이 부족합니다. 분쇄를 곱게 하거나 물 온도를 올리거나 추출 시간을 늘려보세요.";
+  private static final String OVER_EXTRACTED =
+      "과다추출입니다. 분쇄를 굵게 하거나 물 온도를 낮추거나 추출 시간을 줄여보세요.";
+  private static final String TOO_WEAK = "농도가 옅습니다. 물을 줄여 비율을 진하게 조정해보세요.";
+  private static final String TOO_STRONG = "농도가 진합니다. 물을 늘려 비율을 옅게 조정해보세요.";
 
-    public ExtractionAnalysis analyze(BrewMeasurement m) {
-        BigDecimal brewRatio = m.waterG()
-                .divide(m.doseG(), DIVISION_SCALE, RoundingMode.HALF_UP)
-                .setScale(RATIO_SCALE, RoundingMode.HALF_UP);
+  public ExtractionAnalysis analyze(BrewMeasurement m) {
+    BigDecimal brewRatio =
+        m.waterG()
+            .divide(m.doseG(), DIVISION_SCALE, RoundingMode.HALF_UP)
+            .setScale(RATIO_SCALE, RoundingMode.HALF_UP);
 
-        if (!m.yieldMeasurable()) {
-            return new ExtractionAnalysis(brewRatio, null, null, null, NO_TDS);
-        }
-
-        BigDecimal yield = m.beverageWeightG()
-                .multiply(m.tdsPercent())
-                .divide(m.doseG(), DIVISION_SCALE, RoundingMode.HALF_UP)
-                .setScale(YIELD_SCALE, RoundingMode.HALF_UP);
-
-        StrengthZone strength = classifyStrength(m.tdsPercent());
-        ExtractionZone extraction = classifyExtraction(yield);
-
-        return new ExtractionAnalysis(
-                brewRatio, yield, strength, extraction, diagnose(strength, extraction));
+    if (!m.yieldMeasurable()) {
+      return new ExtractionAnalysis(brewRatio, null, null, null, NO_TDS);
     }
 
-    private StrengthZone classifyStrength(BigDecimal tds) {
-        if (tds.compareTo(TDS_MIN) < 0) return StrengthZone.WEAK;
-        if (tds.compareTo(TDS_MAX) > 0) return StrengthZone.STRONG;
-        return StrengthZone.IDEAL;
+    BigDecimal yield =
+        m.beverageWeightG()
+            .multiply(m.tdsPercent())
+            .divide(m.doseG(), DIVISION_SCALE, RoundingMode.HALF_UP)
+            .setScale(YIELD_SCALE, RoundingMode.HALF_UP);
+
+    if (yield.compareTo(EY_PHYSICAL_LIMIT) > 0) {
+      throw new InvalidBrewMeasurementException(
+          "추출 수율 %s%%는 물리적으로 불가능합니다(최대 %s%%). 측정값을 다시 확인하세요."
+              .formatted(yield, EY_PHYSICAL_LIMIT));
     }
 
-    private ExtractionZone classifyExtraction(BigDecimal yield) {
-        if (yield.compareTo(EY_MIN) < 0) return ExtractionZone.UNDER;
-        if (yield.compareTo(EY_MAX) > 0) return ExtractionZone.OVER;
-        return ExtractionZone.IDEAL;
+    StrengthZone strength = classifyStrength(m.tdsPercent());
+    ExtractionZone extraction = classifyExtraction(yield);
+
+    return new ExtractionAnalysis(
+        brewRatio, yield, strength, extraction, diagnose(strength, extraction));
+  }
+
+  private StrengthZone classifyStrength(BigDecimal tds) {
+    if (tds.compareTo(TDS_MIN) < 0) return StrengthZone.WEAK;
+    if (tds.compareTo(TDS_MAX) > 0) return StrengthZone.STRONG;
+    return StrengthZone.IDEAL;
+  }
+
+  private ExtractionZone classifyExtraction(BigDecimal yield) {
+    if (yield.compareTo(EY_MIN) < 0) return ExtractionZone.UNDER;
+    if (yield.compareTo(EY_MAX) > 0) return ExtractionZone.OVER;
+    return ExtractionZone.IDEAL;
+  }
+
+  /** 추출 진단이 우선, 농도 진단은 뒤에 덧붙인다. 둘 다 이상이면 한 문장만 낸다. */
+  private String diagnose(StrengthZone strength, ExtractionZone extraction) {
+    if (strength == StrengthZone.IDEAL && extraction == ExtractionZone.IDEAL) {
+      return IDEAL;
     }
 
-    /** 추출 진단이 우선, 농도 진단은 뒤에 덧붙인다. 둘 다 이상이면 한 문장만 낸다. */
-    private String diagnose(StrengthZone strength, ExtractionZone extraction) {
-        if (strength == StrengthZone.IDEAL && extraction == ExtractionZone.IDEAL) {
-            return IDEAL;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        switch (extraction) {
-            case UNDER -> sb.append(UNDER_EXTRACTED);
-            case OVER -> sb.append(OVER_EXTRACTED);
-            case IDEAL -> { }
-        }
-        switch (strength) {
-            case WEAK -> appendSentence(sb, TOO_WEAK);
-            case STRONG -> appendSentence(sb, TOO_STRONG);
-            case IDEAL -> { }
-        }
-        return sb.toString();
+    StringBuilder sb = new StringBuilder();
+    switch (extraction) {
+      case UNDER -> sb.append(UNDER_EXTRACTED);
+      case OVER -> sb.append(OVER_EXTRACTED);
+      case IDEAL -> {}
     }
-
-    private void appendSentence(StringBuilder sb, String sentence) {
-        if (!sb.isEmpty()) {
-            sb.append(" ");
-        }
-        sb.append(sentence);
+    switch (strength) {
+      case WEAK -> appendSentence(sb, TOO_WEAK);
+      case STRONG -> appendSentence(sb, TOO_STRONG);
+      case IDEAL -> {}
     }
+    return sb.toString();
+  }
+
+  private void appendSentence(StringBuilder sb, String sentence) {
+    if (!sb.isEmpty()) {
+      sb.append(" ");
+    }
+    sb.append(sentence);
+  }
 }
 ```
 
@@ -1147,12 +1479,18 @@ public class ExtractionAnalyzer {
 ./gradlew test --tests '*ExtractionAnalyzerTest'
 ```
 
-Expected: PASS, 16 tests.
+Expected: PASS, 25 tests.
 
-- [ ] **Step 6: 전체 테스트 실행 + 커밋**
+- [ ] **Step 6: AC 커버리지 검사 + 커밋**
 
 ```bash
 ./gradlew test
+(cd .. && ./scripts/check-spec-coverage.sh)
+```
+
+Expected: 두 스펙 모두 `status: 초안`이라 아직 건너뛴다. Task 11까지 끝낸 뒤 `status`를 `구현완료`로 바꾸면 그때부터 강제된다.
+
+```bash
 cd .. && git add backend/src && git commit -m "feat(extraction): 추출 수율·SCA 구간 분석 순수 도메인 추가 (TDS 없어도 동작)" && cd backend
 ```
 
@@ -1703,8 +2041,15 @@ public enum ErrorCode {
   NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
   INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
 
+  DUPLICATE_NAME(HttpStatus.CONFLICT, "이미 등록된 이름입니다."),
+
+  // 분쇄도 환산 — docs/specs/2026-08-14-grind-conversion.md
   GRIND_NOT_CONVERTIBLE(
       HttpStatus.UNPROCESSABLE_ENTITY, "클릭당 마이크론 정보가 없어 분쇄도를 환산할 수 없습니다."),
+  GRIND_SETTING_OUT_OF_RANGE(HttpStatus.BAD_REQUEST, "이 그라인더에서 쓸 수 없는 설정값입니다."),
+
+  // 추출 분석 — docs/specs/2026-08-14-extraction-analysis.md
+  INVALID_BREW_MEASUREMENT(HttpStatus.BAD_REQUEST, "추출 측정값이 올바르지 않습니다."),
 
   OAUTH_TOKEN_EXCHANGE_FAILED(HttpStatus.UNAUTHORIZED, "소셜 로그인에 실패했습니다."),
   REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "다시 로그인해 주세요.");
@@ -1765,7 +2110,9 @@ public record ErrorResponse(String code, String message, List<FieldError> fieldE
 ```java
 package com.kaldinote.common.error;
 
+import com.kaldinote.extraction.domain.InvalidBrewMeasurementException;
 import com.kaldinote.grind.domain.GrindNotConvertibleException;
+import com.kaldinote.grind.domain.GrindSettingOutOfRangeException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -1786,10 +2133,22 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(GrindNotConvertibleException.class)
-  public ResponseEntity<ErrorResponse> handleGrind(GrindNotConvertibleException e) {
-    ErrorCode code = ErrorCode.GRIND_NOT_CONVERTIBLE;
-    return ResponseEntity.status(code.getStatus())
-        .body(ErrorResponse.of(code, e.getMessage()));
+  public ResponseEntity<ErrorResponse> handleGrindNotConvertible(GrindNotConvertibleException e) {
+    return toResponse(ErrorCode.GRIND_NOT_CONVERTIBLE, e.getMessage());
+  }
+
+  @ExceptionHandler(GrindSettingOutOfRangeException.class)
+  public ResponseEntity<ErrorResponse> handleGrindOutOfRange(GrindSettingOutOfRangeException e) {
+    return toResponse(ErrorCode.GRIND_SETTING_OUT_OF_RANGE, e.getMessage());
+  }
+
+  @ExceptionHandler(InvalidBrewMeasurementException.class)
+  public ResponseEntity<ErrorResponse> handleBrewMeasurement(InvalidBrewMeasurementException e) {
+    return toResponse(ErrorCode.INVALID_BREW_MEASUREMENT, e.getMessage());
+  }
+
+  private ResponseEntity<ErrorResponse> toResponse(ErrorCode code, String message) {
+    return ResponseEntity.status(code.getStatus()).body(ErrorResponse.of(code, message));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -3478,6 +3837,16 @@ class GearSeedTest extends AbstractIntegrationTest {
     assertThat(result.micron()).isEqualByComparingTo("660");
     assertThat(result.targetSetting()).isEqualByComparingTo("30.0");
     assertThat(result.estimated()).isTrue();
+    assertThat(result.targetOutOfRange()).isFalse();
+  }
+
+  @Test
+  void 시드된_그라인더의_범위가_GrindSpec으로_전달된다() {
+    GrinderModel c40 = grinderRepository.findByBrandAndName("Comandante", "C40 MK4").orElseThrow();
+
+    // 범위 검증이 순수 도메인에서 동작하려면 min·max가 함께 넘어와야 한다
+    assertThat(c40.toGrindSpec().rangeChecked()).isTrue();
+    assertThat(c40.toGrindSpec().maxSetting()).isEqualByComparingTo("50");
   }
 
   @Test
@@ -3511,9 +3880,12 @@ enum: `AdjustmentType { CLICK, NUMBERED, STEPLESS }`, `BurrType { CONICAL, FLAT 
 `GrinderModel`의 핵심 메서드 — **`gear`와 `grind` 도메인을 잇는 유일한 지점이다**:
 
 ```java
-/** 순수 계산 도메인이 쓸 값 객체로 변환한다. */
+/**
+ * 순수 계산 도메인이 쓸 값 객체로 변환한다.
+ * min·max까지 넘겨야 범위 검증도 순수 도메인에서 단위 테스트로 검증된다.
+ */
 public GrindSpec toGrindSpec() {
-  return new GrindSpec(micronsPerClick, zeroPointOffsetClicks);
+  return new GrindSpec(micronsPerClick, zeroPointOffsetClicks, minSetting, maxSetting);
 }
 ```
 
@@ -3588,18 +3960,23 @@ cd .. && git add . && git commit -m "feat(gear): 그라인더·드리퍼·필터
 ```java
 package com.kaldinote.gear.presentation;
 
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
 import com.kaldinote.user.domain.UserRole;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
 
 class GearControllerTest extends AbstractIntegrationTest {
 
@@ -3611,6 +3988,7 @@ class GearControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
+  @DisplayName("AC-GRIND-33 · 인증 없이 호출하면 401")
   void 인증_없이_그라인더_목록을_조회하면_401이다() throws Exception {
     mockMvc.perform(get("/api/v1/gear/grinders")).andExpect(status().isUnauthorized());
   }
@@ -3620,67 +3998,130 @@ class GearControllerTest extends AbstractIntegrationTest {
     mockMvc
         .perform(get("/api/v1/gear/grinders").header(HttpHeaders.AUTHORIZATION, token()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(10)))
-        .andExpect(jsonPath("$[?(@.name == 'C40 MK4')].convertible").value(
-            org.hamcrest.Matchers.hasItem(true)));
+        .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(10)))
+        .andExpect(jsonPath("$[?(@.name == 'C40 MK4')].convertible").value(hasItem(true)));
+  }
+
+  /** 요청 본문을 만든다. 세 필드 모두 필수다. */
+  private String body(Long sourceId, String setting, Long targetId) {
+    return """
+        {"sourceGrinderModelId":%d,"sourceSetting":%s,"targetGrinderModelId":%d}
+        """
+        .formatted(sourceId, setting, targetId);
+  }
+
+  private ResultActions convert(Long sourceId, String setting, Long targetId) throws Exception {
+    return mockMvc.perform(
+        post("/api/v1/gear/grind-conversions")
+            .header(HttpHeaders.AUTHORIZATION, token())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body(sourceId, setting, targetId)));
+  }
+
+  private Long id(String brand, String name) {
+    return grinderRepository.findByBrandAndName(brand, name).orElseThrow().getId();
   }
 
   @Test
+  @DisplayName("AC-GRIND-07, AC-GRIND-21 · 추정치 경고가 함께 오고 범위 안이면 플래그가 내려간다")
   void 분쇄도를_환산하면_추정치_경고가_함께_온다() throws Exception {
-    Long c40 = grinderRepository.findByBrandAndName("Comandante", "C40 MK4").orElseThrow().getId();
-    Long kPlus = grinderRepository.findByBrandAndName("1Zpresso", "K-Plus").orElseThrow().getId();
-
-    mockMvc
-        .perform(
-            post("/api/v1/gear/grind-conversions")
-                .header(HttpHeaders.AUTHORIZATION, token())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"sourceGrinderModelId":%d,"sourceSetting":22,"targetGrinderModelId":%d}
-                    """
-                        .formatted(c40, kPlus)))
+    convert(id("Comandante", "C40 MK4"), "22", id("1Zpresso", "K-Plus"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.micron").value(660))
         .andExpect(jsonPath("$.targetSetting").value(30.0))
+        .andExpect(jsonPath("$.targetOutOfRange").value(false))
         .andExpect(jsonPath("$.estimated").value(true))
         .andExpect(jsonPath("$.warning").isNotEmpty());
   }
 
   @Test
-  void 환산_불가_그라인더로_요청하면_422다() throws Exception {
-    Long c40 = grinderRepository.findByBrandAndName("Comandante", "C40 MK4").orElseThrow().getId();
-    Long stepless = grinderRepository.findByBrandAndName("Wilfa", "Uniform").orElseThrow().getId();
+  @DisplayName("AC-GRIND-20 · 결과가 대상 범위를 넘으면 플래그를 세우고 값은 돌려준다")
+  void 결과가_대상_범위를_넘으면_플래그가_선다() throws Exception {
+    // K-Plus 90클릭 = 1980µm → C40 66.0클릭. C40의 최대는 50이다.
+    convert(id("1Zpresso", "K-Plus"), "90", id("Comandante", "C40 MK4"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.targetSetting").value(66.0))
+        .andExpect(jsonPath("$.targetOutOfRange").value(true));
+  }
 
-    mockMvc
-        .perform(
-            post("/api/v1/gear/grind-conversions")
-                .header(HttpHeaders.AUTHORIZATION, token())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"sourceGrinderModelId":%d,"sourceSetting":22,"targetGrinderModelId":%d}
-                    """
-                        .formatted(c40, stepless)))
+  @Test
+  @DisplayName("AC-GRIND-10 · 하한값 자체는 허용한다")
+  void 하한값은_허용된다() throws Exception {
+    convert(id("Comandante", "C40 MK4"), "0", id("1Zpresso", "K-Plus"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.micron").value(0))
+        .andExpect(jsonPath("$.targetSetting").value(0.0));
+  }
+
+  @Test
+  @DisplayName("AC-GRIND-11 · 상한값 자체는 허용한다")
+  void 상한값은_허용된다() throws Exception {
+    // C40 50클릭 = 1500µm → K-Plus 1500 / 22 = 68.18... → 68.2
+    convert(id("Comandante", "C40 MK4"), "50", id("1Zpresso", "K-Plus"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.micron").value(1500))
+        .andExpect(jsonPath("$.targetSetting").value(68.2));
+  }
+
+  @Test
+  @DisplayName("AC-GRIND-12 · 상한을 넘으면 거부한다")
+  void 상한을_넘으면_400이다() throws Exception {
+    convert(id("Comandante", "C40 MK4"), "51", id("1Zpresso", "K-Plus"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("GRIND_SETTING_OUT_OF_RANGE"));
+  }
+
+  @Test
+  @DisplayName("AC-GRIND-13 · 하한 아래는 거부한다")
+  void 하한_아래는_400이다() throws Exception {
+    convert(id("Comandante", "C40 MK4"), "-1", id("1Zpresso", "K-Plus"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("GRIND_SETTING_OUT_OF_RANGE"));
+  }
+
+  @Test
+  @DisplayName("AC-GRIND-30 · 원본이 환산 불가면 422")
+  void 원본이_환산_불가면_422다() throws Exception {
+    convert(id("Wilfa", "Uniform"), "22", id("Comandante", "C40 MK4"))
         .andExpect(status().isUnprocessableEntity())
         .andExpect(jsonPath("$.code").value("GRIND_NOT_CONVERTIBLE"));
   }
 
   @Test
+  @DisplayName("AC-GRIND-31 · 대상이 환산 불가면 422")
+  void 대상이_환산_불가면_422다() throws Exception {
+    convert(id("Comandante", "C40 MK4"), "22", id("Wilfa", "Uniform"))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.code").value("GRIND_NOT_CONVERTIBLE"));
+  }
+
+  @Test
+  @DisplayName("AC-GRIND-32 · 존재하지 않는 그라인더면 404")
   void 존재하지_않는_그라인더_ID면_404다() throws Exception {
+    convert(999999L, "22", 999998L)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-GRIND-34 · 필수 필드가 없으면 400")
+  void 필수_필드가_없으면_400이다() throws Exception {
     mockMvc
         .perform(
             post("/api/v1/gear/grind-conversions")
                 .header(HttpHeaders.AUTHORIZATION, token())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    "{\"sourceGrinderModelId\":999999,\"sourceSetting\":22,\"targetGrinderModelId\":999998}"))
-        .andExpect(status().isNotFound());
+                .content("{\"sourceGrinderModelId\":1,\"targetGrinderModelId\":2}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+        .andExpect(jsonPath("$.fieldErrors[*].field").value(hasItem("sourceSetting")));
   }
 }
 ```
 
-`CatalogControllerTest`도 같은 패턴으로 작성한다: 인증 없이 401, 품종 목록 조회 200 + 15개 이상, 품종 추가 201 + `isSystem=false`, 중복 이름 추가 시 409.
+> **`@DisplayName`은 하나만 붙일 수 있다.** 한 테스트가 AC 둘을 커버하면 위처럼 **한 줄에 ID를 쉼표로 나열**한다. 커버리지 스크립트는 문자열 포함 여부만 보므로 이 형태로 충분하다.
+
+`CatalogControllerTest`도 같은 패턴으로 작성한다: 인증 없이 401, 품종 목록 조회 200 + 15개 이상, 품종 추가 201 + `isSystem=false`, 중복 이름 추가 시 409 `DUPLICATE_NAME`. 카탈로그는 기능 스펙이 없으므로 AC ID를 붙이지 않는다.
 
 - [ ] **Step 2: 테스트 실행 — 실패 확인**
 
@@ -3694,9 +4135,13 @@ Expected: 404 또는 컴파일 실패.
 
 ```java
 // gear/presentation/dto/GrindConversionRequest.java
+// sourceSetting에 @DecimalMin을 걸지 않는다. 하한은 그라인더마다 다르고
+// 영점 보정에 따라 달라지므로, 범위 검증은 도메인(GrindConverter)이 담당한다.
+// 여기서 0 이상을 강제하면 AC-GRIND-13(-1 → GRIND_SETTING_OUT_OF_RANGE)이
+// INVALID_REQUEST로 잘못 응답한다.
 public record GrindConversionRequest(
     @NotNull Long sourceGrinderModelId,
-    @NotNull @DecimalMin("0") BigDecimal sourceSetting,
+    @NotNull BigDecimal sourceSetting,
     @NotNull Long targetGrinderModelId) {}
 
 // gear/presentation/dto/GrindConversionResponse.java
@@ -3704,12 +4149,18 @@ public record GrindConversionResponse(
     BigDecimal sourceSetting,
     BigDecimal micron,
     BigDecimal targetSetting,
+    boolean targetOutOfRange,
     boolean estimated,
     String warning) {
 
   public static GrindConversionResponse from(GrindConversion c) {
     return new GrindConversionResponse(
-        c.sourceSetting(), c.micron(), c.targetSetting(), c.estimated(), c.warning());
+        c.sourceSetting(),
+        c.micron(),
+        c.targetSetting(),
+        c.targetOutOfRange(),
+        c.estimated(),
+        c.warning());
   }
 }
 
@@ -3737,10 +4188,14 @@ public class GrindConversionService {
   private final GrindConverter converter = new GrindConverter();
 
   public GrindConversion convert(GrindConversionRequest request) {
+    // 검증 순서: 404(그라인더 없음) → 422(환산 불가) → 400(범위 밖).
+    // 환산 자체가 불가능하면 설정값의 유효성을 논할 의미가 없다.
     GrinderModel source = find(request.sourceGrinderModelId());
     GrinderModel target = find(request.targetGrinderModelId());
 
-    // GrindNotConvertibleException은 GlobalExceptionHandler가 422로 변환한다
+    // 도메인 예외를 잡지 않는다. GlobalExceptionHandler가 변환한다.
+    //   GrindNotConvertibleException     → 422 GRIND_NOT_CONVERTIBLE
+    //   GrindSettingOutOfRangeException  → 400 GRIND_SETTING_OUT_OF_RANGE
     return converter.convert(source.toGrindSpec(), request.sourceSetting(), target.toGrindSpec());
   }
 
@@ -3753,7 +4208,7 @@ public class GrindConversionService {
 }
 ```
 
-`GearService`는 목록 조회 3개(`grinders`, `brewers`, `filters`)를, `CatalogService`는 목록 조회 3개 + 품종 추가를 담당한다. 품종 추가는 이름 중복 시 `BusinessException(ErrorCode.CONFLICT)`를 던진다 — `ErrorCode`에 `DUPLICATE_NAME(HttpStatus.CONFLICT, "이미 등록된 이름입니다.")`를 추가한다.
+`GearService`는 목록 조회 3개(`grinders`, `brewers`, `filters`)를, `CatalogService`는 목록 조회 3개 + 품종 추가를 담당한다. 품종 추가는 이름 중복 시 `BusinessException(ErrorCode.DUPLICATE_NAME)`을 던진다 (Task 5에서 이미 정의했다).
 
 - [ ] **Step 5: 컨트롤러 작성**
 
@@ -3837,13 +4292,22 @@ public class OpenApiConfig {
 
 Expected: PASS.
 
-- [ ] **Step 8: 전체 검증 + 수동 확인**
+- [ ] **Step 8: 스펙 상태를 `구현완료`로 바꾸고 커버리지 검사**
+
+두 스펙 문서의 frontmatter `status`를 `초안` → `구현완료`로 바꾼다.
+
+- `docs/specs/2026-08-14-grind-conversion.md`
+- `docs/specs/2026-08-14-extraction-analysis.md`
 
 ```bash
 ./gradlew clean check
+(cd .. && ./scripts/check-spec-coverage.sh)
 ```
 
-Expected: 전체 통과.
+Expected: 두 명령 모두 통과. 커버리지 검사는 `AC 46개 전부 테스트에 존재`를 보고해야 한다.
+**누락이 나오면 해당 테스트의 `@DisplayName`에 AC ID를 넣지 않은 것이다.** 이 시점부터 CI가 강제한다.
+
+- [ ] **Step 9: 수동 확인**
 
 ```bash
 (cd .. && docker compose up -d)
@@ -3852,7 +4316,9 @@ Expected: 전체 통과.
 
 브라우저에서 `http://localhost:8080/swagger-ui.html` 접속 → 모든 엔드포인트가 문서화되어 있고, "Authorize" 버튼으로 JWT를 넣어 호출할 수 있다.
 
-- [ ] **Step 9: 커밋**
+`docs/specs/2026-08-14-grind-conversion.md`의 수동 확인 항목도 여기서 처리한다 — 환산 응답의 `warning` 문구가 그대로 노출되는지 확인한다.
+
+- [ ] **Step 10: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -3866,9 +4332,11 @@ cd .. && git add . && git commit -m "feat(gear): 마스터 조회 API와 분쇄�
 아래가 전부 참이어야 Plan 1이 끝난 것이다.
 
 - [ ] `cd backend && ./gradlew clean check` 통과
+- [ ] **두 스펙의 `status`가 `구현완료`이고 `./scripts/check-spec-coverage.sh`가 AC 46개 전부 확인** ← 가장 중요
 - [ ] `docker compose up -d && ./gradlew bootRun` 후 `curl localhost:8080/actuator/health` → `{"status":"UP"}`
 - [ ] Swagger UI에서 카카오 로그인으로 받은 JWT로 `/api/v1/gear/grinders` 호출 성공
 - [ ] `POST /api/v1/gear/grind-conversions`로 C40 22클릭 → K-Plus 30.0클릭 환산, `estimated: true`와 `warning` 확인
+- [ ] C40 51클릭으로 환산 시 400 + `code: GRIND_SETTING_OUT_OF_RANGE`
 - [ ] 무단계 그라인더로 환산 시 422 + `code: GRIND_NOT_CONVERTIBLE`
 - [ ] ADMIN이 아닌 토큰으로 `/api/v1/admin/**` 호출 시 403
 - [ ] Flyway V1~V5가 모두 적용됨 (`./gradlew flywayInfo`)
@@ -3881,19 +4349,31 @@ cd .. && git add . && git commit -m "feat(gear): 마스터 조회 API와 분쇄�
 
 계획 작성 후 스펙과 대조해 확인한 사항이다.
 
-**스펙 커버리지**
-| 스펙 요구사항 | 대응 태스크 |
-|---|---|
-| `grind` 순수 도메인, 환산은 항상 추정치 | Task 2, 10, 11 |
-| `extraction` 순수 도메인, TDS 없어도 동작 | Task 3 |
-| `users.role` + JWT role claim | Task 4, 6 |
-| OAuth2(카카오/구글) + refresh rotation | Task 7, 8 |
-| 마스터 데이터 FK 정규화, 사용자 즉시 생성 | Task 9, 10, 11 |
-| Testcontainers, H2 금지 | Task 1 |
-| CSRF 비활성 (Boot 4 함정) | Task 5 |
-| Flyway로 스키마 + 시드 | Task 1, 4, 9, 10 |
+**AC 커버리지**
+문서 상단의 매핑표 참조. **AC 46개 = 매핑 46개**, 누락 없음.
+`AC-GRIND-*` 21개는 Task 2(단위 11)와 Task 11(API 10)에, `AC-EXT-*` 25개는 전부 Task 3에 있다.
 
-Plan 1 범위 밖(원두 재고·레시피·브루잉 로그·포크·사진·배포)은 Plan 2~3에서 다룬다.
+**기능 스펙이 없는 부분**
+| 요구사항 | 대응 태스크 | 출처 |
+|---|---|---|
+| `users.role` + JWT role claim | Task 4, 6 | 아키텍처 문서 |
+| OAuth2(카카오/구글) + refresh rotation | Task 7, 8 | 아키텍처 문서 |
+| 마스터 데이터 FK 정규화, 사용자 즉시 생성 | Task 9, 10, 11 | 아키텍처 문서 |
+| Testcontainers, H2 금지 | Task 1 | 컨벤션 |
+| CSRF 비활성 (Boot 4 함정) | Task 5 | 컨벤션 |
+| Flyway로 스키마 + 시드 | Task 1, 4, 9, 10 | 컨벤션 |
+
+기반 공사라 기능 스펙 대상이 아니다. Plan 1 범위 밖(원두 재고·레시피·브루잉 로그·포크·사진·배포)은 Plan 2~3에서 다룬다.
+
+**스펙 반영으로 Plan 1이 바뀐 부분** (2026-08-14)
+- `GrindSpec`에 `minSetting`·`maxSetting` 추가 — 범위 검증을 순수 도메인에서 단위 테스트로 검증하기 위해
+- `GrindSettingOutOfRangeException`·`InvalidBrewMeasurementException` 신설. `IllegalArgumentException`을 쓰면 핸들러가 진짜 버그까지 400으로 숨긴다
+- `GrindConversion`·응답 DTO에 `targetOutOfRange` 추가
+- `ErrorCode`에 `GRIND_SETTING_OUT_OF_RANGE`·`INVALID_BREW_MEASUREMENT`·`DUPLICATE_NAME` 추가
+- `BrewMeasurement` 입력 검증 5종 + EY 30% 물리 한계 추가
+- **Task 3의 기존 테스트 하나가 물 250g에 음료 300g을 써서 새 규칙을 위반했다** → 물 300g / 음료 240g / TDS 1.45로 교체
+- `GrindConversionRequest.sourceSetting`의 `@DecimalMin("0")` 제거 — 하한은 그라인더마다 다르므로 도메인이 판단해야 한다. 남겨두면 AC-GRIND-13이 `INVALID_REQUEST`로 잘못 응답한다
+- 모든 관련 테스트의 `@DisplayName`에 AC ID 추가
 
 **의도적으로 미뤄둔 것**
 - `roasters`, `bean_products`, `bean_origins` 테이블 — Plan 2에서 `BeanBatch`와 함께 만든다. 스키마만 먼저 만들면 쓰는 코드 없이 죽은 스키마가 된다.

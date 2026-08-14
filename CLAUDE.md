@@ -38,6 +38,28 @@
 
 ---
 
+## ★ 세션 핸드오버
+
+작업은 세션 단위로 나뉘고, **세션마다 다른 에이전트가 붙는다.** 새 에이전트는 이전 대화를 보지 못하고 저장소에 남은 것만 본다.
+
+```
+세션 시작:  /resume     상태 파악 + 테스트 실행 + 할 일 제안 → 승인 후 시작
+세션 종료:  /handover   검증 + 체크박스 갱신 + JOURNAL 기록 + 커밋/PR
+```
+
+| 정보 | 어디에 |
+|---|---|
+| 어디까지 했나 | `docs/plans/*.md`의 `- [ ]` 체크박스 — **단일 진실 원천** |
+| 왜 그렇게 했나 | [`docs/JOURNAL.md`](docs/JOURNAL.md) — 막힌 지점, 계획과 달라진 이유 |
+
+**태스크 1개 = 브랜치 1개 = PR 1개.** 브랜치명은 `feat/task-02-grind`처럼 계획의 태스크 번호를 넣는다.
+
+**`/resume`은 반드시 테스트를 실행한다.** 초록이라고 가정하고 시작하면, 앞 세션의 실패를 내 작업 탓으로 오해하며 시간을 날린다.
+
+**상세 규칙: [`docs/conventions/handover.md`](docs/conventions/handover.md)**
+
+---
+
 ## 저장소 구조
 
 프론트엔드와 백엔드를 한 저장소에 두는 모노레포다. 배포 대상은 서로 다르다(백엔드 → OCI VM, 프론트 → Vercel).
@@ -46,12 +68,15 @@
 kaldi-note/
 ├── CLAUDE.md                 ← 이 파일. 전체 개요와 문서 지도
 ├── .claude/commands/
-│   └── interview.md          /interview — 스펙 작성 전 요구사항 인터뷰
+│   ├── interview.md          /interview — 스펙 작성 전 요구사항 인터뷰
+│   ├── resume.md             /resume   — 세션 시작
+│   └── handover.md           /handover — 세션 종료
 ├── backend/                  Spring Boot 4.1 API 서버
 │   └── CLAUDE.md             ← 백엔드 작업 시 반드시 먼저 읽을 것
 ├── frontend/                 Next.js PWA
 │   └── CLAUDE.md             ← 프론트 작업 시 반드시 먼저 읽을 것
 ├── docs/
+│   ├── JOURNAL.md            ★ 세션 일지 — 왜 지금 이 상태인가
 │   ├── design/               전체 아키텍처 — 왜 이런 구조인가
 │   │   └── 2026-08-14-architecture.md
 │   ├── specs/                ★ 기능 스펙 — AC를 가진 문서만 여기 둔다
@@ -61,6 +86,7 @@ kaldi-note/
 │   │   └── 2026-08-14-plan1-foundation.md
 │   └── conventions/
 │       ├── workflow.md       ★ 스펙 → 계획 → 코드. 코드 쓰기 전 필독
+│       ├── handover.md       ★ 세션 인계 프로토콜
 │       ├── git.md            커밋·브랜치·PR (공통)
 │       ├── backend.md        Java / Spring Boot
 │       └── frontend.md       TypeScript / Next.js
@@ -78,7 +104,9 @@ kaldi-note/
 
 | 하려는 일 | 읽을 문서 |
 |---|---|
+| **세션을 시작할 때** | **`/resume`** (그 전에 아무것도 하지 않는다) |
 | **무엇이든** | 이 파일 → **`docs/conventions/workflow.md`** → `docs/conventions/git.md` |
+| 세션을 마칠 때 | **`/handover`** → `docs/conventions/handover.md` |
 | 기능 스펙 작성 | `docs/conventions/workflow.md` → `docs/specs/TEMPLATE.md` |
 | 구현 계획 작성 | `docs/conventions/workflow.md` → `docs/plans/TEMPLATE.md` |
 | 백엔드 코드 작성 | `backend/CLAUDE.md` → `docs/conventions/backend.md` |

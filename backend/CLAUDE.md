@@ -4,6 +4,8 @@ Spring Boot API 서버. 커피 레시피·추출 기록의 저장과 계산을 �
 
 **작업 전 필독:** 루트 `../CLAUDE.md` → **`../docs/conventions/workflow.md`**(스펙 → 계획 → 코드) → 이 문서 → `../docs/conventions/backend.md`
 
+> **세션은 `/resume`으로 시작하고 `/handover`로 끝낸다.** 상세는 `../docs/conventions/handover.md`.
+>
 > **스펙 없이 코드를 쓰지 않는다.** 기능 개발은 `docs/specs/`의 스펙과 `docs/plans/`의 계획이 승인된 뒤에 시작한다. 테스트에는 인수 조건 ID를 `@DisplayName("AC-GRIND-01 · ...")` 형태로 반드시 남긴다.
 
 > **현재 상태: 미착수.** 이 디렉터리는 아직 비어 있다. `../docs/plans/2026-08-14-plan1-foundation.md`의 Task 1부터 시작한다.

@@ -76,10 +76,16 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## 브랜치
 
+**태스크 1개 = 브랜치 1개 = PR 1개.** 계획 문서의 태스크와 PR이 1:1로 맞아 추적이 단순해진다.
+
 ```
 main                          항상 배포 가능한 상태
-feat/recipe-fork              기능
-fix/kakao-email-null          버그
+
+feat/task-01-scaffolding      계획의 태스크 → 번호를 브랜치명에 넣는다
+feat/task-02-grind
+feat/task-04-user
+
+fix/kakao-email-null          계획 밖의 버그 수정
 chore/upgrade-spring-boot     설정·의존성
 docs/api-conventions          문서
 ```
@@ -88,6 +94,7 @@ docs/api-conventions          문서
 - `main`에 직접 푸시하지 않는다. 혼자 개발하더라도 PR을 거친다 — 나중에 스스로 되짚어볼 기록이 남는다.
 - 브랜치는 짧게 유지한다. 하루 이상 살아 있으면 `main`을 rebase 한다.
 - 머지된 브랜치는 삭제한다.
+- **태스크가 미완인 채로 세션이 끝나면 브랜치를 푸시해두고 PR은 만들지 않는다.** 다음 세션이 이어받는다. 자세한 절차는 [`handover.md`](handover.md).
 
 ---
 

@@ -2,7 +2,9 @@
 
 Spring Boot API 서버. 커피 레시피·추출 기록의 저장과 계산을 담당한다.
 
-**작업 전 필독:** 루트 `../CLAUDE.md`(뒤집으면 안 되는 설계 결정) → 이 문서 → `../docs/conventions/backend.md`
+**작업 전 필독:** 루트 `../CLAUDE.md` → **`../docs/conventions/workflow.md`**(스펙 → 계획 → 코드) → 이 문서 → `../docs/conventions/backend.md`
+
+> **스펙 없이 코드를 쓰지 않는다.** 기능 개발은 `docs/specs/`의 스펙과 `docs/plans/`의 계획이 승인된 뒤에 시작한다. 테스트에는 인수 조건 ID를 `@DisplayName("AC-GRIND-01 · ...")` 형태로 반드시 남긴다.
 
 > **현재 상태: 미착수.** 이 디렉터리는 아직 비어 있다. `../docs/plans/2026-08-14-plan1-foundation.md`의 Task 1부터 시작한다.
 
@@ -155,9 +157,12 @@ docker info > /dev/null && echo "Docker OK"
 ### 검증 (작업 완료 시 반드시 실행)
 
 ```bash
-./gradlew clean check           # 이게 초록이어야 "완료"라고 말할 수 있다
+./gradlew clean check                     # 테스트 + 포맷
+(cd .. && ./scripts/check-spec-coverage.sh)   # 인수 조건이 테스트에 있는지
 curl -s localhost:8080/actuator/health    # bootRun 중일 때 {"status":"UP"}
 ```
+
+**둘 다 초록이어야 "완료"라고 말할 수 있다.**
 
 API 문서: `http://localhost:8080/swagger-ui.html` (Plan 1 완료 후)
 

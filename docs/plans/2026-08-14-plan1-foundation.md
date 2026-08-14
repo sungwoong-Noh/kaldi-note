@@ -8,7 +8,13 @@
 
 **Tech Stack:** Java 21 · Spring Boot 4.1.x · Spring Security 7 · Spring Data JPA · PostgreSQL 17 · Flyway · Testcontainers · Gradle (Kotlin DSL)
 
-**Spec:** `docs/specs/2026-08-14-kaldi-note-design.md`
+**Spec:** `docs/design/2026-08-14-architecture.md`
+
+> ⚠️ **이 계획은 `docs/conventions/workflow.md`의 작업 규칙이 정해지기 전에 작성됐다.**
+> 기능 스펙(AC를 가진 `docs/specs/` 문서) 없이 아키텍처 문서에서 바로 도출됐고, 따라서 **AC 커버리지 매핑 표가 없다.**
+> Plan 1의 대부분(스캐폴딩·보안 배선·시드 데이터)은 사용자에게 보이는 동작이 아닌 기반 공사라 스펙 대상이 아니지만,
+> **Task 2(`grind`)와 Task 3(`extraction`)은 도메인 동작 그 자체**이므로 스펙이 있어야 한다.
+> 두 기능의 스펙을 소급 작성한 뒤 이 계획에 AC 매핑을 추가한다. **Plan 2부터는 스펙 → 계획 → 코드 순서를 지킨다.**
 
 **작업 위치:** 이 계획의 모든 경로는 **`backend/` 기준**이다. 명령어는 `backend/` 디렉터리에서 실행한다.
 

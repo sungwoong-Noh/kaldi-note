@@ -1,0 +1,27 @@
+name: spec
+
+# 스펙의 인수 조건(AC)이 실제 테스트에 존재하는지 검사한다.
+# 스펙과 코드 어느 쪽이 바뀌어도 어긋날 수 있으므로 paths 필터를 걸지 않는다.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spec-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    name: 인수 조건 커버리지
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: AC 커버리지 검사
+        run: ./scripts/check-spec-coverage.sh

@@ -2,7 +2,31 @@
 
 커피 레시피를 재현 가능한 형태로 기록하고 공유하는 서비스. 푸어오버 레시피의 **푸어 스텝 시퀀스**를 구조화해 저장하고, 실제 추출 기록을 레시피와 분리해 누적하며, 서로 다른 그라인더 간 분쇄도를 환산한다.
 
-> **현재 상태: 설계 완료, 구현 미착수.** 코드는 아직 없다. 구현을 시작하는 에이전트는 `docs/plans/`의 계획을 순서대로 실행한다.
+> **현재 상태: 설계 완료, 구현 미착수.** 코드는 아직 없다.
+
+---
+
+## ★ 작업 규칙 — 스펙 → 계획 → 코드
+
+**모든 기능 개발은 세 단계를 순서대로 거친다. 건너뛰지 않는다.**
+
+```
+1. 스펙 (docs/specs/)    무엇을 · 왜 · 어떻게 동작해야 하는가   → 승인
+2. 계획 (docs/plans/)    어떻게 개발할 것인가 (태스크 단위)     → 승인
+3. 코드                   TDD로 구현
+```
+
+가장 중요한 것: **스펙의 인수 조건은 기계적으로 검증 가능해야 한다.** 자동화된 테스트로 옮길 수 없는 조건은 인수 조건이 아니다. "적절히", "빠르게", "잘 동작한다" 같은 표현은 금지이며, 구체적인 리터럴 값으로 쓴다.
+
+각 인수 조건에는 `AC-<기능>-<번호>` 형태의 ID를 붙이고, **테스트에 그 ID를 남긴다.** 이게 스펙과 코드를 잇는 유일한 끈이다.
+
+```java
+@DisplayName("AC-GRIND-01 · C40 22클릭은 660마이크론이다")
+```
+
+`./scripts/check-spec-coverage.sh`가 모든 AC ID가 테스트에 존재하는지 검사한다. CI에서도 돌아간다.
+
+**상세 규칙: [`docs/conventions/workflow.md`](docs/conventions/workflow.md) — 코드를 쓰기 전에 반드시 읽는다.**
 
 ---
 
@@ -18,18 +42,25 @@ kaldi-note/
 ├── frontend/                 Next.js PWA
 │   └── CLAUDE.md             ← 프론트 작업 시 반드시 먼저 읽을 것
 ├── docs/
-│   ├── specs/                설계 문서 (무엇을 왜 만드는가)
-│   │   └── 2026-08-14-kaldi-note-design.md
-│   ├── plans/                구현 계획 (어떻게 만드는가, 태스크 단위)
-│   │   └── 2026-08-14-plan1-foundation.md   ← 현재 유일하게 작성된 계획
-│   │       (plan2~4는 앞 단계 완료 후 작성한다. 미리 쓰면 실제와 어긋난다)
-│   └── conventions/          코딩 규칙
-│       ├── git.md            커밋·브랜치·PR (프론트/백엔드 공통)
+│   ├── design/               전체 아키텍처 — 왜 이런 구조인가
+│   │   └── 2026-08-14-architecture.md
+│   ├── specs/                ★ 기능 스펙 — AC를 가진 문서만 여기 둔다
+│   │   └── TEMPLATE.md
+│   ├── plans/                구현 계획 (태스크 단위)
+│   │   ├── TEMPLATE.md
+│   │   └── 2026-08-14-plan1-foundation.md
+│   └── conventions/
+│       ├── workflow.md       ★ 스펙 → 계획 → 코드. 코드 쓰기 전 필독
+│       ├── git.md            커밋·브랜치·PR (공통)
 │       ├── backend.md        Java / Spring Boot
 │       └── frontend.md       TypeScript / Next.js
+├── scripts/
+│   └── check-spec-coverage.sh   AC ID가 테스트에 있는지 검사
 ├── docker-compose.yml        로컬 개발용 PostgreSQL
-└── .github/workflows/        CI (백엔드/프론트 분리)
+└── .github/workflows/        CI (백엔드/프론트/스펙 분리)
 ```
+
+**`docs/design/`과 `docs/specs/`의 차이:** `design/`은 시스템 전체가 왜 이렇게 생겼는지를 설명하는 문서로 AC가 없다. `specs/`는 개별 기능의 동작을 인수 조건으로 못박는 문서다. 커버리지 스크립트는 `specs/`만 검사한다.
 
 ---
 
@@ -37,11 +68,12 @@ kaldi-note/
 
 | 하려는 일 | 읽을 문서 |
 |---|---|
-| 무엇이든 | 이 파일 → `docs/conventions/git.md` |
+| **무엇이든** | 이 파일 → **`docs/conventions/workflow.md`** → `docs/conventions/git.md` |
+| 기능 스펙 작성 | `docs/conventions/workflow.md` → `docs/specs/TEMPLATE.md` |
+| 구현 계획 작성 | `docs/conventions/workflow.md` → `docs/plans/TEMPLATE.md` |
 | 백엔드 코드 작성 | `backend/CLAUDE.md` → `docs/conventions/backend.md` |
 | 프론트 코드 작성 | `frontend/CLAUDE.md` → `docs/conventions/frontend.md` |
-| "왜 이런 구조인가" 판단이 필요할 때 | `docs/specs/2026-08-14-kaldi-note-design.md` |
-| 다음에 뭘 만들지 | `docs/plans/` 의 해당 Plan 문서 |
+| "왜 이런 구조인가" 판단이 필요할 때 | `docs/design/2026-08-14-architecture.md` |
 
 ---
 
@@ -107,6 +139,9 @@ cd frontend && pnpm dev               # 실행 (localhost:3000)
 
 ## 에이전트에게
 
+- **스펙 없이 계획을 쓰지 않고, 계획 없이 코드를 쓰지 않는다.** 사용자가 "이 기능 만들어줘"라고만 해도 스펙부터 쓰고 승인을 받는다.
+- **인수 조건은 리터럴 값으로 쓴다.** 검증할 수 없는 조건을 쓰느니 "이 값을 정해달라"고 묻는다.
+- **테스트에 AC ID를 남긴다.** 빠뜨리면 `check-spec-coverage.sh`가 CI에서 잡는다.
 - **계획 문서의 태스크를 순서대로 실행한다.** 태스크는 각각 테스트가 초록인 상태로 끝나야 한다.
 - **TDD를 지킨다.** 실패하는 테스트 → 실행해서 실패 확인 → 최소 구현 → 통과 확인 → 커밋.
 - **검증 없이 "완료"라고 말하지 않는다.** 테스트를 실제로 실행하고 출력을 확인한 뒤 보고한다.

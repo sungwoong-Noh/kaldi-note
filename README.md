@@ -46,6 +46,6 @@ cd frontend && pnpm dev            # → localhost:3000
 
 작업 전에 [`CLAUDE.md`](CLAUDE.md)를 먼저 읽는다. 전체 구조와 **뒤집으면 안 되는 설계 결정**이 정리돼 있다.
 
-- [설계 문서](docs/specs/2026-08-14-kaldi-note-design.md)
+- [설계 문서](docs/design/2026-08-14-architecture.md)
 - [구현 계획 — Plan 1](docs/plans/2026-08-14-plan1-foundation.md)
 - 컨벤션: [git](docs/conventions/git.md) · [backend](docs/conventions/backend.md) · [frontend](docs/conventions/frontend.md)

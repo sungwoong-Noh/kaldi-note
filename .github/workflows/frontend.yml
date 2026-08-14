@@ -1,0 +1,78 @@
+name: frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend.yml'
+  pull_request:
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: 타입 + 린트 + 테스트 + 빌드
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Plan 4 이전에는 frontend/에 CLAUDE.md만 있어 빌드할 것이 없다.
+      # package.json이 생기면 자동으로 아래 단계들이 활성화된다.
+      # 프로젝트 생성 후 이 가드 단계를 지우고 각 step의 if 조건도 함께 지운다.
+      - name: 프론트엔드 프로젝트 존재 확인
+        id: guard
+        run: |
+          if [ -f frontend/package.json ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::frontend/package.json이 없어 검사를 건너뜁니다 (Plan 4 미착수)"
+          fi
+
+      - name: pnpm 설치
+        if: steps.guard.outputs.ready == 'true'
+        uses: pnpm/action-setup@v4
+
+      - name: Node 22 설치
+        if: steps.guard.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: 의존성 설치
+        if: steps.guard.outputs.ready == 'true'
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: 타입 검사
+        if: steps.guard.outputs.ready == 'true'
+        working-directory: frontend
+        run: pnpm typecheck
+
+      - name: 린트
+        if: steps.guard.outputs.ready == 'true'
+        working-directory: frontend
+        run: pnpm lint
+
+      - name: 테스트
+        if: steps.guard.outputs.ready == 'true'
+        working-directory: frontend
+        run: pnpm test
+
+      # 개발 서버에서는 통과하는데 빌드에서 깨지는 경우가 흔하다. 반드시 돌린다.
+      - name: 빌드
+        if: steps.guard.outputs.ready == 'true'
+        working-directory: frontend
+        run: pnpm build

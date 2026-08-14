@@ -1,0 +1,65 @@
+name: backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: 테스트 + 포맷 검사
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Plan 1 Task 1 이전에는 backend/에 CLAUDE.md만 있어 빌드할 것이 없다.
+      # gradlew가 생기면 자동으로 아래 단계들이 활성화된다.
+      # 프로젝트 생성 후 이 가드 단계를 지우고 각 step의 if 조건도 함께 지운다.
+      - name: 백엔드 프로젝트 존재 확인
+        id: guard
+        run: |
+          if [ -f backend/gradlew ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::backend/gradlew가 없어 검사를 건너뜁니다 (Plan 1 Task 1 미완료)"
+          fi
+
+      - name: JDK 21 설치
+        if: steps.guard.outputs.ready == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Gradle 설정 (캐시 포함)
+        if: steps.guard.outputs.ready == 'true'
+        uses: gradle/actions/setup-gradle@v4
+
+      # ubuntu-latest 러너에는 Docker가 이미 있다. Testcontainers가 이걸 쓴다.
+      - name: clean check
+        if: steps.guard.outputs.ready == 'true'
+        working-directory: backend
+        run: ./gradlew clean check --no-daemon
+
+      - name: 테스트 리포트 업로드
+        if: steps.guard.outputs.ready == 'true' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-report
+          path: backend/build/reports/tests/test
+          retention-days: 7

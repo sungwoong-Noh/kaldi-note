@@ -164,7 +164,10 @@ dist/
 
 | 워크플로 | 트리거 경로 | 실행 |
 |---|---|---|
-| `backend.yml` | `backend/**` | `./gradlew clean check` |
+| `backend.yml` | `backend/**` | `./gradlew clean check` (JDK 21, Testcontainers용 Docker) |
 | `frontend.yml` | `frontend/**` | `pnpm typecheck && pnpm lint && pnpm test && pnpm build` |
 
 PR에 대해 항상 실행하고, `main` 푸시 시에는 추가로 배포까지 이어진다(Plan 3).
+
+> **⚠️ 임시 가드가 들어 있다.** 두 워크플로 모두 첫 단계에서 `backend/gradlew`·`frontend/package.json` 존재 여부를 확인하고, 없으면 나머지를 건너뛴다. 코드가 없는 상태에서 CI가 실패하는 것을 막기 위한 것이다.
+> **프로젝트를 생성한 직후(백엔드는 Plan 1 Task 1, 프론트는 Plan 4 착수 시) 해당 가드 단계와 각 step의 `if: steps.guard.outputs.ready == 'true'` 조건을 전부 지운다.** 남겨두면 나중에 빌드 파일 경로가 바뀌었을 때 CI가 조용히 아무것도 검사하지 않는 상태가 된다.

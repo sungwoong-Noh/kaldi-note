@@ -1937,7 +1937,7 @@ cd .. && git add . && git commit -m "feat(user): 사용자·팔로우 스키마�
 
 > **★ 이 태스크의 핵심은 CSRF 비활성화다.** Spring Security 7은 CSRF가 기본 활성이라, 끄지 않으면 stateless REST API의 모든 POST/PUT/DELETE가 403이 된다. 테스트로 이를 고정한다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/testsupport/DummyController.java`:
 
@@ -2008,7 +2008,7 @@ class SecurityConfigTest extends AbstractIntegrationTest {
 
 > 세 번째 테스트가 **403이 아니라 401**을 기대하는 것이 핵심이다. CSRF가 켜져 있으면 인증 여부와 무관하게 403이 먼저 뜬다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 ./gradlew test --tests '*SecurityConfigTest'
@@ -2016,7 +2016,7 @@ class SecurityConfigTest extends AbstractIntegrationTest {
 
 Expected: FAIL. 아직 security 의존성이 없어 모든 엔드포인트가 200을 반환하므로 2·3번 테스트가 깨진다.
 
-- [ ] **Step 3: 의존성 추가**
+- [x] **Step 3: 의존성 추가**
 
 `backend/build.gradle.kts`의 `dependencies` 블록에 추가:
 
@@ -2028,7 +2028,7 @@ testImplementation("org.springframework.security:spring-security-test")
 
 버전은 Spring Boot BOM이 관리하므로 명시하지 않는다.
 
-- [ ] **Step 4: 에러 응답 골격 작성**
+- [x] **Step 4: 에러 응답 골격 작성**
 
 `backend/src/main/java/com/kaldinote/common/error/ErrorCode.java`:
 
@@ -2180,7 +2180,7 @@ public class GlobalExceptionHandler {
 }
 ```
 
-- [ ] **Step 5: SecurityConfig 작성**
+- [x] **Step 5: SecurityConfig 작성**
 
 `backend/src/main/java/com/kaldinote/common/security/SecurityConfig.java`:
 
@@ -2225,7 +2225,7 @@ public class SecurityConfig {
 }
 ```
 
-- [ ] **Step 6: 테스트 실행 — 통과 확인**
+- [x] **Step 6: 테스트 실행 — 통과 확인**
 
 ```bash
 ./gradlew test --tests '*SecurityConfigTest'
@@ -2233,7 +2233,7 @@ public class SecurityConfig {
 
 Expected: PASS, 3 tests. 특히 세 번째 테스트가 403이 아닌 401로 통과해야 한다.
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

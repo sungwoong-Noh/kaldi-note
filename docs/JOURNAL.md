@@ -7,6 +7,24 @@
 
 ---
 
+## 2026-08-15 · Task 5 — Security 기본 설정 (CSRF 비활성 + 공통 에러 응답)
+
+**브랜치:** `feat/task-05-security` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료
+
+### 한 일
+- `SecurityConfig`(CSRF 비활성, stateless), `ErrorCode`/`BusinessException`/`ErrorResponse`/`GlobalExceptionHandler` 추가. grind·extraction 도메인 예외를 HTTP 상태로 매핑
+- `SecurityConfigTest` 3개 전부 통과 — 특히 CSRF 없는 POST가 403이 아니라 401로 통과
+
+### 발견한 것
+- **httpBasic·formLogin을 끄고 아직 OAuth2 리소스 서버(Task 6)가 없으면 Spring Security가 진입점을 `Http403ForbiddenEntryPoint`로 폴백해 미인증 요청도 403을 반환한다.** 계획 문서의 `SecurityConfig` 코드 그대로는 두 테스트(401 기대)가 403으로 실패했다. `.exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))`을 추가해 해결 — Task 6에서 JWT 리소스 서버를 붙이면 이 entry point가 자연스럽게 대체될 수 있으니 그때 필요 여부를 다시 확인할 것
+- `HttpStatus.UNPROCESSABLE_ENTITY`가 Spring Framework 7에서 deprecated됐다(RFC 9110에 맞춰 `UNPROCESSABLE_CONTENT`로 개명, 둘 다 422). `ErrorCode.GRIND_NOT_CONVERTIBLE`을 새 이름으로 바꿨다
+
+### 다음 세션에게
+- **Task 6(JWT 발급·검증)에서 `SecurityConfig`의 `exceptionHandling` entry point를 다시 볼 것.** OAuth2 리소스 서버를 붙이면 자체 401 처리가 생기므로, 지금 추가한 `HttpStatusEntryPoint`가 여전히 필요한지 중복인지 확인 필요
+
+---
+
 ## 2026-08-15 · extraction 스펙 status 구현완료 전환
 
 **브랜치:** `docs/extraction-spec-complete` · **PR:** 아래 참조

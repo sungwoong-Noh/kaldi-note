@@ -25,13 +25,12 @@
 ### 발견한 것 — 계획과 달라진 점
 - 저장소가 이미 `git init`되어 있어 Step 2의 `git init`은 건너뛰었다. 스캐폴딩만 새 브랜치에 일반 커밋으로 추가
 - 루트 `.gitignore`가 이미 백엔드 패턴을 다 포함하고 있어 `backend/.gitignore`는 옮길 것 없이 삭제만 했다
-- **환경 이슈:** Spotless 기본 google-java-format(1.24.0)이 이 머신 JDK에서 `NoSuchMethodError`(javac 내부 API가 `Queue`→`List`로 바뀐 최신 JDK 호환성 문제, diffplug/spotless#2468)를 냈다. `1.28.0`으로 버전을 고정해 해결. **CI(ubuntu-latest + Temurin 21)는 이 문제와 무관할 가능성이 높지만, 다음 세션에서 CI가 실제로 통과하는지 첫 PR에서 반드시 확인할 것**
+- **환경 이슈:** Spotless 기본 google-java-format(1.24.0)이 이 머신 JDK에서 `NoSuchMethodError`(javac 내부 API가 `Queue`→`List`로 바뀐 최신 JDK 호환성 문제, diffplug/spotless#2468)를 냈다. `1.28.0`으로 버전을 고정해 해결. **PR #3에서 CI(ubuntu-latest + Temurin 21) 확인 완료 — `clean check` 1m38s 초록.**
 - `backend/gradle.properties`에 google-java-format용 `--add-exports`/`--add-opens` JVM 인자 추가 (JDK 16+ 공통 이슈, 머신별 경로 아님 — 커밋 안전)
 - 생성된 기본 클래스명이 `KaldiNoteApiApplication`(artifactId 기반)이라 문서 구조(`backend/CLAUDE.md`)에 맞춰 `KaldiNoteApplication`으로 정리. 기본 생성 보일러플레이트(`HELP.md`, 컨텍스트 로드 테스트, `TestKaldiNoteApiApplication`)는 계획의 파일 목록에 없어 제거
 
 ### 다음 세션에게
-- **Task 2(`grind` 순수 도메인)부터.** DB·Spring 의존 없어 바로 시작 가능
-- **이 PR이 머지된 뒤 GitHub Actions에서 `backend.yml`이 실제로 초록인지 꼭 확인할 것.** 로컬에서는 1.28.0으로 해결됐지만 CI 환경(ubuntu-latest, Temurin 21)에서 같은 문제가 재현되는지는 아직 못 봤다
+- **Task 2(`grind` 순수 도메인)부터.** DB·Spring 의존 없어 바로 시작 가능. PR #3(CI 초록)이 머지된 뒤 `main`에서 새 브랜치를 딴다
 
 ---
 

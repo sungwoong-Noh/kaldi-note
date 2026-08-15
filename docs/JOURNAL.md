@@ -7,6 +7,25 @@
 
 ---
 
+## 2026-08-15 · Task 3 — `extraction` 추출 수율/SCA 구간 순수 도메인
+
+**브랜치:** `feat/task-03-extraction` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료
+
+### 한 일
+- `BrewMeasurement`·`ExtractionAnalyzer`·`ExtractionAnalysis` + `StrengthZone`·`ExtractionZone`·`InvalidBrewMeasurementException` 추가 (Spring·JPA 무의존)
+- `ExtractionAnalyzerTest` 25개 작성, AC-EXT-01~36 전체 검증 — 이 스펙은 HTTP가 없어 전부 단위 테스트로 끝난다
+- `clean check`·`check-spec-coverage.sh` 그린 확인
+
+### 발견한 것
+- 계획 문서 Step 6이 예상한 대로 두 스펙(`grind`·`extraction`) 모두 `status: 초안`으로 남아 커버리지 검사를 건너뛴다. 이 스펙은 Task 11 같은 후속 API 태스크가 없어(AC 전체가 이미 이번 태스크로 끝) `구현완료`로 바꿔야 하는지 애매하지만, 계획이 명시한 기대값을 그대로 따랐다 — 바꾸려면 사람 확인이 먼저 필요해 보인다
+
+### 다음 세션에게
+- **`extraction` 스펙의 `status`를 `구현완료`로 바꿀지 사람에게 확인받을 것.** AC 25개가 전부 이 태스크로 끝났는데 계획 문서는 status 전환 시점을 Task 11(grind용)로만 언급해 extraction 몫이 비어 있다
+- Task 2(`feat/task-02-grind`)와 이 브랜치는 둘 다 main에서 독립적으로 분기했다
+
+---
+
 ## 2026-08-15 · Task 1 — 프로젝트 스캐폴딩
 
 **브랜치:** `feat/task-01-scaffolding` · **PR:** 아래 참조

@@ -1525,7 +1525,7 @@ cd .. && git add backend/src && git commit -m "feat(extraction): 추출 수율·
 
 > **`email`은 nullable이다.** 카카오는 이메일 제공 동의가 **선택 항목**이라 null이 올 수 있다. 사용자 식별은 `(provider, provider_user_id)`가 담당한다. `NOT NULL UNIQUE`로 잡으면 카카오 가입이 통째로 실패한다.
 
-- [ ] **Step 1: 마이그레이션 작성**
+- [x] **Step 1: 마이그레이션 작성**
 
 `backend/src/main/resources/db/migration/V1__create_user_tables.sql`:
 
@@ -1574,7 +1574,7 @@ CREATE TABLE follows (
 CREATE INDEX idx_follows_followee ON follows (followee_user_id);
 ```
 
-- [ ] **Step 2: 실패하는 리포지토리 테스트 작성**
+- [x] **Step 2: 실패하는 리포지토리 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/user/infrastructure/UserRepositoryTest.java`:
 
@@ -1649,7 +1649,7 @@ class UserRepositoryTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 3: 테스트 실행 — 실패 확인**
+- [x] **Step 3: 테스트 실행 — 실패 확인**
 
 ```bash
 ./gradlew test --tests '*UserRepositoryTest'
@@ -1657,7 +1657,7 @@ class UserRepositoryTest extends AbstractIntegrationTest {
 
 Expected: 컴파일 실패. `User`, `UserRole`, `Follow`, `UserRepository`, `FollowRepository` 심볼 없음.
 
-- [ ] **Step 4: 공통 엔티티와 감사 설정 작성**
+- [x] **Step 4: 공통 엔티티와 감사 설정 작성**
 
 `backend/src/main/java/com/kaldinote/common/entity/BaseTimeEntity.java`:
 
@@ -1702,7 +1702,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class JpaAuditingConfig {}
 ```
 
-- [ ] **Step 5: 사용자 도메인 작성**
+- [x] **Step 5: 사용자 도메인 작성**
 
 `backend/src/main/java/com/kaldinote/user/domain/UserRole.java`:
 
@@ -1859,7 +1859,7 @@ public class Follow {
 }
 ```
 
-- [ ] **Step 6: 리포지토리 작성**
+- [x] **Step 6: 리포지토리 작성**
 
 `backend/src/main/java/com/kaldinote/user/infrastructure/UserRepository.java`:
 
@@ -1900,7 +1900,7 @@ public interface FollowRepository extends JpaRepository<Follow, FollowId> {
 }
 ```
 
-- [ ] **Step 7: 테스트 실행 — 통과 확인**
+- [x] **Step 7: 테스트 실행 — 통과 확인**
 
 ```bash
 ./gradlew test --tests '*UserRepositoryTest'
@@ -1908,7 +1908,7 @@ public interface FollowRepository extends JpaRepository<Follow, FollowId> {
 
 Expected: PASS, 5 tests. Flyway가 V1을 적용하는 로그가 보인다.
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

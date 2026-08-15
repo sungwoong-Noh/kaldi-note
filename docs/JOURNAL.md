@@ -7,6 +7,24 @@
 
 ---
 
+## 2026-08-15 · Task 4 — 사용자·팔로우 스키마 + 엔티티
+
+**브랜치:** `feat/task-04-user` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료
+
+### 한 일
+- V1 마이그레이션(`users`/`user_oauth_accounts`/`refresh_tokens`/`follows`), `BaseTimeEntity`/`JpaAuditingConfig`, `User`/`UserRole`/`Follow`/`FollowId`, `UserRepository`/`FollowRepository` 추가
+- `UserRepositoryTest` 5개 전부 통과 — 이 태스크에서 처음으로 Testcontainers Postgres에 실제로 쓰기가 들어감
+
+### 발견한 것
+- **`AbstractIntegrationTest`에 `@Transactional`이 없어 리포지토리 메서드 호출마다 별도 영속성 컨텍스트가 열린다.** 계획 문서의 테스트 코드를 그대로 옮겼더니 `promoteToAdmin()` 후 `flush()`가 변경을 못 잡고(반환된 detached 엔티티를 수정한 뒤 다른 트랜잭션에서 flush), 테스트 간 데이터도 롤백 없이 누적됐다(`count()` 기대값 불일치). `UserRepositoryTest`에만 `@Transactional`을 추가해 해결 — 공유 베이스클래스는 손대지 않았다. `backend/CLAUDE.md`가 인가·스냅샷 테스트에서 `@Transactional` 롤백 의존을 경고하고 있어서, 그 종류의 테스트를 작성할 땐 이 클래스 단위 어노테이션 패턴 대신 명시적 커밋 검증이 필요하다
+- Testcontainers `.withReuse(true)`는 `~/.testcontainers.properties`에 `testcontainers.reuse.enable=true`가 없으면 무효라는 것을 확인 — 이 머신엔 없어서 매 실행마다 컨테이너가 새로 뜬다. 재현 실패의 원인을 잔여 컨테이너 데이터로 오해할 뻔했다
+
+### 다음 세션에게
+- 앞으로 리포지토리·통합 테스트를 새로 쓸 때 `@Transactional` 필요 여부를 매번 판단할 것. 단순 CRUD 격리 테스트는 클래스에 `@Transactional` 추가, 커밋 자체를 검증해야 하는 테스트(인가 403, 스냅샷 불변성 등)는 명시적으로 커밋하고 별도 조회로 확인
+
+---
+
 ## 2026-08-15 · extraction 스펙 status 구현완료 전환
 
 **브랜치:** `docs/extraction-spec-complete` · **PR:** 아래 참조

@@ -7,6 +7,33 @@
 
 ---
 
+## 2026-08-15 · Task 1 — 프로젝트 스캐폴딩
+
+**브랜치:** `feat/task-01-scaffolding` · **PR:** 아래 참조
+**상태:** 완료 — Step 1~10 전부, `./gradlew clean check` 통과
+
+### 한 일
+- start.spring.io로 Java 21 / Boot 4.1.0 프로젝트 생성, 루트 `docker-compose.yml`(Postgres 17), `application.yml`/`-local`/`-test`, `AbstractIntegrationTest` + `TestcontainersConfiguration`, `ApplicationSmokeTest`(`/actuator/health` PASS), Spotless 추가
+- `.github/workflows/backend.yml`의 임시 가드(`backend/gradlew` 존재 확인 step과 각 step의 `if:`) 제거 — 계획에서 지시한 대로
+
+### 발견한 것 — 계획의 "검증되지 않은 가정" 결과
+1. `bootVersion=4.1.0` 그대로 받아짐 (가정 1 확인)
+2. `@ServiceConnection` import 경로는 그대로였다 (가정 2 확인). 다만 **`PostgreSQLContainer` 자체의 패키지가 `org.testcontainers.containers` → `org.testcontainers.postgresql`로 이동**했고 제네릭도 사라져 raw type이 됐다 (계획에 없던 추가 변경)
+3. `AutoConfigureMockMvc`도 이동했다: `org.springframework.boot.test.autoconfigure.web.servlet` → `org.springframework.boot.webmvc.test.autoconfigure`
+4. Task 7·8의 가정(`MockRestServiceServer.bindTo`, `@MockitoBean`)은 아직 미확인 — 해당 태스크에서 확인할 것
+
+### 발견한 것 — 계획과 달라진 점
+- 저장소가 이미 `git init`되어 있어 Step 2의 `git init`은 건너뛰었다. 스캐폴딩만 새 브랜치에 일반 커밋으로 추가
+- 루트 `.gitignore`가 이미 백엔드 패턴을 다 포함하고 있어 `backend/.gitignore`는 옮길 것 없이 삭제만 했다
+- **환경 이슈:** Spotless 기본 google-java-format(1.24.0)이 이 머신 JDK에서 `NoSuchMethodError`(javac 내부 API가 `Queue`→`List`로 바뀐 최신 JDK 호환성 문제, diffplug/spotless#2468)를 냈다. `1.28.0`으로 버전을 고정해 해결. **PR #3에서 CI(ubuntu-latest + Temurin 21) 확인 완료 — `clean check` 1m38s 초록.**
+- `backend/gradle.properties`에 google-java-format용 `--add-exports`/`--add-opens` JVM 인자 추가 (JDK 16+ 공통 이슈, 머신별 경로 아님 — 커밋 안전)
+- 생성된 기본 클래스명이 `KaldiNoteApiApplication`(artifactId 기반)이라 문서 구조(`backend/CLAUDE.md`)에 맞춰 `KaldiNoteApplication`으로 정리. 기본 생성 보일러플레이트(`HELP.md`, 컨텍스트 로드 테스트, `TestKaldiNoteApiApplication`)는 계획의 파일 목록에 없어 제거
+
+### 다음 세션에게
+- **Task 2(`grind` 순수 도메인)부터.** DB·Spring 의존 없어 바로 시작 가능. PR #3(CI 초록)이 머지된 뒤 `main`에서 새 브랜치를 딴다
+
+---
+
 ## 2026-08-14 · 세션 운영 방식 정의 (설계 세션)
 
 **브랜치:** `docs/session-flow` → `docs/journal-design-session` · **PR:** #1 (머지됨), #2

@@ -157,7 +157,7 @@ kaldi-note/
 
 **보안 스타터는 이 태스크에 넣지 않는다.** classpath에 `spring-boot-starter-security`가 있으면 `/actuator/health`가 즉시 401이 되어 스모크 테스트가 무의미해진다. 보안은 Task 5에서 설정과 함께 추가한다.
 
-- [ ] **Step 1: 프로젝트 생성**
+- [x] **Step 1: 프로젝트 생성**
 
 저장소 루트에는 이미 `CLAUDE.md`, `docs/`, `backend/CLAUDE.md`, `frontend/CLAUDE.md`가 있다. `backend/` 안에 Spring Boot 프로젝트를 푼다 (`backend/CLAUDE.md`를 덮어쓰지 않도록 `-o` 대상과 `unzip` 위치에 주의).
 
@@ -181,18 +181,19 @@ unzip -o starter.zip && rm starter.zip
 `curl -s https://start.spring.io/metadata/client | grep -o '"4\.[0-9.]*"' | sort -u`
 → 나온 4.1.x 중 가장 높은 패치 버전을 쓴다. **3.x로 내려가지 않는다.**
 
-- [ ] **Step 2: git 초기화 + 첫 커밋**
+- [x] **Step 2: git 초기화 + 첫 커밋**
 
-저장소 루트에서 실행한다. 설계·계획·컨벤션 문서가 첫 커밋에 함께 들어간다.
+> **실제와 다름:** 이 Step은 저장소가 아직 없다고 가정하고 쓰였다. 실제로는 설계 세션(`docs/session-flow` 등)이 이미 `git init`과 첫 커밋 5개를 끝내고 `main`에 히스토리가 있었다. `git init`은 건너뛰고, 스캐폴딩만 새 브랜치(`feat/task-01-scaffolding`)에 일반 커밋으로 추가했다.
+
+저장소 루트에서 실행한다.
 
 ```bash
 cd /Users/nohsw/Desktop/project/kaldi-note
-git init
-git add .
-git commit -m "chore: 설계 문서와 Spring Boot 4.1 백엔드 프로젝트 초기 생성"
+git add backend/
+git commit -m "chore: Spring Boot 4.1 백엔드 프로젝트 스캐폴딩 생성"
 ```
 
-- [ ] **Step 3: 로컬 Postgres compose 파일 작성**
+- [x] **Step 3: 로컬 Postgres compose 파일 작성**
 
 저장소 루트의 `docker-compose.yml` (프론트 E2E에서도 쓴다):
 
@@ -219,7 +220,7 @@ volumes:
   kaldi-pgdata:
 ```
 
-- [ ] **Step 4: 설정 파일 작성**
+- [x] **Step 4: 설정 파일 작성**
 
 `src/main/resources/application.yml`:
 
@@ -273,7 +274,7 @@ logging:
 
 `src/main/resources/db/migration/.gitkeep` — 빈 파일 생성 (마이그레이션 디렉터리가 없으면 Flyway 설정이 경고를 낸다).
 
-- [ ] **Step 5: 실패하는 스모크 테스트 작성**
+- [x] **Step 5: 실패하는 스모크 테스트 작성**
 
 `src/test/java/com/kaldinote/ApplicationSmokeTest.java`:
 
@@ -301,7 +302,7 @@ class ApplicationSmokeTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 6: 테스트 실행 — 컴파일 실패 확인**
+- [x] **Step 6: 테스트 실행 — 컴파일 실패 확인**
 
 ```bash
 ./gradlew test --tests '*ApplicationSmokeTest'
@@ -309,7 +310,12 @@ class ApplicationSmokeTest extends AbstractIntegrationTest {
 
 Expected: 컴파일 실패. `AbstractIntegrationTest` 심볼을 찾을 수 없음.
 
-- [ ] **Step 7: Testcontainers 설정과 통합 테스트 베이스 작성**
+- [x] **Step 7: Testcontainers 설정과 통합 테스트 베이스 작성**
+
+> **실제와 다름:** Boot 4.1 + Testcontainers 최신 버전에서 `PostgreSQLContainer`의 패키지가
+> `org.testcontainers.containers` → **`org.testcontainers.postgresql`** 로 이동했다(제네릭도
+> 사라져 raw type). `@ServiceConnection`의 경로(`org.springframework.boot.testcontainers.service.connection`)는
+> 계획의 가정대로 그대로였다. 아래 코드는 실제 사용한 import로 갱신했다.
 
 `src/test/java/com/kaldinote/TestcontainersConfiguration.java`:
 
@@ -319,7 +325,7 @@ package com.kaldinote;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -332,8 +338,8 @@ public class TestcontainersConfiguration {
 
     @Bean
     @ServiceConnection
-    PostgreSQLContainer<?> postgresContainer() {
-        return new PostgreSQLContainer<>(DockerImageName.parse("postgres:17-alpine"))
+    PostgreSQLContainer postgresContainer() {
+        return new PostgreSQLContainer(DockerImageName.parse("postgres:17-alpine"))
                 .withReuse(true);
     }
 }
@@ -343,12 +349,16 @@ public class TestcontainersConfiguration {
 
 `src/test/java/com/kaldinote/AbstractIntegrationTest.java`:
 
+> **실제와 다름:** `AutoConfigureMockMvc`도 Boot 4에서 패키지가 이동했다.
+> `org.springframework.boot.test.autoconfigure.web.servlet` → **`org.springframework.boot.webmvc.test.autoconfigure`**.
+> `spring-boot-webmvc-test` 모듈의 클래스 목록에서 확인했다.
+
 ```java
 package com.kaldinote;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -381,7 +391,7 @@ logging:
     org.hibernate.SQL: warn
 ```
 
-- [ ] **Step 8: 테스트 실행 — 통과 확인**
+- [x] **Step 8: 테스트 실행 — 통과 확인**
 
 Docker Desktop이 실행 중인지 먼저 확인한다.
 
@@ -391,7 +401,7 @@ docker info > /dev/null && ./gradlew test --tests '*ApplicationSmokeTest'
 
 Expected: PASS. 로그에 Testcontainers가 `postgres:17-alpine`을 기동하는 줄이 보인다.
 
-- [ ] **Step 9: 로컬 실행 확인**
+- [x] **Step 9: 로컬 실행 확인**
 
 ```bash
 (cd .. && docker compose up -d)
@@ -406,20 +416,10 @@ Expected: `{"status":"UP"}`
 
 확인 후 `Ctrl+C`, `(cd .. && docker compose down)`.
 
-- [ ] **Step 10: .gitignore 정리 후 커밋 + Spotless 추가**
+- [x] **Step 10: .gitignore 정리 후 커밋 + Spotless 추가**
 
-`backend/.gitignore`를 저장소 루트 `.gitignore`로 옮기고 아래를 보탠다 (`docs/conventions/git.md`의 "커밋하지 않는 것" 참조):
-
-```
-.DS_Store
-*.log
-/data/
-.idea/
-.vscode/
-.env
-.env.local
-backend/src/main/resources/application-prod.yml
-```
+> **실제와 다름:** 루트 `.gitignore`는 설계 세션이 이미 백엔드 패턴(빌드 산출물, 시크릿, IDE)을
+> 전부 포함해 커밋해뒀다. `backend/.gitignore`를 옮겨 보탤 내용이 없어 **그냥 삭제**했다.
 
 `backend/build.gradle.kts`에 Spotless(Google Java Format)를 추가한다 — 컨벤션 문서가 전제하는 도구다:
 
@@ -431,7 +431,11 @@ plugins {
 
 spotless {
     java {
-        googleJavaFormat()
+        // 기본 버전(1.24.0)은 이 환경의 JDK에서
+        // com.sun.tools.javac.util.Log$DeferredDiagnosticHandler.getDiagnostics()가
+        // NoSuchMethodError를 낸다(javac 내부 API가 Queue→List로 바뀐 최신 JDK와의
+        // 호환성 문제, diffplug/spotless#2468). 1.28.0으로 고정해 해결한다.
+        googleJavaFormat("1.28.0")
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
@@ -441,13 +445,17 @@ spotless {
 tasks.named("check") { dependsOn("spotlessCheck") }
 ```
 
+> **추가로 필요했던 것:** `backend/gradle.properties`에 google-java-format이 JDK 내부 컴파일러
+> API에 접근하기 위한 `--add-exports`/`--add-opens` JVM 인자를 추가했다(JDK 16+ 공통 이슈,
+> google-java-format 공식 문서에 안내된 플래그). 머신별 경로가 아니라 표준 JVM 플래그라 커밋해도 안전하다.
+
 ```bash
 ./gradlew spotlessApply
 ./gradlew clean check
-cd .. && git add . && git commit -m "chore: 로컬 Postgres compose, Testcontainers 기반, Spotless 포맷터 추가"
+cd .. && git add -A && git commit -m "feat: 로컬 Postgres compose, Testcontainers 통합 테스트 기반, Spotless 포맷터 추가"
 ```
 
-Expected: `clean check` 통과.
+Expected: `clean check` 통과. **확인됨.**
 
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: EXT
 title: 추출 수율 / SCA 구간 분석
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-08-14-plan1-foundation.md
 ---
 

@@ -19,10 +19,30 @@
 
 ### 발견한 것
 - 계획 문서 Step 6이 예상한 대로 두 스펙(`grind`·`extraction`) 모두 `status: 초안`으로 남아 커버리지 검사를 건너뛴다. 이 스펙은 Task 11 같은 후속 API 태스크가 없어(AC 전체가 이미 이번 태스크로 끝) `구현완료`로 바꿔야 하는지 애매하지만, 계획이 명시한 기대값을 그대로 따랐다 — 바꾸려면 사람 확인이 먼저 필요해 보인다
+- Task 2·3을 각각 독립 브랜치(둘 다 main에서 분기)로 병행 진행하니 `docs/JOURNAL.md`의 삽입 위치(헤더 바로 아래)가 겹쳐 PR을 하나 머지할 때마다 나머지 PR이 다시 충돌했다. 매번 두 항목을 다 유지하며 재병합하는 방식으로 풀었다 — **다음부터는 같은 파일 같은 위치에 동시에 쓰는 병렬 PR을 피하거나, 순서를 미리 정해 순차 머지하는 게 낫다**
 
 ### 다음 세션에게
 - **`extraction` 스펙의 `status`를 `구현완료`로 바꿀지 사람에게 확인받을 것.** AC 25개가 전부 이 태스크로 끝났는데 계획 문서는 status 전환 시점을 Task 11(grind용)로만 언급해 extraction 몫이 비어 있다
-- Task 2(`feat/task-02-grind`)와 이 브랜치는 둘 다 main에서 독립적으로 분기했다
+- Task 2(`feat/task-02-grind`, PR #5)는 이미 main에 머지됐다
+
+---
+
+## 2026-08-15 · Task 2 — `grind` 분쇄도 환산 순수 도메인
+
+**브랜치:** `feat/task-02-grind` · **PR:** #5 (머지됨)
+**상태:** 완료
+
+### 한 일
+- `GrindSpec`·`GrindConverter`·`GrindConversion` + 예외 2종(Spring·JPA 무의존) 추가
+- `GrindConverterTest` 20개 작성, AC-GRIND-01~07·14~16 검증. TDD Red→Green으로 진행
+- `clean check`·`check-spec-coverage.sh` 그린 확인
+
+### 발견한 것
+- 계획 문서 예상 테스트 수는 18개였으나 실제로는 `@Nested` 클래스 4개에 걸쳐 20개가 나왔다. 개수 차이는 각 클래스 안 테스트를 합산하지 않은 계획 문서 쪽 오기로 보인다 — 동작에는 영향 없음
+- 스펙 `status`를 구현중으로 바꿨다가, Task 3 계획 문서(Step 6)가 "두 스펙 모두 Task 11까지 초안으로 남는다"를 명시하고 있어 초안으로 되돌렸다. 스펙 status 전환은 계획이 지시하는 시점에만 한다
+
+### 다음 세션에게
+- 이 브랜치는 Task 3(`feat/task-03-extraction`, main에서 분기)과 독립적이다. 둘 다 push해 PR을 각각 연다
 
 ---
 

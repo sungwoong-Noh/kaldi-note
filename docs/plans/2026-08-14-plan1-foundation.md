@@ -496,7 +496,7 @@ converted = micron / target.micronsPerClick + target.zeroPointOffsetClicks
 
 > **`GrindSpec`이 min·max를 갖는 이유:** 범위 검증까지 순수 도메인에서 단위 테스트로 검증하기 위해서다. 엔티티를 끌어오면 이 패키지의 무의존 원칙이 깨진다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/grind/domain/GrindConverterTest.java`:
 
@@ -696,7 +696,7 @@ class GrindConverterTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 ./gradlew test --tests '*GrindConverterTest'
@@ -704,7 +704,7 @@ class GrindConverterTest {
 
 Expected: 컴파일 실패. `GrindSpec`, `GrindConverter`, `GrindConversion`, `GrindNotConvertibleException`, `GrindSettingOutOfRangeException` 심볼 없음.
 
-- [ ] **Step 3: VO와 예외 작성**
+- [x] **Step 3: VO와 예외 작성**
 
 `backend/src/main/java/com/kaldinote/grind/domain/GrindSpec.java`:
 
@@ -813,7 +813,7 @@ public class GrindSettingOutOfRangeException extends RuntimeException {
 }
 ```
 
-- [ ] **Step 4: 변환기 구현**
+- [x] **Step 4: 변환기 구현**
 
 `backend/src/main/java/com/kaldinote/grind/domain/GrindConverter.java`:
 
@@ -904,7 +904,7 @@ public class GrindConverter {
 
 > **`requireInRange`의 하한 검사가 `rangeChecked()` 밖에 있는 이유:** 영점 미만은 마이크론이 음수가 되므로, 사양을 모르는 그라인더라도 반드시 막아야 한다. 상한만 사양에 의존한다.
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 ```bash
 ./gradlew test --tests '*GrindConverterTest'
@@ -912,7 +912,7 @@ public class GrindConverter {
 
 Expected: PASS, 18 tests.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 cd .. && git add backend/src && git commit -m "feat(grind): 분쇄도 환산 순수 도메인 추가 (환산은 언제나 추정치, 범위 검증 포함)" && cd backend

@@ -966,7 +966,7 @@ SCA 이상 구간: TDS **1.15 이상 1.35 이하**, EY **18.0 이상 22.0 이하
 
 > 로스팅 원두는 약 28~30%만 수용성이다. EY가 30%를 넘으면 측정값 오입력이다 — TDS를 `1.25` 대신 `12.5`로 적는 실수가 흔하다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/extraction/domain/ExtractionAnalyzerTest.java`:
 
@@ -1233,7 +1233,7 @@ class ExtractionAnalyzerTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 ./gradlew test --tests '*ExtractionAnalyzerTest'
@@ -1241,7 +1241,7 @@ class ExtractionAnalyzerTest {
 
 Expected: 컴파일 실패. `BrewMeasurement` 등 심볼 없음.
 
-- [ ] **Step 3: VO와 enum 작성**
+- [x] **Step 3: VO와 enum 작성**
 
 `backend/src/main/java/com/kaldinote/extraction/domain/InvalidBrewMeasurementException.java`:
 
@@ -1370,7 +1370,7 @@ public record ExtractionAnalysis(
 }
 ```
 
-- [ ] **Step 4: 분석기 구현**
+- [x] **Step 4: 분석기 구현**
 
 `backend/src/main/java/com/kaldinote/extraction/domain/ExtractionAnalyzer.java`:
 
@@ -1481,7 +1481,7 @@ public class ExtractionAnalyzer {
 }
 ```
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 ```bash
 ./gradlew test --tests '*ExtractionAnalyzerTest'
@@ -1489,7 +1489,7 @@ public class ExtractionAnalyzer {
 
 Expected: PASS, 25 tests.
 
-- [ ] **Step 6: AC 커버리지 검사 + 커밋**
+- [x] **Step 6: AC 커버리지 검사 + 커밋**
 
 ```bash
 ./gradlew test

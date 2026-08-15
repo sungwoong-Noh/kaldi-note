@@ -2264,7 +2264,7 @@ cd .. && git add . && git commit -m "feat(common): Security 기본 설정과 공
 
 **JWT 설계:** HS256 대칭키. 별도 라이브러리(jjwt) 없이 Spring Security의 `NimbusJwtEncoder`/`NimbusJwtDecoder`를 쓴다. `sub`에 userId, `role` claim에 역할을 싣는다.
 
-- [ ] **Step 1: 실패하는 단위 테스트 작성**
+- [x] **Step 1: 실패하는 단위 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/auth/infrastructure/jwt/JwtTokenProviderTest.java`:
 
@@ -2386,7 +2386,7 @@ class JwtAuthorizationTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 ./gradlew test --tests '*JwtTokenProviderTest' --tests '*JwtAuthorizationTest'
@@ -2394,7 +2394,7 @@ class JwtAuthorizationTest extends AbstractIntegrationTest {
 
 Expected: 컴파일 실패. `JwtTokenProvider` 심볼 없음.
 
-- [ ] **Step 3: 설정 추가**
+- [x] **Step 3: 설정 추가**
 
 `application.yml`에 추가:
 
@@ -2418,7 +2418,7 @@ kaldi:
 
 `src/test/resources/application-test.yml`에도 동일한 `kaldi.jwt.secret`을 넣는다.
 
-- [ ] **Step 4: JWT 설정과 발급기 작성**
+- [x] **Step 4: JWT 설정과 발급기 작성**
 
 `backend/src/main/java/com/kaldinote/auth/infrastructure/jwt/JwtProperties.java`:
 
@@ -2538,7 +2538,7 @@ public class JwtTokenProvider {
 }
 ```
 
-- [ ] **Step 5: 인증 주체 변환기 작성**
+- [x] **Step 5: 인증 주체 변환기 작성**
 
 `backend/src/main/java/com/kaldinote/common/security/AuthenticatedUser.java`:
 
@@ -2579,7 +2579,7 @@ public class KaldiJwtAuthenticationConverter
 }
 ```
 
-- [ ] **Step 6: SecurityConfig에 리소스 서버 연결**
+- [x] **Step 6: SecurityConfig에 리소스 서버 연결**
 
 `SecurityConfig`를 수정한다. `filterChain` 메서드에 `KaldiJwtAuthenticationConverter`를 주입받아 아래를 추가한다.
 
@@ -2608,7 +2608,7 @@ public class KaldiJwtAuthenticationConverter
       throws Exception {
 ```
 
-- [ ] **Step 7: 테스트 실행 — 통과 확인**
+- [x] **Step 7: 테스트 실행 — 통과 확인**
 
 ```bash
 ./gradlew test --tests '*JwtTokenProviderTest' --tests '*JwtAuthorizationTest' --tests '*SecurityConfigTest'
@@ -2616,7 +2616,7 @@ public class KaldiJwtAuthenticationConverter
 
 Expected: PASS, 12 tests. Task 5의 CSRF 테스트도 여전히 통과해야 한다.
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

@@ -7,6 +7,25 @@
 
 ---
 
+## 2026-08-15 · Task 6 — JWT 발급·검증 + ADMIN 인가
+
+**브랜치:** `feat/task-06-jwt` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료
+
+### 한 일
+- `JwtTokenProvider`(HS256, NimbusJwtEncoder/Decoder), `JwtConfig`, `JwtProperties`, `AuthenticatedUser`, `KaldiJwtAuthenticationConverter` 추가
+- `SecurityConfig`에 `oauth2ResourceServer` 연결, `/test-support/admin`·`/api/v1/admin/**`에 `hasRole("ADMIN")` 요구
+- `JwtTokenProviderTest` 5개 + `JwtAuthorizationTest` 4개 + `SecurityConfigTest` 3개 = 12개 전부 통과 (계획 예상치와 일치)
+
+### 발견한 것
+- **Task 5 JOURNAL에 남겨둔 질문 해결:** `oauth2ResourceServer` 연결 후 Task 5의 임시 `authenticationEntryPoint(401)`를 제거하고 재실행해봤더니 12/12 그대로 통과했다. `oauth2ResourceServer` 자체의 `BearerTokenAuthenticationEntryPoint`가 미인증 요청에 401을 반환하므로 중복이었다 — 제거했다
+- `nimbus-jose-jwt`는 Task 5에서 추가한 `spring-boot-starter-oauth2-resource-server`의 전이 의존성으로 이미 들어와 있어 별도 추가가 필요 없었다
+
+### 다음 세션에게
+- 없음 — Task 7(OAuth2 프로바이더 클라이언트)부터 계획대로 진행
+
+---
+
 ## 2026-08-15 · Task 5 — Security 기본 설정 (CSRF 비활성 + 공통 에러 응답)
 
 **브랜치:** `feat/task-05-security` (`feat/task-04-user` 위에 쌓음) · **PR:** 아래 참조

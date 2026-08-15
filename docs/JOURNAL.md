@@ -26,6 +26,25 @@
 
 ---
 
+## 2026-08-15 · 세션 복구 (앞 세션 비정상 종료)
+
+**브랜치:** `docs/journal-resume-recovery` · **PR:** #4 (머지됨)
+**상태:** 완료 — 구현 없음, 저장소 상태 복구만
+
+### 한 일
+- `/resume`이 안 된다는 보고로 조사: 앞 세션이 `.claude/worktrees/resume-session`(브랜치 `feat/task-01-scaffolding`)에서 작업하다 handover 없이 끊겼다. 그 브랜치는 이미 PR #3으로 GitHub에서 스쿼시 머지됐지만, worktree·로컬 브랜치가 정리되지 않고 로컬 `main`도 pull이 안 된 채 남아 있었다
+- worktree 제거, 로컬 `feat/task-01-scaffolding` 삭제, `main`을 `origin/main`(`22546b0`)으로 fast-forward
+- `./gradlew clean check`, `check-spec-coverage.sh` 재확인 — 둘 다 초록
+- Task 2용 브랜치 `feat/task-02-grind`를 만들었으나 이번 세션에서 실제 구현은 진행하지 않음(커밋 0개) — 사용자가 곧바로 `/handover`를 호출해 빈 브랜치는 삭제하고 이 항목만 남김
+
+### 발견한 것
+- **핸드오버 없이 세션이 끊기면 worktree·브랜치가 고아로 남아 다음 `/resume`을 헷갈리게 한다.** PR이 머지됐는지, 로컬이 그걸 반영했는지를 `git worktree list` + `gh pr list`로 직접 대조해야 확인 가능했다
+
+### 다음 세션에게
+- **Task 2(`grind` 순수 도메인)부터 시작.** `main`은 최신(`22546b0`)이고 검증도 초록이니 바로 `feat/task-02-grind` 브랜치를 새로 따서 계획 문서 Task 2 Step 1부터 진행하면 된다. 이번 세션은 코드를 전혀 건드리지 않았다
+
+---
+
 ## 2026-08-15 · Task 1 — 프로젝트 스캐폴딩
 
 **브랜치:** `feat/task-01-scaffolding` · **PR:** 아래 참조

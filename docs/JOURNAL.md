@@ -7,6 +7,25 @@
 
 ---
 
+## 2026-08-15 · Task 2 — `grind` 분쇄도 환산 순수 도메인
+
+**브랜치:** `feat/task-02-grind` · **PR:** 아래 참조
+**상태:** 완료
+
+### 한 일
+- `GrindSpec`·`GrindConverter`·`GrindConversion` + 예외 2종(Spring·JPA 무의존) 추가
+- `GrindConverterTest` 20개 작성, AC-GRIND-01~07·14~16 검증. TDD Red→Green으로 진행
+- `clean check`·`check-spec-coverage.sh` 그린 확인
+
+### 발견한 것
+- 계획 문서 예상 테스트 수는 18개였으나 실제로는 `@Nested` 클래스 4개에 걸쳐 20개가 나왔다. 개수 차이는 각 클래스 안 테스트를 합산하지 않은 계획 문서 쪽 오기로 보인다 — 동작에는 영향 없음
+- 스펙 `status`를 구현중으로 바꿨다가, Task 3 계획 문서(Step 6)가 "두 스펙 모두 Task 11까지 초안으로 남는다"를 명시하고 있어 초안으로 되돌렸다. 스펙 status 전환은 계획이 지시하는 시점에만 한다
+
+### 다음 세션에게
+- 이 브랜치는 Task 3(`feat/task-03-extraction`, main에서 분기)과 독립적이다. 둘 다 push해 PR을 각각 연다
+
+---
+
 ## 2026-08-15 · Task 1 — 프로젝트 스캐폴딩
 
 **브랜치:** `feat/task-01-scaffolding` · **PR:** 아래 참조

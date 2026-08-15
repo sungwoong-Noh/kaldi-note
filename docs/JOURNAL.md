@@ -7,6 +7,20 @@
 
 ---
 
+## 2026-08-15 · extraction 스펙 status 구현완료 전환
+
+**브랜치:** `docs/extraction-spec-complete` · **PR:** 아래 참조
+**상태:** 완료
+
+### 한 일
+- Task 3(PR #6)로 AC-EXT 25개가 전부 충족됐음을 사람에게 확인받고 `docs/specs/2026-08-14-extraction-analysis.md`의 `status`를 `초안 → 구현완료`로 변경
+- `check-spec-coverage.sh`가 이제 이 스펙을 강제 검사 대상으로 잡고 25개 전부 통과 확인
+
+### 다음 세션에게
+- `grind` 스펙은 아직 `초안`이다. Task 11(경계값·에러 API 테스트)까지 끝나야 `구현완료`로 바뀐다
+
+---
+
 ## 2026-08-15 · Task 3 — `extraction` 추출 수율/SCA 구간 순수 도메인
 
 **브랜치:** `feat/task-03-extraction` (main에서 분기) · **PR:** 아래 참조

@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "4.1.0"
 	id("io.spring.dependency-management") version "1.1.7"
+	id("com.diffplug.spotless") version "7.0.2"
 }
 
 group = "com.kaldinote"
@@ -44,3 +45,17 @@ dependencies {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
+spotless {
+	java {
+		// 1.24.0(spotless 7.0.2 기본값)은 이 환경의 JDK에서
+		// com.sun.tools.javac.util.Log$DeferredDiagnosticHandler.getDiagnostics()
+		// NoSuchMethodError를 낸다. 1.28.0으로 고정해 해결한다.
+		googleJavaFormat("1.28.0")
+		removeUnusedImports()
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+}
+
+tasks.named("check") { dependsOn("spotlessCheck") }

@@ -25,3 +25,11 @@ management:
   endpoint:
     health:
       show-details: never
+
+kaldi:
+  jwt:
+    # HS256은 최소 256비트(32바이트) 키가 필요하다. 운영은 환경변수로 주입한다.
+    secret: ${KALDI_JWT_SECRET}
+    access-token-ttl: PT30M
+    refresh-token-ttl: P14D
+    issuer: kaldi-note

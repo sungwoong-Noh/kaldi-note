@@ -7,6 +7,24 @@
 
 ---
 
+## 2026-08-16 · Task 5 — 레시피 단건 조회 API
+
+**브랜치:** `feat/task-05-recipe-get` · **PR:** 아래 참조
+**상태:** 완료 — Step 1~5 전부, `./gradlew clean check` 통과, `RecipeControllerTest` 48/48
+
+### 한 일
+- `RecipeService#get`/`findOwned`(비공개 헬퍼 — Task 6·7이 그대로 재사용 예정), `GET /api/v1/recipes/{id}` 추가
+- AC-RECIPE-05·06·61(ratio 반올림, cumulativeWaterG 누적합, 404) 검증 테스트 3개 추가
+- 소유자가 아니면 403 — 스펙에 없는 동작이라 AC ID 없이 계획 그대로 구현(공개범위 판정은 후속 스펙 몫)
+
+### 발견한 것
+- 계획 코드를 그대로 옮겨 별다른 이슈 없이 한 번에 통과. `com.jayway.jsonpath.JsonPath`(Task 2에서 이미 가용성 확인됨)로 생성 응답에서 `id`를 뽑아 조회 테스트에 재사용하는 패턴이 잘 맞았다
+
+### 다음 세션에게
+- **Task 6(레시피 수정 API, PUT)부터.** `findOwned`를 재사용하되, 계획 문서가 미리 경고한 대로 스텝 교체 순서(`deleteAllByRecipe` → `flush()` → `clear()` → `replaceSteps()`)를 지켜야 `UNIQUE(recipe_id, step_order)` 위반을 피한다
+
+---
+
 ## 2026-08-16 · Task 4 — 레시피 생성 스텝 시퀀스 검증 + 나머지 에러
 
 **브랜치:** `feat/task-04-recipe-steps` · **PR:** 아래 참조

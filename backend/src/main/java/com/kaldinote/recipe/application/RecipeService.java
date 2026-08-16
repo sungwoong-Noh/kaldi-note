@@ -72,6 +72,22 @@ public class RecipeService {
     return RecipeResponse.from(recipeRepository.save(recipe));
   }
 
+  public RecipeResponse get(Long userId, Long recipeId) {
+    return RecipeResponse.from(findOwned(userId, recipeId));
+  }
+
+  private Recipe findOwned(Long userId, Long recipeId) {
+    Recipe recipe =
+        recipeRepository
+            .findByIdAndDeletedAtIsNull(recipeId)
+            .orElseThrow(
+                () -> new BusinessException(ErrorCode.NOT_FOUND, "레시피를 찾을 수 없습니다: " + recipeId));
+    if (!recipe.isOwnedBy(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN, "본인의 레시피만 접근할 수 있습니다.");
+    }
+    return recipe;
+  }
+
   private BigDecimal computeGrindMicronEstimated(
       GrindSettingUnit unit, BigDecimal value, Long grinderModelId) {
     if (unit == null) {

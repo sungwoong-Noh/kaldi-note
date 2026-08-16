@@ -1693,7 +1693,7 @@ cd .. && git add . && git commit -m "feat(recipe): 스텝 시퀀스 검증과 �
 
 > **구현 노트 — 소유자가 아닌 조회:** 스펙은 "이 스펙의 조회 인수 조건은 전부 소유자 기준"이라고만 밝히고 타인의 접근을 별도로 규정하지 않는다(공개범위 판정은 후속 스펙). 안전한 기본값으로 **소유자가 아니면 403**을 반환하도록 구현한다 — PUT/DELETE와 동일한 `findOwned`를 재사용하면 자연히 이렇게 된다. 이 동작은 스펙에 명시된 AC가 아니므로 테스트에 AC ID를 붙이지 않는다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
   private String createAndGetLocation(String token, String body) throws Exception {
@@ -1755,12 +1755,12 @@ cd .. && git add . && git commit -m "feat(recipe): 스텝 시퀀스 검증과 �
 
 `import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;`를 파일 상단에 추가한다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: 컴파일 실패 (`GET /api/v1/recipes/{id}` 없음).
 
-- [ ] **Step 3: 서비스 · 컨트롤러에 조회 추가**
+- [x] **Step 3: 서비스 · 컨트롤러에 조회 추가**
 
 `RecipeService.java`에 추가:
 
@@ -1792,12 +1792,12 @@ Expected: 컴파일 실패 (`GET /api/v1/recipes/{id}` 없음).
 
 `import org.springframework.web.bind.annotation.GetMapping;`, `PathVariable;`를 추가한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: PASS, 48 tests.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

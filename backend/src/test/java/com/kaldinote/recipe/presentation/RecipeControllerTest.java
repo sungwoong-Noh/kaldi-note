@@ -1,5 +1,6 @@
 package com.kaldinote.recipe.presentation;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -645,5 +646,68 @@ class RecipeControllerTest extends AbstractIntegrationTest {
         """)
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  private String createAndGetLocation(String token, String body) throws Exception {
+    String response =
+        createRecipe(token, body)
+            .andExpect(status().isCreated())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return com.jayway.jsonpath.JsonPath.read(response, "$.id").toString();
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-05 · 조회 응답의 ratio는 waterG ÷ doseG를 소수 1자리로 반올림한 값이다")
+  void ratio는_소수_1자리로_반올림된다() throws Exception {
+    String token = token();
+    String id =
+        createAndGetLocation(
+            token,
+            """
+            {"title":"비율 확인","doseG":18.0,"waterG":300.0}
+            """);
+
+    mockMvc
+        .perform(get("/api/v1/recipes/{id}", id).header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.ratio").value(16.7));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-06 · 조회 응답의 스텝별 cumulativeWaterG가 누적합이다")
+  void cumulativeWaterG는_누적합이다() throws Exception {
+    String token = token();
+    String id =
+        createAndGetLocation(
+            token,
+            """
+            {"title":"누적 물량","doseG":20.0,"waterG":300.0,"steps":[
+              {"stepType":"BLOOM","startAtSeconds":0,"durationSeconds":10,"waterG":60.0},
+              {"stepType":"POUR","startAtSeconds":45,"durationSeconds":10,"waterG":60.0},
+              {"stepType":"POUR","startAtSeconds":90,"durationSeconds":10,"waterG":60.0},
+              {"stepType":"POUR","startAtSeconds":135,"durationSeconds":10,"waterG":60.0},
+              {"stepType":"POUR","startAtSeconds":165,"durationSeconds":10,"waterG":60.0}
+            ]}
+            """);
+
+    mockMvc
+        .perform(get("/api/v1/recipes/{id}", id).header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.steps[0].cumulativeWaterG").value(60.0))
+        .andExpect(jsonPath("$.steps[1].cumulativeWaterG").value(120.0))
+        .andExpect(jsonPath("$.steps[2].cumulativeWaterG").value(180.0))
+        .andExpect(jsonPath("$.steps[3].cumulativeWaterG").value(240.0))
+        .andExpect(jsonPath("$.steps[4].cumulativeWaterG").value(300.0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-61 · 존재하지 않는 레시피 조회는 404다")
+  void 존재하지_않는_레시피_조회는_404다() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/recipes/999999").header(HttpHeaders.AUTHORIZATION, token()))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
   }
 }

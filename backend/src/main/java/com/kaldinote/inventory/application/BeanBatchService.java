@@ -7,6 +7,7 @@ import com.kaldinote.inventory.domain.BeanBatch;
 import com.kaldinote.inventory.infrastructure.BeanBatchRepository;
 import com.kaldinote.inventory.presentation.dto.BeanBatchCreateRequest;
 import com.kaldinote.inventory.presentation.dto.BeanBatchResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,5 +36,27 @@ public class BeanBatchService {
             request.price(),
             request.memo());
     return BeanBatchResponse.from(beanBatchRepository.save(batch));
+  }
+
+  public List<BeanBatchResponse> findMine(Long userId) {
+    return beanBatchRepository.findAllByUserIdAndDeletedAtIsNull(userId).stream()
+        .map(BeanBatchResponse::from)
+        .toList();
+  }
+
+  public BeanBatchResponse get(Long userId, Long batchId) {
+    return BeanBatchResponse.from(findOwned(userId, batchId));
+  }
+
+  private BeanBatch findOwned(Long userId, Long batchId) {
+    BeanBatch batch =
+        beanBatchRepository
+            .findByIdAndDeletedAtIsNull(batchId)
+            .orElseThrow(
+                () -> new BusinessException(ErrorCode.NOT_FOUND, "재고를 찾을 수 없습니다: " + batchId));
+    if (!batch.isOwnedBy(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN, "본인의 재고만 접근할 수 있습니다.");
+    }
+    return batch;
   }
 }

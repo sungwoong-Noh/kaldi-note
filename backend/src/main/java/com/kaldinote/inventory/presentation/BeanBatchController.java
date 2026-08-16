@@ -6,8 +6,11 @@ import com.kaldinote.inventory.presentation.dto.BeanBatchCreateRequest;
 import com.kaldinote.inventory.presentation.dto.BeanBatchResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,5 +30,15 @@ public class BeanBatchController {
   public BeanBatchResponse create(
       @Valid @RequestBody BeanBatchCreateRequest request, AuthenticatedUser user) {
     return beanBatchService.create(user.id(), request);
+  }
+
+  @GetMapping
+  public List<BeanBatchResponse> list(AuthenticatedUser user) {
+    return beanBatchService.findMine(user.id());
+  }
+
+  @GetMapping("/{id}")
+  public BeanBatchResponse get(@PathVariable Long id, AuthenticatedUser user) {
+    return beanBatchService.get(user.id(), id);
   }
 }

@@ -44,6 +44,28 @@ class BeanControllerTest extends AbstractIntegrationTest {
             .content(body));
   }
 
+  private Long roasterId(String token) throws Exception {
+    String body =
+        createRoaster(
+                token,
+                """
+        {"name":"프릳츠커피컴퍼니-%s"}
+        """
+                    .formatted(java.util.UUID.randomUUID()))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return Long.valueOf(com.jayway.jsonpath.JsonPath.read(body, "$.id").toString());
+  }
+
+  private ResultActions createBeanProduct(String token, String body) throws Exception {
+    return mockMvc.perform(
+        post("/api/v1/bean-products")
+            .header(HttpHeaders.AUTHORIZATION, token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body));
+  }
+
   @Test
   @DisplayName("AC-BEAN-01 · 최소 입력으로 로스터가 생성된다")
   void 최소_입력으로_로스터가_생성된다() throws Exception {
@@ -141,5 +163,104 @@ class BeanControllerTest extends AbstractIntegrationTest {
                 {"name":"프릳츠커피컴퍼니"}
                 """))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-03 · 싱글오리진 원두 상품이 최소 입력으로 생성된다")
+  void 싱글오리진_원두_상품이_최소_입력으로_생성된다() throws Exception {
+    String token = token();
+    Long roasterId = roasterId(token);
+    createBeanProduct(
+            token,
+            """
+        {"roasterId":%d,"name":"예가체프 내추럴","beanMix":"SINGLE_ORIGIN","roastLevel":"LIGHT",
+         "origins":[{"country":"ET"}]}
+        """
+                .formatted(roasterId))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.verified").value(false));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-04 · 블렌드 산지의 ratioPercent 합계가 100이면 생성된다")
+  void 블렌드_ratio_합계가_100이면_생성된다() throws Exception {
+    String token = token();
+    Long roasterId = roasterId(token);
+    createBeanProduct(
+            token,
+            """
+        {"roasterId":%d,"name":"시그니처 블렌드","beanMix":"BLEND","roastLevel":"MEDIUM_DARK",
+         "origins":[{"country":"ET","ratioPercent":50.0},{"country":"CO","ratioPercent":50.0}]}
+        """
+                .formatted(roasterId))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.origins.length()").value(2));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-05 · 싱글오리진은 ratioPercent를 서버가 100.0으로 고정한다")
+  void 싱글오리진은_ratioPercent가_100으로_고정된다() throws Exception {
+    String token = token();
+    Long roasterId = roasterId(token);
+    createBeanProduct(
+            token,
+            """
+        {"roasterId":%d,"name":"예가체프 워시드","beanMix":"SINGLE_ORIGIN","roastLevel":"LIGHT",
+         "origins":[{"country":"ET"}]}
+        """
+                .formatted(roasterId))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.origins[0].ratioPercent").value(100.0));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-06 · 원두 상품 목록은 이름순으로 전체 반환된다")
+  void 원두_상품_목록은_이름순으로_반환된다() throws Exception {
+    String token = token();
+    Long roasterId = roasterId(token);
+    createBeanProduct(
+            token,
+            """
+        {"roasterId":%d,"name":"나 상품","beanMix":"SINGLE_ORIGIN","roastLevel":"LIGHT","origins":[{"country":"ET"}]}
+        """
+                .formatted(roasterId))
+        .andExpect(status().isCreated());
+    createBeanProduct(
+            token,
+            """
+        {"roasterId":%d,"name":"가 상품","beanMix":"SINGLE_ORIGIN","roastLevel":"LIGHT","origins":[{"country":"ET"}]}
+        """
+                .formatted(roasterId))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(get("/api/v1/bean-products").header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].name").value("가 상품"))
+        .andExpect(jsonPath("$[1].name").value("나 상품"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-07 · 원두 상품 단건 조회는 산지를 포함한다")
+  void 원두_상품_단건_조회는_산지를_포함한다() throws Exception {
+    String token = token();
+    Long roasterId = roasterId(token);
+    String created =
+        createBeanProduct(
+                token,
+                """
+        {"roasterId":%d,"name":"시그니처 블렌드2","beanMix":"BLEND","roastLevel":"MEDIUM_DARK",
+         "origins":[{"country":"ET","ratioPercent":50.0},{"country":"CO","ratioPercent":50.0}]}
+        """
+                    .formatted(roasterId))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    Long productId = Long.valueOf(com.jayway.jsonpath.JsonPath.read(created, "$.id").toString());
+
+    mockMvc
+        .perform(get("/api/v1/bean-products/" + productId).header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.origins.length()").value(2));
   }
 }

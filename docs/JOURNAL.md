@@ -7,6 +7,26 @@
 
 ---
 
+## 2026-08-16 · Task 10 — 장비 마스터 (그라인더·드리퍼·필터) + 시드
+
+**브랜치:** `feat/task-10-gear` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료
+
+### 한 일
+- `V4__create_gear_tables.sql`(grinder_models/user_grinders/brewers/brew_filters), `V5__seed_gear.sql`(그라인더 10종, 드리퍼 10종, 필터 8종) 추가
+- `GrinderModel`(+ `toGrindSpec()`), `Brewer`, `BrewFilter`, `UserGrinder` 엔티티, `AdjustmentType`·`BurrType`·`BrewerType`·`FilterMaterial` enum, 리포지토리 4종 추가
+- `GearSeedTest` 6개 전부 통과 — 계획 문서는 5개로 적었지만 실제로 6개 메서드가 있었다(Task 2 때와 같은 종류의 계획 문서 카운트 오기, 동작에는 영향 없음)
+- 특히 "시드된_그라인더로_실제_환산이_동작한다" 테스트가 Task 2의 순수 `grind` 도메인과 시드 데이터가 실제로 맞물리는 것을 증명한다 (C40 22클릭 → 660µm → K-Plus 30.0)
+
+### 발견한 것
+- `GrinderModel`·`Brewer`·`BrewFilter`·`UserGrinder`의 `createByUser`/`of` 정적 팩토리 시그니처는 계획 문서에 명시되지 않아(Task 9의 `CoffeeProcess`처럼 스키마의 NOT NULL 컬럼을 전부 받도록) 직접 설계했다. 특별한 이슈는 없었다
+
+### 다음 세션에게
+- **Task 11(마스터 조회 API + 분쇄도 환산 API + OpenAPI 문서)부터.** Plan 1의 마지막 태스크다 — 여기서 `grind` 스펙 status를 `구현완료`로 전환하는 것도 포함돼 있다(Task 3 JOURNAL에서 미뤄둔 것)
+- Plan 2에서 `Recipe`가 `brewerId`·`filterId`·`grinderModelId`를, `BeanOrigin`이 `varietyId`·`processId`를 FK로 참조할 예정 — 지금까지처럼 엔티티가 아니라 ID로 참조해야 한다
+
+---
+
 ## 2026-08-16 · Task 9 — 카탈로그 마스터 (품종·가공법·플레이버노트) + 시드
 
 **브랜치:** `feat/task-09-catalog` (main에서 분기) · **PR:** 아래 참조

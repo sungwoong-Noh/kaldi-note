@@ -7,6 +7,25 @@
 
 ---
 
+## 2026-08-16 · Task 6 — 레시피 수정 API (PUT)
+
+**브랜치:** `feat/task-06-recipe-update` (`feat/task-05-recipe-get` 위에 스택 — PR #23 아직 미머지) · **PR:** 아래 참조
+**상태:** 완료 — Step 1~5 전부, `./gradlew clean check` 통과, `RecipeControllerTest` 50/50
+
+### 한 일
+- `UpdateRecipeRequest` DTO(출처 필드 없음), `RecipeService#update`, `PUT /api/v1/recipes/{id}` 추가
+- AC-RECIPE-10(스텝 통째 교체)·58(남의 레시피 수정 403) 검증 테스트 2개 추가
+- 스텝 교체 순서(`deleteAllByRecipe` → `flush()` → `clear()` → `replaceSteps()`)를 계획대로 적용 — `UNIQUE(recipe_id, step_order)` 위반 없이 한 번에 통과
+
+### 발견한 것
+- PR #23(Task 5)이 아직 머지되지 않아 main에 `findOwned`가 없다. `feat/task-05-recipe-get` 위에 스택해 브랜치를 만들었다(Task 4→5와 같은 패턴). PR #23이 머지되면 GitHub가 이 브랜치의 base를 자동으로 main으로 재조정한다
+- 계획 코드를 그대로 옮겨 별다른 이슈 없이 한 번에 통과
+
+### 다음 세션에게
+- **Task 7(레시피 삭제 API, DELETE)부터.** `findOwned`를 재사용하는 마지막 태스크
+
+---
+
 ## 2026-08-16 · Task 5 — 레시피 단건 조회 API
 
 **브랜치:** `feat/task-05-recipe-get` · **PR:** 아래 참조

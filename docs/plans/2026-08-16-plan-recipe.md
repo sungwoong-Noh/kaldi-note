@@ -1820,7 +1820,7 @@ cd .. && git add . && git commit -m "feat(recipe): 레시피 단건 조회 API �
 - Consumes: Task 4의 `buildSteps`/`computeGrindMicronEstimated`/`requireExists`, Task 5의 `findOwned`
 - Produces: `RecipeService#update(Long userId, Long recipeId, UpdateRecipeRequest request) → RecipeResponse`, `PUT /api/v1/recipes/{id}`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
   @Test
@@ -1879,12 +1879,12 @@ cd .. && git add . && git commit -m "feat(recipe): 레시피 단건 조회 API �
 
 `import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;`를 추가한다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: 컴파일 실패 (`UpdateRecipeRequest`, `PUT /api/v1/recipes/{id}` 없음).
 
-- [ ] **Step 3: DTO · 서비스 · 컨트롤러에 수정 추가**
+- [x] **Step 3: DTO · 서비스 · 컨트롤러에 수정 추가**
 
 `UpdateRecipeRequest.java` — `CreateRecipeRequest`와 동일하되 `sourceType` 필드가 없다(수정 API로는 출처를 바꿀 수 없다):
 
@@ -1981,12 +1981,12 @@ public record UpdateRecipeRequest(
 
 `import org.springframework.web.bind.annotation.PutMapping;`를 추가한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: PASS, 50 tests.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

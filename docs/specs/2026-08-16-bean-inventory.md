@@ -1,7 +1,7 @@
 ---
 id: BEAN
 title: 원두 카탈로그와 개인 재고
-status: 구현완료
+status: 초안
 plan:
 ---
 

@@ -7,6 +7,25 @@
 
 ---
 
+## 2026-08-16 · Task 9 — 카탈로그 마스터 (품종·가공법·플레이버노트) + 시드
+
+**브랜치:** `feat/task-09-catalog` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료
+
+### 한 일
+- `V2__create_catalog_tables.sql`(varieties/coffee_processes/flavor_notes), `V3__seed_catalog.sql`(품종 15개, 가공법 13개, 플레이버노트 1단계 9개 + 2단계 14개) 추가
+- `Variety`·`CoffeeProcess`·`FlavorNote` 엔티티, `ProcessCategory` enum, 리포지토리 3종 추가
+- `CatalogSeedTest` 5개 전부 통과 (계획 예상치와 일치)
+
+### 발견한 것
+- **계획 문서의 `CoffeeProcess.createByUser` 시그니처가 스키마와 맞지 않았다.** 계획은 `Variety`·`CoffeeProcess` 둘 다 `createByUser(String name, String nameKo, Long userId)`로 통일해 적으라고 했지만, `coffee_processes.category`는 `NOT NULL`이라 값 없이는 저장이 불가능하다. `CoffeeProcess.createByUser`에는 `ProcessCategory category` 파라미터를 추가했다 — 사용자가 가공법을 직접 추가할 때도 카테고리 선택은 필수이므로 스키마 쪽이 맞고 계획 문서 시그니처가 단순화된 오기로 보인다
+
+### 다음 세션에게
+- **Task 10(장비 마스터: 그라인더·드리퍼·필터 + 시드)부터.** Task 9와 같은 패턴(마이그레이션 → 시드 → 엔티티 → 리포지토리)이라 그대로 따라가면 된다
+- Plan 2에서 `BeanOrigin`이 `varietyId`, `processId`를 FK로 참조할 예정 — 지금은 엔티티 직접 참조가 아니라 ID 참조임을 잊지 말 것
+
+---
+
 ## 2026-08-16 · Task 8 — 로그인·토큰 갱신 API (refresh rotation)
 
 **브랜치:** `feat/task-08-auth-api` (main에서 분기) · **PR:** 아래 참조

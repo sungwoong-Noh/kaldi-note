@@ -3448,7 +3448,7 @@ cd .. && git add . && git commit -m "feat(auth): 소셜 로그인과 refresh rot
 
 > **마스터 데이터를 FK로 정규화하는 이유:** 품종을 문자열로 박으면 나중에 "게이샤"와 "Geisha"를 병합할 수 없다. 사용자는 막힘없이 바로 추가하되(`is_system = false`), 관리자가 사후에 병합한다.
 
-- [ ] **Step 1: 스키마 마이그레이션 작성**
+- [x] **Step 1: 스키마 마이그레이션 작성**
 
 `V2__create_catalog_tables.sql`:
 
@@ -3490,7 +3490,7 @@ CREATE TABLE flavor_notes (
 CREATE INDEX idx_flavor_notes_parent ON flavor_notes (parent_id);
 ```
 
-- [ ] **Step 2: 시드 마이그레이션 작성**
+- [x] **Step 2: 시드 마이그레이션 작성**
 
 `V3__seed_catalog.sql`:
 
@@ -3561,7 +3561,7 @@ FROM (VALUES
 JOIN flavor_notes p ON p.name_en = v.parent_name AND p.level = 1;
 ```
 
-- [ ] **Step 3: 실패하는 시드 검증 테스트 작성**
+- [x] **Step 3: 실패하는 시드 검증 테스트 작성**
 
 ```java
 package com.kaldinote.catalog.infrastructure;
@@ -3609,7 +3609,7 @@ class CatalogSeedTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 실패 확인**
+- [x] **Step 4: 테스트 실행 — 실패 확인**
 
 ```bash
 ./gradlew test --tests '*CatalogSeedTest'
@@ -3617,7 +3617,7 @@ class CatalogSeedTest extends AbstractIntegrationTest {
 
 Expected: 컴파일 실패.
 
-- [ ] **Step 5: 엔티티와 리포지토리 작성**
+- [x] **Step 5: 엔티티와 리포지토리 작성**
 
 `ProcessCategory` enum: `WASHED`, `NATURAL`, `HONEY`, `FERMENTED`, `OTHER`.
 
@@ -3657,7 +3657,7 @@ public interface FlavorNoteRepository extends JpaRepository<FlavorNote, Long> {
 }
 ```
 
-- [ ] **Step 6: 테스트 실행 — 통과 확인**
+- [x] **Step 6: 테스트 실행 — 통과 확인**
 
 ```bash
 ./gradlew test --tests '*CatalogSeedTest'
@@ -3665,7 +3665,7 @@ public interface FlavorNoteRepository extends JpaRepository<FlavorNote, Long> {
 
 Expected: PASS, 5 tests.
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

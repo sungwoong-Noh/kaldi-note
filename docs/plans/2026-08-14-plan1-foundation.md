@@ -2647,7 +2647,7 @@ cd .. && git add . && git commit -m "feat(auth): JWT 발급·검증과 role 기�
 
 > **카카오는 `email`이 null일 수 있다.** 이메일 제공은 선택 동의 항목이다. 식별자는 `providerUserId`다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/auth/infrastructure/oauth/KakaoOAuthClientTest.java`:
 
@@ -2760,7 +2760,7 @@ class KakaoOAuthClientTest {
 
 검증: `provider()`가 `GOOGLE`, `providerUserId()`가 `"108123456789"`, `email()`이 `"user@gmail.com"`, `nickname()`이 `"홍길동"`.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 ./gradlew test --tests '*OAuthClientTest'
@@ -2770,7 +2770,7 @@ Expected: 컴파일 실패.
 
 > `MockRestServiceServer.bindTo(RestClient.Builder)`가 없다면 Spring 버전 문제다. `./gradlew dependencies | grep spring-test`로 확인한다. 대안이 필요하면 `RestClient.Builder`에 `ClientHttpRequestFactory`를 직접 스텁하는 방식으로 바꾸되, **실제 카카오·구글 서버를 호출하지 않는다.**
 
-- [ ] **Step 3: 설정과 도메인 타입 작성**
+- [x] **Step 3: 설정과 도메인 타입 작성**
 
 `application.yml`에 추가:
 
@@ -2860,7 +2860,7 @@ public interface OAuthClient {
 }
 ```
 
-- [ ] **Step 4: 카카오·구글 클라이언트 구현**
+- [x] **Step 4: 카카오·구글 클라이언트 구현**
 
 `backend/src/main/java/com/kaldinote/auth/infrastructure/oauth/KakaoOAuthClient.java`:
 
@@ -3010,7 +3010,7 @@ public class OAuthClientRegistry {
 
 `JwtConfig`처럼 `OAuthProperties`도 활성화해야 한다. `KaldiNoteApplication`에 `@ConfigurationPropertiesScan`을 붙이거나, `@EnableConfigurationProperties(OAuthProperties.class)`를 설정 클래스에 추가한다.
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 ```bash
 ./gradlew test --tests '*OAuthClientTest'
@@ -3018,7 +3018,7 @@ public class OAuthClientRegistry {
 
 Expected: PASS, 6 tests (카카오 3 + 구글 3).
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

@@ -3963,7 +3963,7 @@ cd .. && git add . && git commit -m "feat(gear): 그라인더·드리퍼·필터
 | GET | `/api/v1/gear/filters` | 필터 목록 |
 | POST | `/api/v1/gear/grind-conversions` | **분쇄도 환산** |
 
-- [ ] **Step 1: 실패하는 컨트롤러 테스트 작성**
+- [x] **Step 1: 실패하는 컨트롤러 테스트 작성**
 
 ```java
 package com.kaldinote.gear.presentation;
@@ -4131,7 +4131,7 @@ class GearControllerTest extends AbstractIntegrationTest {
 
 `CatalogControllerTest`도 같은 패턴으로 작성한다: 인증 없이 401, 품종 목록 조회 200 + 15개 이상, 품종 추가 201 + `isSystem=false`, 중복 이름 추가 시 409 `DUPLICATE_NAME`. 카탈로그는 기능 스펙이 없으므로 AC ID를 붙이지 않는다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 ./gradlew test --tests '*ControllerTest'
@@ -4139,7 +4139,7 @@ class GearControllerTest extends AbstractIntegrationTest {
 
 Expected: 404 또는 컴파일 실패.
 
-- [ ] **Step 3: DTO 작성**
+- [x] **Step 3: DTO 작성**
 
 ```java
 // gear/presentation/dto/GrindConversionRequest.java
@@ -4184,7 +4184,7 @@ public record GrinderModelResponse(
 
 `convertible` 필드를 응답에 넣는 이유: 프론트가 환산 UI를 띄울지 말지 판단해야 한다.
 
-- [ ] **Step 4: 서비스 작성**
+- [x] **Step 4: 서비스 작성**
 
 ```java
 @Service
@@ -4218,7 +4218,7 @@ public class GrindConversionService {
 
 `GearService`는 목록 조회 3개(`grinders`, `brewers`, `filters`)를, `CatalogService`는 목록 조회 3개 + 품종 추가를 담당한다. 품종 추가는 이름 중복 시 `BusinessException(ErrorCode.DUPLICATE_NAME)`을 던진다 (Task 5에서 이미 정의했다).
 
-- [ ] **Step 5: 컨트롤러 작성**
+- [x] **Step 5: 컨트롤러 작성**
 
 ```java
 @RestController
@@ -4259,7 +4259,7 @@ public class GearController {
 
 `CatalogController`도 같은 패턴. 품종 추가는 `@ResponseStatus(HttpStatus.CREATED)`와 `@AuthenticationPrincipal`로 `createdByUserId`를 채운다.
 
-- [ ] **Step 6: OpenAPI 설정**
+- [x] **Step 6: OpenAPI 설정**
 
 `build.gradle.kts`에 추가:
 
@@ -4292,7 +4292,7 @@ public class OpenApiConfig {
 }
 ```
 
-- [ ] **Step 7: 테스트 실행 — 통과 확인**
+- [x] **Step 7: 테스트 실행 — 통과 확인**
 
 ```bash
 ./gradlew test --tests '*ControllerTest'
@@ -4300,7 +4300,7 @@ public class OpenApiConfig {
 
 Expected: PASS.
 
-- [ ] **Step 8: 스펙 상태를 `구현완료`로 바꾸고 커버리지 검사**
+- [x] **Step 8: 스펙 상태를 `구현완료`로 바꾸고 커버리지 검사**
 
 두 스펙 문서의 frontmatter `status`를 `초안` → `구현완료`로 바꾼다.
 
@@ -4315,7 +4315,7 @@ Expected: PASS.
 Expected: 두 명령 모두 통과. 커버리지 검사는 `AC 46개 전부 테스트에 존재`를 보고해야 한다.
 **누락이 나오면 해당 테스트의 `@DisplayName`에 AC ID를 넣지 않은 것이다.** 이 시점부터 CI가 강제한다.
 
-- [ ] **Step 9: 수동 확인**
+- [x] **Step 9: 수동 확인**
 
 ```bash
 (cd .. && docker compose up -d)
@@ -4326,7 +4326,7 @@ Expected: 두 명령 모두 통과. 커버리지 검사는 `AC 46개 전부 테�
 
 `docs/specs/2026-08-14-grind-conversion.md`의 수동 확인 항목도 여기서 처리한다 — 환산 응답의 `warning` 문구가 그대로 노출되는지 확인한다.
 
-- [ ] **Step 10: 커밋**
+- [x] **Step 10: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -4339,15 +4339,15 @@ cd .. && git add . && git commit -m "feat(gear): 마스터 조회 API와 분쇄�
 
 아래가 전부 참이어야 Plan 1이 끝난 것이다.
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] **두 스펙의 `status`가 `구현완료`이고 `./scripts/check-spec-coverage.sh`가 AC 46개 전부 확인** ← 가장 중요
-- [ ] `docker compose up -d && ./gradlew bootRun` 후 `curl localhost:8080/actuator/health` → `{"status":"UP"}`
-- [ ] Swagger UI에서 카카오 로그인으로 받은 JWT로 `/api/v1/gear/grinders` 호출 성공
-- [ ] `POST /api/v1/gear/grind-conversions`로 C40 22클릭 → K-Plus 30.0클릭 환산, `estimated: true`와 `warning` 확인
-- [ ] C40 51클릭으로 환산 시 400 + `code: GRIND_SETTING_OUT_OF_RANGE`
-- [ ] 무단계 그라인더로 환산 시 422 + `code: GRIND_NOT_CONVERTIBLE`
-- [ ] ADMIN이 아닌 토큰으로 `/api/v1/admin/**` 호출 시 403
-- [ ] Flyway V1~V5가 모두 적용됨 (`./gradlew flywayInfo`)
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] **두 스펙의 `status`가 `구현완료`이고 `./scripts/check-spec-coverage.sh`가 AC 46개 전부 확인** ← 가장 중요
+- [x] `docker compose up -d && ./gradlew bootRun` 후 `curl localhost:8080/actuator/health` → `{"status":"UP"}`
+- [x] Swagger UI에서 카카오 로그인으로 받은 JWT로 `/api/v1/gear/grinders` 호출 성공 (카카오 앱 크레덴셜이 없어 같은 secret으로 서명한 JWT로 대체 확인 — JOURNAL 참조)
+- [x] `POST /api/v1/gear/grind-conversions`로 C40 22클릭 → K-Plus 30.0클릭 환산, `estimated: true`와 `warning` 확인
+- [x] C40 51클릭으로 환산 시 400 + `code: GRIND_SETTING_OUT_OF_RANGE` (`GearControllerTest`로 확인)
+- [x] 무단계 그라인더로 환산 시 422 + `code: GRIND_NOT_CONVERTIBLE` (`GearControllerTest`로 확인)
+- [x] ADMIN이 아닌 토큰으로 `/api/v1/admin/**` 호출 시 403 (Task 6 `JwtAuthorizationTest`로 확인 — 실제 admin 컨트롤러는 아직 없어 `SecurityConfig`의 규칙만 검증됨)
+- [x] Flyway V1~V5가 모두 적용됨 (`flywayInfo` gradle task는 플러그인 미적용으로 없어, `flyway_schema_history` 테이블을 직접 조회해 5개 모두 `success=true` 확인)
 
 **다음:** `docs/plans/2026-08-14-plan2-core-domain.md` (원두 재고 → 레시피 → 브루잉 로그 → 포크)
 

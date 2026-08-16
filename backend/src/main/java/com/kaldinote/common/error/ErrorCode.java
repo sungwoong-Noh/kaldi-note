@@ -29,7 +29,11 @@ public enum ErrorCode {
   // 레시피 — docs/specs/2026-08-16-recipe-crud.md
   RECIPE_STEP_WATER_MISMATCH(HttpStatus.BAD_REQUEST, "스텝 물량 합계가 레시피 총 물량과 다릅니다."),
   RECIPE_STEP_OVERLAP(HttpStatus.BAD_REQUEST, "앞 스텝과 시간이 겹칩니다."),
-  RECIPE_STEP_WATER_INVALID(HttpStatus.BAD_REQUEST, "스텝 타입과 물량이 맞지 않습니다.");
+  RECIPE_STEP_WATER_INVALID(HttpStatus.BAD_REQUEST, "스텝 타입과 물량이 맞지 않습니다."),
+
+  // 원두 카탈로그 — docs/specs/2026-08-16-bean-inventory.md
+  BEAN_MIX_ORIGIN_MISMATCH(HttpStatus.BAD_REQUEST, "beanMix와 origins 개수가 맞지 않습니다."),
+  BEAN_ORIGIN_RATIO_MISMATCH(HttpStatus.BAD_REQUEST, "블렌드 산지의 ratioPercent 합계가 100이 아닙니다.");
 
   private final HttpStatus status;
   private final String defaultMessage;

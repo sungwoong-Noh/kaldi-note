@@ -7,6 +7,28 @@
 
 ---
 
+## 2026-08-17 · 브루잉 로그 구현 계획
+
+**브랜치:** `docs/plan-brew-log` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료 — `docs/plans/2026-08-17-plan-brew-log.md` 작성, 태스크 5개, AC 39개 전부 매핑. `check-spec-coverage.sh` 초록(브루잉 로그는 여전히 초안이라 정상 건너뜀)
+
+### 한 일
+- `docs/specs/2026-08-17-brew-log.md`(AC 39개)에 맞춰 태스크 5개로 계획을 쪼갰다: 사용자 그라인더 등록 API(선행) → 스키마·엔티티 → 생성 API 정상동작+FK 소유 검증(13개) → 생성 API 경계값·물리검증(21개) → 단건 조회(5개)
+- 기존 `grind`(`GrindConverter`)·`extraction`(`BrewMeasurement`/`ExtractionAnalyzer`)·`inventory`(`DegassingStatus`) 순수 도메인을 전부 재사용하도록 설계 — 새 계산 로직 없음. 새 `ErrorCode`도 추가하지 않음(기존 `INVALID_REQUEST`/`INVALID_BREW_MEASUREMENT`/`NOT_FOUND`/`FORBIDDEN`만 재사용)
+
+### 발견한 것
+- **`userGrinderId`를 필수로 요구하는 스펙인데, 사용자가 `user_grinders`를 등록하는 API가 지금까지 하나도 없었다.** 엔티티·리포지토리만 있고 어떤 컨트롤러도 쓰지 않아 실사용자는 브루잉 로그를 만들 수 없는 상태였다 — 인터뷰에서 놓친 갭. 사람 확인 후 계획에 Task 1(`POST /api/v1/gear/user-grinders`, 최소 생성 API, 스펙에 없어 AC ID 없음)로 얹었다
+- `daysOffRoast` 계산에 `brewedAt`을 `ZoneOffset.UTC` 기준 `LocalDate`로 변환하기로 했다 — 스펙 인터뷰에서 다루지 않은 구현 세부사항이라 계획의 Global Constraints·검증되지 않은 가정에 남겼다
+- `GrindConverter.toMicron()`을 그대로 재사용하면 그라인더 설정값이 범위를 벗어날 때 `GRIND_SETTING_OUT_OF_RANGE`(400)도 자연히 딸려온다 — 스펙에 명시되지 않았지만 기존 `grind` 스펙이 이미 정의한 동작이라 새 결정으로 보지 않았다
+- Task 2(`BrewLogRepositoryTest`)가 FK 제약 때문에 최소 픽스처를 먼저 저장해야 할 수도 있다는 점, Task 1의 `GearControllerTest`에 새 헬퍼(`realUserToken`)를 추가해도 기존 `token()` 기반 테스트에 영향이 없는지는 구현 세션에서 실제로 실행해봐야 확정된다
+
+### 다음 세션에게
+- **사람 승인 후 `/resume` → Task 1(사용자 그라인더 등록 API)부터 TDD로 구현.** 계획 문서에 전체 코드가 있다
+- 남은 스펙 후보는 포크 / 공개범위 인가 2건. 브루잉 로그 구현이 끝난 뒤에 다룬다
+- 카카오/구글 실제 로그인은 여전히 미검증
+
+---
+
 ## 2026-08-17 · 브루잉 로그 스펙 인터뷰
 
 **브랜치:** `docs/spec-brew-log` (main에서 분기) · **PR:** 아래 참조

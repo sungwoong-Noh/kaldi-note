@@ -3,13 +3,16 @@ package com.kaldinote.inventory.presentation;
 import com.kaldinote.common.security.AuthenticatedUser;
 import com.kaldinote.inventory.application.BeanBatchService;
 import com.kaldinote.inventory.presentation.dto.BeanBatchCreateRequest;
+import com.kaldinote.inventory.presentation.dto.BeanBatchPatchRequest;
 import com.kaldinote.inventory.presentation.dto.BeanBatchResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,5 +43,17 @@ public class BeanBatchController {
   @GetMapping("/{id}")
   public BeanBatchResponse get(@PathVariable Long id, AuthenticatedUser user) {
     return beanBatchService.get(user.id(), id);
+  }
+
+  @PatchMapping("/{id}")
+  public BeanBatchResponse patch(
+      @PathVariable Long id, @RequestBody BeanBatchPatchRequest request, AuthenticatedUser user) {
+    return beanBatchService.patch(user.id(), id, request);
+  }
+
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable Long id, AuthenticatedUser user) {
+    beanBatchService.delete(user.id(), id);
   }
 }

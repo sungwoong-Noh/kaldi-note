@@ -6,7 +6,9 @@ import com.kaldinote.common.error.ErrorCode;
 import com.kaldinote.inventory.domain.BeanBatch;
 import com.kaldinote.inventory.infrastructure.BeanBatchRepository;
 import com.kaldinote.inventory.presentation.dto.BeanBatchCreateRequest;
+import com.kaldinote.inventory.presentation.dto.BeanBatchPatchRequest;
 import com.kaldinote.inventory.presentation.dto.BeanBatchResponse;
+import java.math.BigDecimal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,6 +48,23 @@ public class BeanBatchService {
 
   public BeanBatchResponse get(Long userId, Long batchId) {
     return BeanBatchResponse.from(findOwned(userId, batchId));
+  }
+
+  @Transactional
+  public BeanBatchResponse patch(Long userId, Long batchId, BeanBatchPatchRequest request) {
+    BeanBatch batch = findOwned(userId, batchId);
+    if (request.remainingG() != null
+        && (request.remainingG().compareTo(BigDecimal.ZERO) < 0
+            || request.remainingG().compareTo(batch.getWeightG()) > 0)) {
+      throw new BusinessException(ErrorCode.BEAN_BATCH_REMAINING_INVALID);
+    }
+    batch.applyPatch(request.remainingG(), request.finished(), request.frozen());
+    return BeanBatchResponse.from(batch);
+  }
+
+  @Transactional
+  public void delete(Long userId, Long batchId) {
+    findOwned(userId, batchId).softDelete();
   }
 
   private BeanBatch findOwned(Long userId, Long batchId) {

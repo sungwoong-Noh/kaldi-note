@@ -7,6 +7,30 @@
 
 ---
 
+## 2026-08-16 · Task 1~8 — 원두 카탈로그·개인재고 전체 구현, 스펙 구현완료 전환
+
+**브랜치:** `feat/task-01-bean-schema`~`feat/task-08-bean-batch-delete`(순차 스택) · **PR:** 아래 참조
+**상태:** 완료 — `docs/plans/2026-08-16-plan-bean-inventory.md` 전체 완료. `./gradlew clean check` 통과, `BeanControllerTest` 54/54, `check-spec-coverage.sh` AC 54개 전부 확인
+
+### 한 일
+- Roaster/BeanProduct/BeanOrigin(`catalog`), BeanBatch(`inventory`) 마이그레이션(V7)·엔티티·리포지토리·서비스·컨트롤러를 태스크 8개로 나눠 순서대로 구현
+- `docs/specs/2026-08-16-bean-inventory.md`의 `status`를 `초안 → 구현완료`로 전환
+- Swagger 대신 `bootRun` + curl로 로컬 JWT secret 서명 토큰을 써서 로스터·블렌드 원두 상품·재고를 직접 등록 — `roastedAt` 6일 전 → `daysOffRoast=6`, `degassingStatus="IDEAL"`까지 스펙 응답 예시와 정확히 일치 확인. 검증 데이터는 DELETE API + 직접 SQL로 정리
+
+### 발견한 것
+- **계획 문서가 `roast_level_agtron`·`altitude_min_m`·`altitude_max_m`(SMALLINT 컬럼)을 Java `Integer`로 적었는데, Hibernate 스키마 검증에서 `int2 vs integer` 타입 불일치로 컨텍스트 로딩 자체가 실패했다.** `FlavorNote.level`이 이미 `Short`로 SMALLINT를 매핑하고 있어 그 전례를 따라 세 필드 전부 `Short`로 고쳤다(계획 문서 본문은 고치지 않음 — Integer로 남아있으니 후속 세션이 그대로 베끼지 않도록 주의). Task 1 Step 4에서 즉시 잡혔다
+- **이전 세션(계획 작성)이 `/handover` 없이 끝나 JOURNAL에 그 세션 항목이 없다.** PR #27로 계획 자체는 정상 머지됐으니 계획 내용에는 문제 없음 — 기록 공백만 있었던 것
+- 8개 태스크를 전부 한 세션에서 이어 진행했다 — 매 태스크 사이에 사람 확인을 받았고, `clean check`가 계속 초록이라 브랜치를 병합하지 않고 다음 태스크 위에 스택하는 방식(레시피 Task 5~7과 동일 패턴)으로 진행했다
+- 계획의 "검증되지 않은 가정" 중 `BeanProductCreateRequest.origins` null→`List.of()` 컴팩트 생성자 동작, `@PastOrPresent LocalDate`의 미래 날짜 거부 둘 다 테스트로 확인됨(문제없음)
+
+### 다음 세션에게
+- **PR 8개를 스택 순서대로 머지할 것**: task-01 → task-02 → ... → task-08. 순서를 지키지 않으면 base 충돌 가능
+- `docs/design/2026-08-14-architecture.md`가 아직 `roasters.is_system`/`created_by_user_id` 컬럼을 반영하지 않은 상태다(스펙 인터뷰 세션이 이미 남긴 이슈) — 설계 문서 정리가 필요하면 별도 세션에서
+- 원두 재고 스펙이 끝났으니 남은 스펙 후보는 브루잉 로그 / 포크 / 공개범위 인가 3건이다. `recipes.bean_product_id` 컬럼은 이번 태스크로 이미 추가돼 있다(API는 아직 안 씀, 계획대로)
+- 카카오/구글 실제 로그인은 여전히 미검증 상태 그대로다
+
+---
+
 ## 2026-08-16 · 원두 카탈로그·개인재고 스펙 인터뷰
 
 **브랜치:** `docs/spec-bean-inventory` · **PR:** [#26](https://github.com/sungwoong-Noh/kaldi-note/pull/26)

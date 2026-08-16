@@ -11,3 +11,7 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+
+kaldi:
+  jwt:
+    secret: local-development-only-secret-key-32bytes-minimum

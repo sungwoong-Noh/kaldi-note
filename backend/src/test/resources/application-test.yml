@@ -6,3 +6,7 @@ spring:
 logging:
   level:
     org.hibernate.SQL: warn
+
+kaldi:
+  jwt:
+    secret: local-development-only-secret-key-32bytes-minimum

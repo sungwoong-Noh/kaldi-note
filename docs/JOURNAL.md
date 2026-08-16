@@ -7,6 +7,24 @@
 
 ---
 
+## 2026-08-16 · Task 3 — 레시피 생성 입력 값 경계값 검증
+
+**브랜치:** `feat/task-03-recipe-validation` · **PR:** 아래 참조
+**상태:** 완료 — Step 1~5 전부, `./gradlew clean check` 통과, `RecipeControllerTest` 36/36
+
+### 한 일
+- AC-RECIPE-20~40(21개) 검증하는 경계값 테스트를 `RecipeControllerTest`에 추가 (doseG·waterG·waterTempC·totalTimeSeconds·steps 개수·title·description 각각 하한/하한-1/상한/상한+1 패턴)
+- `CreateRecipeRequest`/`StepRequest`에 `@DecimalMin`/`@DecimalMax`/`@Min`/`@Max`/`@Size`/`@NotBlank` 추가. 계획 문서 예시 그대로 적용, 별다른 이슈 없음
+
+### 발견한 것
+- 계획 문서가 리터럴 값 표로만 제시한 AC-RECIPE-34/35(스텝 30개/31개)는 30개짜리 JSON을 직접 나열하지 않고 `stepsJson(int count)` 헬퍼로 생성했다 — `POUR` 스텝을 10초 간격·10초 길이로 이어 붙여 겹치지 않게 구성(겹침 검사는 Task 4 몫이라 지금은 통과만 하면 됨)
+- RED 단계에서 21개 중 10개(하한/상한 통과 케이스)는 검증이 없어도 이미 201로 통과했고, 11개(거부 케이스)만 실패했다 — 계획이 예상한 "대부분 FAIL"과 정확히 일치
+
+### 다음 세션에게
+- **Task 4(레시피 생성 — 스텝 시퀀스 검증 + 나머지 에러)부터.** 스텝 물량 합계가 `waterG`와 정확히 일치하는지, 스텝 겹침 여부를 검증하는 단계 — `ErrorCode` 3종(`RECIPE_STEP_WATER_MISMATCH`·`RECIPE_STEP_OVERLAP`·`RECIPE_STEP_WATER_INVALID`) 추가 필요
+
+---
+
 ## 2026-08-16 · Task 2 — 레시피 생성 API (정상 동작 + 마이크론 스냅샷)
 
 **브랜치:** `feat/task-02-recipe-create` · **PR:** 아래 참조

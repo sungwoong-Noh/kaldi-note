@@ -254,4 +254,274 @@ class RecipeControllerTest extends AbstractIntegrationTest {
                     """))
         .andExpect(status().isUnauthorized());
   }
+
+  @Test
+  @DisplayName("AC-RECIPE-20 · doseG 1.0은 허용된다")
+  void doseG_1_0은_허용된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"하한","doseG":1.0,"waterG":250.0}
+        """)
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-21 · doseG 0.9는 거부된다")
+  void doseG_0_9는_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"하한 아래","doseG":0.9,"waterG":250.0}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-22 · doseG 200.0은 허용된다")
+  void doseG_200_0은_허용된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"상한","doseG":200.0,"waterG":3000.0}
+        """)
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-23 · doseG 200.1은 거부된다")
+  void doseG_200_1은_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"상한 위","doseG":200.1,"waterG":3000.0}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-24 · waterG 10.0은 허용된다")
+  void waterG_10_0은_허용된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"하한","doseG":15.0,"waterG":10.0}
+        """)
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-25 · waterG 9.9는 거부된다")
+  void waterG_9_9는_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"하한 아래","doseG":15.0,"waterG":9.9}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-26 · waterG 3000.0은 허용된다")
+  void waterG_3000_0은_허용된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"상한","doseG":200.0,"waterG":3000.0}
+        """)
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-27 · waterG 3000.1은 거부된다")
+  void waterG_3000_1은_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"상한 위","doseG":200.0,"waterG":3000.1}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-28 · waterTempC 60.0은 허용된다")
+  void waterTempC_60_0은_허용된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"하한","doseG":15.0,"waterG":250.0,"waterTempC":60.0}
+        """)
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-29 · waterTempC 59.9는 거부된다")
+  void waterTempC_59_9는_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"하한 아래","doseG":15.0,"waterG":250.0,"waterTempC":59.9}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-30 · waterTempC 100.0은 허용된다")
+  void waterTempC_100_0은_허용된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"상한","doseG":15.0,"waterG":250.0,"waterTempC":100.0}
+        """)
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-31 · waterTempC 100.1은 거부된다")
+  void waterTempC_100_1은_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"상한 위","doseG":15.0,"waterG":250.0,"waterTempC":100.1}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-32 · totalTimeSeconds 3600은 허용된다")
+  void totalTimeSeconds_3600은_허용된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"상한","doseG":15.0,"waterG":250.0,"totalTimeSeconds":3600}
+        """)
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-33 · totalTimeSeconds 3601은 거부된다")
+  void totalTimeSeconds_3601은_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"상한 위","doseG":15.0,"waterG":250.0,"totalTimeSeconds":3601}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  private static String stepsJson(int count) {
+    StringBuilder sb = new StringBuilder("[");
+    for (int i = 0; i < count; i++) {
+      if (i > 0) {
+        sb.append(',');
+      }
+      int startAt = i * 10;
+      sb.append(
+          """
+          {"stepType":"POUR","startAtSeconds":%d,"durationSeconds":10,"waterG":10.0}
+          """
+              .formatted(startAt)
+              .strip());
+    }
+    return sb.append(']').toString();
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-34 · 스텝 30개는 허용된다")
+  void 스텝_30개는_허용된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"스텝 상한","doseG":20.0,"waterG":300.0,"steps":%s}
+        """
+                .formatted(stepsJson(30)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.steps.length()").value(30));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-35 · 스텝 31개는 거부된다")
+  void 스텝_31개는_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"스텝 상한 위","doseG":20.0,"waterG":310.0,"steps":%s}
+        """
+                .formatted(stepsJson(31)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-36 · title 100자는 허용된다")
+  void title_100자는_허용된다() throws Exception {
+    String title = "가".repeat(100);
+    createRecipe(
+            token(),
+            """
+        {"title":"%s","doseG":15.0,"waterG":250.0}
+        """
+                .formatted(title))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-37 · title 101자는 거부된다")
+  void title_101자는_거부된다() throws Exception {
+    String title = "가".repeat(101);
+    createRecipe(
+            token(),
+            """
+        {"title":"%s","doseG":15.0,"waterG":250.0}
+        """
+                .formatted(title))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-38 · 공백만인 title은 거부된다")
+  void 공백만인_title은_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"   ","doseG":15.0,"waterG":250.0}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-39 · description 2000자는 허용된다")
+  void description_2000자는_허용된다() throws Exception {
+    String description = "가".repeat(2000);
+    createRecipe(
+            token(),
+            """
+        {"title":"설명 상한","doseG":15.0,"waterG":250.0,"description":"%s"}
+        """
+                .formatted(description))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-40 · description 2001자는 거부된다")
+  void description_2001자는_거부된다() throws Exception {
+    String description = "가".repeat(2001);
+    createRecipe(
+            token(),
+            """
+        {"title":"설명 상한 위","doseG":15.0,"waterG":250.0,"description":"%s"}
+        """
+                .formatted(description))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
 }

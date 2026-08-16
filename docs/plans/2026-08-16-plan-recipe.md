@@ -2008,7 +2008,7 @@ cd .. && git add . && git commit -m "feat(recipe): 레시피 수정 API 추가" 
 - Consumes: Task 5의 `findOwned`, `Recipe#softDelete()`(Task 1)
 - Produces: `RecipeService#delete(Long userId, Long recipeId) → void`, `DELETE /api/v1/recipes/{id}`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
   @Test
@@ -2062,12 +2062,12 @@ cd .. && git add . && git commit -m "feat(recipe): 레시피 수정 API 추가" 
 
 `import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;`를 추가한다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: 컴파일 실패 (`DELETE /api/v1/recipes/{id}` 없음).
 
-- [ ] **Step 3: 서비스 · 컨트롤러에 삭제 추가**
+- [x] **Step 3: 서비스 · 컨트롤러에 삭제 추가**
 
 `RecipeService.java`에 추가:
 
@@ -2091,12 +2091,12 @@ Expected: 컴파일 실패 (`DELETE /api/v1/recipes/{id}` 없음).
 
 `import org.springframework.web.bind.annotation.DeleteMapping;`를 추가한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: PASS, 53 tests.
 
-- [ ] **Step 5: 스펙 status 전환 + 전체 검증**
+- [x] **Step 5: 스펙 status 전환 + 전체 검증**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -2105,7 +2105,7 @@ cd .. && ./scripts/check-spec-coverage.sh
 
 `docs/specs/2026-08-16-recipe-crud.md`의 frontmatter `status: 초안` → `status: 구현완료`로 변경.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 cd backend && ./gradlew clean check
@@ -2116,10 +2116,10 @@ cd .. && git add . && git commit -m "feat(recipe): 레시피 삭제 API 추가, 
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — `docs/specs/2026-08-16-recipe-crud.md` AC 53개 전부 확인
-- [ ] 스펙의 `status`를 `구현완료`로 변경
-- [ ] Swagger UI(`http://localhost:8080/swagger-ui.html`)에서 스펙의 Kasuya 4:6 예시를 그대로 등록하고, 응답의 `steps` 배열이 타이머 UI를 만들 수 있을 만큼의 정보(시각·지속시간·누적 물량)를 담고 있는지 눈으로 확인 (스펙의 「수동 확인」 항목)
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과 — `docs/specs/2026-08-16-recipe-crud.md` AC 53개 전부 확인
+- [x] 스펙의 `status`를 `구현완료`로 변경
+- [x] Swagger UI(`http://localhost:8080/swagger-ui.html`)에서 스펙의 Kasuya 4:6 예시를 그대로 등록하고, 응답의 `steps` 배열이 타이머 UI를 만들 수 있을 만큼의 정보(시각·지속시간·누적 물량)를 담고 있는지 눈으로 확인 (스펙의 「수동 확인」 항목) — `bootRun` + curl로 확인, 스펙 응답 예시와 정확히 일치
 
 ---
 

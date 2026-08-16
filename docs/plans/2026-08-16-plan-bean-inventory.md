@@ -167,7 +167,7 @@ backend/src/test/java/com/kaldinote/catalog/
   - `BeanProductRepository#findByRoasterIdAndName`, `BeanProductRepository#findAllByOrderByNameAsc`
   - `BeanBatchRepository#findByIdAndDeletedAtIsNull`, `BeanBatchRepository#findAllByUserIdAndDeletedAtIsNull`
 
-- [x] **Step 1: 스키마 마이그레이션 작성**
+- [ ] **Step 1: 스키마 마이그레이션 작성**
 
 `V7__create_bean_tables.sql`:
 
@@ -243,7 +243,7 @@ CREATE INDEX idx_bean_batches_product ON bean_batches (bean_product_id);
 ALTER TABLE recipes ADD COLUMN bean_product_id BIGINT REFERENCES bean_products (id);
 ```
 
-- [x] **Step 2: 실패하는 리포지토리 테스트 작성**
+- [ ] **Step 2: 실패하는 리포지토리 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/catalog/infrastructure/BeanCatalogRepositoryTest.java`:
 
@@ -325,12 +325,12 @@ class BeanCatalogRepositoryTest extends AbstractIntegrationTest {
 }
 ```
 
-- [x] **Step 3: 테스트 실행 — 실패 확인**
+- [ ] **Step 3: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BeanCatalogRepositoryTest'`
 Expected: FAIL — 컴파일 에러(엔티티·리포지토리 클래스가 존재하지 않음).
 
-- [x] **Step 4: enum·엔티티·리포지토리 구현**
+- [ ] **Step 4: enum·엔티티·리포지토리 구현**
 
 `catalog/domain/BeanMix.java`:
 
@@ -826,12 +826,12 @@ public interface BeanBatchRepository extends JpaRepository<BeanBatch, Long> {
 }
 ```
 
-- [x] **Step 5: 테스트 실행 — 통과 확인**
+- [ ] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BeanCatalogRepositoryTest'`
 Expected: PASS, 2 tests.
 
-- [x] **Step 6: 커밋**
+- [ ] **Step 6: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -854,7 +854,7 @@ cd .. && git add . && git commit -m "feat(bean): 원두·재고 스키마와 엔
 - Consumes: Task 1의 `Roaster.createByUser(...)`, `RoasterRepository`
 - Produces: `BeanCatalogService#createRoaster(name, country, website, userId)`, `#findAllRoasters()` — Task 3이 같은 서비스 클래스에 원두 상품 메서드를 추가한다
 
-- [x] **Step 1: 실패하는 테스트 작성**
+- [ ] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/catalog/presentation/BeanControllerTest.java` 신규 생성:
 
@@ -985,12 +985,12 @@ class BeanControllerTest extends AbstractIntegrationTest {
 }
 ```
 
-- [x] **Step 2: 테스트 실행 — 실패 확인**
+- [ ] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: FAIL — 컴파일 에러(`RoasterController`·`BeanCatalogService`·DTO 없음).
 
-- [x] **Step 3: 최소 구현**
+- [ ] **Step 3: 최소 구현**
 
 ```java
 // catalog/presentation/dto/RoasterCreateRequest.java
@@ -1113,12 +1113,12 @@ public class RoasterController {
 }
 ```
 
-- [x] **Step 4: 테스트 실행 — 통과 확인**
+- [ ] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: PASS, 6 tests.
 
-- [x] **Step 5: 커밋**
+- [ ] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1143,7 +1143,7 @@ cd .. && git add . && git commit -m "feat(bean): 로스터 생성·조회 API �
 
 이 태스크는 정상 경로만 만든다. `roasterId`/`varietyId`/`processId` FK 검증과 mix/ratio 오류 처리는 **Task 4**에서 추가한다 — 지금은 항상 유효한 입력만 테스트한다.
 
-- [x] **Step 1: 실패하는 테스트 작성**
+- [ ] **Step 1: 실패하는 테스트 작성**
 
 `BeanControllerTest`에 로스터·품종·가공법 조회 헬퍼와 아래 테스트를 추가한다:
 
@@ -1257,12 +1257,12 @@ cd .. && git add . && git commit -m "feat(bean): 로스터 생성·조회 API �
 
 > `roasterId(token)` 헬퍼는 매 테스트마다 고유한 로스터를 새로 만들어 원두 상품의 `UNIQUE(roaster_id, name)` 제약과 충돌하지 않게 한다.
 
-- [x] **Step 2: 테스트 실행 — 실패 확인**
+- [ ] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: FAIL — 컴파일 에러(`BeanProductController`·DTO 없음).
 
-- [x] **Step 3: 최소 구현**
+- [ ] **Step 3: 최소 구현**
 
 ```java
 // catalog/presentation/dto/OriginRequest.java
@@ -1508,12 +1508,12 @@ public class BeanProductController {
 }
 ```
 
-- [x] **Step 4: 테스트 실행 — 통과 확인**
+- [ ] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: PASS, 11 tests (Task 2의 6개 + Task 3의 5개).
 
-- [x] **Step 5: 커밋**
+- [ ] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1538,7 +1538,7 @@ cd .. && git add . && git commit -m "feat(bean): 원두 상품 생성·조회 AP
 
 이 태스크에서 서비스 계층 검증 순서는 스펙이 정한 대로 **404(roasterId/varietyId/processId) → 409(이름 중복) → 400(mix/ratio)** 순으로 구현한다.
 
-- [x] **Step 1: 실패하는 테스트 작성**
+- [ ] **Step 1: 실패하는 테스트 작성**
 
 대표로 mix/ratio 오류 2개는 전체 코드를 보이고, 나머지 11개는 표의 리터럴 값을 대입해 같은 패턴으로 작성한다. 기본 바디는 `{"roasterId":<유효한 id>,"name":"...","beanMix":"SINGLE_ORIGIN","roastLevel":"LIGHT","origins":[{"country":"ET"}]}`에서 해당 필드만 덮어쓴다.
 
@@ -1586,12 +1586,12 @@ cd .. && git add . && git commit -m "feat(bean): 원두 상품 생성·조회 AP
 | AC-BEAN-51 | Authorization 헤더 없이 생성 | 401 |
 | AC-BEAN-52 | `GET /api/v1/bean-products/999999` | 404 NOT_FOUND |
 
-- [x] **Step 2: 테스트 실행 — 실패 확인**
+- [ ] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: FAIL — mix/ratio 오류는 컴파일은 되나 `ErrorCode.BEAN_MIX_ORIGIN_MISMATCH`/`BEAN_ORIGIN_RATIO_MISMATCH`가 없어 컴파일 에러. FK 404 케이스는 지금 구현이 존재 확인을 하지 않아 500 또는 201로 잘못 통과한다.
 
-- [x] **Step 3: ErrorCode 추가 + 서비스 검증 추가**
+- [ ] **Step 3: ErrorCode 추가 + 서비스 검증 추가**
 
 `ErrorCode.java`에 추가:
 
@@ -1681,12 +1681,12 @@ Expected: FAIL — mix/ratio 오류는 컴파일은 되나 `ErrorCode.BEAN_MIX_O
 
 `BeanProductCreateRequest.name`에 `@Size(max = 100)`은 Task 3에서 이미 추가돼 있다 — AC-BEAN-22/23은 별도 변경 없이 이미 통과해야 한다(Step 2에서 실제로 확인).
 
-- [x] **Step 4: 테스트 실행 — 통과 확인**
+- [ ] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: PASS, 24 tests (11 + 13).
 
-- [x] **Step 5: 커밋**
+- [ ] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1709,7 +1709,7 @@ cd .. && git add . && git commit -m "feat(bean): 원두 상품 경계값 검증�
 - Consumes: Task 1의 `BeanBatch`·`BeanBatchRepository`·`DegassingStatus`, Task 3의 `BeanProductRepository`(FK 확인용)
 - Produces: `BeanBatchService#create(userId, request)`, `BeanBatchResponse` — Task 6~8이 그대로 재사용한다
 
-- [x] **Step 1: 실패하는 테스트 작성**
+- [ ] **Step 1: 실패하는 테스트 작성**
 
 대표로 정상 생성·경과일 2개는 전체 코드를 보이고, 경계값·에러는 표로 정리한다.
 
@@ -1781,12 +1781,12 @@ cd .. && git add . && git commit -m "feat(bean): 원두 상품 경계값 검증�
 | AC-BEAN-54 | roastedAt | 내일 | 400 INVALID_REQUEST |
 | AC-BEAN-55 | (Authorization 헤더 없이) | — | 401 |
 
-- [x] **Step 2: 테스트 실행 — 실패 확인**
+- [ ] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: FAIL — 컴파일 에러(`BeanBatchController`·`BeanBatchService`·DTO 없음).
 
-- [x] **Step 3: 최소 구현**
+- [ ] **Step 3: 최소 구현**
 
 ```java
 // inventory/presentation/dto/BeanBatchCreateRequest.java
@@ -1941,12 +1941,12 @@ public class BeanBatchController {
 }
 ```
 
-- [x] **Step 4: 테스트 실행 — 통과 확인**
+- [ ] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: PASS, 41 tests (24 + 17).
 
-- [x] **Step 5: 커밋**
+- [ ] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1968,7 +1968,7 @@ cd .. && git add . && git commit -m "feat(bean): 재고 생성 API 추가" && cd
 - Consumes: Task 5의 `BeanBatchService#create`, `BeanBatchResponse`
 - Produces: `BeanBatchService#findMine(userId)`, `#get(userId, batchId)`, private `findOwned(userId, batchId)` — Task 7·8이 `findOwned`를 그대로 재사용한다(Recipe의 `findOwned`와 동일 패턴)
 
-- [x] **Step 1: 실패하는 테스트 작성**
+- [ ] **Step 1: 실패하는 테스트 작성**
 
 ```java
   private ResultActions getBeanBatch(String token, Long id) throws Exception {
@@ -2023,12 +2023,12 @@ cd .. && git add . && git commit -m "feat(bean): 재고 생성 API 추가" && cd
   }
 ```
 
-- [x] **Step 2: 테스트 실행 — 실패 확인**
+- [ ] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: FAIL — `GET /api/v1/bean-batches`·`GET /api/v1/bean-batches/{id}` 엔드포인트가 없어 404(경로 없음).
 
-- [x] **Step 3: 최소 구현**
+- [ ] **Step 3: 최소 구현**
 
 `BeanBatchService`에 추가:
 
@@ -2071,12 +2071,12 @@ Expected: FAIL — `GET /api/v1/bean-batches`·`GET /api/v1/bean-batches/{id}` �
 
 (`GetMapping`, `PathVariable`, `List` import 추가)
 
-- [x] **Step 4: 테스트 실행 — 통과 확인**
+- [ ] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: PASS, 44 tests (41 + 3).
 
-- [x] **Step 5: 커밋**
+- [ ] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -2101,7 +2101,7 @@ cd .. && git add . && git commit -m "feat(bean): 재고 목록·단건 조회 AP
 - Consumes: Task 6의 `BeanBatchService#findOwned`
 - Produces: `BeanBatch#applyPatch(remainingG, finished, frozen)`(Task 1에서 이미 정의), `BeanBatchService#patch(userId, batchId, request)`
 
-- [x] **Step 1: 실패하는 테스트 작성**
+- [ ] **Step 1: 실패하는 테스트 작성**
 
 ```java
   private ResultActions patchBeanBatch(String token, Long id, String body) throws Exception {
@@ -2211,12 +2211,12 @@ cd .. && git add . && git commit -m "feat(bean): 재고 목록·단건 조회 AP
 
 > `beanBatchId(token, productId)` 헬퍼가 만드는 배치는 `weightG=200.0`으로 고정돼 있다(Task 5의 `beanProductId` 헬퍼와 짝을 이루는 기존 헬퍼 재사용).
 
-- [x] **Step 2: 테스트 실행 — 실패 확인**
+- [ ] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: FAIL — `PATCH /api/v1/bean-batches/{id}` 엔드포인트가 없어 404(경로 없음), `BEAN_BATCH_REMAINING_INVALID`가 없어 컴파일 에러.
 
-- [x] **Step 3: 최소 구현**
+- [ ] **Step 3: 최소 구현**
 
 `ErrorCode.java`에 추가:
 
@@ -2265,12 +2265,12 @@ public record BeanBatchPatchRequest(BigDecimal remainingG, Boolean finished, Boo
 
 `BeanBatch.applyPatch`는 Task 1에서 이미 구현돼 있다 — 변경 없음.
 
-- [x] **Step 4: 테스트 실행 — 통과 확인**
+- [ ] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: PASS, 51 tests (44 + 7).
 
-- [x] **Step 5: 커밋**
+- [ ] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -2292,7 +2292,7 @@ cd .. && git add . && git commit -m "feat(bean): 재고 수정(PATCH) API 추가
 **Interfaces:**
 - Consumes: Task 6의 `BeanBatchService#findOwned`, Task 1의 `BeanBatch#softDelete()`
 
-- [x] **Step 1: 실패하는 테스트 작성**
+- [ ] **Step 1: 실패하는 테스트 작성**
 
 ```java
   @Test
@@ -2351,12 +2351,12 @@ cd .. && git add . && git commit -m "feat(bean): 재고 수정(PATCH) API 추가
   }
 ```
 
-- [x] **Step 2: 테스트 실행 — 실패 확인**
+- [ ] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: FAIL — `DELETE /api/v1/bean-batches/{id}` 엔드포인트가 없어 404(경로 없음, AC-BEAN-14의 첫 DELETE 단계부터 실패).
 
-- [x] **Step 3: 최소 구현**
+- [ ] **Step 3: 최소 구현**
 
 `BeanBatchService`에 추가:
 
@@ -2379,12 +2379,12 @@ Expected: FAIL — `DELETE /api/v1/bean-batches/{id}` 엔드포인트가 없어 
 
 (`DeleteMapping` import 추가)
 
-- [x] **Step 4: 테스트 실행 — 통과 확인**
+- [ ] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BeanControllerTest'`
 Expected: PASS, 54 tests (51 + 3).
 
-- [x] **Step 5: 스펙 status 전환 + 전체 검증**
+- [ ] **Step 5: 스펙 status 전환 + 전체 검증**
 
 ```bash
 ./gradlew clean check
@@ -2393,7 +2393,7 @@ cd .. && ./scripts/check-spec-coverage.sh
 
 `docs/specs/2026-08-16-bean-inventory.md`의 frontmatter `status: 초안`을 `status: 구현완료`로 바꾼다.
 
-- [x] **Step 6: 커밋**
+- [ ] **Step 6: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -2404,10 +2404,10 @@ cd .. && git add . && git commit -m "feat(bean): 재고 삭제 API 추가, 원�
 
 ## 완료 기준
 
-- [x] `cd backend && ./gradlew clean check` 통과
-- [x] `./scripts/check-spec-coverage.sh` 통과 — `docs/specs/2026-08-16-bean-inventory.md` AC 54개 전부 확인
-- [x] 스펙의 `status`를 `구현완료`로 변경
-- [x] Swagger UI(`http://localhost:8080/swagger-ui.html`)에서 실제 로스터·블렌드 원두 상품을 등록하고 재고를 만들어 `daysOffRoast`·`degassingStatus`가 오늘 날짜 기준으로 맞는지 확인(스펙의 「수동 확인」 항목)
+- [ ] `cd backend && ./gradlew clean check` 통과
+- [ ] `./scripts/check-spec-coverage.sh` 통과 — `docs/specs/2026-08-16-bean-inventory.md` AC 54개 전부 확인
+- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [ ] Swagger UI(`http://localhost:8080/swagger-ui.html`)에서 실제 로스터·블렌드 원두 상품을 등록하고 재고를 만들어 `daysOffRoast`·`degassingStatus`가 오늘 날짜 기준으로 맞는지 확인(스펙의 「수동 확인」 항목)
 
 ---
 

@@ -1,5 +1,6 @@
 package com.kaldinote.recipe.presentation;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -767,6 +768,65 @@ class RecipeControllerTest extends AbstractIntegrationTest {
                     """
                     {"title":"B가 수정 시도","doseG":15.0,"waterG":250.0}
                     """))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-11 · 삭제하면 소유자도 조회할 수 없다")
+  void 삭제하면_소유자도_조회할_수_없다() throws Exception {
+    String token = token();
+    String id =
+        createAndGetLocation(
+            token,
+            """
+        {"title":"삭제될 레시피","doseG":15.0,"waterG":250.0}
+        """);
+
+    mockMvc
+        .perform(delete("/api/v1/recipes/{id}", id).header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(get("/api/v1/recipes/{id}", id).header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-12 · 이미 삭제된 레시피를 다시 삭제하면 404다")
+  void 이미_삭제된_레시피_재삭제는_404다() throws Exception {
+    String token = token();
+    String id =
+        createAndGetLocation(
+            token,
+            """
+        {"title":"두 번 삭제","doseG":15.0,"waterG":250.0}
+        """);
+    mockMvc
+        .perform(delete("/api/v1/recipes/{id}", id).header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(delete("/api/v1/recipes/{id}", id).header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-59 · 남의 레시피를 삭제할 수 없다")
+  void 남의_레시피를_삭제할_수_없다() throws Exception {
+    String ownerToken = token();
+    String id =
+        createAndGetLocation(
+            ownerToken,
+            """
+        {"title":"A의 레시피","doseG":15.0,"waterG":250.0}
+        """);
+
+    mockMvc
+        .perform(
+            delete("/api/v1/recipes/{id}", id).header(HttpHeaders.AUTHORIZATION, otherUserToken()))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.code").value("FORBIDDEN"));
   }

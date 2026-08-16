@@ -1,7 +1,7 @@
 ---
 id: RECIPE
 title: 레시피 등록·조회·수정·삭제 (푸어 스텝 포함)
-status: 초안
+status: 구현완료
 plan:
 ---
 

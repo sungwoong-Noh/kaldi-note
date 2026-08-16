@@ -10,21 +10,39 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
+import com.kaldinote.user.domain.User;
 import com.kaldinote.user.domain.UserRole;
+import com.kaldinote.user.infrastructure.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * 사용자 그라인더 등록 테스트가 users·user_grinders에 실제로 쓰므로 클래스 레벨 롤백이 필요하다. 없으면 커밋된 사용자가 남아 {@code
+ * UserRepositoryTest}의 절대 개수 단언이 깨진다.
+ */
+@Transactional
 class GearControllerTest extends AbstractIntegrationTest {
 
   @Autowired private JwtTokenProvider tokenProvider;
   @Autowired private GrinderModelRepository grinderRepository;
+  @Autowired private UserRepository userRepository;
 
   private String token() {
     return "Bearer " + tokenProvider.createAccessToken(1L, UserRole.USER);
+  }
+
+  /**
+   * 실제 사용자를 저장하고 그 ID로 토큰을 만든다. {@code user_grinders.user_id}가 {@code users(id)}를 참조하므로 고정 ID를 쓰는
+   * {@link #token()}으로는 FK 위반이 난다.
+   */
+  private String realUserToken() {
+    User user = userRepository.save(User.create(null, "그라인더테스터", null));
+    return "Bearer " + tokenProvider.createAccessToken(user.getId(), user.getRole());
   }
 
   @Test
@@ -155,5 +173,56 @@ class GearControllerTest extends AbstractIntegrationTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
         .andExpect(jsonPath("$.fieldErrors[*].field").value(hasItem("sourceSetting")));
+  }
+
+  @Test
+  @DisplayName("사용자 그라인더를 최소 입력으로 등록한다")
+  void 사용자_그라인더를_등록한다() throws Exception {
+    Long c40 = id("Comandante", "C40 MK4");
+    mockMvc
+        .perform(
+            post("/api/v1/gear/user-grinders")
+                .header(HttpHeaders.AUTHORIZATION, realUserToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"grinderModelId":%d,"nickname":"내 C40"}
+                    """
+                        .formatted(c40)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.grinderModelId").value(c40))
+        .andExpect(jsonPath("$.nickname").value("내 C40"))
+        .andExpect(jsonPath("$.calibrationOffsetClicks").value(0))
+        .andExpect(jsonPath("$.isDefault").value(false));
+  }
+
+  @Test
+  @DisplayName("존재하지 않는 grinderModelId로 사용자 그라인더를 등록하면 404다")
+  void 존재하지_않는_그라인더로_등록하면_404다() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/gear/user-grinders")
+                .header(HttpHeaders.AUTHORIZATION, realUserToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"grinderModelId":999999}
+                    """))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("인증 없이 사용자 그라인더를 등록할 수 없다")
+  void 인증_없이_사용자_그라인더를_등록할_수_없다() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/gear/user-grinders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"grinderModelId":1}
+                    """))
+        .andExpect(status().isUnauthorized());
   }
 }

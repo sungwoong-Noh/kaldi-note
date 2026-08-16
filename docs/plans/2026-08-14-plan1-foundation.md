@@ -3047,7 +3047,7 @@ cd .. && git add . && git commit -m "feat(auth): 카카오·구글 OAuth2 클라
 
 **Rotation 정책:** 갱신 시 기존 refresh 토큰을 폐기하고 새 쌍을 발급한다. **이미 폐기된 토큰이 다시 제출되면 탈취로 간주해 해당 사용자의 모든 refresh 토큰을 폐기**한다(재사용 감지).
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/auth/application/AuthServiceTest.java`:
 
@@ -3166,7 +3166,7 @@ class AuthServiceTest extends AbstractIntegrationTest {
 
 > `@MockBean`은 컨텍스트 캐시를 깨뜨린다. **이 테스트 클래스에서만** 쓰고 다른 통합 테스트로 퍼뜨리지 않는다. Boot 4에서 `@MockBean`이 제거됐다면 `@MockitoBean`으로 대체한다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 ./gradlew test --tests '*AuthServiceTest'
@@ -3174,7 +3174,7 @@ class AuthServiceTest extends AbstractIntegrationTest {
 
 Expected: 컴파일 실패.
 
-- [ ] **Step 3: 도메인·리포지토리 작성**
+- [x] **Step 3: 도메인·리포지토리 작성**
 
 `UserOAuthAccount` 엔티티 — `user_oauth_accounts` 테이블 매핑. 필드: `id`, `userId`, `provider`(`@Enumerated(STRING)`), `providerUserId`, `createdAt`. 정적 팩토리 `of(Long userId, OAuthProvider provider, String providerUserId)`.
 
@@ -3259,7 +3259,7 @@ public interface UserOAuthAccountRepository extends JpaRepository<UserOAuthAccou
 }
 ```
 
-- [ ] **Step 4: AuthService 구현**
+- [x] **Step 4: AuthService 구현**
 
 `TokenPair(String accessToken, String refreshToken, long expiresInSeconds)`,
 `LoginResult(TokenPair tokens, Long userId, String nickname, boolean newUser)` — 둘 다 record.
@@ -3357,7 +3357,7 @@ public class AuthService {
 }
 ```
 
-- [ ] **Step 5: 컨트롤러 작성**
+- [x] **Step 5: 컨트롤러 작성**
 
 ```java
 @RestController
@@ -3392,7 +3392,7 @@ public class AuthController {
 
 `@PathVariable OAuthProvider provider`는 `kakao`(소문자)를 받으려면 대소문자 무시 변환기가 필요하다. 가장 간단한 방법은 URL에 대문자를 쓰지 않고 `String`으로 받아 `OAuthProvider.valueOf(provider.toUpperCase())` 하는 것이다. 변환 실패는 `IllegalArgumentException` → `GlobalExceptionHandler`에서 400으로 매핑되도록 핸들러를 추가한다.
 
-- [ ] **Step 6: 테스트 실행 — 통과 확인**
+- [x] **Step 6: 테스트 실행 — 통과 확인**
 
 ```bash
 ./gradlew test --tests '*AuthServiceTest'
@@ -3400,7 +3400,7 @@ public class AuthController {
 
 Expected: PASS, 6 tests.
 
-- [ ] **Step 7: 수동 확인**
+- [x] **Step 7: 수동 확인**
 
 ```bash
 (cd .. && docker compose up -d)
@@ -3421,7 +3421,7 @@ curl -s -X POST localhost:8080/api/v1/auth/login/kakao \
 
 Expected: `accessToken`, `refreshToken`, `newUser: true`가 담긴 JSON.
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

@@ -3,6 +3,7 @@ package com.kaldinote.auth.infrastructure.jwt;
 import com.kaldinote.user.domain.UserRole;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.*;
@@ -45,7 +46,10 @@ public class JwtTokenProvider {
             .issuer(properties.issuer())
             .issuedAt(now)
             .expiresAt(now.plus(ttl))
-            .subject(String.valueOf(userId));
+            .subject(String.valueOf(userId))
+            // 같은 사용자에게 같은 초에 두 번 발급해도 토큰이 겹치지 않게 한다.
+            // refresh_tokens.token_hash가 UNIQUE라 겹치면 저장이 실패한다.
+            .claim("jti", UUID.randomUUID().toString());
     if (role != null) {
       claims.claim("role", role.name());
     }

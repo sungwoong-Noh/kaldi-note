@@ -40,6 +40,11 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(code.getStatus()).body(ErrorResponse.of(code, message));
   }
 
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException e) {
+    return toResponse(ErrorCode.INVALID_REQUEST, e.getMessage());
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException e) {
     List<ErrorResponse.FieldError> fieldErrors =

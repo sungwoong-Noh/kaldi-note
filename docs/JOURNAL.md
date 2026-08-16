@@ -7,6 +7,28 @@
 
 ---
 
+## 2026-08-16 · Task 8 — 로그인·토큰 갱신 API (refresh rotation)
+
+**브랜치:** `feat/task-08-auth-api` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료
+
+### 한 일
+- `UserOAuthAccount`·`RefreshToken` 엔티티, `RefreshTokenRepository`·`UserOAuthAccountRepository`, `AuthService`(login/refresh/logout), `TokenPair`·`LoginResult`, `AuthController` + DTO 3종 추가
+- `POST /api/v1/auth/login/{provider}`·`/refresh`·`/logout` — provider는 소문자 문자열로 받아 `OAuthProvider.valueOf(toUpperCase())`로 변환, 실패 시 `IllegalArgumentException` → 400(`GlobalExceptionHandler`에 핸들러 추가)
+- `AuthServiceTest` 6개 전부 통과 (계획 예상치와 일치). `bootRun`으로 기동해 provider 오타 400, 잘못된 인가코드 401, 빈 `code` 400을 curl로 수동 확인
+
+### 발견한 것
+- **계획 문서 `AuthServiceTest` 예시 코드에 진짜 보안 버그가 있었다.** `refresh()`가 재사용(이미 폐기된 토큰) 감지 시 `revokeAllByUserId()`로 사용자의 모든 리프레시 토큰을 폐기한 뒤 `BusinessException`을 던지는데, 이 메서드가 `@Transactional`이라 예외가 메서드를 빠져나가며 트랜잭션 전체가 자동 롤백되고 **방금 실행한 폐기 자체가 취소된다.** 즉 토큰 탈취가 감지돼도 나머지 토큰이 무효화되지 않는 채로 프로덕션에 배포될 뻔했다. `@Transactional(noRollbackFor = BusinessException.class)`로 고쳤다 — 테스트(`폐기된_토큰이_재사용되면...`)가 이걸 정확히 잡아냈다
+- **JWT는 같은 사용자·같은 초(second)에 두 번 발급하면 완전히 동일한 문자열이 나올 수 있다.** `iat`/`exp`가 초 단위 정밀도라, 같은 트랜잭션 흐름 안에서 로그인 직후 바로 갱신하거나 같은 계정으로 연달아 로그인하면 `refresh_tokens.token_hash` UNIQUE 제약을 위반한다. `JwtTokenProvider.encode()`에 무작위 `jti` 클레임을 추가해 토큰을 항상 고유하게 만들었다 — Task 6에서 만든 파일이지만 Task 8에서 실사용하며 드러난 문제라 여기서 고쳤다
+- **`AuthServiceTest`도 Task 4의 `UserRepositoryTest`와 같은 이유로 클래스에 `@Transactional`이 필요했다.** `AbstractIntegrationTest`에 롤백이 없어 테스트 메서드마다 커밋된 데이터가 남고, JUnit5 기본 실행 순서가 소스 순서가 아니라서 `userRepository.count()` 단언이 실행 순서에 따라 흔들렸다. 클래스 레벨 `@Transactional`을 추가해 해결 — 이 패턴은 이제 두 번째로 반복됐으니 앞으로 서비스/리포지토리 통합 테스트를 쓸 때 기본값으로 고려할 것
+- Step 7(수동 확인)은 실제 카카오 앱 크레덴셜이 없어 전체 로그인 플로우 재현은 생략했다. `bootRun` 기동, 잘못된 provider(400), 잘못된 인가코드(401 `OAUTH_TOKEN_EXCHANGE_FAILED`), 빈 `code` 검증 실패(400)만 curl로 확인
+
+### 다음 세션에게
+- **Task 9(카탈로그 마스터 + 시드)부터.** Plan 1의 인증 기반(Task 4~8)이 여기서 끝난다
+- `AuthController`의 provider 변환은 문자열 기반이다. 프론트 연동 시 URL에 `kakao`/`google` 소문자로 넘기게 안내할 것
+
+---
+
 ## 2026-08-16 · Task 7 — OAuth2 프로바이더 클라이언트 (카카오/구글)
 
 **브랜치:** `feat/task-07-oauth` (main에서 분기) · **PR:** 아래 참조

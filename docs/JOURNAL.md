@@ -7,6 +7,24 @@
 
 ---
 
+## 2026-08-16 · Task 2 — 레시피 생성 API (정상 동작 + 마이크론 스냅샷)
+
+**브랜치:** `feat/task-02-recipe-create` · **PR:** 아래 참조
+**상태:** 완료 — Step 1~5 전부, `./gradlew clean check` 통과, `RecipeControllerTest` 15/15
+
+### 한 일
+- `CreateRecipeRequest`/`StepRequest`/`RecipeResponse`/`RecipeStepResponse` DTO, `RecipeService#create`, `POST /api/v1/recipes` 컨트롤러 추가
+- AC-RECIPE-01·02·03·04·07·08·09·41·42·43·44·54·55·56·60 검증하는 `RecipeControllerTest` 15개 전부 통과
+
+### 발견한 것
+- **Step 2의 "실패 확인"이 계획 문서 예상과 달랐다.** 계획은 "컴파일 실패"를 기대했지만, 테스트가 DTO·서비스·컨트롤러 클래스를 직접 참조하지 않고 raw JSON 문자열 + MockMvc로만 호출하는 구조라 실제로는 **컴파일은 성공하고 15개 중 14개가 런타임에 상태코드 불일치(엔드포인트 없음 → 404)로 실패**했다. RED로서는 유효했다(올바른 이유로 실패) — 계획 문서 표현만 부정확했던 것으로 판단, Step 3 진행에는 영향 없음
+- 계획에 남아있던 검증되지 않은 가정 2개 모두 확인됨: (1) `CreateRecipeRequest`의 컴팩트 생성자가 `steps` 필드 생략 시 `null`을 받아 `List.of()`로 대체하는 것을 AC-RECIPE-01 테스트로 확인, (2) `com.jayway.jsonpath.JsonPath`는 `build.gradle.kts`에 명시적 의존성 없이도 `MockMvcResultMatchers.jsonPath()`가 정상 동작해 `spring-boot-starter-webmvc-test`의 전이 의존성으로 이미 포함돼 있음을 확인
+
+### 다음 세션에게
+- **Task 3(레시피 생성 — 입력 값 경계값 검증)부터.** `CreateRecipeRequest`/`StepRequest`에 `@DecimalMin`/`@Size` 등 범위 검증 애노테이션을 추가하는 단계 — Task 2에서 의도적으로 비워둔 것
+
+---
+
 ## 2026-08-16 · Task 1 — 레시피 스키마 · 엔티티 · 리포지토리 (기반)
 
 **브랜치:** `feat/task-01-recipe-schema` · **PR:** 아래 참조

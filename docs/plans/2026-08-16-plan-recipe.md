@@ -665,7 +665,7 @@ cd .. && git add . && git commit -m "feat(recipe): 레시피·푸어 스텝 스�
 
 > **DTO에 경계값 애노테이션을 아직 넣지 않는다.** `@NotNull`처럼 구조적으로 항상 필요한 것만 넣고, `@DecimalMin`/`@Size` 같은 범위 검증은 Task 3이 추가한다. 이 태스크의 테스트는 범위를 시험하지 않으므로 지금 넣으면 무엇을 위한 코드인지 알 수 없는 채로 만들어진다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/recipe/presentation/RecipeControllerTest.java`:
 
@@ -897,12 +897,12 @@ class RecipeControllerTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: 컴파일 실패 (DTO·서비스·컨트롤러 없음).
 
-- [ ] **Step 3: DTO · 서비스 · 컨트롤러 작성**
+- [x] **Step 3: DTO · 서비스 · 컨트롤러 작성**
 
 ```java
 package com.kaldinote.recipe.presentation.dto;
@@ -1221,12 +1221,12 @@ public class RecipeController {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: PASS, 15 tests.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

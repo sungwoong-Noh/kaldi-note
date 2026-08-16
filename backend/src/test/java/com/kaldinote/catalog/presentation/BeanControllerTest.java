@@ -804,4 +804,133 @@ class BeanControllerTest extends AbstractIntegrationTest {
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.code").value("NOT_FOUND"));
   }
+
+  private ResultActions patchBeanBatch(String token, Long id, String body) throws Exception {
+    return mockMvc.perform(
+        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(
+                "/api/v1/bean-batches/" + id)
+            .header(HttpHeaders.AUTHORIZATION, token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-10 · remainingG를 PATCH로 갱신할 수 있다")
+  void remainingG를_PATCH로_갱신할_수_있다() throws Exception {
+    String token = token();
+    Long batchId = beanBatchId(token, beanProductId(token));
+
+    patchBeanBatch(
+            token,
+            batchId,
+            """
+        {"remainingG":120.0}
+        """)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.remainingG").value(120.0));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-11 · finished를 PATCH로 토글할 수 있다")
+  void finished를_PATCH로_토글할_수_있다() throws Exception {
+    String token = token();
+    Long batchId = beanBatchId(token, beanProductId(token));
+
+    patchBeanBatch(
+            token,
+            batchId,
+            """
+        {"finished":true}
+        """)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.finished").value(true));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-12 · frozen을 true로 바꾸면 frozenAt이 서버 시각으로 기록된다")
+  void frozen을_true로_바꾸면_frozenAt이_기록된다() throws Exception {
+    String token = token();
+    Long batchId = beanBatchId(token, beanProductId(token));
+
+    patchBeanBatch(
+            token,
+            batchId,
+            """
+        {"frozen":true}
+        """)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.frozen").value(true))
+        .andExpect(jsonPath("$.frozenAt").exists());
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-13 · frozen을 false로 되돌리면 frozenAt이 null로 초기화된다")
+  void frozen을_false로_되돌리면_frozenAt이_초기화된다() throws Exception {
+    String token = token();
+    Long batchId = beanBatchId(token, beanProductId(token));
+    patchBeanBatch(
+            token,
+            batchId,
+            """
+        {"frozen":true}
+        """)
+        .andExpect(status().isOk());
+
+    patchBeanBatch(
+            token,
+            batchId,
+            """
+        {"frozen":false}
+        """)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.frozenAt").doesNotExist());
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-57 · 남의 재고를 수정할 수 없다")
+  void 남의_재고를_수정할_수_없다() throws Exception {
+    String owner = token();
+    Long batchId = beanBatchId(owner, beanProductId(owner));
+
+    patchBeanBatch(
+            otherUserToken(),
+            batchId,
+            """
+        {"finished":true}
+        """)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-60 · remainingG가 weightG를 초과하면 거부된다")
+  void remainingG가_weightG를_초과하면_거부된다() throws Exception {
+    String token = token();
+    Long batchId = beanBatchId(token, beanProductId(token));
+
+    patchBeanBatch(
+            token,
+            batchId,
+            """
+        {"remainingG":200.1}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("BEAN_BATCH_REMAINING_INVALID"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-61 · remainingG가 음수면 거부된다")
+  void remainingG가_음수면_거부된다() throws Exception {
+    String token = token();
+    Long batchId = beanBatchId(token, beanProductId(token));
+
+    patchBeanBatch(
+            token,
+            batchId,
+            """
+        {"remainingG":-0.1}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("BEAN_BATCH_REMAINING_INVALID"));
+  }
 }

@@ -1443,7 +1443,7 @@ cd .. && git add . && git commit -m "feat(recipe): 레시피 생성 입력 값 �
 - Consumes: Task 2의 `RecipeService.buildSteps`(확장 대상), `BrewerRepository`(Plan 1 `gear`)
 - Produces: `ErrorCode.RECIPE_STEP_WATER_MISMATCH`, `RECIPE_STEP_OVERLAP`, `RECIPE_STEP_WATER_INVALID` (신설)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `RecipeControllerTest`에 추가:
 
@@ -1552,12 +1552,12 @@ cd .. && git add . && git commit -m "feat(recipe): 레시피 생성 입력 값 �
 
 > AC-RECIPE-52의 `waterG`는 레시피 총 물량도 `0.0`으로 맞춰 물량 합계 검증(AC-50)이 아니라 스텝 타입 검증(AC-52)만 걸리게 한다. 두 조건을 동시에 위반하지 않아야 어떤 에러가 어떤 조건 때문인지 테스트가 명확해진다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: 9개 신규 테스트 FAIL — `RECIPE_STEP_*` 에러 코드가 없어 컴파일 실패(`ErrorCode`에 상수 없음) 또는 검증 로직이 없어 항상 201.
 
-- [ ] **Step 3: ErrorCode 추가 + RecipeService 검증 로직 확장**
+- [x] **Step 3: ErrorCode 추가 + RecipeService 검증 로직 확장**
 
 `ErrorCode.java`에 3개 추가 (기존 상수는 그대로 둔다):
 
@@ -1664,12 +1664,12 @@ Expected: 9개 신규 테스트 FAIL — `RECIPE_STEP_*` 에러 코드가 없어
 
 `import com.kaldinote.gear.infrastructure.BrewerRepository;`, `com.kaldinote.recipe.domain.RecipeSourceType;`, `com.kaldinote.recipe.domain.StepType;`를 추가한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: PASS, 45 tests (Task 2~4 누적).
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

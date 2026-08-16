@@ -3,13 +3,16 @@ package com.kaldinote.recipe.application;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
 import com.kaldinote.gear.domain.GrinderModel;
+import com.kaldinote.gear.infrastructure.BrewerRepository;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
 import com.kaldinote.grind.domain.GrindConverter;
 import com.kaldinote.grind.domain.GrindSpec;
 import com.kaldinote.recipe.domain.GrindSettingUnit;
 import com.kaldinote.recipe.domain.Recipe;
+import com.kaldinote.recipe.domain.RecipeSourceType;
 import com.kaldinote.recipe.domain.RecipeStep;
 import com.kaldinote.recipe.domain.RecipeVisibility;
+import com.kaldinote.recipe.domain.StepType;
 import com.kaldinote.recipe.infrastructure.RecipeRepository;
 import com.kaldinote.recipe.presentation.dto.CreateRecipeRequest;
 import com.kaldinote.recipe.presentation.dto.RecipeResponse;
@@ -32,15 +35,21 @@ public class RecipeService {
 
   private final RecipeRepository recipeRepository;
   private final GrinderModelRepository grinderRepository;
+  private final BrewerRepository brewerRepository;
   private final GrindConverter grindConverter = new GrindConverter();
 
   @Transactional
   public RecipeResponse create(Long userId, CreateRecipeRequest request) {
+    if (request.sourceType() != null && request.sourceType() != RecipeSourceType.USER) {
+      throw new BusinessException(ErrorCode.FORBIDDEN, "일반 API로는 CURATED 레시피를 만들 수 없습니다.");
+    }
+    requireExists(request.brewerId(), brewerRepository::existsById, "브루어");
+
     BigDecimal micron =
         computeGrindMicronEstimated(
             request.grindSettingUnit(), request.grindSettingValue(), request.grinderModelId());
 
-    List<RecipeStep> steps = buildSteps(request.steps());
+    List<RecipeStep> steps = buildSteps(request.steps(), request.waterG());
 
     Recipe recipe =
         Recipe.create(
@@ -98,10 +107,31 @@ public class RecipeService {
     return grindConverter.toMicron(spec, value); // 범위 밖이면 GrindSettingOutOfRangeException → 400
   }
 
-  private List<RecipeStep> buildSteps(List<StepRequest> stepRequests) {
+  private void requireExists(Long id, java.util.function.Predicate<Long> existsById, String label) {
+    if (id != null && !existsById.test(id)) {
+      throw new BusinessException(ErrorCode.NOT_FOUND, label + "를 찾을 수 없습니다: " + id);
+    }
+  }
+
+  private List<RecipeStep> buildSteps(List<StepRequest> stepRequests, BigDecimal totalWaterG) {
     List<RecipeStep> steps = new ArrayList<>();
+    BigDecimal sum = BigDecimal.ZERO;
+
     for (int i = 0; i < stepRequests.size(); i++) {
       StepRequest s = stepRequests.get(i);
+      validateStepWater(s);
+
+      if (i > 0) {
+        StepRequest prev = stepRequests.get(i - 1);
+        int prevEnd = prev.startAtSeconds() + prev.durationSeconds();
+        if (prevEnd > s.startAtSeconds()) {
+          throw new BusinessException(ErrorCode.RECIPE_STEP_OVERLAP);
+        }
+      }
+
+      if (s.waterG() != null) {
+        sum = sum.add(s.waterG());
+      }
       steps.add(
           RecipeStep.of(
               i + 1,
@@ -113,6 +143,21 @@ public class RecipeService {
               s.agitation(),
               s.note()));
     }
+
+    if (!stepRequests.isEmpty() && sum.compareTo(totalWaterG) != 0) {
+      throw new BusinessException(ErrorCode.RECIPE_STEP_WATER_MISMATCH);
+    }
     return steps;
+  }
+
+  private void validateStepWater(StepRequest s) {
+    boolean pours = s.stepType() == StepType.BLOOM || s.stepType() == StepType.POUR;
+    boolean hasPositiveWater = s.waterG() != null && s.waterG().compareTo(BigDecimal.ZERO) > 0;
+    if (pours && !hasPositiveWater) {
+      throw new BusinessException(ErrorCode.RECIPE_STEP_WATER_INVALID, "붓는 스텝은 물량이 0보다 커야 합니다.");
+    }
+    if (!pours && hasPositiveWater) {
+      throw new BusinessException(ErrorCode.RECIPE_STEP_WATER_INVALID, "붓지 않는 스텝에는 물량을 넣을 수 없습니다.");
+    }
   }
 }

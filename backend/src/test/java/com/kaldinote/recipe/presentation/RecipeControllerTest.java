@@ -524,4 +524,126 @@ class RecipeControllerTest extends AbstractIntegrationTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
   }
+
+  @Test
+  @DisplayName("AC-RECIPE-45 · 앞 스텝이 끝나는 순간 다음 스텝이 시작하면 허용된다")
+  void 경계_접촉은_허용된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"경계 접촉","doseG":15.0,"waterG":120.0,"steps":[
+          {"stepType":"POUR","startAtSeconds":0,"durationSeconds":30,"waterG":60.0},
+          {"stepType":"POUR","startAtSeconds":30,"durationSeconds":10,"waterG":60.0}
+        ]}
+        """)
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-46 · 1초라도 겹치면 거부된다")
+  void 일초_겹치면_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"겹침","doseG":15.0,"waterG":120.0,"steps":[
+          {"stepType":"POUR","startAtSeconds":0,"durationSeconds":30,"waterG":60.0},
+          {"stepType":"POUR","startAtSeconds":29,"durationSeconds":10,"waterG":60.0}
+        ]}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("RECIPE_STEP_OVERLAP"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-47 · 스텝 사이의 빈 구간은 허용된다")
+  void 빈_구간은_허용된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"빈 구간","doseG":15.0,"waterG":120.0,"steps":[
+          {"stepType":"POUR","startAtSeconds":0,"durationSeconds":10,"waterG":60.0},
+          {"stepType":"POUR","startAtSeconds":45,"durationSeconds":10,"waterG":60.0}
+        ]}
+        """)
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-48 · totalTimeSeconds가 마지막 스텝 종료보다 작아도 허용된다")
+  void totalTime이_스텝_종료보다_작아도_허용된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"짧은 목표시간","doseG":15.0,"waterG":60.0,"totalTimeSeconds":160,"steps":[
+          {"stepType":"POUR","startAtSeconds":165,"durationSeconds":10,"waterG":60.0}
+        ]}
+        """)
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-50 · 스텝 물량 합계가 총 물량과 다르면 거부된다")
+  void 스텝_물량_합계가_다르면_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"합계 불일치","doseG":15.0,"waterG":300.0,"steps":[
+          {"stepType":"POUR","startAtSeconds":0,"durationSeconds":10,"waterG":290.0}
+        ]}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("RECIPE_STEP_WATER_MISMATCH"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-51 · 붓지 않는 스텝에 물량이 있으면 거부된다")
+  void 붓지_않는_스텝에_물량이_있으면_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"잘못된 SWIRL","doseG":15.0,"waterG":50.0,"steps":[
+          {"stepType":"SWIRL","startAtSeconds":0,"durationSeconds":5,"waterG":50.0}
+        ]}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("RECIPE_STEP_WATER_INVALID"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-52 · 붓는 스텝에 물량이 0이면 거부된다")
+  void 붓는_스텝_물량이_0이면_거부된다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"물량 0인 POUR","doseG":15.0,"waterG":15.0,"steps":[
+          {"stepType":"POUR","startAtSeconds":0,"durationSeconds":5,"waterG":0}
+        ]}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("RECIPE_STEP_WATER_INVALID"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-53 · 존재하지 않는 brewerId는 404다")
+  void 존재하지_않는_brewerId는_404다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"없는 브루어","doseG":15.0,"waterG":250.0,"brewerId":999999}
+        """)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPE-57 · 일반 API로 CURATED 레시피를 만들 수 없다")
+  void CURATED_레시피는_만들_수_없다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"관리자용","doseG":15.0,"waterG":250.0,"sourceType":"CURATED"}
+        """)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
 }

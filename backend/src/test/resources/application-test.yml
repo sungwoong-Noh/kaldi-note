@@ -10,3 +10,9 @@ logging:
 kaldi:
   jwt:
     secret: local-development-only-secret-key-32bytes-minimum
+  oauth:
+    kakao:
+      client-id: dummy
+    google:
+      client-id: dummy
+      client-secret: dummy

@@ -7,6 +7,26 @@
 
 ---
 
+## 2026-08-16 · Task 7 — OAuth2 프로바이더 클라이언트 (카카오/구글)
+
+**브랜치:** `feat/task-07-oauth` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료
+
+### 한 일
+- `OAuthProvider`, `OAuthUserProfile`, `OAuthProperties`, `OAuthClient`/`KakaoOAuthClient`/`GoogleOAuthClient`/`OAuthClientRegistry`, `OAuthConfig`(`@EnableConfigurationProperties`) 추가
+- `application.yml`·`application-local.yml`·`application-test.yml`에 `kaldi.oauth.*` 설정(로컬·테스트는 더미 값) 추가
+- `KakaoOAuthClientTest` 3개 + `GoogleOAuthClientTest` 3개 = 6개 전부 통과 (계획 예상치와 일치)
+
+### 발견한 것
+- **계획 문서 Step 4의 `KakaoOAuthClient`/`GoogleOAuthClient` 예시 코드에 버그가 있었다.** 생성자가 2개(운영용 `public`, 테스트용 package-private)인데 어느 쪽도 `@Autowired`가 없으면, Spring은 여러 생성자 중 하나를 자동 선택하지 못하고 무인자 기본 생성자를 시도하다 `NoSuchMethodException`으로 컨텍스트 로딩에 실패한다 — 계획 코드를 그대로 옮기면 `SecurityConfigTest`·`UserRepositoryTest`·`JwtTokenProviderTest` 등 `@SpringBootTest` 전체가 깨진다(정작 신규 `OAuthClientTest`는 순수 단위 테스트라 통과해 눈치채기 어렵다). 두 클래스의 운영용 생성자에 `@Autowired`를 추가해 해결
+- **`RestClient.Builder` 빈이 Boot 4에서는 `spring-boot-starter-restclient`를 명시적으로 추가해야 생긴다.** `spring-boot-starter-webmvc-test`는 테스트 슬라이스에서 이 빈을 자동 등록해줘서 `KakaoOAuthClientTest`/`GoogleOAuthClientTest`(순수 단위 테스트, Spring 컨텍스트 없음)는 영향이 없었지만, `@SpringBootTest`로 뜨는 통합 테스트와 실제 `bootRun`에서는 빈이 없어 `NoSuchBeanDefinitionException`이 난다. `build.gradle.kts`에 `spring-boot-starter-restclient`를 추가해 해결 — RestClientAutoConfiguration이 Boot 4에서 `org.springframework.boot.restclient.autoconfigure`로 이동하며 별도 스타터가 필요해진 것이 원인(Spring Boot 4 모듈 재편의 연장선, `backend/CLAUDE.md`의 함정 3번과 같은 종류)
+
+### 다음 세션에게
+- **Task 8(로그인·토큰 갱신 API, refresh rotation)부터.** `OAuthClientRegistry`를 `AuthService`가 주입받아 쓰는 구조로 계획돼 있다
+- `spring-boot-starter-restclient` 추가는 앞으로 `RestClient`를 쓰는 모든 곳에 영향을 준다 — 이후 태스크에서 별도로 다시 추가할 필요 없음
+
+---
+
 ## 2026-08-15 · Task 6 — JWT 발급·검증 + ADMIN 인가
 
 **브랜치:** `feat/task-06-jwt` (main에서 분기) · **PR:** 아래 참조

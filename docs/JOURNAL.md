@@ -7,6 +7,36 @@
 
 ---
 
+## 2026-08-16 · 스펙 — 레시피 등록·조회·수정·삭제 (푸어 스텝 포함) · 설계 세션
+
+**브랜치:** `docs/spec-recipe` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료 — 스펙 1건 작성. Plan 2 계획 문서는 미착수
+
+### 한 일
+- Plan 1 완료 상태를 검증하고(`clean check` 16s 초록, AC 46개 확인) Plan 2 갭을 정리
+- `/interview` 8라운드로 `docs/specs/2026-08-16-recipe-crud.md` 작성 — **AC 53개**, `status: 초안`
+
+### 발견한 것 — Plan 2에서 없는 것 (다음 세션이 다시 조사하지 않도록)
+- **스키마 13개 미존재:** `roasters` `bean_products` `bean_origins` `bean_product_flavor_notes` `bean_batches` `water_profiles` `recipes` `recipe_steps` `tags` `recipe_tags` `brew_logs` `brew_log_steps` `brew_log_flavor_notes`
+- **`recipe.fork`** — 아키텍처가 정의한 3대 순수 계산 모듈 중 유일하게 미구현
+- **`follows` 테이블·엔티티는 있으나 읽는 코드가 어디에도 없다.** 공개범위 판정이 첫 사용처가 된다
+- **`ExtractionAnalyzer`의 사용처가 테스트뿐이다.** BrewLog가 생겨야 실제로 쓰인다
+
+### 발견한 것 — 인터뷰에서 나온 비자명한 결정
+- **무단계 그라인더로도 레시피를 등록할 수 있어야 한다.** 환산 API는 `micronsPerClick`이 null이면 422로 거부하지만, 레시피 등록까지 막으면 그 그라인더 사용자는 서비스를 못 쓴다. `grindMicronEstimated`만 null로 두고 201을 준다 (AC-RECIPE-08)
+- **`totalTimeSeconds`는 스텝과 대조하지 않는다.** 목표치일 뿐이므로 마지막 스텝 종료보다 작아도 통과한다 (AC-RECIPE-48). 반대로 스텝 물량 합계는 레시피 `waterG`와 **정확히 일치**해야 한다 (AC-RECIPE-50)
+- 스텝 겹침(`startAt + duration > 다음 startAt`)은 거부하되 **빈 구간은 허용**한다. 빈 구간은 암묵적 WAIT다
+- 결산에서 AC를 51개로 합의했으나 문서 작성 중 47·48을 추가해 53개가 됐다. 이미 확정된 결정(빈 구간 허용, totalTime 미검증)에 검증 조건이 없던 것을 채운 것이고, 새 결정을 만든 게 아니다
+
+### 다음 세션에게
+- **스펙 4건이 더 필요하다** — 원두 재고 / 브루잉 로그 / 포크 / 공개범위 인가. **Plan 2 계획 문서는 그 뒤에 쓴다.** 한 세션에 스펙 1건이 적정 분량이었다(질문 8라운드)
+- **레시피 스펙은 의도적으로 좁게 잘랐다.** 목록 조회·검색·태그·포크·공개범위 판정·`waterProfileId`·`beanProductId`가 전부 비목표다. 특히 `bean_product_id`는 **컬럼조차 만들지 않기로 했으니** 원두 재고 스펙에서 nullable FK 추가 마이그레이션을 잊지 말 것
+- 반대로 `parent_recipe_id`·`fork_root_id`·`author_name`·`source_url`·`source_note`는 **이 스펙 API가 쓰지 않지만 스키마에는 넣는다.** 포크와 CURATED 등록이 곧 쓰게 되고 나중에 넣으면 백필이 필요하기 때문이다
+- 스펙에 신설 `ErrorCode` 3종(`RECIPE_STEP_WATER_MISMATCH`·`RECIPE_STEP_OVERLAP`·`RECIPE_STEP_WATER_INVALID`)이 정의돼 있다
+- 카카오/구글 실제 로그인은 **여전히 크레덴셜이 없어 한 번도 실기 검증되지 않았다** (Task 11 항목에서 이어짐)
+
+---
+
 ## 2026-08-16 · Task 11 — 마스터 조회 API + 분쇄도 환산 API + OpenAPI 문서 (Plan 1 마지막 태스크)
 
 **브랜치:** `feat/task-11-master-api` (main에서 분기) · **PR:** 아래 참조

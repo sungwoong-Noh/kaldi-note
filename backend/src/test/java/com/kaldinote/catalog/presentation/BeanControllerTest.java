@@ -66,6 +66,30 @@ class BeanControllerTest extends AbstractIntegrationTest {
             .content(body));
   }
 
+  private Long beanProductId(String token) throws Exception {
+    Long roasterId = roasterId(token);
+    String body =
+        createBeanProduct(
+                token,
+                """
+        {"roasterId":%d,"name":"재고테스트상품-%s","beanMix":"SINGLE_ORIGIN","roastLevel":"LIGHT",
+         "origins":[{"country":"ET"}]}
+        """
+                    .formatted(roasterId, java.util.UUID.randomUUID()))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return Long.valueOf(com.jayway.jsonpath.JsonPath.read(body, "$.id").toString());
+  }
+
+  private ResultActions createBeanBatch(String token, String body) throws Exception {
+    return mockMvc.perform(
+        post("/api/v1/bean-batches")
+            .header(HttpHeaders.AUTHORIZATION, token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body));
+  }
+
   @Test
   @DisplayName("AC-BEAN-01 · 최소 입력으로 로스터가 생성된다")
   void 최소_입력으로_로스터가_생성된다() throws Exception {
@@ -460,5 +484,262 @@ class BeanControllerTest extends AbstractIntegrationTest {
         .perform(get("/api/v1/bean-products/999999").header(HttpHeaders.AUTHORIZATION, token()))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-08 · 최소 입력으로 재고가 생성되고 remainingG가 자동 초기화된다")
+  void 최소_입력으로_재고가_생성된다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now().minusDays(6)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.remainingG").value(200.0))
+        .andExpect(jsonPath("$.finished").value(false))
+        .andExpect(jsonPath("$.frozen").value(false))
+        .andExpect(jsonPath("$.frozenAt").doesNotExist());
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-15 · daysOffRoast는 roastedAt부터 오늘까지의 일수다")
+  void daysOffRoast는_경과_일수다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now().minusDays(5)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.daysOffRoast").value(5))
+        .andExpect(jsonPath("$.degassingStatus").value("IDEAL"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-24 · weightG 10.0은 허용된다")
+  void weightG_10_0은_허용된다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":10.0,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now()))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-25 · weightG 9.9는 거부된다")
+  void weightG_9_9는_거부된다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":9.9,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now()))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-26 · weightG 5000.0은 허용된다")
+  void weightG_5000_0은_허용된다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":5000.0,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now()))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-27 · weightG 5000.1은 거부된다")
+  void weightG_5000_1은_거부된다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":5000.1,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now()))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-28 · price 0은 허용된다")
+  void price_0은_허용된다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s","price":0}
+        """
+                .formatted(productId, java.time.LocalDate.now()))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-29 · price -1은 거부된다")
+  void price_마이너스1은_거부된다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s","price":-1}
+        """
+                .formatted(productId, java.time.LocalDate.now()))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-30 · price 1000000은 허용된다")
+  void price_1000000은_허용된다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s","price":1000000}
+        """
+                .formatted(productId, java.time.LocalDate.now()))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-31 · price 1000001은 거부된다")
+  void price_1000001은_거부된다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s","price":1000001}
+        """
+                .formatted(productId, java.time.LocalDate.now()))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-32 · 경과 2일은 TOO_FRESH다")
+  void 경과_2일은_TOO_FRESH다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now().minusDays(2)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.daysOffRoast").value(2))
+        .andExpect(jsonPath("$.degassingStatus").value("TOO_FRESH"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-33 · 경과 3일은 IDEAL이다")
+  void 경과_3일은_IDEAL이다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now().minusDays(3)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.daysOffRoast").value(3))
+        .andExpect(jsonPath("$.degassingStatus").value("IDEAL"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-34 · 경과 14일은 IDEAL이다")
+  void 경과_14일은_IDEAL이다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now().minusDays(14)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.daysOffRoast").value(14))
+        .andExpect(jsonPath("$.degassingStatus").value("IDEAL"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-35 · 경과 15일은 PAST_PEAK이다")
+  void 경과_15일은_PAST_PEAK이다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now().minusDays(15)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.daysOffRoast").value(15))
+        .andExpect(jsonPath("$.degassingStatus").value("PAST_PEAK"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-53 · 존재하지 않는 beanProductId는 404다")
+  void 존재하지_않는_beanProductId는_404다() throws Exception {
+    createBeanBatch(
+            token(),
+            """
+        {"beanProductId":999999,"weightG":200.0,"roastedAt":"%s"}
+        """
+                .formatted(java.time.LocalDate.now()))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-54 · roastedAt이 미래 날짜면 거부된다")
+  void roastedAt이_미래_날짜면_거부된다() throws Exception {
+    String token = token();
+    Long productId = beanProductId(token);
+    createBeanBatch(
+            token,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now().plusDays(1)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-55 · 인증 없이 재고를 생성할 수 없다")
+  void 인증_없이_재고를_생성할_수_없다() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/bean-batches")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                {"beanProductId":1,"weightG":200.0,"roastedAt":"%s"}
+                """
+                        .formatted(java.time.LocalDate.now())))
+        .andExpect(status().isUnauthorized());
   }
 }

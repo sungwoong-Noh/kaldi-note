@@ -3692,7 +3692,7 @@ cd .. && git add . && git commit -m "feat(catalog): 품종·가공법·플레이
 
 > **클릭당 마이크론을 모르는 그라인더는 `NULL`로 둔다.** `GrindSpec.convertible()`이 false가 되어 환산이 거부된다 — 이는 정상 동작이며 Task 2에서 이미 테스트로 고정했다. 추측값을 넣지 않는다. 잘못된 환산값은 값이 없는 것보다 나쁘다.
 
-- [ ] **Step 1: 스키마 마이그레이션 작성**
+- [x] **Step 1: 스키마 마이그레이션 작성**
 
 `V4__create_gear_tables.sql`:
 
@@ -3752,7 +3752,7 @@ CREATE TABLE brew_filters (
 );
 ```
 
-- [ ] **Step 2: 시드 마이그레이션 작성**
+- [x] **Step 2: 시드 마이그레이션 작성**
 
 `V5__seed_gear.sql`:
 
@@ -3798,7 +3798,7 @@ INSERT INTO brew_filters (name, material, shape, is_system) VALUES
     ('스테인리스 메탈 필터',  'METAL',          'CONE',        true);
 ```
 
-- [ ] **Step 3: 실패하는 테스트 작성**
+- [x] **Step 3: 실패하는 테스트 작성**
 
 ```java
 package com.kaldinote.gear.infrastructure;
@@ -3873,7 +3873,7 @@ class GearSeedTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 실패 확인**
+- [x] **Step 4: 테스트 실행 — 실패 확인**
 
 ```bash
 ./gradlew test --tests '*GearSeedTest'
@@ -3881,7 +3881,7 @@ class GearSeedTest extends AbstractIntegrationTest {
 
 Expected: 컴파일 실패.
 
-- [ ] **Step 5: 엔티티와 리포지토리 작성**
+- [x] **Step 5: 엔티티와 리포지토리 작성**
 
 enum: `AdjustmentType { CLICK, NUMBERED, STEPLESS }`, `BurrType { CONICAL, FLAT }`, `BrewerType { CONE, FLAT_BOTTOM, WAVE, HYBRID }`, `FilterMaterial { PAPER_BLEACHED, PAPER_NATURAL, ABACA, METAL, CLOTH }`.
 
@@ -3919,7 +3919,7 @@ public interface UserGrinderRepository extends JpaRepository<UserGrinder, Long> 
 }
 ```
 
-- [ ] **Step 6: 테스트 실행 — 통과 확인**
+- [x] **Step 6: 테스트 실행 — 통과 확인**
 
 ```bash
 ./gradlew test --tests '*GearSeedTest'
@@ -3927,7 +3927,7 @@ public interface UserGrinderRepository extends JpaRepository<UserGrinder, Long> 
 
 Expected: PASS, 5 tests. 특히 세 번째 테스트가 Task 2의 순수 도메인과 시드 데이터가 실제로 맞물리는 것을 증명한다.
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

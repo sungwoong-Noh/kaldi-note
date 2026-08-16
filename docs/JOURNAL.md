@@ -7,6 +7,29 @@
 
 ---
 
+## 2026-08-17 · 브루잉 로그 스펙 인터뷰
+
+**브랜치:** `docs/spec-brew-log` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료 — 스펙 1건 작성. `docs/specs/2026-08-17-brew-log.md`, AC 39개, `status: 초안`. `check-spec-coverage.sh`가 초안으로 정상 건너뜀 확인
+
+### 한 일
+- 남은 스펙 후보 3건(브루잉 로그/포크/공개범위 인가) 중 브루잉 로그를 먼저 다루기로 결정 — Recipe↔BrewLog 분리가 이 서비스의 핵심 원칙이라 우선순위가 가장 높다고 판단
+- `/interview` 약 20라운드로 API 범위를 **생성(POST)+단건조회(GET)만**으로 좁혀 확정 — `brew_log_steps`·`brew_log_flavor_notes`·사진 첨부·공개범위 인가 로직·즉흥 추출(recipeId nullable)을 전부 비목표로 뺐다
+- 기존 `extraction`(`ExtractionAnalyzer`/`BrewMeasurement`)·`grind`(`GrindConverter`) 순수 도메인을 그대로 재사용하도록 설계 — EY/SCA는 저장하지 않고 조회마다 재계산, 그라인더 마이크론 추정치는 생성 시점에 계산해 스냅샷 저장
+- 원두 재고 스펙의 `daysOffRoast`/`degassingStatus` 3단계 판정을 그대로 가져오되, 원두 재고와 달리 **조회 시점이 아니라 생성 시점(`brewedAt` 기준)에 계산해 스냅샷 저장**하기로 결정 — 과거 기록이라 "오늘 기준"이 아니라 "그때 기준"이어야 맞다
+
+### 발견한 것
+- **recipeId·beanBatchId·userGrinderId 셋 다 필수로 좁혔다.** 설계 문서는 `recipe_id`를 nullable(즉흥 추출 허용)로 열어뒀지만, 사용자가 이번 스펙에서는 필수로 결정 — 즉흥 추출은 별도 결정 필요 시 후속 스펙에서 다시 연다
+- **필드 단순 범위 위반과 필드 간 물리적 정합성 위반을 에러 코드로 명확히 나눴다.** `actualDoseG≤0`·`rating` 범위 등은 Bean Validation → `INVALID_REQUEST`(400)이고, `beverageWeightG>actualWaterG`·`EY>30.0` 같은 관계 검증은 기존 `BrewMeasurement`/`ExtractionAnalyzer`를 그대로 호출해 `INVALID_BREW_MEASUREMENT`(400)로 위임 — 신설 ErrorCode 없이 기존 것만 재사용
+- **TDS의 소수 자릿수(`precision 4, scale 2`)를 이 스펙에서 확정했다.** extraction 스펙이 "브루잉 로그 스키마 정할 때 확정"이라고 미뤄뒀던 열린 결정이었다
+
+### 다음 세션에게
+- **사람 승인 후 `docs/plans/`에 구현 계획부터 쓸 것.** 스펙은 `status: 초안`이라 커버리지 스크립트가 건너뛴다
+- 남은 스펙 후보는 포크 / 공개범위 인가 2건. 이번 스펙의 "열어둔 결정"에 있는 대로, 목록 조회·수정·삭제 API와 `brew_log_steps`·`brew_log_flavor_notes`·즉흥 추출·공개범위 인가는 전부 후속 스펙 몫
+- 카카오/구글 실제 로그인은 여전히 미검증 상태 그대로다
+
+---
+
 ## 2026-08-17 · 스택 PR 병합 사고 복구 — main이 Task 1까지만 반영된 상태를 발견하고 복구
 
 **브랜치:** `feat/task-08-bean-batch-delete` → main 직접 · **PR:** [#37](https://github.com/sungwoong-Noh/kaldi-note/pull/37)(머지 완료)

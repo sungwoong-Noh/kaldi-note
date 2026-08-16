@@ -742,4 +742,66 @@ class BeanControllerTest extends AbstractIntegrationTest {
                         .formatted(java.time.LocalDate.now())))
         .andExpect(status().isUnauthorized());
   }
+
+  private ResultActions getBeanBatch(String token, Long id) throws Exception {
+    return mockMvc.perform(
+        get("/api/v1/bean-batches/" + id).header(HttpHeaders.AUTHORIZATION, token));
+  }
+
+  private Long beanBatchId(String token, Long productId) throws Exception {
+    String body =
+        createBeanBatch(
+                token,
+                """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s"}
+        """
+                    .formatted(productId, java.time.LocalDate.now()))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return Long.valueOf(com.jayway.jsonpath.JsonPath.read(body, "$.id").toString());
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-09 · 재고 목록은 소진된 배치도 포함해 본인 것 전부를 반환한다")
+  void 재고_목록은_본인_것_전부를_반환한다() throws Exception {
+    String tokenA = token();
+    Long productId = beanProductId(tokenA);
+    beanBatchId(tokenA, productId);
+    beanBatchId(tokenA, productId);
+
+    String tokenB = otherUserToken();
+    createBeanBatch(
+            tokenB,
+            """
+        {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s"}
+        """
+                .formatted(productId, java.time.LocalDate.now()))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(get("/api/v1/bean-batches").header(HttpHeaders.AUTHORIZATION, tokenA))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-56 · 남의 재고를 조회할 수 없다")
+  void 남의_재고를_조회할_수_없다() throws Exception {
+    String owner = token();
+    Long productId = beanProductId(owner);
+    Long batchId = beanBatchId(owner, productId);
+
+    getBeanBatch(otherUserToken(), batchId)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  @Test
+  @DisplayName("AC-BEAN-59 · 존재하지 않는 재고 조회는 404다")
+  void 존재하지_않는_재고_조회는_404다() throws Exception {
+    getBeanBatch(token(), 999999L)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
 }

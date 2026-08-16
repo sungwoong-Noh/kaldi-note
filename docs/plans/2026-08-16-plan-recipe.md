@@ -1247,7 +1247,7 @@ cd .. && git add . && git commit -m "feat(recipe): 레시피 생성 API와 마�
 - Consumes: Task 2의 `CreateRecipeRequest`, `StepRequest`, `createRecipe(token, body)` 테스트 헬퍼
 - Produces: (없음 — Bean Validation 애노테이션만 추가. 새 타입 없음)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `RecipeControllerTest`에 아래 메서드를 추가한다. 패턴은 동일하다 — **하한 통과 / 하한-1 거부 / 상한 통과 / 상한+1 거부**를 각각 별도 `@Test`로 작성한다. 대표로 `doseG`와 `title` 그룹만 전체 코드를 보이고, 나머지는 스펙의 리터럴 값을 그대로 대입해 같은 패턴으로 작성한다.
 
@@ -1338,12 +1338,12 @@ cd .. && git add . && git commit -m "feat(recipe): 레시피 생성 API와 마�
 | AC-RECIPE-39 | description | 2000자 | 201 |
 | AC-RECIPE-40 | description | 2001자 | 400 INVALID_REQUEST |
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: 새로 추가한 21개 중 대부분이 FAIL — DTO에 범위 애노테이션이 없어 400이어야 할 요청이 201로 통과하거나, 201이어야 할 요청이 통과하되 검증이 없어 의미가 없다.
 
-- [ ] **Step 3: DTO에 경계값 애노테이션 추가**
+- [x] **Step 3: DTO에 경계값 애노테이션 추가**
 
 `CreateRecipeRequest.java`를 아래처럼 바꾼다 (필드 순서는 유지, 애노테이션만 추가):
 
@@ -1416,12 +1416,12 @@ public record StepRequest(
 
 > `@NotBlank`는 트림한 뒤 길이 0을 실패로 본다 — AC-RECIPE-38("   ")이 이 애노테이션 하나로 해결된다. 커스텀 코드가 필요 없다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: PASS, 36 tests (Task 2의 15개 + Task 3의 21개).
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

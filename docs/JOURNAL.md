@@ -7,6 +7,28 @@
 
 ---
 
+## 2026-08-16 · Task 7 — 레시피 삭제 API (DELETE), 레시피 계획 완료
+
+**브랜치:** `feat/task-07-recipe-delete` (`feat/task-06-recipe-update` 위에 스택) · **PR:** 아래 참조
+**상태:** 완료 — Step 1~6 전부, `./gradlew clean check` 통과, `RecipeControllerTest` 53/53. **`docs/plans/2026-08-16-plan-recipe.md` 전체 완료**
+
+### 한 일
+- `RecipeService#delete`(소프트 삭제), `DELETE /api/v1/recipes/{id}` 추가
+- AC-RECIPE-11(삭제 후 소유자도 404)·12(재삭제 404)·59(남의 레시피 삭제 403) 검증 테스트 3개 추가
+- `docs/specs/2026-08-16-recipe-crud.md`의 `status`를 `초안 → 구현완료`로 전환 — `check-spec-coverage.sh`가 AC 53개 전부 확인(스펙 3건·AC 99개 통과)
+- 완료 기준의 수동 확인(Swagger UI에서 Kasuya 4:6 등록) 항목을 `bootRun` + curl로 수행 — 로컬 JWT secret으로 직접 서명한 토큰 사용(issuer=`kaldi-note` 클레임 필요, Task 11 때와 같은 방식). 응답이 스펙의 응답 예시와 `ratio`·`grindMicronEstimated`·`cumulativeWaterG`까지 정확히 일치함을 확인. 검증 후 생성한 테스트 데이터(user id=1, recipe id=1)는 DB에서 직접 삭제해 정리
+
+### 발견한 것
+- 계획 코드를 그대로 옮겨 별다른 이슈 없이 한 번에 통과. `findOwned`·`softDelete`가 Task 1·5에서 이미 준비돼 있어 Task 7이 가장 짧게 끝났다
+- PR #23(Task 5)·#24(Task 6)이 아직 머지되지 않아 이 브랜치도 `feat/task-06-recipe-update` 위에 스택했다. 순서대로 머지되면 GitHub가 base를 자동 재조정한다
+
+### 다음 세션에게
+- **레시피 CRUD 계획(Plan 2 첫 스펙)이 여기서 끝났다.** PR #23 → #24 → 이번 PR 순서로 머지할 것
+- 다음 스펙 후보 4건이 남아 있다(2026-08-16 스펙 세션 JOURNAL 참조): 원두 재고 / 브루잉 로그 / 포크 / 공개범위 인가. GET의 "소유자 아니면 403"은 공개범위 인가 스펙이 나오면 FRIENDS/PUBLIC 조건을 반영해 다시 열어야 한다
+- 카카오/구글 실제 로그인은 여전히 크레덴셜이 없어 미검증 상태 그대로다
+
+---
+
 ## 2026-08-16 · Task 6 — 레시피 수정 API (PUT)
 
 **브랜치:** `feat/task-06-recipe-update` (`feat/task-05-recipe-get` 위에 스택 — PR #23 아직 미머지) · **PR:** 아래 참조

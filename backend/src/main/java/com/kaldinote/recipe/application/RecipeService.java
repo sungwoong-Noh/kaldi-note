@@ -115,6 +115,12 @@ public class RecipeService {
     return RecipeResponse.from(recipe);
   }
 
+  @Transactional
+  public void delete(Long userId, Long recipeId) {
+    Recipe recipe = findOwned(userId, recipeId);
+    recipe.softDelete();
+  }
+
   private Recipe findOwned(Long userId, Long recipeId) {
     Recipe recipe =
         recipeRepository

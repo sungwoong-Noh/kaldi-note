@@ -7,6 +7,27 @@
 
 ---
 
+## 2026-08-16 · 계획 — 레시피 CRUD 구현 계획 · 설계 세션
+
+**브랜치:** `docs/plan-recipe` (main에서 분기) · **PR:** [#18](https://github.com/sungwoong-Noh/kaldi-note/pull/18)
+**상태:** 완료 — 계획 문서 1건 작성
+
+### 한 일
+- `docs/specs/2026-08-16-recipe-crud.md`(AC 53개)에 맞춰 `docs/plans/2026-08-16-plan-recipe.md` 작성 — 태스크 7개, AC 53개 전부 매핑
+- 기존 코드(`grind.domain.GrindConverter`, `gear` 리포지토리, Task 11에서 확립된 `AuthenticatedUser` 커스텀 리졸버 패턴)를 그대로 재사용하도록 설계 — 새 환산 로직·새 인증 패턴을 만들지 않음
+
+### 발견한 것 — 계획을 쓰며 직접 판단한 것 (스펙에 없던 결정)
+- **GET을 소유자 기준 403으로 제한한다.** 스펙은 조회 AC를 전부 소유자 기준으로만 정의하고 타인 접근은 후속 공개범위 스펙으로 미뤘다. `findOwned`를 PUT/DELETE와 공유해 자연히 403이 나도록 했다 — AC 태그는 붙이지 않았다(스펙에 없는 동작이므로).
+- **PUT의 스텝 교체 순서:** `clear()+addAll()`만 하면 Hibernate가 insert를 delete보다 먼저 실행해 `UNIQUE(recipe_id, step_order)` 위반이 난다. `recipeStepRepository.deleteAllByRecipe(recipe)` → `flush()` → `clear()` → `replaceSteps()` 순서로 계획에 명시했다. **AC-RECIPE-10 테스트 자체가 이 순서의 정합성을 검증한다** — 구현 세션에서 실패하면 순서를 다시 조정.
+- **태스크 분리 기준:** 생성 API를 정상동작(Task 2)/경계값(Task 3)/에러(Task 4) 3개로 쪼갰다. Task 2가 DTO에 `@NotNull`만 넣고 Task 3이 `@DecimalMin`/`@Size` 등을 추가하는 식으로, 진짜 TDD 빨강→초록이 되도록 설계했다(애초에 완성된 DTO를 Task 2에 다 넣으면 Task 3의 "실패 확인" 단계가 성립하지 않는다).
+
+### 다음 세션에게
+- **`/resume` → Task 1부터 TDD로 구현.** PR #18이 머지된 뒤 `feat/task-01-recipe-schema` 같은 브랜치로 시작
+- 계획의 "검증되지 않은 가정" 2개를 실제로 확인할 것: (1) `CreateRecipeRequest`의 컴팩트 생성자가 `steps` 필드 생략 시 정말 `null`을 받는지, (2) 테스트 헬퍼의 `com.jayway.jsonpath.JsonPath`가 Boot 4 `spring-boot-starter-webmvc-test`에 포함되는지 — 안 되면 계획에 적어둔 대로 `ObjectMapper`로 대체
+- 카카오/구글 실제 로그인은 여전히 미검증 (이전 세션들과 동일, 이번 세션 범위 아님)
+
+---
+
 ## 2026-08-16 · 스펙 — 레시피 등록·조회·수정·삭제 (푸어 스텝 포함) · 설계 세션
 
 **브랜치:** `docs/spec-recipe` (main에서 분기) · **PR:** 아래 참조

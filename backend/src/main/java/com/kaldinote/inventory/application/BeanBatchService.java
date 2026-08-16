@@ -62,6 +62,11 @@ public class BeanBatchService {
     return BeanBatchResponse.from(batch);
   }
 
+  @Transactional
+  public void delete(Long userId, Long batchId) {
+    findOwned(userId, batchId).softDelete();
+  }
+
   private BeanBatch findOwned(Long userId, Long batchId) {
     BeanBatch batch =
         beanBatchRepository

@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,5 +49,11 @@ public class BeanBatchController {
   public BeanBatchResponse patch(
       @PathVariable Long id, @RequestBody BeanBatchPatchRequest request, AuthenticatedUser user) {
     return beanBatchService.patch(user.id(), id, request);
+  }
+
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(@PathVariable Long id, AuthenticatedUser user) {
+    beanBatchService.delete(user.id(), id);
   }
 }

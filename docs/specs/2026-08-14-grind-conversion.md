@@ -1,7 +1,7 @@
 ---
 id: GRIND
 title: 분쇄도 환산
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-08-14-plan1-foundation.md
 ---
 

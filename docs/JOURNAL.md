@@ -7,6 +7,31 @@
 
 ---
 
+## 2026-08-16 · Task 11 — 마스터 조회 API + 분쇄도 환산 API + OpenAPI 문서 (Plan 1 마지막 태스크)
+
+**브랜치:** `feat/task-11-master-api` (main에서 분기) · **PR:** 아래 참조
+**상태:** 완료 — **Plan 1 전체 완료**
+
+### 한 일
+- `GearController`(`/grinders`·`/brewers`·`/filters`·`/grind-conversions`), `CatalogController`(`/varieties`·`/processes`·`/flavor-notes`), 각 서비스·DTO 추가
+- `springdoc-openapi-starter-webmvc-ui:3.1.0` 추가, `OpenApiConfig`로 Bearer JWT 스킴 등록
+- `GearControllerTest` 13개(AC-GRIND-07·10~13·20·21·30~34), `CatalogControllerTest` 4개(스펙 없음, AC ID 없음) 전부 통과
+- 두 스펙(`grind-conversion`, `extraction-analysis`) `status`를 `구현완료`로 전환 — `check-spec-coverage.sh`가 AC 46개 전부 확인
+- Swagger UI 대신 `/v3/api-docs`로 8개 엔드포인트(+ Task 8의 auth 3개) 전부 문서화됨을 확인. 카카오 크레덴셜이 없어 로컬 JWT secret으로 직접 서명한 토큰으로 그라인더 목록 조회·환산 API(C40 22클릭→660µm→K-Plus 30.0, warning 문구 노출)까지 curl로 재현
+- `flyway_schema_history`를 직접 조회해 V1~V5 전부 `success=true` 확인 (`flywayInfo` gradle task는 플러그인 미적용이라 없음 — Plan 1 완료 기준 문서의 가정과 다름)
+
+### 발견한 것
+- **`AuthenticatedUser` 레코드(Task 6에서 생성)가 실제로는 어디에도 연결돼 있지 않았다.** `@AuthenticationPrincipal AuthenticatedUser user`로 받으라는 계획 문서 설명대로 하면, `JwtAuthenticationToken`의 principal이 원본 `Jwt`라 타입이 안 맞아 Spring Security의 `AuthenticationPrincipalArgumentResolver`가 조용히 `null`을 반환하고 이후 `user.id()` 호출에서 NPE가 난다. `AuthenticatedUserArgumentResolver`(커스텀 `HandlerMethodArgumentResolver`, `@AuthenticationPrincipal` 없이 타입만으로 매칭)를 새로 만들고 `WebConfig`에 등록해 해결했다. 컨트롤러 파라미터는 어노테이션 없이 `AuthenticatedUser user`로만 받는다
+- **`CatalogControllerTest`의 품종 추가 테스트가 FK 위반(500)으로 실패했다.** `varieties.created_by_user_id`가 `users(id)`를 참조하는데, 테스트가 실제 DB에 없는 `userId=1`로 JWT만 발급해 호출했기 때문이다. `UserRepository`로 실제 사용자를 저장한 뒤 그 ID로 토큰을 발급하도록 고쳤고, 클래스에 `@Transactional`을 추가해 테스트 간 격리했다 (Task 4·8과 같은 패턴)
+- **AC-GRIND-33의 계획 문서 예시 코드는 스펙의 Given/When과 살짝 어긋난다.** 스펙은 "환산 API에 인증 없이 호출하면 401"이라고 적었지만, 계획의 테스트 코드는 `/gear/grinders` 목록 조회에 이 AC ID를 붙였다. `SecurityConfig`가 모든 `/api/v1/gear/**`를 동일한 JWT 필터로 보호하므로 동작상 문제는 없으나, 계획 코드를 그대로 따랐다는 점을 남긴다
+- `CatalogService.findAllProcesses()`가 카테고리별로 묶은 `Map<ProcessCategory, List<...>>`을 반환하는데, 정확한 응답 구조(그룹 키 형태 등)를 못박은 스펙이 없어 자유롭게 설계했다
+
+### 다음 세션에게
+- **Plan 1이 여기서 끝났다.** `docs/plans/2026-08-14-plan2-core-domain.md`는 아직 없다 — 다음 세션은 Plan 2 작성부터 시작해야 한다(원두 재고 → 레시피 → 브루잉 로그 → 포크). CLAUDE.md 규칙대로 **스펙 → 계획 → 코드** 순서를 지킬 것
+- 카카오/구글 실제 로그인은 이번 세션까지도 크레덴셜이 없어 한 번도 실기 검증되지 않았다. 프론트 연동 전에 실제 OAuth 앱을 만들어 처음부터 끝까지 로그인 플로우를 한 번은 확인해야 한다
+
+---
+
 ## 2026-08-16 · Task 10 — 장비 마스터 (그라인더·드리퍼·필터) + 시드
 
 **브랜치:** `feat/task-10-gear` (main에서 분기) · **PR:** 아래 참조

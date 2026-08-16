@@ -14,9 +14,11 @@ import com.kaldinote.recipe.domain.RecipeStep;
 import com.kaldinote.recipe.domain.RecipeVisibility;
 import com.kaldinote.recipe.domain.StepType;
 import com.kaldinote.recipe.infrastructure.RecipeRepository;
+import com.kaldinote.recipe.infrastructure.RecipeStepRepository;
 import com.kaldinote.recipe.presentation.dto.CreateRecipeRequest;
 import com.kaldinote.recipe.presentation.dto.RecipeResponse;
 import com.kaldinote.recipe.presentation.dto.StepRequest;
+import com.kaldinote.recipe.presentation.dto.UpdateRecipeRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -34,6 +36,7 @@ public class RecipeService {
   private static final BigDecimal MICRON_MAX = new BigDecimal("2000");
 
   private final RecipeRepository recipeRepository;
+  private final RecipeStepRepository recipeStepRepository;
   private final GrinderModelRepository grinderRepository;
   private final BrewerRepository brewerRepository;
   private final GrindConverter grindConverter = new GrindConverter();
@@ -70,6 +73,64 @@ public class RecipeService {
     recipe.replaceSteps(steps);
 
     return RecipeResponse.from(recipeRepository.save(recipe));
+  }
+
+  public RecipeResponse get(Long userId, Long recipeId) {
+    return RecipeResponse.from(findOwned(userId, recipeId));
+  }
+
+  @Transactional
+  public RecipeResponse update(Long userId, Long recipeId, UpdateRecipeRequest request) {
+    Recipe recipe = findOwned(userId, recipeId);
+
+    requireExists(request.brewerId(), brewerRepository::existsById, "브루어");
+
+    BigDecimal micron =
+        computeGrindMicronEstimated(
+            request.grindSettingUnit(), request.grindSettingValue(), request.grinderModelId());
+    List<RecipeStep> steps = buildSteps(request.steps(), request.waterG());
+
+    recipe.applyUpdate(
+        request.title(),
+        request.description(),
+        request.visibility() == null ? RecipeVisibility.PRIVATE : request.visibility(),
+        request.doseG(),
+        request.waterG(),
+        request.waterTempC(),
+        request.totalTimeSeconds(),
+        request.brewerId(),
+        request.filterId(),
+        request.grinderModelId(),
+        request.grindSettingValue(),
+        request.grindSettingUnit(),
+        micron);
+
+    // UNIQUE(recipe_id, step_order) 위반을 피하려면 기존 스텝을 지우고 flush한 뒤 새로 넣는다.
+    // clear()+addAll()만 하면 Hibernate가 insert를 delete보다 먼저 실행해 유니크 제약에 걸린다.
+    recipeStepRepository.deleteAllByRecipe(recipe);
+    recipeStepRepository.flush();
+    recipe.getSteps().clear();
+    recipe.replaceSteps(steps);
+
+    return RecipeResponse.from(recipe);
+  }
+
+  @Transactional
+  public void delete(Long userId, Long recipeId) {
+    Recipe recipe = findOwned(userId, recipeId);
+    recipe.softDelete();
+  }
+
+  private Recipe findOwned(Long userId, Long recipeId) {
+    Recipe recipe =
+        recipeRepository
+            .findByIdAndDeletedAtIsNull(recipeId)
+            .orElseThrow(
+                () -> new BusinessException(ErrorCode.NOT_FOUND, "레시피를 찾을 수 없습니다: " + recipeId));
+    if (!recipe.isOwnedBy(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN, "본인의 레시피만 접근할 수 있습니다.");
+    }
+    return recipe;
   }
 
   private BigDecimal computeGrindMicronEstimated(

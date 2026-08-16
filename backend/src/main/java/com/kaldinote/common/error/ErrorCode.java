@@ -24,7 +24,12 @@ public enum ErrorCode {
   INVALID_BREW_MEASUREMENT(HttpStatus.BAD_REQUEST, "추출 측정값이 올바르지 않습니다."),
 
   OAUTH_TOKEN_EXCHANGE_FAILED(HttpStatus.UNAUTHORIZED, "소셜 로그인에 실패했습니다."),
-  REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "다시 로그인해 주세요.");
+  REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "다시 로그인해 주세요."),
+
+  // 레시피 — docs/specs/2026-08-16-recipe-crud.md
+  RECIPE_STEP_WATER_MISMATCH(HttpStatus.BAD_REQUEST, "스텝 물량 합계가 레시피 총 물량과 다릅니다."),
+  RECIPE_STEP_OVERLAP(HttpStatus.BAD_REQUEST, "앞 스텝과 시간이 겹칩니다."),
+  RECIPE_STEP_WATER_INVALID(HttpStatus.BAD_REQUEST, "스텝 타입과 물량이 맞지 않습니다.");
 
   private final HttpStatus status;
   private final String defaultMessage;

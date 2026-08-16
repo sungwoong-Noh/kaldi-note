@@ -7,6 +7,26 @@
 
 ---
 
+## 2026-08-16 · Task 4 — 레시피 생성 스텝 시퀀스 검증 + 나머지 에러
+
+**브랜치:** `feat/task-04-recipe-steps` · **PR:** 아래 참조
+**상태:** 완료 — Step 1~5 전부, `./gradlew clean check` 통과, `RecipeControllerTest` 45/45
+
+### 한 일
+- `ErrorCode`에 `RECIPE_STEP_WATER_MISMATCH`·`RECIPE_STEP_OVERLAP`·`RECIPE_STEP_WATER_INVALID` 3종 추가
+- `RecipeService`에 CURATED 거부(FORBIDDEN), `brewerId` 존재 검증(404), 스텝 겹침·물량 합계·스텝 타입별 물량 검증을 `buildSteps`/`validateStepWater`로 구현
+- AC-RECIPE-45~48·50~53·57(9개) 검증하는 테스트 추가, 총 45개 전부 통과
+
+### 발견한 것
+- **계획 문서의 예시 테스트 메서드명 `1초_겹치면_거부된다()`는 Java 식별자가 숫자로 시작할 수 없어 그대로 옮기면 컴파일 에러가 난다.** `일초_겹치면_거부된다()`로 이름만 바꿔 반영
+- **AC-RECIPE-52 테스트 데이터가 Task 3에서 추가된 제약과 충돌했다.** 계획은 "스텝 타입 검증만 걸리게" 레시피 총 `waterG`도 `0.0`으로 맞추라고 했지만, Task 3에서 `CreateRecipeRequest.waterG`에 `@DecimalMin("10.0")`을 걸어놔서 `0.0`은 Bean Validation 단계에서 먼저 `INVALID_REQUEST`로 막혀 의도한 `RECIPE_STEP_WATER_INVALID`까지 도달하지 못했다. 레시피 총 `waterG`를 `15.0`으로 바꾸고 스텝 `waterG`만 `0`으로 남겨 해결 — `validateStepWater`가 물량 합계 검사보다 먼저 도는 구조라 총량 불일치 여부는 결과에 영향 없음
+- 그 외 계획 코드는 그대로 적용, 나머지 8개 테스트는 한 번에 통과
+
+### 다음 세션에게
+- **Task 5(레시피 단건 조회 API)부터.**
+
+---
+
 ## 2026-08-16 · Task 3 — 레시피 생성 입력 값 경계값 검증
 
 **브랜치:** `feat/task-03-recipe-validation` · **PR:** 아래 참조

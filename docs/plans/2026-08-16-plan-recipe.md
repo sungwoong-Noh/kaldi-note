@@ -129,7 +129,7 @@ backend/src/test/java/com/kaldinote/recipe/
   - `RecipeRepository#findByIdAndDeletedAtIsNull(Long)`
   - `RecipeStepRepository#deleteAllByRecipe(Recipe)`
 
-- [ ] **Step 1: 스키마 마이그레이션 작성**
+- [x] **Step 1: 스키마 마이그레이션 작성**
 
 `V6__create_recipe_tables.sql`:
 
@@ -186,7 +186,7 @@ CREATE TABLE recipe_steps (
 CREATE INDEX idx_recipe_steps_recipe ON recipe_steps (recipe_id);
 ```
 
-- [ ] **Step 2: 실패하는 리포지토리 테스트 작성**
+- [x] **Step 2: 실패하는 리포지토리 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/recipe/infrastructure/RecipeRepositoryTest.java`:
 
@@ -253,12 +253,12 @@ class RecipeRepositoryTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 3: 테스트 실행 — 실패 확인**
+- [x] **Step 3: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeRepositoryTest'`
 Expected: 컴파일 실패 (엔티티·리포지토리 없음).
 
-- [ ] **Step 4: 엔티티 작성**
+- [x] **Step 4: 엔티티 작성**
 
 enum 7종은 각각 한 파일, 값만 나열한다:
 
@@ -632,12 +632,12 @@ public interface RecipeStepRepository extends JpaRepository<RecipeStep, Long> {
 }
 ```
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeRepositoryTest'`
 Expected: PASS, 2 tests.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

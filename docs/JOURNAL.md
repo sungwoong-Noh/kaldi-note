@@ -7,6 +7,24 @@
 
 ---
 
+## 2026-08-16 · Task 1 — 레시피 스키마 · 엔티티 · 리포지토리 (기반)
+
+**브랜치:** `feat/task-01-recipe-schema` · **PR:** 아래 참조
+**상태:** 완료 — Step 1~6 전부, `./gradlew clean check` 통과
+
+### 한 일
+- `V6__create_recipe_tables.sql`(recipes/recipe_steps), `Recipe`/`RecipeStep` 엔티티 + enum 7종, `RecipeRepository`/`RecipeStepRepository` 추가
+- `RecipeRepositoryTest` 2개 작성 — TDD Red(컴파일 실패) → Green(2/2 통과) 확인. AC 매핑 없음(계획대로, 후속 태스크의 기반)
+
+### 발견한 것
+- 계획 문서의 예시 코드를 그대로 옮겼고 별다른 이슈 없이 한 번에 통과했다. `User.create(email, nickname, profileImageUrl)` 시그니처가 테스트의 `User.create(null, "테스터", null)` 호출과 정확히 일치함을 확인
+
+### 다음 세션에게
+- **Task 2(레시피 생성 API — 정상 동작 + 마이크론 스냅샷)부터.** 브랜치는 이어서 `feat/task-02-recipe-create` 등
+- 계획에 남은 검증되지 않은 가정 2개(Task 2 관련)는 이번 세션에서 다루지 않았다: (1) `CreateRecipeRequest` 컴팩트 생성자가 `steps` 생략 시 `null`을 받는지, (2) `com.jayway.jsonpath.JsonPath`가 `spring-boot-starter-webmvc-test`에 포함되는지
+
+---
+
 ## 2026-08-16 · 계획 — 레시피 CRUD 구현 계획 · 설계 세션
 
 **브랜치:** `docs/plan-recipe` (main에서 분기) · **PR:** [#18](https://github.com/sungwoong-Noh/kaldi-note/pull/18)

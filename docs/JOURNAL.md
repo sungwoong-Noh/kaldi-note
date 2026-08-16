@@ -7,6 +7,28 @@
 
 ---
 
+## 2026-08-16 · 원두 카탈로그·개인재고 스펙 인터뷰
+
+**브랜치:** `docs/spec-bean-inventory` · **PR:** [#26](https://github.com/sungwoong-Noh/kaldi-note/pull/26)
+**상태:** 완료 — `/interview`로 AC-BEAN-01~62(54개) 확정, `docs/specs/2026-08-16-bean-inventory.md` 저장(`status: 초안`). `check-spec-coverage.sh`가 초안으로 정상 건너뜀 확인
+
+### 한 일
+- Roaster·BeanProduct·BeanOrigin(공용 카탈로그) + BeanBatch(개인 재고)를 한 스펙에서 함께 다루기로 범위 확정 — 둘 다 코드가 전혀 없는 상태였다
+- 디게싱(로스팅 후 경과일) 판정 3단계(0~2일 TOO_FRESH / 3~14일 IDEAL / 15일~ PAST_PEAK)를 재고 조회 응답에 포함
+- `recipes.bean_product_id` nullable FK 컬럼 추가도 이번 스펙 범위에 포함(레시피 스펙이 예고한 대로) — 단 **컬럼만** 추가하고 레시피 API는 건드리지 않음
+
+### 발견한 것
+- **인터뷰 도중 범위 오해가 한 번 있었다.** "개인 원두재고 관리까지는 할 생각이 없다"는 답변이 나와 BeanBatch를 통째로 스펙에서 뺄지 재확인이 필요했다 — 실제로는 부가기능(자동차감 등)을 뺀다는 뜻이었고, 디게싱 아이디어가 이어서 나오면서 BeanBatch는 그대로 포함하는 걸로 정리됨. **다음 세션도 애매한 답변이 나오면 바로 다음 질문으로 넘어가지 말고 재확인할 것**
+- roasters 테이블은 설계 문서(`docs/design/2026-08-14-architecture.md`)에 `is_system`/`created_by_user_id`가 빠져 있었다 — Variety/CoffeeProcess와 동일한 "즉시생성+사후병합" 패턴을 적용하기로 하고 두 컬럼을 이번 스펙에서 추가하기로 결정(설계 문서 자체는 아직 안 고침, 계획 단계에서 반영)
+- 카탈로그(GET/POST)는 `.authenticated()`만 요구하고 관리자 권한은 필요 없음을 `SecurityConfig`·`CatalogController` 확인으로 재검증(Variety 패턴과 동일)
+
+### 다음 세션에게
+- **사람 승인 후 `docs/plans/`에 구현 계획부터 쓸 것.** 스펙은 아직 `status: 초안`이라 커버리지 스크립트가 건너뛴다 — 계획 승인 후 구현하면서 `구현완료`로 전환
+- 로컬에 `feat/task-05-recipe-get`·`feat/task-06-recipe-update`·`feat/task-07-recipe-delete` 브랜치가 남아있다(원격은 이미 삭제됨, PR 전부 머지됨) — 정리해도 되는지 확인 후 삭제할 것
+- 스펙의 "열어둔 결정" 3개(디게싱 구간 커스터마이즈 여부·레시피 API의 beanProductId 연결 시점·검증 관리자 API) — 계획 단계에서 다시 볼 필요는 없고, 언급된 대로 후속 스펙 몫
+
+---
+
 ## 2026-08-16 · Task 7 — 레시피 삭제 API (DELETE), 레시피 계획 완료
 
 **브랜치:** `feat/task-07-recipe-delete` (`feat/task-06-recipe-update` 위에 스택) · **PR:** 아래 참조

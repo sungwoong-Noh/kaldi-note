@@ -48,4 +48,8 @@ public class UserGrinder extends BaseTimeEntity {
   public static UserGrinder of(Long userId, Long grinderModelId, String nickname) {
     return new UserGrinder(userId, grinderModelId, nickname);
   }
+
+  public boolean isOwnedBy(Long userId) {
+    return this.userId != null && this.userId.equals(userId);
+  }
 }

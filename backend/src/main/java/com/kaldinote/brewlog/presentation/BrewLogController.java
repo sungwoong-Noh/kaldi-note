@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,5 +29,10 @@ public class BrewLogController {
   public BrewLogResponse create(
       @Valid @RequestBody BrewLogCreateRequest request, AuthenticatedUser user) {
     return brewLogService.create(user.id(), request);
+  }
+
+  @GetMapping("/{id}")
+  public BrewLogResponse get(@PathVariable Long id, AuthenticatedUser user) {
+    return brewLogService.get(user.id(), id);
   }
 }

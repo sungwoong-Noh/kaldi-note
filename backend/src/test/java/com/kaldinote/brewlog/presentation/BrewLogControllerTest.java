@@ -1,7 +1,10 @@
 package com.kaldinote.brewlog.presentation;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -563,5 +566,97 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
                 .formatted(recipeId, beanBatchId, BREWED_AT, userGrinderId))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  private ResultActions getBrewLog(String token, Long id) throws Exception {
+    return mockMvc.perform(get("/api/v1/brew-logs/" + id).header(HttpHeaders.AUTHORIZATION, token));
+  }
+
+  @Test
+  @DisplayName("AC-BREW-06 · 단건 조회는 저장된 값과 재계산된 EY/SCA를 함께 반환한다")
+  void 단건_조회는_저장값과_EY를_함께_반환한다() throws Exception {
+    String token = token("테스터");
+    Long id = createdId(createWith(token, "\"beverageWeightG\":240.0,\"tdsPercent\":1.25"));
+
+    getBrewLog(token, id)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.actualDoseG").value(15.0))
+        .andExpect(jsonPath("$.extractionYieldPercent").value(20.0))
+        .andExpect(jsonPath("$.strengthZone").value("IDEAL"))
+        .andExpect(jsonPath("$.extractionZone").value("IDEAL"));
+  }
+
+  @Test
+  @DisplayName("AC-BREW-07 · 레시피의 doseG를 나중에 수정해도 기존 브루잉 로그의 actualDoseG는 변하지 않는다")
+  void 레시피를_수정해도_스냅샷은_불변이다() throws Exception {
+    String token = token("테스터");
+    Long recipeId = recipeId(token);
+    Long beanBatchId = beanBatchId(token, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(token, c40Id());
+    Long id =
+        createdId(
+            createBrewLog(token, minimalBody(recipeId, beanBatchId, BREWED_AT, userGrinderId)));
+
+    mockMvc
+        .perform(
+            put("/api/v1/recipes/" + recipeId)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"수정됨","doseG":20.0,"waterG":250.0}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.doseG").value(20.0));
+
+    getBrewLog(token, id)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.actualDoseG").value(15.0));
+  }
+
+  @Test
+  @DisplayName("AC-BREW-08 · BeanBatch를 삭제해도 daysOffRoast·degassingStatus는 남는다")
+  void 재고를_삭제해도_daysOffRoast는_남는다() throws Exception {
+    String token = token("테스터");
+    Long recipeId = recipeId(token);
+    Long beanBatchId = beanBatchId(token, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(token, c40Id());
+    Long id =
+        createdId(
+            createBrewLog(token, minimalBody(recipeId, beanBatchId, BREWED_AT, userGrinderId)));
+
+    mockMvc
+        .perform(
+            delete("/api/v1/bean-batches/" + beanBatchId).header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isNoContent());
+
+    getBrewLog(token, id)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.daysOffRoast").value(6))
+        .andExpect(jsonPath("$.degassingStatus").value("IDEAL"));
+  }
+
+  @Test
+  @DisplayName("AC-BREW-39 · 존재하지 않는 브루잉 로그 조회는 404다")
+  void 존재하지_않는_브루잉_로그_조회는_404다() throws Exception {
+    getBrewLog(token("테스터"), 999999L)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-BREW-40 · 남의 브루잉 로그는 조회할 수 없다")
+  void 남의_브루잉_로그는_조회할_수_없다() throws Exception {
+    String owner = token("소유자");
+    Long recipeId = recipeId(owner);
+    Long beanBatchId = beanBatchId(owner, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(owner, c40Id());
+    Long id =
+        createdId(
+            createBrewLog(owner, minimalBody(recipeId, beanBatchId, BREWED_AT, userGrinderId)));
+
+    getBrewLog(token("다른사람"), id)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
   }
 }

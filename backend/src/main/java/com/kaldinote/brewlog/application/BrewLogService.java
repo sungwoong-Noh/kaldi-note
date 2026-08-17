@@ -98,6 +98,31 @@ public class BrewLogService {
     return BrewLogResponse.from(brewLogRepository.save(log), analysis);
   }
 
+  public BrewLogResponse get(Long userId, Long brewLogId) {
+    BrewLog log = findOwned(userId, brewLogId);
+    ExtractionAnalysis analysis =
+        extractionAnalyzer.analyze(
+            new BrewMeasurement(
+                log.getActualDoseG(),
+                log.getActualWaterG(),
+                log.getBeverageWeightG(),
+                log.getTdsPercent()));
+    return BrewLogResponse.from(log, analysis);
+  }
+
+  private BrewLog findOwned(Long userId, Long brewLogId) {
+    BrewLog log =
+        brewLogRepository
+            .findById(brewLogId)
+            .orElseThrow(
+                () ->
+                    new BusinessException(ErrorCode.NOT_FOUND, "브루잉 로그를 찾을 수 없습니다: " + brewLogId));
+    if (!log.isOwnedBy(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN, "본인의 브루잉 로그만 조회할 수 있습니다.");
+    }
+    return log;
+  }
+
   private void validateRatingStep(BigDecimal rating) {
     if (rating == null) {
       return;

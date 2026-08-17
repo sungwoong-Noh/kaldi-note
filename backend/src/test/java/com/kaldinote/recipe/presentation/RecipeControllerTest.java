@@ -12,6 +12,8 @@ import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
 import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -829,5 +831,293 @@ class RecipeControllerTest extends AbstractIntegrationTest {
             delete("/api/v1/recipes/{id}", id).header(HttpHeaders.AUTHORIZATION, otherUserToken()))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  // ===== 공개범위 인가 (AC-VIS-01~17) =====
+
+  @PersistenceContext private EntityManager entityManager;
+
+  /** 팔로우 픽스처를 만들려면 상대의 id가 필요해 User를 그대로 돌려준다. */
+  private User newUser(String nickname) {
+    return userRepository.save(User.create(null, nickname, null));
+  }
+
+  private String tokenOf(User user) {
+    return "Bearer " + tokenProvider.createAccessToken(user.getId(), user.getRole());
+  }
+
+  private Long createdId(ResultActions actions) throws Exception {
+    String response =
+        actions.andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+    return ((Number) com.jayway.jsonpath.JsonPath.read(response, "$.id")).longValue();
+  }
+
+  /** 팔로우 픽스처는 API로 만든다 — Task 1이 선행인 이유다. */
+  private void follow(User follower, User followee) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/users/{id}/follow", followee.getId())
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(follower)))
+        .andExpect(status().isNoContent());
+  }
+
+  private void mutualFollow(User a, User b) throws Exception {
+    follow(a, b);
+    follow(b, a);
+  }
+
+  /** visibility를 지정해 레시피를 만들고 id를 돌려준다. */
+  private Long recipeWith(String token, String visibility) throws Exception {
+    return createdId(
+        mockMvc.perform(
+            post("/api/v1/recipes")
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"인가 테스트","doseG":15.0,"waterG":250.0,"visibility":"%s"}
+                    """
+                        .formatted(visibility))));
+  }
+
+  private ResultActions getRecipe(String token, Long recipeId) throws Exception {
+    return mockMvc.perform(
+        get("/api/v1/recipes/{id}", recipeId).header(HttpHeaders.AUTHORIZATION, token));
+  }
+
+  /** owner_user_id를 null로 만든다. 탈퇴자 유기물·CURATED 시드와 같은 상태를 재현한다. */
+  private void orphan(Long recipeId) {
+    entityManager
+        .createNativeQuery("update recipes set owner_user_id = null where id = :id")
+        .setParameter("id", recipeId)
+        .executeUpdate();
+    entityManager.flush();
+    entityManager.clear();
+  }
+
+  // ---------- 소유자 ----------
+
+  @Test
+  @DisplayName("AC-VIS-01 · 소유자는 PRIVATE 레시피를 본다")
+  void 소유자는_PRIVATE_레시피를_본다() throws Exception {
+    User a = newUser("vis-01");
+    Long id = recipeWith(tokenOf(a), "PRIVATE");
+
+    getRecipe(tokenOf(a), id)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.visibility").value("PRIVATE"));
+  }
+
+  @Test
+  @DisplayName("AC-VIS-02 · 소유자는 FRIENDS 레시피를 본다")
+  void 소유자는_FRIENDS_레시피를_본다() throws Exception {
+    User a = newUser("vis-02");
+    Long id = recipeWith(tokenOf(a), "FRIENDS");
+
+    getRecipe(tokenOf(a), id).andExpect(status().isOk());
+  }
+
+  @Test
+  @DisplayName("AC-VIS-03 · 소유자는 PUBLIC 레시피를 본다")
+  void 소유자는_PUBLIC_레시피를_본다() throws Exception {
+    User a = newUser("vis-03");
+    Long id = recipeWith(tokenOf(a), "PUBLIC");
+
+    getRecipe(tokenOf(a), id).andExpect(status().isOk());
+  }
+
+  // ---------- 타인 ----------
+
+  @Test
+  @DisplayName("AC-VIS-04 · 타인은 PUBLIC 레시피를 본다")
+  void 타인은_PUBLIC_레시피를_본다() throws Exception {
+    User a = newUser("vis-04a");
+    User b = newUser("vis-04b");
+    Long id = recipeWith(tokenOf(a), "PUBLIC");
+
+    getRecipe(tokenOf(b), id)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.ownerUserId").value(a.getId()));
+  }
+
+  @Test
+  @DisplayName("AC-VIS-05 · 상호 팔로우면 타인이 FRIENDS 레시피를 본다")
+  void 상호_팔로우면_FRIENDS_레시피를_본다() throws Exception {
+    User a = newUser("vis-05a");
+    User b = newUser("vis-05b");
+    Long id = recipeWith(tokenOf(a), "FRIENDS");
+    mutualFollow(a, b);
+
+    getRecipe(tokenOf(b), id).andExpect(status().isOk());
+  }
+
+  @Test
+  @DisplayName("AC-VIS-06 · 타인의 PRIVATE 레시피는 403이다")
+  void 타인의_PRIVATE_레시피는_403이다() throws Exception {
+    User a = newUser("vis-06a");
+    User b = newUser("vis-06b");
+    Long id = recipeWith(tokenOf(a), "PRIVATE");
+    mutualFollow(a, b);
+
+    getRecipe(tokenOf(b), id)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  // ---------- FRIENDS 경계 ----------
+
+  @Test
+  @DisplayName("AC-VIS-07 · 내가 소유자를 팔로우만 한 상태면 FRIENDS는 403이다")
+  void 내가_팔로우만_하면_FRIENDS는_403이다() throws Exception {
+    User a = newUser("vis-07a");
+    User b = newUser("vis-07b");
+    Long id = recipeWith(tokenOf(a), "FRIENDS");
+    follow(b, a);
+
+    getRecipe(tokenOf(b), id)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  @Test
+  @DisplayName("AC-VIS-08 · 소유자가 나를 팔로우만 한 상태면 FRIENDS는 403이다")
+  void 소유자가_나를_팔로우만_하면_FRIENDS는_403이다() throws Exception {
+    User a = newUser("vis-08a");
+    User b = newUser("vis-08b");
+    Long id = recipeWith(tokenOf(a), "FRIENDS");
+    follow(a, b);
+
+    getRecipe(tokenOf(b), id).andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("AC-VIS-09 · 팔로우 관계가 전혀 없으면 FRIENDS는 403이다")
+  void 관계없으면_FRIENDS는_403이다() throws Exception {
+    User a = newUser("vis-09a");
+    User b = newUser("vis-09b");
+    Long id = recipeWith(tokenOf(a), "FRIENDS");
+
+    getRecipe(tokenOf(b), id).andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("AC-VIS-10 · 상호 팔로우가 끊기면 다음 요청부터 403이다")
+  void 팔로우가_끊기면_즉시_403이다() throws Exception {
+    User a = newUser("vis-10a");
+    User b = newUser("vis-10b");
+    Long id = recipeWith(tokenOf(a), "FRIENDS");
+    mutualFollow(a, b);
+    getRecipe(tokenOf(b), id).andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            delete("/api/v1/users/{id}/follow", a.getId())
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(b)))
+        .andExpect(status().isNoContent());
+
+    getRecipe(tokenOf(b), id).andExpect(status().isForbidden());
+  }
+
+  // ---------- 주인 없는 레시피 ----------
+
+  @Test
+  @DisplayName("AC-VIS-11 · owner가 null이고 PUBLIC이면 누구나 본다")
+  void owner가_null이고_PUBLIC이면_누구나_본다() throws Exception {
+    User a = newUser("vis-11a");
+    User b = newUser("vis-11b");
+    Long id = recipeWith(tokenOf(a), "PUBLIC");
+    orphan(id);
+
+    getRecipe(tokenOf(b), id)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.ownerUserId").doesNotExist());
+  }
+
+  @Test
+  @DisplayName("AC-VIS-12 · owner가 null이고 FRIENDS면 403이다")
+  void owner가_null이고_FRIENDS면_403이다() throws Exception {
+    User a = newUser("vis-12a");
+    User b = newUser("vis-12b");
+    Long id = recipeWith(tokenOf(a), "FRIENDS");
+    orphan(id);
+
+    getRecipe(tokenOf(b), id).andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("AC-VIS-13 · owner가 null이고 PRIVATE면 403이다")
+  void owner가_null이고_PRIVATE면_403이다() throws Exception {
+    User a = newUser("vis-13a");
+    User b = newUser("vis-13b");
+    Long id = recipeWith(tokenOf(a), "PRIVATE");
+    orphan(id);
+
+    getRecipe(tokenOf(b), id).andExpect(status().isForbidden());
+  }
+
+  // ---------- 쓰기는 소유자 전용 ----------
+
+  @Test
+  @DisplayName("AC-VIS-14 · PUBLIC 레시피여도 타인은 수정할 수 없다")
+  void PUBLIC이어도_타인은_수정할_수_없다() throws Exception {
+    User a = newUser("vis-14a");
+    User b = newUser("vis-14b");
+    Long id = recipeWith(tokenOf(a), "PUBLIC");
+    mutualFollow(a, b);
+
+    mockMvc
+        .perform(
+            put("/api/v1/recipes/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(b))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"남이 바꾼 제목","doseG":15.0,"waterG":250.0}
+                    """))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+
+    getRecipe(tokenOf(a), id).andExpect(jsonPath("$.title").value("인가 테스트"));
+  }
+
+  @Test
+  @DisplayName("AC-VIS-15 · PUBLIC 레시피여도 타인은 삭제할 수 없다")
+  void PUBLIC이어도_타인은_삭제할_수_없다() throws Exception {
+    User a = newUser("vis-15a");
+    User b = newUser("vis-15b");
+    Long id = recipeWith(tokenOf(a), "PUBLIC");
+    mutualFollow(a, b);
+
+    mockMvc
+        .perform(delete("/api/v1/recipes/{id}", id).header(HttpHeaders.AUTHORIZATION, tokenOf(b)))
+        .andExpect(status().isForbidden());
+
+    getRecipe(tokenOf(a), id).andExpect(status().isOk());
+  }
+
+  // ---------- 없음 / 미인증 ----------
+
+  @Test
+  @DisplayName("AC-VIS-16 · 소프트 삭제된 PUBLIC 레시피는 404다")
+  void 삭제된_PUBLIC_레시피는_404다() throws Exception {
+    User a = newUser("vis-16a");
+    User b = newUser("vis-16b");
+    Long id = recipeWith(tokenOf(a), "PUBLIC");
+    mockMvc
+        .perform(delete("/api/v1/recipes/{id}", id).header(HttpHeaders.AUTHORIZATION, tokenOf(a)))
+        .andExpect(status().isNoContent());
+
+    getRecipe(tokenOf(b), id)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-VIS-17 · 토큰 없이 PUBLIC 레시피를 조회하면 401이다")
+  void 토큰_없이_PUBLIC_조회는_401이다() throws Exception {
+    User a = newUser("vis-17");
+    Long id = recipeWith(tokenOf(a), "PUBLIC");
+
+    mockMvc.perform(get("/api/v1/recipes/{id}", id)).andExpect(status().isUnauthorized());
   }
 }

@@ -636,7 +636,7 @@ cd .. && git add . && git commit -m "feat(user): 팔로우 등록·해제·상�
 
 **주의:** `findOwned`는 **그대로 둔다.** `update`·`delete`가 계속 써야 `AC-VIS-14`·`AC-VIS-15`가 통과한다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `RecipeControllerTest`에 헬퍼와 테스트를 추가한다. 기존 테스트는 건드리지 않는다.
 
@@ -922,13 +922,13 @@ cd .. && git add . && git commit -m "feat(user): 팔로우 등록·해제·상�
 
 `@PersistenceContext private EntityManager entityManager;`를 필드에 추가한다. `newUser`·`tokenOf`는 Task 1의 `FollowControllerTest`와 같은 모양으로 이 클래스에도 만든다(기존 `token(...)` 헬퍼가 있으면 그것을 감싼다).
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 
 Expected: FAIL — `AC-VIS-04`·`05`·`11`이 403으로 실패한다(현재 `get()`이 `findOwned`를 써서 소유자가 아니면 무조건 403). `AC-VIS-01~03`·`06~10`·`12~17`은 **이미 통과한다** — 현재 동작이 우연히 기대와 같기 때문이다. RED가 3개뿐인 것이 정상이며, 이 3개가 판정 규칙 전체를 끌어낸다.
 
-- [ ] **Step 3: RecipeService에 조회 인가 추가**
+- [x] **Step 3: RecipeService에 조회 인가 추가**
 
 ```java
   private final FollowService followService;   // 필드 추가
@@ -970,12 +970,12 @@ Expected: FAIL — `AC-VIS-04`·`05`·`11`이 403으로 실패한다(현재 `get
 
 `FollowService`가 `user.application`에 있으므로 import를 추가한다. `RecipeService`가 `user` 도메인의 서비스를 주입하는 것은 `gear` 리포지토리를 직접 주입하는 기존 패턴과 같은 결이다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: PASS — 기존 테스트 + 신규 17개 전부
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

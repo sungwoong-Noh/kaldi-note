@@ -19,6 +19,7 @@ import com.kaldinote.recipe.presentation.dto.CreateRecipeRequest;
 import com.kaldinote.recipe.presentation.dto.RecipeResponse;
 import com.kaldinote.recipe.presentation.dto.StepRequest;
 import com.kaldinote.recipe.presentation.dto.UpdateRecipeRequest;
+import com.kaldinote.user.application.FollowService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ public class RecipeService {
   private final RecipeStepRepository recipeStepRepository;
   private final GrinderModelRepository grinderRepository;
   private final BrewerRepository brewerRepository;
+  private final FollowService followService;
   private final GrindConverter grindConverter = new GrindConverter();
 
   @Transactional
@@ -76,7 +78,35 @@ public class RecipeService {
   }
 
   public RecipeResponse get(Long userId, Long recipeId) {
-    return RecipeResponse.from(findOwned(userId, recipeId));
+    return RecipeResponse.from(findViewable(userId, recipeId));
+  }
+
+  /**
+   * 조회 인가. 스펙의 판정 순서를 그대로 따른다: 소유자 → PUBLIC → FRIENDS+상호팔로우 → 403.
+   *
+   * <p>쓰기(update/delete)는 findOwned를 계속 쓴다. 여기서 갈라놓지 않으면 PUBLIC 레시피를 남이 수정할 수 있게 된다(AC-VIS-14·15).
+   */
+  private Recipe findViewable(Long userId, Long recipeId) {
+    Recipe recipe =
+        recipeRepository
+            .findByIdAndDeletedAtIsNull(recipeId)
+            .orElseThrow(
+                () -> new BusinessException(ErrorCode.NOT_FOUND, "레시피를 찾을 수 없습니다: " + recipeId));
+    if (isViewable(userId, recipe)) {
+      return recipe;
+    }
+    throw new BusinessException(ErrorCode.FORBIDDEN, "이 레시피를 볼 권한이 없습니다.");
+  }
+
+  private boolean isViewable(Long userId, Recipe recipe) {
+    if (recipe.isOwnedBy(userId)) {
+      return true;
+    }
+    if (recipe.getVisibility() == RecipeVisibility.PUBLIC) {
+      return true;
+    }
+    return recipe.getVisibility() == RecipeVisibility.FRIENDS
+        && followService.isMutual(userId, recipe.getOwnerUserId());
   }
 
   @Transactional

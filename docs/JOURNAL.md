@@ -7,6 +7,27 @@
 
 ---
 
+## 2026-08-17 · 브랜치 정리 + 미처리 항목 해소 확인
+
+**브랜치:** `chore/branch-cleanup` · **PR:** 아래 참조
+**상태:** 완료 — 저장소에 `main` 하나만 남았다. 코드·스펙 변경 없음
+
+### 한 일
+- **카카오 Client Secret 재발급을 사람이 완료했다.** 2026-08-17 OAuth 세션이 "다음 세션에게"로 남긴 미처리 항목이 해소됐다. 저장소 밖에서 한 일이라 커밋에 흔적이 없어 여기 남긴다. `.env`의 `KAKAO_CLIENT_SECRET`만 바뀌었고 코드는 그대로다
+- PR #49 머지를 `git merge-base --is-ancestor`로 대조 확인 — base가 `main`이고 `777573d`가 `origin/main`의 조상이며 스펙 파일이 main에 실재한다. 스택 PR 사고 패턴 없음
+- 로컬 브랜치 10개·원격 브랜치 7개(전부 MERGED)를 삭제하고 stale 추적 레퍼런스 7개를 prune했다. 로컬·원격 모두 `main`만 남았다
+
+### 발견한 것
+- **`git branch --merged`만 믿으면 안 된다.** `chore/claude-settings`가 미병합으로 잡혔으나 실제로는 PR #17로 **스쿼시 머지**돼 커밋 해시만 달라진 것이었다. `git diff main <브랜치> -- <파일>`이 비어 있는 것을 확인하고서야 안전하게 지웠다. 스쿼시 머지를 쓰는 저장소에서는 `--merged`가 거짓 음성을 낸다
+- 원격 추적 레퍼런스 7개는 GitHub이 머지 시 자동 삭제한 브랜치의 로컬 흔적이었다. `git push origin --delete`가 "remote ref does not exist"로 실패하는 것이 그 신호다 — 이때 필요한 건 `git remote prune origin`이다
+
+### 다음 세션에게
+- **미처리 항목이 없다.** 크레덴셜 재발급·PR 머지·브랜치 정리가 모두 끝났고 저장소는 `main` 하나뿐이다
+- **다음 할 일은 공개범위 인가 구현 계획(`docs/plans/`) 작성이다.** 스펙은 `docs/specs/2026-08-17-visibility-authorization.md`(AC 46개, 초안)로 승인돼 있어 인터뷰가 불필요하다. 직전 JOURNAL 항목의 "다음 세션에게"를 그대로 따르면 된다
+- 카카오 허용 IP는 여전히 비어 있다. OCI 배포 시 서버 고정 IP 등록을 검토할 것
+
+---
+
 ## 2026-08-17 · 공개범위 인가 + 팔로우 스펙 인터뷰
 
 **브랜치:** `docs/spec-visibility` (main에서 분기) · **PR:** 아래 참조

@@ -15,9 +15,14 @@ logging:
 kaldi:
   jwt:
     secret: local-development-only-secret-key-32bytes-minimum
+  # 실기 검증할 때만 환경변수로 진짜 키를 넣는다. 없으면 dummy로 떨어져 기동은 항상 된다.
+  # 키는 .env(gitignore됨)에 두고 `set -a && source .env && set +a` 후 bootRun.
   oauth:
     kakao:
-      client-id: dummy
+      client-id: ${KAKAO_CLIENT_ID:dummy}
+      client-secret: ${KAKAO_CLIENT_SECRET:}
+      redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:3000/auth/callback}
     google:
-      client-id: dummy
-      client-secret: dummy
+      client-id: ${GOOGLE_CLIENT_ID:dummy}
+      client-secret: ${GOOGLE_CLIENT_SECRET:dummy}
+      redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:3000/auth/callback}

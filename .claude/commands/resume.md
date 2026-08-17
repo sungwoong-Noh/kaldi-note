@@ -78,7 +78,7 @@ JOURNAL의 "다음 세션에게" 항목은 **반드시 읽고 반영한다.**
 - <JOURNAL의 "다음 세션에게"에서 이번에 해당하는 것만>
 
 ## 이번 세션 제안
-Task 4 (사용자 스키마 + 엔티티) — 브랜치 `feat/task-04-user`
+Task 4 (사용자 스키마 + 엔티티) — 브랜치 `feat/user-schema`
 Step 1~8, 예상 산출물: users/follows 스키마 + 엔티티 + 리포지토리 테스트 5개
 ```
 
@@ -90,14 +90,16 @@ Step 1~8, 예상 산출물: users/follows 스키마 + 엔티티 + 리포지토�
 
 특히 `superpowers:executing-plans`·`using-git-worktrees`·`subagent-driven-development`는 **이 프로젝트에서 쓰지 않는다.** 이유는 같은 문서에 있다.
 
-새 태스크를 시작한다면:
+새로 시작한다면 **기능 단위**로 브랜치를 하나 만든다:
 
 ```bash
 git switch main && git pull
-git switch -c feat/task-<번호>-<짧은이름>
+git switch -c feat/<기능-이름>      # 예: feat/brew-log
 ```
 
-이어받는 태스크라면 기존 브랜치로 전환한다.
+**이 세션에서 태스크를 여러 개 진행해도 브랜치는 이 하나를 유지한다.** 태스크마다 브랜치를 새로 만들어 스택하지 않는다 — 두 번 사고가 났다(`docs/conventions/git.md`의 "스택 PR을 쓰지 않는다"). 태스크 경계는 커밋으로 남긴다.
+
+이어받는 작업이라면 기존 브랜치로 전환한다.
 
 # 어조
 

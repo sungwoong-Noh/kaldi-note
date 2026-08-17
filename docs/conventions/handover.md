@@ -16,7 +16,7 @@
 | 세션 | 하는 일 · 산출물 | 브랜치 | 계획 문서 | 쓰는 스킬 |
 |---|---|---|---|---|
 | **설계** | `/interview` → 스펙 → 계획<br>`docs/specs/`, `docs/plans/` | `docs/spec-<기능>` | **본문만** | `superpowers:brainstorming`<br>`superpowers:writing-plans` |
-| **구현** | 계획의 태스크 실행 (TDD)<br>코드 + 테스트 | `feat/task-NN-<이름>` | **체크박스만** | `superpowers:test-driven-development`<br>`superpowers:verification-before-completion`<br>`superpowers:systematic-debugging`<br>`/code-review`, `/simplify`<br>`/security-review` (인증 태스크 후) |
+| **구현** | 계획의 태스크 실행 (TDD)<br>코드 + 테스트 | `feat/<기능>` | **체크박스만** | `superpowers:test-driven-development`<br>`superpowers:verification-before-completion`<br>`superpowers:systematic-debugging`<br>`/code-review`, `/simplify`<br>`/security-review` (인증 태스크 후) |
 | **디자인** | IA, 와이어프레임<br>`docs/design/` | `design/<이름>` | 건드리지 않음 | `pencil` MCP (`.pen` 와이어프레임)<br>`dataviz` (SCA 차트)<br>`ui-ux-pro-max:ui-styling` |
 
 **계획 문서의 체크박스는 구현 세션만 건드린다.** 설계 세션이 본문을, 구현 세션이 체크박스를 담당하면 같은 파일을 고쳐도 충돌이 거의 나지 않는다.
@@ -104,17 +104,18 @@
 
 ## 브랜치와 PR
 
-**구현 세션은 태스크 1개 = 브랜치 1개 = PR 1개.**
+**세션 1개 = 브랜치 1개 = PR 1개.** 한 세션에서 태스크를 여러 개 진행해도 브랜치와 PR은 하나다.
 
 ```
-feat/task-01-scaffolding      구현 세션
-feat/task-02-grind
+feat/brew-log                 구현 세션 — 그 세션에서 한 태스크 전부
+feat/recipe-crud
 docs/spec-recipe              설계 세션 — 스펙·계획 작성
 design/recipe-editor          디자인 세션
 ```
 
-- 구현 브랜치명에 **계획 문서의 태스크 번호**를 넣는다. PR과 태스크가 1:1로 맞아 추적이 단순해진다.
-- 태스크가 끝나면(모든 Step 체크 + 테스트 초록) PR을 만든다. PR 본문의 "관련"에 계획 문서와 태스크 번호를 적는다.
+- 구현 브랜치명은 **기능 단위**로 짓는다. 태스크 경계는 **커밋 1개 = 태스크 1개**로 남기고, 커밋 메시지에 무엇을 왜 했는지 적는다.
+- **태스크마다 브랜치를 새로 만들어 스택하지 않는다.** 이유는 [`git.md`의 "스택 PR을 쓰지 않는다"](git.md) 참조 — 두 번 사고가 났다.
+- 세션이 끝나면(진행한 태스크의 Step 전부 체크 + 테스트 초록) PR을 **하나** 만든다. PR 본문의 "관련"에 계획 문서와 이번에 끝낸 태스크 번호를 전부 적는다.
 - **설계·디자인 세션도 PR을 거친다.** 문서만 바뀌어도 마찬가지다 — 스펙과 계획은 이후 모든 구현의 근거이므로, 리뷰 없이 들어가면 안 된다. PR 본문에 **무엇을 왜 결정했는지** 적는다.
 - **CI가 초록이어야 머지한다.** Squash and merge.
 - 세션이 태스크 중간에 끝나도 **브랜치는 푸시해둔다.** 다음 세션이 이어받는다.
@@ -177,7 +178,7 @@ design/recipe-editor          디자인 세션
 ```markdown
 ## 2026-08-15 · Task 2 — grind 순수 도메인
 
-**브랜치:** `feat/task-02-grind` · **PR:** #3 (머지됨)
+**브랜치:** `feat/grind` · **PR:** #3 (머지됨)
 **상태:** 완료
 
 ### 한 일

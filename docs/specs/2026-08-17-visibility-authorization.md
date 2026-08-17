@@ -2,7 +2,7 @@
 id: VIS
 title: 공개범위 인가 + 팔로우
 status: 초안
-plan:
+plan: docs/plans/2026-08-17-plan-visibility.md
 ---
 
 # 공개범위 인가 + 팔로우 스펙

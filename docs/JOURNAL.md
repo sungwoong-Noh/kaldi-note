@@ -7,6 +7,30 @@
 
 ---
 
+## 2026-08-17 · 공개범위 인가 구현 계획
+
+**브랜치:** `docs/plan-visibility` · **PR:** 아래 참조
+**상태:** 완료 — `docs/plans/2026-08-17-plan-visibility.md` 작성, 태스크 3개, AC 46개 전부 매핑(`@DisplayName` 46개와 일치 확인). `check-spec-coverage.sh` 초록(스펙이 초안이라 정상 건너뜀)
+
+### 한 일
+- 태스크 3개로 쪼갰다: 팔로우 API(`AC-FOLLOW-01~18`) → 레시피 조회 인가(`AC-VIS-01~17`) → 브루로그 `visibility` 입력·조회 인가(`AC-VIS-18~28`). 스키마 변경 없고 새 `ErrorCode`도 없다
+- 스펙의 `plan:` frontmatter를 계획 경로로 채웠다
+
+### 발견한 것
+- **`GlobalExceptionHandler`에 `HttpMessageNotReadableException` 핸들러가 없다.** 잘못된 enum 값(`"SECRET"`)은 Jackson 역직렬화 실패로 `handleUnexpected(Exception)`에 떨어져 **400이 아니라 500**이 날 것으로 보인다. `AC-VIS-21`이 정확히 여기 걸리므로 Task 3에 핸들러 추가를 넣었다. 이 핸들러는 지금까지 500이던 **모든 깨진 JSON 요청을 400으로 바꾼다** — 영향 범위가 `visibility` 밖까지 미친다
+- **`findOwned`를 고치면 안 된다.** 조회 인가를 붙이려고 이걸 손대면 `update`/`delete`도 함께 느슨해져 `AC-VIS-14`·`15`(PUBLIC이어도 남이 수정 불가)가 깨진다. 조회용 `findViewable`을 따로 만들도록 Global Constraints에 못박았다
+- **판정 로직을 공통 함수로 묶지 않기로 했다.** `RecipeVisibility`와 `BrewLogVisibility`가 별개 enum이라 공통화하면 억지 추상화가 된다. 공유하는 것은 `FollowService.isMutual` 하나뿐이고 4단계 판정은 두 서비스가 각자 갖는다
+- **기존 `token(nickname)` 헬퍼로는 팔로우 픽스처를 만들 수 없다.** 토큰만 돌려주고 사용자 id를 주지 않는다. `User`를 그대로 반환하는 헬퍼를 세 테스트 클래스에 추가해야 한다 — 팔로우 픽스처는 SQL 직접 삽입이 아니라 **팔로우 API 호출로** 만들도록 했고, 이것이 Task 1을 선행으로 둔 이유다
+- **Task 2의 RED는 3개뿐이다**(`AC-VIS-04`·`05`·`11`). 17개 중 14개는 현재의 "소유자 아니면 403" 동작이 우연히 기대와 같아 처음부터 통과한다. 계획 Step 2에 이 사실을 적어뒀다 — 모르면 "테스트를 잘못 짰나" 하고 헤맨다
+
+### 다음 세션에게
+- **구현 세션에서 Task 1(팔로우 API)부터 TDD로 시작.** 계획 문서에 붙여넣을 수 있는 코드가 전부 있다. 브랜치는 `feat/visibility` 하나로 세 태스크를 진행하고 태스크 경계는 커밋으로 남긴다
+- **`FollowControllerTest`에 클래스 레벨 `@Transactional`을 처음부터 붙일 것.** `users`·`follows`에 실제로 쓴다. 이 누락으로 `UserRepositoryTest`가 깨진 사고가 브루잉 로그 Task 1에서 있었고 같은 패턴이 네 번 반복됐다
+- **검증되지 않은 가정 5개**가 계획 문서 맨 아래에 있다. 특히 1번(enum 파싱 실패의 실제 상태 코드)과 4번(`RecipeControllerTest`에 `@Transactional`이 이미 있는지)은 Step 2에서 실제로 돌려봐야 확정된다. 결과를 이 일지에 남길 것
+- 남은 스펙 후보는 **포크 1건**이다
+
+---
+
 ## 2026-08-17 · 브랜치 정리 + 미처리 항목 해소 확인
 
 **브랜치:** `chore/branch-cleanup` · **PR:** 아래 참조

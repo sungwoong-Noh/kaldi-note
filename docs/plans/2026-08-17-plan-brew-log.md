@@ -114,7 +114,7 @@ backend/src/test/java/com/kaldinote/
   - `GearService#createUserGrinder(Long userId, UserGrinderCreateRequest) → UserGrinderResponse`
   - `POST /api/v1/gear/user-grinders` (201)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `GearControllerTest`에 아래를 추가한다. 기존 파일은 `token()`이 실제 사용자를 저장하지 않고 고정 ID `1L`을 쓰는데, `user_grinders.user_id`는 `users(id)` FK라 그대로 쓰면 FK 위반이 난다. 새 테스트 전용으로 실제 사용자를 저장하는 헬퍼를 추가한다.
 
@@ -175,12 +175,12 @@ backend/src/test/java/com/kaldinote/
   }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*GearControllerTest'`
 Expected: 컴파일 실패 (`UserGrinderCreateRequest`·`UserGrinderResponse`·`createUserGrinder`·엔드포인트 없음).
 
-- [ ] **Step 3: DTO · 엔티티 · 서비스 · 컨트롤러 작성**
+- [x] **Step 3: DTO · 엔티티 · 서비스 · 컨트롤러 작성**
 
 `UserGrinderCreateRequest.java`:
 
@@ -295,12 +295,12 @@ public class GearService {
 
 (`HttpStatus`·`ResponseStatus`·`PostMapping`·`RequestBody`·`Valid` import는 기존 파일에 이미 있다. `UserGrinderCreateRequest`/`UserGrinderResponse` import를 추가한다.)
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*GearControllerTest'`
 Expected: PASS, 기존 2개 + 신규 3개 = 5 tests.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -326,7 +326,7 @@ cd .. && git add . && git commit -m "feat(gear): 사용자 그라인더 등록 A
   - `BrewLog#isOwnedBy(Long)`
   - `BrewLogRepository extends JpaRepository<BrewLog, Long>`(추가 쿼리 메서드 없음 — 소프트 삭제가 없어 `findById`로 충분)
 
-- [ ] **Step 1: 스키마 마이그레이션 작성**
+- [x] **Step 1: 스키마 마이그레이션 작성**
 
 `V8__create_brew_logs_table.sql`:
 
@@ -369,7 +369,7 @@ CREATE INDEX idx_brew_logs_bean_batch   ON brew_logs (bean_batch_id);
 CREATE INDEX idx_brew_logs_user_grinder ON brew_logs (user_grinder_id);
 ```
 
-- [ ] **Step 2: 실패하는 리포지토리 테스트 작성**
+- [x] **Step 2: 실패하는 리포지토리 테스트 작성**
 
 `BrewLogRepositoryTest.java`:
 
@@ -418,12 +418,12 @@ class BrewLogRepositoryTest extends AbstractIntegrationTest {
 
 > 이 테스트는 FK 무결성을 강제하지 않는 순수 엔티티 저장 확인이 목적이라, `recipe_id`/`bean_batch_id`/`user_grinder_id`에 실제로 존재하는 로우의 id가 필요하다. Testcontainers는 매 테스트 초기화 시 Flyway로 시드 데이터(품종·가공법·그라인더 등)만 채우고 `recipes`/`bean_batches`/`user_grinders`는 비어 있으므로, **이 테스트는 FK 위반으로 실패할 수 있다.** 그 경우 Step 3에서 최소 사용자·레시피·재고·사용자그라인더를 리포지토리로 직접 저장한 뒤 그 id를 쓰도록 고친다(Task 1의 `UserGrinder.of`, `recipe`/`inventory` 도메인의 기존 `create` 팩토리를 재사용). 이 조정이 필요한지는 Step 2에서 실제로 실행해봐야 확정된다 — **검증되지 않은 가정**으로 남긴다.
 
-- [ ] **Step 3: 테스트 실행 — 실패 확인**
+- [x] **Step 3: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogRepositoryTest'`
 Expected: 컴파일 실패 (엔티티·리포지토리 없음). FK 위반 여부는 엔티티 작성 후 Step 5에서 판가름난다.
 
-- [ ] **Step 4: 엔티티 작성**
+- [x] **Step 4: 엔티티 작성**
 
 `BrewLogVisibility.java`:
 
@@ -632,12 +632,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {}
 ```
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogRepositoryTest'`
 Expected: PASS, 1 test. FK 위반이 나면 Global Constraints의 메모대로 사용자·레시피·재고·사용자그라인더를 먼저 저장해 실제 id를 쓰도록 테스트를 고친다.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -664,7 +664,7 @@ cd .. && git add . && git commit -m "feat(brewlog): 브루잉 로그 스키마�
 
 > **DTO에는 이 태스크에서 `@NotNull`만 넣는다.** `@DecimalMin`/`@Max`/`@Size`/`@PastOrPresent` 같은 범위·경계 애노테이션과 `rating` 배수 검증은 Task 4가 추가한다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `BrewLogControllerTest.java`:
 
@@ -1035,12 +1035,12 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: 컴파일 실패 (DTO·서비스·컨트롤러·엔드포인트 없음).
 
-- [ ] **Step 3: DTO · 서비스 · 컨트롤러 작성**
+- [x] **Step 3: DTO · 서비스 · 컨트롤러 작성**
 
 `BrewLogCreateRequest.java`:
 
@@ -1344,12 +1344,12 @@ public class BrewLogController {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: PASS, 13 tests.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1373,7 +1373,7 @@ cd .. && git add . && git commit -m "feat(brewlog): 브루잉 로그 생성 API�
 
 > **AC-BREW-23~26(물리 검증 경계)은 Task 3에서 이미 통합된 `BrewMeasurement`/`ExtractionAnalyzer` 덕분에 새 프로덕션 코드 없이 테스트만 추가하면 바로 통과한다.** RED 단계에서 이 4개는 이미 GREEN이고, 나머지(rating·acidity·overallNote·brewedAt·actualDoseG 관련)만 애노테이션이 없어 FAIL한다 — 레시피 계획 Task 3과 같은 패턴이다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `BrewLogControllerTest`에 아래를 추가한다. 대표로 `rating` 그룹과 물리 검증 그룹의 전체 코드를 보이고, 나머지는 표의 리터럴 값을 그대로 대입해 같은 패턴으로 작성한다.
 
@@ -1544,12 +1544,12 @@ cd .. && git add . && git commit -m "feat(brewlog): 브루잉 로그 생성 API�
 | AC-BREW-27 | overallNote | 1000자 | 201 |
 | AC-BREW-28 | overallNote | 1001자 | 400 INVALID_REQUEST |
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: 새로 추가한 21개 중 AC-BREW-23·25(물리 검증 정상 케이스)는 이미 PASS. rating(10~14)·acidity(15~18)·overallNote(27~28)·brewedAt(37)·actualDoseG(38) 관련은 애노테이션이 없어 FAIL — 201이어야 할 요청이 통과하되 400이어야 할 요청도 그냥 통과해버린다.
 
-- [ ] **Step 3: DTO에 경계값 애노테이션 추가, 서비스에 rating 배수 검증 추가**
+- [x] **Step 3: DTO에 경계값 애노테이션 추가, 서비스에 rating 배수 검증 추가**
 
 `BrewLogCreateRequest.java`를 아래처럼 바꾼다(필드 순서 유지, 애노테이션만 추가):
 
@@ -1614,12 +1614,12 @@ public record BrewLogCreateRequest(
 
 > `rating` 배수 검증을 FK 소유 검증보다 먼저 두는 이유: 순서상 `400`이 `404`/`403`보다 뒤라고 스펙에 적혀 있지만, 이건 Bean Validation을 통과한 뒤 **서비스 내부에서 도는 400끼리의** 순서를 규정하지 않는다. `rating` 배수 검증은 어차피 매 요청에 결정적이므로 어디에 두어도 같은 요청에 대해 같은 결과가 나온다 — 다만 코드 가독성상 서비스 진입점에 모아둔다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: PASS, 13 + 21 = 34 tests.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1644,7 +1644,7 @@ cd .. && git add . && git commit -m "feat(brewlog): 생성 API 경계값·물리
   - `BrewLogService#get(Long userId, Long brewLogId) → BrewLogResponse`
   - `GET /api/v1/brew-logs/{id}` (200)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
   @Test
@@ -1781,12 +1781,12 @@ cd .. && git add . && git commit -m "feat(brewlog): 생성 API 경계값·물리
   }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: 5개 신규 테스트가 404(엔드포인트 없음)로 FAIL.
 
-- [ ] **Step 3: 서비스·컨트롤러에 조회 추가**
+- [x] **Step 3: 서비스·컨트롤러에 조회 추가**
 
 `BrewLogService.java`에 추가:
 
@@ -1824,12 +1824,12 @@ Expected: 5개 신규 테스트가 404(엔드포인트 없음)로 FAIL.
 
 (`GetMapping`·`PathVariable` import 추가.)
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: PASS, 13 + 21 + 5 = 39 tests.
 
-- [ ] **Step 5: 스펙 status 전환 + 전체 검증**
+- [x] **Step 5: 스펙 status 전환 + 전체 검증**
 
 `docs/specs/2026-08-17-brew-log.md`의 frontmatter `status`를 `초안 → 구현완료`로 바꾼다.
 
@@ -1839,7 +1839,7 @@ cd .. && ./scripts/check-spec-coverage.sh
 
 Expected: `brew-log.md`가 `[구현완료] — AC 39개 전부 테스트에 존재`로 통과.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 cd backend && ./gradlew spotlessApply && ./gradlew clean check
@@ -1850,9 +1850,9 @@ cd .. && git add . && git commit -m "feat(brewlog): 단건 조회 API 추가, �
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — `docs/specs/2026-08-17-brew-log.md`가 `[구현완료] — AC 39개 전부`
-- [ ] `bootRun` + curl로 실제 레시피·재고·사용자 그라인더·브루잉 로그를 만들어 `actualGrindMicronEstimated`·`daysOffRoast`·`degassingStatus`·EY/SCA 값이 스펙의 응답 예시와 일치하는지 확인 (스펙의 수동 확인 항목)
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과 — `docs/specs/2026-08-17-brew-log.md`가 `[구현완료] — AC 39개 전부`
+- [x] `bootRun` + curl로 실제 레시피·재고·사용자 그라인더·브루잉 로그를 만들어 `actualGrindMicronEstimated`·`daysOffRoast`·`degassingStatus`·EY/SCA 값이 스펙의 응답 예시와 일치하는지 확인 (스펙의 수동 확인 항목)
 
 ---
 

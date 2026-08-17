@@ -64,7 +64,7 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob, AskUserQuestion
 ```markdown
 ## YYYY-MM-DD · Task N — <태스크 이름>
 
-**브랜치:** `feat/task-NN-xxx` · **PR:** #N 또는 없음
+**브랜치:** `feat/<기능>` · **PR:** #N 또는 없음
 **상태:** 완료 / Step N까지 진행 / WIP(테스트 실패)
 
 ### 한 일

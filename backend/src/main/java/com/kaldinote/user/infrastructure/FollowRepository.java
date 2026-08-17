@@ -16,4 +16,8 @@ public interface FollowRepository extends JpaRepository<Follow, FollowId> {
          or (f.followerUserId = :b and f.followeeUserId = :a)
       """)
   boolean existsMutualFollow(@Param("a") Long a, @Param("b") Long b);
+
+  boolean existsByFollowerUserIdAndFolloweeUserId(Long followerUserId, Long followeeUserId);
+
+  void deleteByFollowerUserIdAndFolloweeUserId(Long followerUserId, Long followeeUserId);
 }

@@ -111,7 +111,7 @@ backend/src/test/java/com/kaldinote/
 - Consumes: `UserRepository`(`existsById`), `FollowRepository.existsMutualFollow(Long, Long)`(이미 존재), `AuthenticatedUser`
 - Produces: `FollowService.isMutual(Long viewerId, Long ownerId)` — **Task 2·3이 인가 판정에 쓴다**
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/user/presentation/FollowControllerTest.java`
 
@@ -442,7 +442,7 @@ class FollowControllerTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*FollowControllerTest'`
 
@@ -450,7 +450,7 @@ Expected: FAIL — 18개 전부. `FollowController`가 없어 `/api/v1/users/{id
 
 > 브루잉 로그 Task 1·3에서 "컴파일 실패"를 예상했으나 실제로는 런타임 500이었다. 이 테스트도 raw JSON + MockMvc만 쓰고 새 클래스를 직접 참조하지 않으므로 **컴파일은 성공한다.** RED로서는 유효하다.
 
-- [ ] **Step 3: 리포지토리 · 서비스 · 컨트롤러 · DTO 작성**
+- [x] **Step 3: 리포지토리 · 서비스 · 컨트롤러 · DTO 작성**
 
 `FollowRepository.java` (Modify — 메서드 2개 추가)
 
@@ -606,14 +606,14 @@ public class FollowController {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*FollowControllerTest'`
 Expected: PASS, 18 tests
 
 전체도 확인한다: `./gradlew clean check` — 특히 `UserRepositoryTest`가 깨지지 않았는지 본다. 깨졌다면 `@Transactional`이 빠진 것이다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

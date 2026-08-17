@@ -7,6 +7,30 @@
 
 ---
 
+## 2026-08-17 · Task 1~5 — 브루잉 로그 전체 구현, 스펙 구현완료 전환
+
+**브랜치:** `feat/task-01-user-grinder`~`feat/task-05-brewlog-get`(순차 스택) · **PR:** 아래 참조
+**상태:** 완료 — `docs/plans/2026-08-17-plan-brew-log.md` 전체 완료. `./gradlew clean check` 통과(전체 258개), `check-spec-coverage.sh` 스펙 5건·AC 192개 확인
+
+### 한 일
+- Task 1(사용자 그라인더 등록 API) → Task 2(스키마·엔티티) → Task 3(생성 API+FK 소유 검증) → Task 4(경계값·물리 검증) → Task 5(단건 조회)를 순서대로 TDD로 구현. `BrewLogControllerTest` 39개가 AC-BREW 39개를 전부 덮는다
+- `docs/specs/2026-08-17-brew-log.md`의 `status`를 `초안 → 구현완료`로 전환
+- `bootRun` + curl로 수동 확인: `actualGrindMicronEstimated=660`·`daysOffRoast=6`·`degassingStatus=IDEAL`·`brewRatio=16.7`·`extractionYieldPercent=20.0`·두 구간 `IDEAL`이 스펙 응답 예시와 정확히 일치. 레시피 `doseG` 15→20 수정 후에도 `actualDoseG=15.0` 유지, 재고 삭제(204) 후에도 `daysOffRoast=6 IDEAL` 유지, 남의 토큰 조회 403까지 확인. 검증 데이터는 SQL로 정리
+
+### 발견한 것
+- **계획의 "검증되지 않은 가정" 중 `GearControllerTest` 관련 가정이 깨졌다.** 새 헬퍼가 `users`에 실제로 쓰는데 이 클래스에만 `@Transactional`이 없어(지금까지 DB에 쓰지 않아 필요 없었다) 커밋된 사용자가 남았고, `UserRepositoryTest.이메일이_없는_사용자는_여러_명_저장할_수_있다`가 `expected: 2L but was: 4L`로 깨졌다. 클래스 레벨 `@Transactional` 추가로 해결 — Catalog·Bean·RecipeControllerTest가 이미 쓰던 패턴이라 이제 네 번째 반복이다. **DB에 쓰는 컨트롤러 테스트는 이 애노테이션을 기본값으로 삼을 것**
+- **계획이 스펙 응답 예시의 타임스탬프(`2026-08-17T08:30:00Z`)를 테스트 고정 상수로 그대로 옮긴 것이 Task 4에서 터졌다.** 실제 실행 시각이 `2026-08-17T05:03Z`라 그 값은 미래였고, Task 4가 `@PastOrPresent`를 추가하자 34개 중 25개가 한꺼번에 400으로 깨졌다. Task 3까지는 애노테이션이 없어 우연히 통과했던 것이다. `Instant.now().minus(1, HOURS)`로 바꿔 해결 — **스펙 예시의 날짜/시각 리터럴을 테스트에 그대로 복사하지 말 것**
+- 계획의 Task 1 Step 4가 "기존 2개 + 신규 3개 = 5 tests"라고 적었지만 `GearControllerTest`에는 기존 12개가 있어 실제로는 15개였다(계획 문서 카운트 오기, 동작에는 영향 없음)
+- Task 1·3의 RED에서 계획은 "컴파일 실패"를 예상했지만 실제로는 컴파일 성공 후 런타임 500(매핑 없는 경로가 catch-all 핸들러에 걸림)이었다. 테스트가 raw JSON + MockMvc만 쓰고 새 클래스를 직접 참조하지 않기 때문 — 레시피 Task 2에서 이미 겪은 것과 같은 현상이다. RED로서는 유효했다
+- Task 4의 물리 검증 4개(AC-BREW-23~26)는 Task 3에서 `BrewMeasurement`/`ExtractionAnalyzer`를 이미 붙여둔 덕에 RED 단계에서 이미 통과했다. 계획이 예측한 그대로다
+
+### 다음 세션에게
+- **PR 5개를 스택 순서대로 머지할 것**: task-01 → task-02 → task-03 → task-04 → task-05. **순서를 어기면 2026-08-17 복구 사고가 재현된다** — 이전 PR이 main에 완전히 들어간 것을 확인하고 다음을 누를 것
+- 남은 스펙 후보는 포크 / 공개범위 인가 2건. 브루잉 로그 스펙의 "열어둔 결정"에 목록 조회·수정·삭제 API, `brew_log_steps`·`brew_log_flavor_notes`, 즉흥 추출(recipeId nullable)이 후속 몫으로 남아 있다
+- 카카오/구글 실제 로그인은 여전히 미검증 상태 그대로다
+
+---
+
 ## 2026-08-17 · 브루잉 로그 구현 계획
 
 **브랜치:** `docs/plan-brew-log` (main에서 분기) · **PR:** 아래 참조

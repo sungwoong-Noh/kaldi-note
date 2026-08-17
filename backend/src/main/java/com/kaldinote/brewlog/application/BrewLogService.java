@@ -34,6 +34,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class BrewLogService {
 
+  /** 평가는 ½점 단위 버튼으로만 매긴다. 범위는 DTO가 막고, 배수 여부는 Bean Validation으로 표현할 수 없어 여기서 검사한다. */
+  private static final BigDecimal RATING_STEP = new BigDecimal("0.5");
+
   private final BrewLogRepository brewLogRepository;
   private final RecipeRepository recipeRepository;
   private final BeanBatchRepository beanBatchRepository;
@@ -44,6 +47,8 @@ public class BrewLogService {
 
   @Transactional
   public BrewLogResponse create(Long userId, BrewLogCreateRequest request) {
+    validateRatingStep(request.rating());
+
     Recipe recipe = requireOwnedRecipe(userId, request.recipeId());
     BeanBatch beanBatch = requireOwnedBeanBatch(userId, request.beanBatchId());
     UserGrinder userGrinder = requireOwnedUserGrinder(userId, request.userGrinderId());
@@ -91,6 +96,15 @@ public class BrewLogService {
             request.overallNote());
 
     return BrewLogResponse.from(brewLogRepository.save(log), analysis);
+  }
+
+  private void validateRatingStep(BigDecimal rating) {
+    if (rating == null) {
+      return;
+    }
+    if (rating.remainder(RATING_STEP).compareTo(BigDecimal.ZERO) != 0) {
+      throw new BusinessException(ErrorCode.INVALID_REQUEST, "rating은 0.5 단위여야 합니다: " + rating);
+    }
   }
 
   private ExtractionAnalysis analyze(BrewLogCreateRequest request) {

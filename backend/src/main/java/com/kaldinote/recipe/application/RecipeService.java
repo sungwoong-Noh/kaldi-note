@@ -99,6 +99,11 @@ public class RecipeService {
     findOwned(userId, recipeId);
   }
 
+  /** media 도메인이 조회(첨부 목록) 권한을 확인할 때 쓴다. */
+  public void requireViewable(Long userId, Long recipeId) {
+    findViewable(userId, recipeId);
+  }
+
   /**
    * 조회 인가. 스펙의 판정 순서를 그대로 따른다: 소유자 → PUBLIC → FRIENDS+상호팔로우 → 403.
    *

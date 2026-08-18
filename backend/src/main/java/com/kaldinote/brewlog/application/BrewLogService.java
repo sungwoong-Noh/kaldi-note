@@ -127,6 +127,11 @@ public class BrewLogService {
     }
   }
 
+  /** media 도메인이 조회(첨부 목록) 권한을 확인할 때 쓴다. */
+  public void requireViewable(Long userId, Long brewLogId) {
+    findViewable(userId, brewLogId);
+  }
+
   /** 판정 규칙은 RecipeService.findViewable과 같다. enum이 달라 공통 함수로 묶지 않는다. */
   private BrewLog findViewable(Long userId, Long brewLogId) {
     BrewLog log =

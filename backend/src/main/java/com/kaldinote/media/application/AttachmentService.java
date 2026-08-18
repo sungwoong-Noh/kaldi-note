@@ -14,6 +14,7 @@ import com.kaldinote.media.presentation.dto.UploadUrlRequest;
 import com.kaldinote.media.presentation.dto.UploadUrlResponse;
 import com.kaldinote.recipe.application.RecipeService;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -98,10 +99,26 @@ public class AttachmentService {
     return AttachmentResponse.from(saved, objectStorageClient.publicUrl(saved.getObjectKey()));
   }
 
+  public List<AttachmentResponse> list(Long userId, TargetType targetType, Long targetId) {
+    requireViewable(targetType, targetId, userId);
+    return attachmentRepository
+        .findByTargetTypeAndTargetIdOrderBySortOrderAsc(targetType, targetId)
+        .stream()
+        .map(a -> AttachmentResponse.from(a, objectStorageClient.publicUrl(a.getObjectKey())))
+        .toList();
+  }
+
   private void requireOwned(TargetType targetType, Long targetId, Long userId) {
     switch (targetType) {
       case RECIPE -> recipeService.requireOwned(userId, targetId);
       case BREW_LOG -> brewLogService.requireOwned(userId, targetId);
+    }
+  }
+
+  private void requireViewable(TargetType targetType, Long targetId, Long userId) {
+    switch (targetType) {
+      case RECIPE -> recipeService.requireViewable(userId, targetId);
+      case BREW_LOG -> brewLogService.requireViewable(userId, targetId);
     }
   }
 

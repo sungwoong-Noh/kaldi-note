@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -206,6 +207,27 @@ class AttachmentControllerTest extends AbstractIntegrationTest {
                 {"targetType":"%s","targetId":%d,"objectKey":"%s","width":%s,"height":%s}
                 """
                     .formatted(targetType, targetId, objectKey, widthPart, heightPart)));
+  }
+
+  private void follow(User follower, User followee) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/users/{id}/follow", followee.getId())
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(follower)))
+        .andExpect(status().isNoContent());
+  }
+
+  private void mutualFollow(User a, User b) throws Exception {
+    follow(a, b);
+    follow(b, a);
+  }
+
+  private ResultActions list(String token, String targetType, Long targetId) throws Exception {
+    return mockMvc.perform(
+        get("/api/v1/attachments")
+            .header(HttpHeaders.AUTHORIZATION, token)
+            .param("targetType", targetType)
+            .param("targetId", String.valueOf(targetId)));
   }
 
   @Test
@@ -500,6 +522,95 @@ class AttachmentControllerTest extends AbstractIntegrationTest {
                     {"targetType":"RECIPE","targetId":%d,"objectKey":"%s","width":100,"height":100}
                     """
                         .formatted(r1, objectKey)))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-22 · 소유자는 PRIVATE 대상의 첨부를 sortOrder 오름차순으로 본다")
+  void 소유자는_PRIVATE_대상의_첨부를_정렬순으로_본다() throws Exception {
+    User owner = newUser("media-22");
+    Long r1 = recipeId(tokenOf(owner), "PRIVATE");
+    seedAttachment(TargetType.RECIPE, r1, owner.getId(), 1);
+    seedAttachment(TargetType.RECIPE, r1, owner.getId(), 2);
+
+    list(tokenOf(owner), "RECIPE", r1)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(2))
+        .andExpect(jsonPath("$[0].sortOrder").value(1))
+        .andExpect(jsonPath("$[1].sortOrder").value(2));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-23 · 타인은 PUBLIC 대상의 첨부를 본다")
+  void 타인은_PUBLIC_대상의_첨부를_본다() throws Exception {
+    User owner = newUser("media-23a");
+    User other = newUser("media-23b");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    seedAttachment(TargetType.RECIPE, r1, owner.getId(), 1);
+
+    list(tokenOf(other), "RECIPE", r1)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-24 · 상호 팔로우면 FRIENDS 대상의 첨부를 본다")
+  void 상호_팔로우면_FRIENDS_대상의_첨부를_본다() throws Exception {
+    User owner = newUser("media-24a");
+    User other = newUser("media-24b");
+    Long r1 = recipeId(tokenOf(owner), "FRIENDS");
+    seedAttachment(TargetType.RECIPE, r1, owner.getId(), 1);
+    mutualFollow(owner, other);
+
+    list(tokenOf(other), "RECIPE", r1)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-25 · 타인의 PRIVATE 대상은 403이다")
+  void 타인의_PRIVATE_대상은_403이다() throws Exception {
+    User owner = newUser("media-25a");
+    User other = newUser("media-25b");
+    Long r1 = recipeId(tokenOf(owner), "PRIVATE");
+
+    list(tokenOf(other), "RECIPE", r1)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-26 · 첨부가 없으면 빈 배열을 반환한다")
+  void 첨부가_없으면_빈_배열을_반환한다() throws Exception {
+    User owner = newUser("media-26");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+
+    list(tokenOf(owner), "RECIPE", r1)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(0));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-27 · 없는 대상은 404다")
+  void 목록조회_없는_대상은_404다() throws Exception {
+    User owner = newUser("media-27");
+
+    list(tokenOf(owner), "RECIPE", 999999L)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-28 · 토큰 없이 조회하면 401이다")
+  void 토큰_없이_조회하면_401이다() throws Exception {
+    User owner = newUser("media-28");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+
+    mockMvc
+        .perform(
+            get("/api/v1/attachments")
+                .param("targetType", "RECIPE")
+                .param("targetId", String.valueOf(r1)))
         .andExpect(status().isUnauthorized());
   }
 }

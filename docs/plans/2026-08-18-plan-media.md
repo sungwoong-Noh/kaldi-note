@@ -1694,7 +1694,7 @@ cd .. && git add . && git commit -m "feat(media): 업로드 확정 API" && cd ba
 - Consumes: `RecipeService.requireViewable(Long, Long): void`(신설), `BrewLogService.requireViewable(Long, Long): void`(신설), `AttachmentRepository.findByTargetTypeAndTargetIdOrderBySortOrderAsc`(Task 1)
 - Produces: `AttachmentService.list(Long userId, TargetType, Long targetId): List<AttachmentResponse>`
 
-- [ ] **Step 1: 실패하는 테스트 추가**
+- [x] **Step 1: 실패하는 테스트 추가**
 
 `backend/src/test/java/com/kaldinote/media/presentation/AttachmentControllerTest.java` (Modify — 헬퍼·테스트 7개 추가)
 
@@ -1816,12 +1816,14 @@ cd .. && git add . && git commit -m "feat(media): 업로드 확정 API" && cd ba
   }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: 새로 추가된 7개 중 `AC-MEDIA-28`은 처음부터 통과, 나머지 6개는 `GET /api/v1/attachments` 매핑이 없어 실패. 실측값을 남긴다.
 
-- [ ] **Step 3: requireViewable 추가 + list 구현**
+**실측:** 예측과 정확히 일치. 28개 중 6개 실패, `AC-MEDIA-28`(미인증) 1개만 처음부터 통과.
+
+- [x] **Step 3: requireViewable 추가 + list 구현**
 
 `backend/src/main/java/com/kaldinote/recipe/application/RecipeService.java` (Modify — `requireOwned` 다음에 추가)
 
@@ -1879,14 +1881,16 @@ Expected: 새로 추가된 7개 중 `AC-MEDIA-28`은 처음부터 통과, 나머
 
 (반영 시 `import org.springframework.web.bind.annotation.GetMapping;`, `import org.springframework.web.bind.annotation.RequestParam;`, `import com.kaldinote.media.domain.TargetType;`, `import java.util.List;`, `import com.kaldinote.media.presentation.dto.AttachmentResponse;`를 정리하고 FQN을 단순화한다.)
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: PASS, 28 tests
 
 전체도 확인한다: `./gradlew clean check`
 
-- [ ] **Step 5: 커밋**
+**실측:** 28개 전부 PASS. `clean check` 전체 통과(회귀 없음).
+
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

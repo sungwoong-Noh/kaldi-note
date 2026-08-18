@@ -94,6 +94,11 @@ public class RecipeService {
     return RecipeResponse.from(recipeRepository.save(fork));
   }
 
+  /** media 도메인이 업로드 권한을 확인할 때 쓴다. 엔티티를 밖으로 내보내지 않는다(도메인 간 ID 참조 원칙). */
+  public void requireOwned(Long userId, Long recipeId) {
+    findOwned(userId, recipeId);
+  }
+
   /**
    * 조회 인가. 스펙의 판정 순서를 그대로 따른다: 소유자 → PUBLIC → FRIENDS+상호팔로우 → 403.
    *

@@ -593,6 +593,7 @@ OCI_BUCKET_NAME=
 - [ ] `nmap`이나 외부 접속 시도로 5432(PostgreSQL)가 막혀 있는지 확인한다
 - [ ] `https://api.kaldi-note.today`가 유효한 HTTPS 인증서로 응답한다(Caddy 자동 발급)
 - [ ] `crontab -l`에 백업 작업이 등록돼 있고, 다음날 Object Storage에 백업 파일이 실제로 생긴다
+- [ ] 백업 버킷이 private이고 사진 버킷(public)과 분리돼 있다
 - [ ] 8일 연속 백업 후 버킷에 최근 7개만 남아 있다
 - [ ] `.env`의 값으로 카카오/구글 실계정 로그인과 사진 업로드가 실제로 동작한다
 ```

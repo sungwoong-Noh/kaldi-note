@@ -2,14 +2,18 @@ package com.kaldinote.media.presentation;
 
 import com.kaldinote.common.security.AuthenticatedUser;
 import com.kaldinote.media.application.AttachmentService;
+import com.kaldinote.media.presentation.dto.AttachmentResponse;
+import com.kaldinote.media.presentation.dto.ConfirmAttachmentRequest;
 import com.kaldinote.media.presentation.dto.UploadUrlRequest;
 import com.kaldinote.media.presentation.dto.UploadUrlResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -24,5 +28,12 @@ public class AttachmentController {
   public UploadUrlResponse issueUploadUrl(
       @Valid @RequestBody UploadUrlRequest request, AuthenticatedUser user) {
     return attachmentService.issueUploadUrl(user.id(), request);
+  }
+
+  @PostMapping
+  @ResponseStatus(HttpStatus.CREATED)
+  public AttachmentResponse confirm(
+      @Valid @RequestBody ConfirmAttachmentRequest request, AuthenticatedUser user) {
+    return attachmentService.confirm(user.id(), request);
   }
 }

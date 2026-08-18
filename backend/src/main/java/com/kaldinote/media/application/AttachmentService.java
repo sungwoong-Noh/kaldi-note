@@ -3,9 +3,13 @@ package com.kaldinote.media.application;
 import com.kaldinote.brewlog.application.BrewLogService;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
+import com.kaldinote.media.domain.Attachment;
 import com.kaldinote.media.domain.TargetType;
 import com.kaldinote.media.infrastructure.AttachmentRepository;
+import com.kaldinote.media.infrastructure.ObjectHead;
 import com.kaldinote.media.infrastructure.ObjectStorageClient;
+import com.kaldinote.media.presentation.dto.AttachmentResponse;
+import com.kaldinote.media.presentation.dto.ConfirmAttachmentRequest;
 import com.kaldinote.media.presentation.dto.UploadUrlRequest;
 import com.kaldinote.media.presentation.dto.UploadUrlResponse;
 import com.kaldinote.recipe.application.RecipeService;
@@ -26,6 +30,7 @@ public class AttachmentService {
           "image/webp", "webp");
   private static final int MAX_ATTACHMENTS_PER_TARGET = 4;
   private static final long UPLOAD_URL_TTL_SECONDS = 600;
+  private static final long MAX_BYTES = 10_485_760L;
 
   private final RecipeService recipeService;
   private final BrewLogService brewLogService;
@@ -53,6 +58,44 @@ public class AttachmentService {
         objectStorageClient.issueUploadUrl(objectKey, request.contentType(), expiresAt);
 
     return new UploadUrlResponse(objectKey, uploadUrl, expiresAt);
+  }
+
+  public AttachmentResponse confirm(Long userId, ConfirmAttachmentRequest request) {
+    requireOwned(request.targetType(), request.targetId(), userId);
+
+    if (attachmentRepository.existsByObjectKey(request.objectKey())) {
+      throw new BusinessException(
+          ErrorCode.INVALID_REQUEST, "이미 확정된 objectKey입니다: " + request.objectKey());
+    }
+
+    ObjectHead head =
+        objectStorageClient
+            .head(request.objectKey())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        ErrorCode.NOT_FOUND, "업로드된 파일을 찾을 수 없습니다: " + request.objectKey()));
+
+    if (head.contentLength() > MAX_BYTES) {
+      objectStorageClient.delete(request.objectKey());
+      throw new BusinessException(ErrorCode.INVALID_REQUEST, "파일 크기가 10MB를 초과합니다.");
+    }
+
+    int sortOrder = (int) attachmentCount(request.targetType(), request.targetId()) + 1;
+
+    Attachment attachment =
+        Attachment.create(
+            userId,
+            request.targetType(),
+            request.targetId(),
+            request.objectKey(),
+            head.contentType(),
+            request.width(),
+            request.height(),
+            sortOrder);
+
+    Attachment saved = attachmentRepository.save(attachment);
+    return AttachmentResponse.from(saved, objectStorageClient.publicUrl(saved.getObjectKey()));
   }
 
   private void requireOwned(TargetType targetType, Long targetId, Long userId) {

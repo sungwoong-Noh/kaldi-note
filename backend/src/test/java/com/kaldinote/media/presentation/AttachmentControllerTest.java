@@ -15,12 +15,14 @@ import com.kaldinote.gear.infrastructure.GrinderModelRepository;
 import com.kaldinote.media.domain.Attachment;
 import com.kaldinote.media.domain.TargetType;
 import com.kaldinote.media.infrastructure.AttachmentRepository;
+import com.kaldinote.media.infrastructure.FakeObjectStorageClient;
 import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.UserRepository;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,12 @@ class AttachmentControllerTest extends AbstractIntegrationTest {
   @Autowired private UserRepository userRepository;
   @Autowired private GrinderModelRepository grinderModelRepository;
   @Autowired private AttachmentRepository attachmentRepository;
+  @Autowired private FakeObjectStorageClient fakeObjectStorageClient;
+
+  @BeforeEach
+  void resetFake() {
+    fakeObjectStorageClient.reset();
+  }
 
   private User newUser(String nickname) {
     return userRepository.save(User.create(null, nickname, null));
@@ -166,6 +174,38 @@ class AttachmentControllerTest extends AbstractIntegrationTest {
             100,
             100,
             sortOrder));
+  }
+
+  private String objectKeyFor(String token, String targetType, Long targetId, String contentType)
+      throws Exception {
+    String body =
+        issueUploadUrl(token, targetType, targetId, contentType)
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return (String) JsonPath.read(body, "$.objectKey");
+  }
+
+  private ResultActions confirm(
+      String token,
+      String targetType,
+      Long targetId,
+      String objectKey,
+      Integer width,
+      Integer height)
+      throws Exception {
+    String widthPart = width == null ? "null" : width.toString();
+    String heightPart = height == null ? "null" : height.toString();
+    return mockMvc.perform(
+        post("/api/v1/attachments")
+            .header(HttpHeaders.AUTHORIZATION, token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                """
+                {"targetType":"%s","targetId":%d,"objectKey":"%s","width":%s,"height":%s}
+                """
+                    .formatted(targetType, targetId, objectKey, widthPart, heightPart)));
   }
 
   @Test
@@ -314,6 +354,152 @@ class AttachmentControllerTest extends AbstractIntegrationTest {
                     {"targetType":"RECIPE","targetId":%d,"contentType":"image/jpeg"}
                     """
                         .formatted(r1)))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-12 · 정상 확정하면 201과 AttachmentResponse를 반환한다")
+  void 정상_확정하면_201을_반환한다() throws Exception {
+    User owner = newUser("media-12");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    String objectKey = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+    fakeObjectStorageClient.stubUploaded(objectKey, 500_000L, "image/jpeg");
+
+    confirm(tokenOf(owner), "RECIPE", r1, objectKey, 1200, 900)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.targetType").value("RECIPE"))
+        .andExpect(jsonPath("$.targetId").value(r1))
+        .andExpect(jsonPath("$.width").value(1200))
+        .andExpect(jsonPath("$.height").value(900))
+        .andExpect(jsonPath("$.sortOrder").value(1));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-13 · 두 번째 확정의 sortOrder는 2다")
+  void 두번째_확정의_sortOrder는_2다() throws Exception {
+    User owner = newUser("media-13");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    String key1 = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+    fakeObjectStorageClient.stubUploaded(key1, 100_000L, "image/jpeg");
+    confirm(tokenOf(owner), "RECIPE", r1, key1, 100, 100).andExpect(status().isCreated());
+
+    String key2 = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+    fakeObjectStorageClient.stubUploaded(key2, 100_000L, "image/jpeg");
+
+    confirm(tokenOf(owner), "RECIPE", r1, key2, 100, 100)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.sortOrder").value(2));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-14 · content_type은 클라이언트 값이 아니라 OCI HEAD 응답 값이 저장된다")
+  void content_type은_HEAD_응답_값이_저장된다() throws Exception {
+    User owner = newUser("media-14");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    String objectKey = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+    fakeObjectStorageClient.stubUploaded(objectKey, 100_000L, "image/png");
+
+    confirm(tokenOf(owner), "RECIPE", r1, objectKey, 100, 100)
+        .andExpect(jsonPath("$.contentType").value("image/png"));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-15 · width·height가 없으면 400이다")
+  void width_height가_없으면_400이다() throws Exception {
+    User owner = newUser("media-15");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    String objectKey = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+    fakeObjectStorageClient.stubUploaded(objectKey, 100_000L, "image/jpeg");
+
+    confirm(tokenOf(owner), "RECIPE", r1, objectKey, null, null)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-16 · OCI에 파일이 없으면(HEAD 실패) 404다")
+  void OCI에_파일이_없으면_404다() throws Exception {
+    User owner = newUser("media-16");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    String objectKey = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+
+    confirm(tokenOf(owner), "RECIPE", r1, objectKey, 100, 100)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+    assertThat(attachmentRepository.existsByObjectKey(objectKey)).isFalse();
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-17 · 10MB를 초과하면 OCI 객체를 지우고 400을 반환한다")
+  void 십MB_초과하면_객체를_지우고_400을_반환한다() throws Exception {
+    User owner = newUser("media-17");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    String objectKey = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+    fakeObjectStorageClient.stubUploaded(objectKey, 10_485_761L, "image/jpeg");
+
+    confirm(tokenOf(owner), "RECIPE", r1, objectKey, 100, 100)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    assertThat(fakeObjectStorageClient.wasDeleted(objectKey)).isTrue();
+    assertThat(attachmentRepository.existsByObjectKey(objectKey)).isFalse();
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-18 · 정확히 10MB는 통과한다 (경계값 포함)")
+  void 정확히_십MB는_통과한다() throws Exception {
+    User owner = newUser("media-18");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    String objectKey = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+    fakeObjectStorageClient.stubUploaded(objectKey, 10_485_760L, "image/jpeg");
+
+    confirm(tokenOf(owner), "RECIPE", r1, objectKey, 100, 100).andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-19 · 같은 objectKey로 중복 확정하면 400이다")
+  void 같은_objectKey로_중복_확정하면_400이다() throws Exception {
+    User owner = newUser("media-19");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    String objectKey = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+    fakeObjectStorageClient.stubUploaded(objectKey, 100_000L, "image/jpeg");
+    confirm(tokenOf(owner), "RECIPE", r1, objectKey, 100, 100).andExpect(status().isCreated());
+
+    confirm(tokenOf(owner), "RECIPE", r1, objectKey, 100, 100)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-20 · 소유자가 아니면 403이다")
+  void 확정_소유자가_아니면_403이다() throws Exception {
+    User owner = newUser("media-20a");
+    User other = newUser("media-20b");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    String objectKey = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+    fakeObjectStorageClient.stubUploaded(objectKey, 100_000L, "image/jpeg");
+
+    confirm(tokenOf(other), "RECIPE", r1, objectKey, 100, 100)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-21 · 토큰 없이 확정하면 401이다")
+  void 토큰_없이_확정하면_401이다() throws Exception {
+    User owner = newUser("media-21");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    String objectKey = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+    fakeObjectStorageClient.stubUploaded(objectKey, 100_000L, "image/jpeg");
+
+    mockMvc
+        .perform(
+            post("/api/v1/attachments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetType":"RECIPE","targetId":%d,"objectKey":"%s","width":100,"height":100}
+                    """
+                        .formatted(r1, objectKey)))
         .andExpect(status().isUnauthorized());
   }
 }

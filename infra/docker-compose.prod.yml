@@ -1,0 +1,63 @@
+services:
+  app:
+    image: ghcr.io/sungwoong-noh/kaldi-note-api:${KALDI_IMAGE_TAG:-latest}
+    container_name: kaldi-note-app
+    restart: unless-stopped
+    mem_limit: "4g"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/kaldinote
+      SPRING_DATASOURCE_USERNAME: kaldinote
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD가 .env에 있어야 한다}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - kaldi-net
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: kaldi-note-postgres
+    restart: unless-stopped
+    mem_limit: "2g"
+    environment:
+      POSTGRES_DB: kaldinote
+      POSTGRES_USER: kaldinote
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD가 .env에 있어야 한다}
+    volumes:
+      - kaldi-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kaldinote -d kaldinote"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - kaldi-net
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: kaldi-note-caddy
+    restart: unless-stopped
+    mem_limit: "256m"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+    networks:
+      - kaldi-net
+
+networks:
+  kaldi-net:
+
+volumes:
+  kaldi-pgdata:
+  caddy-data:
+  caddy-config:

@@ -7,7 +7,6 @@
 *.pem
 *.key
 *.p12
-backend/src/main/resources/application-prod.yml
 
 # ── 백엔드 (Gradle / Java) ─────────────────────────────
 backend/build/

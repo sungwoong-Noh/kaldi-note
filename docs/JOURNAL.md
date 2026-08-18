@@ -7,6 +7,30 @@
 
 ---
 
+## 2026-08-18 · OCI 배포·CI/CD 구현 — Task 1~4 전부
+
+**브랜치:** `feat/oci-deploy` · **PR:** 아래 참조
+**상태:** 완료 — `docs/plans/2026-08-18-plan-oci-deploy.md` Task 1~4 전부. `clean check` 통과, `check-spec-coverage.sh` 스펙 9건·AC 296개, 스펙 `status: 구현완료`
+
+### 한 일
+- PR #58(사진 첨부)·#59(이 계획의 스펙+계획)를 순서대로 squash 머지한 뒤 `main`에서 새로 브랜치를 땄다
+- 계획대로 4개 태스크를 전부 구현했다: `Dockerfile` + Testcontainers 빌드·헬스체크 테스트(AC 2개) → 운영 프로필+production compose+Caddyfile → GitHub Actions `deploy` job+`deploy.sh`(SSH 배포·헬스체크·자동 롤백) → 백업 스크립트+`.env` 템플릿+배포 런북
+- 이 계획의 AC는 원래 2개뿐이었고(Dockerfile 빌드+헬스체크), 나머지 태스크는 스펙이 명시한 대로 "수동 확인" 체크리스트(`infra/README.md`)로 남기고 AC를 붙이지 않았다
+
+### 발견한 것 — 계획의 가정이 실행 중 세 번 깨졌다
+- **`FROM --platform=$BUILDPLATFORM`가 Testcontainers의 `ImageFromDockerfile`(classic build API)에서 치환되지 않아 `DockerClientException`으로 즉시 깨졌다.** `$BUILDPLATFORM`은 BuildKit/buildx 전용 자동 인자라 classic build엔 없다. Dockerfile에서 플랫폼 고정을 뺐고, 그 대가로 Task 3의 실제 GHCR 빌드(amd64 러너 → arm64 타깃)에서 JDK 빌드 스테이지가 QEMU 에뮬레이션을 타게 됐다 — `docker/setup-qemu-action`을 추가했다. **`main`에 처음 머지될 때 실제 워크플로 실행 시간으로 에뮬레이션이 실제로 도는지 확인해야 한다.**
+- **`docker-compose.prod.yml`의 `env_file: - .env`(짧은 형식)는 `.env`가 없으면 `docker compose config` 자체가 실패했다.** "변수 경고만 뜨고 성공"이라던 계획의 예상은 틀렸다. Compose Spec 긴 형식(`path` + `required: false`)으로 바꿔 구문 검증과 운영 배포 둘 다 되게 했다.
+- **`application-prod.yml`을 루트 `.gitignore`가 막고 있었다.** 예방적으로 걸어둔 규칙("시크릿" 절)인데 실제로는 이 파일에 비밀값이 없다(전부 `${VAR}` 참조). `backend/CLAUDE.md`도 이 파일을 커밋 대상으로 문서화하고 있어 `.gitignore`에서 그 줄을 지웠다.
+- (반증 아님, 확인됨) `infra/.gitignore`를 따로 만들 필요가 없었다 — 루트 `.gitignore`의 `.env`/`.env.*`/`!.env.example` 패턴이 경로 접두어 없이 전체 저장소에 적용돼 `infra/.env`도 이미 커버한다. `git check-ignore -v`로 직접 확인 후 계획에서 뺐다.
+
+### 다음 세션에게
+- **코드·설정은 끝났지만 실제 배포는 아직이다.** `infra/README.md`의 "VM 최초 설정"(9단계)과 "배포 후 확인"(9항목)이 전부 미착수 — OCI VM 접속, GitHub Secrets(`OCI_VM_HOST`·`OCI_VM_USER`·`OCI_VM_SSH_KEY`) 등록, DNS `api.kaldi-note.today` A 레코드 설정이 먼저다
+- **`main`에 처음 머지되는 배포에서 QEMU 에뮬레이션 소요 시간을 꼭 확인할 것.** 몇 분을 넘기면 대안(더 큰 러너, 캐시 전략)을 검토해야 한다
+- `appleboy/scp-action@v0.1.7`·`appleboy/ssh-action@v1.2.0` 버전 태그가 실제로 유효한지 첫 실행 때 확인되지 않았다
+- 이 계획 전에 있었던 "OCI 배포·CI/CD 스펙 인터뷰"·"구현 계획 작성" 세션은 `/handover`를 거치지 않아 이 항목이 그 둘의 기록도 겸한다 — PR #59에 두 산출물이 다 있다
+
+---
+
 ## 2026-08-18 · 사진 첨부 구현 — Task 1~6 전부
 
 **브랜치:** `feat/media-attachment` · **PR:** 아래 참조

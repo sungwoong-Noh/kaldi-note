@@ -31,7 +31,7 @@
 
 - **AC로 다루는 건 Dockerfile 빌드+헬스체크뿐이다.** SSH 배포·방화벽·cron·HTTPS 인증서·백업 업로드는 스펙의 "수동 확인" 항목이며, 이 계획도 그 구분을 그대로 따른다 — 별도 AC ID를 붙이지 않는다.
 - **GHCR 이미지 경로는 `ghcr.io/sungwoong-noh/kaldi-note-api`다.** GHCR은 대문자를 허용하지 않아 저장소 소유자 `sungwoong-Noh`를 소문자로 쓴다.
-- **이미지는 반드시 `linux/arm64`로 빌드한다.** OCI VM이 Ampere A1(aarch64)이기 때문이다. GitHub Actions의 `ubuntu-latest`는 amd64이므로, Dockerfile의 빌드 스테이지는 `FROM --platform=$BUILDPLATFORM ...`로 호스트 아키텍처에서 네이티브로 컴파일하고(jar는 플랫폼 무관), 런타임 스테이지만 `linux/arm64` 베이스 이미지를 받는다. 이러면 QEMU 에뮬레이션 없이 크로스 빌드된다.
+- **이미지는 반드시 `linux/arm64`로 빌드한다.** OCI VM이 Ampere A1(aarch64)이기 때문이다. GitHub Actions의 `ubuntu-latest`는 amd64다. **Task 1에서 실제로 확인한 결과, `FROM --platform=$BUILDPLATFORM ...`는 Testcontainers의 `ImageFromDockerfile`(BuildKit을 쓰지 않는 classic build API)에서 `$BUILDPLATFORM`이 치환되지 않아 `DockerClientException`으로 깨진다.** 이 변수는 BuildKit/buildx 전용 자동 빌드 인자라 클래식 빌드에는 없다. Dockerfile은 플랫폼 고정 없이 단순하게 두고(빌드 스테이지가 대상 플랫폼으로 함께 빌드됨을 감수한다), Task 3의 실제 GHCR 빌드(`docker/build-push-action` + buildx)에서 amd64 러너가 arm64를 타깃으로 할 때 JDK 빌드 스테이지가 QEMU 에뮬레이션으로 실행된다 — `docker/setup-qemu-action`이 반드시 필요하다(아래 "검증되지 않은 가정" 참조).
 - **JVM 플래그는 `-XX:MaxRAMPercentage=50` 고정.** 아키텍처 문서(`architecture.md:74`)의 결정이다.
 - **컨테이너 메모리 한도는 app 4GB / postgres 2GB / caddy 256MB.** 스펙에서 확정된 값.
 - **PostgreSQL은 production compose에서 호스트에 포트 매핑하지 않는다.** 로컬 개발용 루트 `docker-compose.yml`(5432 매핑)은 건드리지 않는다 — 별개 파일이다.
@@ -79,7 +79,7 @@ infra/
 - Consumes: 없음 (이 계획의 첫 태스크)
 - Produces: `backend/Dockerfile` — Task 2의 `docker-compose.prod.yml`과 Task 3의 GitHub Actions 빌드 스텝이 이 파일을 그대로 쓴다. 이미지 내부에서 앱은 `8080` 포트로 뜨고, `-XX:MaxRAMPercentage=50`을 `JAVA_OPTS` 환경변수로 받는다(기본값 포함, 없어도 뜬다).
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/Dockerfile`이 아직 없으므로 이 테스트는 이미지 빌드 단계에서 실패한다.
 
@@ -117,8 +117,8 @@ class DockerfileHealthcheckTest {
   @DisplayName("AC-DEPLOY-02 · 컨테이너 기동 후 60초 이내에 헬스체크가 통과한다")
   void 컨테이너_기동_60초_이내_헬스체크가_통과한다() {
     try (Network network = Network.newNetwork();
-        PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>(DockerImageName.parse("postgres:17-alpine"))
+        PostgreSQLContainer postgres =
+            new PostgreSQLContainer(DockerImageName.parse("postgres:17-alpine"))
                 .withNetwork(network)
                 .withNetworkAliases("postgres")
                 .withDatabaseName("kaldinote")
@@ -155,19 +155,19 @@ class DockerfileHealthcheckTest {
 }
 ```
 
-**주의:** `DOCKERFILE_CONTEXT`는 `System.getProperty("user.dir")`를 쓴다 — Gradle이 테스트를 `backend/` 디렉터리를 작업 디렉터리로 실행하므로 `backend/Dockerfile`을 정확히 가리킨다.
+**주의:** `DOCKERFILE_CONTEXT`는 `System.getProperty("user.dir")`를 쓴다 — Gradle이 테스트를 `backend/` 디렉터리를 작업 디렉터리로 실행하므로 `backend/Dockerfile`을 정확히 가리킨다. `PostgreSQLContainer`는 제네릭 없는 raw type이다 — `TestcontainersConfiguration.java`와 동일한 이유(Boot 4 마이그레이션 시 패키지가 `org.testcontainers.containers`에서 `org.testcontainers.postgresql`로 옮기며 제네릭도 사라졌다).
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*DockerfileHealthcheckTest'`
 Expected: FAIL — `backend/Dockerfile`이 없어 `ImageFromDockerfile`이 `NoSuchFileException` 또는 빌드 실패로 예외를 던진다.
 
-- [ ] **Step 3: Dockerfile 작성**
+- [x] **Step 3: Dockerfile 작성**
 
 ```dockerfile
 # syntax=docker/dockerfile:1
 
-FROM --platform=$BUILDPLATFORM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:21-jdk AS build
 WORKDIR /workspace
 COPY gradlew .
 COPY gradle gradle
@@ -183,12 +183,14 @@ EXPOSE 8080
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+**계획 작성 시점과 다른 점(실제 실행으로 확인됨):** 원래 계획은 빌드 스테이지에 `FROM --platform=$BUILDPLATFORM ...`를 써서 QEMU 에뮬레이션 없이 크로스 빌드하려 했다. 그러나 Testcontainers의 `ImageFromDockerfile`은 BuildKit이 아닌 classic Docker build API를 쓰고, `$BUILDPLATFORM`은 BuildKit 전용 자동 인자라 치환되지 않아 `DockerClientException: failed to parse platform`으로 즉시 깨졌다. 플랫폼 고정을 빼서 해결했다 — Task 3의 실제 GHCR 빌드(buildx)에서 이 대가를 치른다(QEMU 에뮬레이션 필요, Global Constraints에 반영).
+
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*DockerfileHealthcheckTest'`
-Expected: PASS, 2 tests. (이미지 빌드가 포함돼 있어 다른 테스트보다 오래 걸린다 — 수 분 단위. 정상이다.)
+Expected: PASS, 2 tests. (이미지 빌드가 포함돼 있어 다른 테스트보다 오래 걸린다 — 첫 실행 약 2분, 이후 Docker 레이어 캐시로 더 빠를 수 있다. 정상이다.)
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -412,6 +414,11 @@ Expected: 파일 모드 변경(`100644` → `100755`)이 `git diff`에 잡힌다
     steps:
       - uses: actions/checkout@v4
 
+      - name: QEMU 설정 (amd64 러너에서 arm64 크로스 빌드용)
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
       - name: Buildx 설정
         uses: docker/setup-buildx-action@v3
 
@@ -612,7 +619,7 @@ git commit -m "docs(deploy): 백업 스크립트 + .env 템플릿 + 배포 런�
 **타입 일관성:** `docker-compose.prod.yml`의 서비스명(`app`)과 `deploy.sh`의 `docker compose ... pull app`, GitHub Actions의 이미지 태그(`${{ github.sha }}` = `deploy.sh`의 `$1`)가 전부 일치함
 
 **검증되지 않은 가정:**
-- **`FROM --platform=$BUILDPLATFORM` + 런타임 스테이지 `linux/arm64` 조합이 GitHub Actions(amd64 러너)에서 QEMU 에뮬레이션 없이 빠르게 빌드되는지.** 이론상 빌드 스테이지는 네이티브(amd64)로 컴파일하고 런타임 스테이지는 `COPY`만 하므로 에뮬레이션이 필요 없어야 하지만, 실제 GitHub Actions 러너에서 확인된 적은 없다. Task 3 완료 후 `main`에 처음 머지될 때 워크플로 실행 시간으로 확인한다 — 만약 여러 분 이상 걸리며 QEMU 로그가 보이면 `docker/setup-qemu-action`을 추가해야 한다
+- **~~`FROM --platform=$BUILDPLATFORM`로 에뮬레이션을 피한다~~ — Task 1 구현 중 반증됨.** Testcontainers의 classic build API가 `$BUILDPLATFORM`을 치환하지 못해 빌드 자체가 깨졌다(`DockerClientException`). Dockerfile에서 플랫폼 고정을 뺐고, Global Constraints·Task 3에 반영했다. **새로 생긴 가정:** `docker/setup-qemu-action@v3` + `platforms: linux/arm64`로 GitHub Actions(amd64 러너)에서 JDK 빌드 스테이지가 에뮬레이션으로 정상 완료되는지는 아직 확인되지 않았다 — 실제로 여러 분 이상 걸릴 수 있다. Task 3을 `main`에 처음 머지할 때 워크플로 실행 시간과 성공 여부로 확인한다
 - **`appleboy/scp-action`·`appleboy/ssh-action`의 최신 메이저 버전(v0.1.7, v1.2.0)이 실제로 존재하고 인터페이스가 이 계획과 같은지.** 마켓플레이스 액션은 계획 작성 시점 기준으로 골랐다 — Task 3 Step 3에서 실제 워크플로 실행 시 버전 태그가 유효한지 반드시 확인한다
 - **`docker exec kaldi-note-postgres pg_dump`가 `postgres:17-alpine` 이미지 안의 `pg_dump` 버전과 호환되는지.** 같은 메이저 버전(17)이라 문제없어야 하지만 실제 백업 파일을 한 번 복원해보기 전까지는 가정이다(스펙이 복구 리허설을 비목표로 뺐으므로 이 계획도 검증하지 않는다)
 - **OCI CLI 공식 설치 스크립트(`install.sh`)가 Ubuntu 24.04 aarch64에서 문제없이 도는지.** `infra/README.md`에 설치 단계를 추가했지만(자체 검토에서 발견해 반영), 실제 실행은 VM 접속 시점에 처음 확인된다

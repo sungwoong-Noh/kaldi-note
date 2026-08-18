@@ -63,4 +63,4 @@ Always Free 한도(Object Storage 20GB, 아웃바운드 10TB/월) 안에서는 �
 - [x] `crontab -l`에 백업 작업이 등록돼 있고, 다음날 Object Storage에 백업 파일이 실제로 생긴다 — 2026-08-19 확인. 다음날을 기다리지 않고 `* * * * *`로 임시 등록해 cron이 실제로 실행하는 것까지 봤다(로그에 연속 2회 업로드 기록). 확인 후 `0 3 * * *`로 되돌림
 - [x] 백업 버킷이 private이고 사진 버킷(public)과 분리돼 있다 — 2026-08-19 확인. 백업 객체 URL에 인증 없이 GET하면 `404`, 같은 방식으로 media 객체는 `200`. 버킷 설정도 API로 직접 확인(`kaldi-note-backup`=`NoPublicAccess`, `kaldi-note-media`=`ObjectRead`, 둘 다 Standard·Versioning Disabled)
 - [x] 8일 연속 백업 후 버킷에 최근 7개만 남아 있다 — 2026-08-19 확인. 8일을 기다리지 않고 과거 날짜 더미 객체 6개를 넣어 총 10개로 만든 뒤 실행했더니 오래된 3개가 삭제되고 정확히 7개가 남았다
-- [ ] `.env`의 값으로 카카오/구글 실계정 로그인과 사진 업로드가 실제로 동작한다 — `OCI_*`·`KAKAO_*`·`GOOGLE_*` 모두 실제 값으로 채워졌고(2026-08-19), 버킷 수준 업로드/공개 읽기는 검증됨. 다만 **앱을 경유한 PAR 발급~업로드 경로는 미검증** — `POST /api/v1/attachments/upload-url`이 JWT를 요구해 OAuth 로그인이 선행돼야 한다. 프론트가 없어 브라우저로 인가 코드를 직접 받아오는 방식이 필요하다
+- [x] `.env`의 값으로 카카오/구글 실계정 로그인과 사진 업로드가 실제로 동작한다 — 2026-08-19 **카카오 실계정으로 E2E 전 구간 확인**: 로그인(userId 생성) → 레시피 생성 → `POST /attachments/upload-url`로 PAR 발급(앱이 OCI SDK로 실제 호출한 첫 성공) → PAR에 PUT 200 → 확정 → 공개 URL 인증 없이 GET 200 → 첨부 삭제 시 OCI 객체까지 삭제(같은 URL이 404). **구글은 미확인** — provider만 다른 같은 경로다

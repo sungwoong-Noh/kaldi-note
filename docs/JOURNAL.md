@@ -7,6 +7,32 @@
 
 ---
 
+## 2026-08-18 · OCI VM 최초 배포 — 실제로 서비스가 떴다
+
+**브랜치:** 없음(VM 조작 + `infra/README.md` 문서 갱신만, `main`에 직접 커밋)
+**상태:** 완료 — `https://api.kaldi-note.today/actuator/health`가 실제로 `200 {"status":"UP"}`을 반환한다. GitHub Actions 자동 배포 파이프라인도 재검증 통과(2분 12초)
+
+### 한 일
+- PR #61(QEMU 에뮬레이션 제거) 머지 후, 사람이 VM에 SSH로 접속해 `infra/README.md` 런북의 "VM 최초 설정" 1~9단계를 실제로 밟았다 — SSH 배포 전용 키 생성·등록, GitHub Secrets 3개 등록, 저장소 clone, `.env` 채움, 방화벽 설정, DNS(`api.kaldi-note.today` → `158.179.172.168`) 설정, `docker compose up -d` 최초 기동
+- 실제 배포 중 발견된 문제 5개를 그 자리에서 진단하고 고쳤다(아래 "발견한 것"). 전부 `infra/README.md`에 함정으로 기록해둠
+- GitHub Actions `deploy` job을 실패 지점마다 재실행(`gh run rerun --failed`)하며 점진적으로 통과시켰고, 마지막엔 처음부터 끝까지(빌드→푸시→SCP→SSH→헬스체크) 자동으로 성공하는 것까지 확인
+- CI/CD 파이프라인 구조와 오늘 겪은 문제들을 정리한 개인 참고용 아티팩트 작성(레포 밖, claude.ai)
+
+### 발견한 것
+- **`/opt/kaldi-note` 소유권이 `root`였다.** GitHub Actions의 SCP 배포 스텝이 `create folder` 다음 단계(실제 tar 추출)에서 조용히 exit 1로 실패했다 — `ubuntu` 소유로 재clone해서 해결
+- **`KALDI_JWT_SECRET`이 32바이트 미만이면 앱이 기동 직후 크래시 루프에 빠진다.** `Failed to bind properties under 'kaldi.jwt'` 예외. `openssl rand -base64 48`로 해결
+- **OCI Security List Ingress 규칙의 Source Port Range를 "전체"가 아니게 잘못 설정하면, 콘솔엔 규칙이 정상으로 보여도 실제 트래픽과 매치가 안 돼 조용히 막힌다.** VM iptables·NSG(미연결 확인)·egress 규칙(전체 허용 확인)까지 전부 정상인데도 80/443이 타임아웃 나서 한참 헤맸다. **결정적 진단 도구는 `iptables -L -n -v`의 패킷 카운터였다** — 새 연결 시도 후에도 80/443/테스트포트(8888) 규칙이 전부 `0 pkts`인데 22번만 카운트되는 걸 보고 "VM 안이 아니라 VM 도달 전에 막힌다"로 문제를 좁혔다. 임시로 8888 포트를 열어 재현·검증한 뒤 정리했다
+- **Caddy가 반복 실패 중 Let's Encrypt staging CA로 자동 전환된 채 멈춰 있었다.** 방화벽을 고친 뒤에도 인증서가 브라우저에서 안 믿어져서 확인해보니 로그의 `ca` 필드가 `acme-staging-v02...`였다. `caddy` 컨테이너 재시작으로 production 인증서 재발급 성공
+- **GHCR 패키지는 이미 public이었다** — 걱정했던 "익명 pull이 막힐 것"이라는 가정은 틀렸다. 확인만 하고 넘어감(`docker manifest inspect`로 익명 접근 검증)
+
+### 다음 세션에게
+- **crontab 백업 등록이 아직 안 됐다.** `infra/README.md` 5단계. OCI Object Storage 버킷도 아직 안 만들어서 `.env`의 `OCI_*`는 전부 dummy 값 — 백업·사진 첨부 둘 다 실제로는 안 되는 상태
+- **헬스체크 실패 → 자동 롤백 경로가 실전에서 검증된 적이 없다.** 지금까지의 실패는 전부 "직전 배포 태그가 아예 없던" 최초 배포 실패라 롤백 분기(`PREVIOUS_TAG` 있는 경우)를 타보지 못했다. 다음에 배포가 실패하면(정상 배포 이후의 실패라면) 롤백이 실제로 도는지 볼 좋은 기회다
+- 5432(PostgreSQL) 외부 차단 여부, 카카오/구글 실계정 로그인·사진 업로드 — 전부 미확인. `docs/specs/2026-08-18-oci-deploy.md`의 "수동 확인" 9개 항목 중 5개만 확인됐다(`infra/README.md`에 체크 상태 반영함)
+- 공개범위 스펙의 수동 확인 2건(상호 팔로우 → FRIENDS 200, 해제 직후 403)도 여전히 미처리 — 이제 실제 서비스가 뜬 김에 카카오·구글 실계정으로 직접 해볼 수 있는 여건이 됐다
+
+---
+
 ## 2026-08-18 · Dockerfile QEMU 에뮬레이션 버그 수정 (VM 배포 작업 중 발견)
 
 **브랜치:** `fix/docker-build-no-emulation` · **PR:** 아래 참조

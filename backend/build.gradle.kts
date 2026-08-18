@@ -53,6 +53,10 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
+// DockerfileHealthcheckTest가 build/libs/*.jar를 이미지에 COPY하므로,
+// 테스트를 돌리기 전에 반드시 bootJar가 먼저 만들어져 있어야 한다.
+tasks.named("test") { dependsOn("bootJar") }
+
 spotless {
 	java {
 		// 1.24.0(spotless 7.0.2 기본값)은 이 환경의 JDK에서

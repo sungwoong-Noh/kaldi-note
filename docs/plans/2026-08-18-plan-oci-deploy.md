@@ -31,7 +31,7 @@
 
 - **AC로 다루는 건 Dockerfile 빌드+헬스체크뿐이다.** SSH 배포·방화벽·cron·HTTPS 인증서·백업 업로드는 스펙의 "수동 확인" 항목이며, 이 계획도 그 구분을 그대로 따른다 — 별도 AC ID를 붙이지 않는다.
 - **GHCR 이미지 경로는 `ghcr.io/sungwoong-noh/kaldi-note-api`다.** GHCR은 대문자를 허용하지 않아 저장소 소유자 `sungwoong-Noh`를 소문자로 쓴다.
-- **이미지는 반드시 `linux/arm64`로 빌드한다.** OCI VM이 Ampere A1(aarch64)이기 때문이다. GitHub Actions의 `ubuntu-latest`는 amd64다. **Task 1에서 실제로 확인한 결과, `FROM --platform=$BUILDPLATFORM ...`는 Testcontainers의 `ImageFromDockerfile`(BuildKit을 쓰지 않는 classic build API)에서 `$BUILDPLATFORM`이 치환되지 않아 `DockerClientException`으로 깨진다.** 이 변수는 BuildKit/buildx 전용 자동 빌드 인자라 클래식 빌드에는 없다. Dockerfile은 플랫폼 고정 없이 단순하게 두고(빌드 스테이지가 대상 플랫폼으로 함께 빌드됨을 감수한다), Task 3의 실제 GHCR 빌드(`docker/build-push-action` + buildx)에서 amd64 러너가 arm64를 타깃으로 할 때 JDK 빌드 스테이지가 QEMU 에뮬레이션으로 실행된다 — `docker/setup-qemu-action`이 반드시 필요하다(아래 "검증되지 않은 가정" 참조).
+- **이미지는 반드시 `linux/arm64`로 빌드한다.** OCI VM이 Ampere A1(aarch64)이기 때문이다. GitHub Actions의 `ubuntu-latest`는 amd64다. **`main`에 처음 배포하며 QEMU 에뮬레이션으로 JDK 컴파일이 극도로 느리다는 게 실측됐다(`compileJava` 하나에 500초 이상, 완주 못 함).** 최종 구조: `backend/Dockerfile`은 `RUN` 없는 단일 스테이지(`COPY build/libs/*.jar app.jar`)로 두고, jar는 GitHub Actions 러너에서 `./gradlew bootJar`로 네이티브(amd64) 컴파일한다. 이미지 빌드 자체는 메타데이터 연산(`COPY`/`ENV`/`ENTRYPOINT`)뿐이라 `linux/arm64`를 타깃으로 해도 에뮬레이션이 필요 없다 — `docker/setup-qemu-action`도 제거했다.
 - **JVM 플래그는 `-XX:MaxRAMPercentage=50` 고정.** 아키텍처 문서(`architecture.md:74`)의 결정이다.
 - **컨테이너 메모리 한도는 app 4GB / postgres 2GB / caddy 256MB.** 스펙에서 확정된 값.
 - **PostgreSQL은 production compose에서 호스트에 포트 매핑하지 않는다.** 로컬 개발용 루트 `docker-compose.yml`(5432 매핑)은 건드리지 않는다 — 별개 파일이다.
@@ -167,23 +167,19 @@ Expected: FAIL — `backend/Dockerfile`이 없어 `ImageFromDockerfile`이 `NoSu
 ```dockerfile
 # syntax=docker/dockerfile:1
 
-FROM eclipse-temurin:21-jdk AS build
-WORKDIR /workspace
-COPY gradlew .
-COPY gradle gradle
-COPY build.gradle.kts settings.gradle.kts ./
-COPY src src
-RUN ./gradlew bootJar --no-daemon -x test
-
-FROM eclipse-temurin:21-jre AS runtime
+FROM eclipse-temurin:21-jre
 WORKDIR /app
-COPY --from=build /workspace/build/libs/*.jar app.jar
+COPY build/libs/*.jar app.jar
 ENV JAVA_OPTS="-XX:MaxRAMPercentage=50"
 EXPOSE 8080
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
 ```
 
-**계획 작성 시점과 다른 점(실제 실행으로 확인됨):** 원래 계획은 빌드 스테이지에 `FROM --platform=$BUILDPLATFORM ...`를 써서 QEMU 에뮬레이션 없이 크로스 빌드하려 했다. 그러나 Testcontainers의 `ImageFromDockerfile`은 BuildKit이 아닌 classic Docker build API를 쓰고, `$BUILDPLATFORM`은 BuildKit 전용 자동 인자라 치환되지 않아 `DockerClientException: failed to parse platform`으로 즉시 깨졌다. 플랫폼 고정을 빼서 해결했다 — Task 3의 실제 GHCR 빌드(buildx)에서 이 대가를 치른다(QEMU 에뮬레이션 필요, Global Constraints에 반영).
+**계획 작성 시점과 다른 점(실제 실행으로 확인됨, 두 번 바뀌었다):**
+1. 원래 계획은 빌드 스테이지에 `FROM --platform=$BUILDPLATFORM ...`를 써서 QEMU 에뮬레이션 없이 크로스 빌드하려 했다. Testcontainers의 `ImageFromDockerfile`이 classic build API를 써서 `$BUILDPLATFORM`을 치환 못하고 `DockerClientException`으로 깨져, 플랫폼 고정 없는 멀티스테이지(JDK 빌드 스테이지 + JRE 런타임 스테이지)로 바꿨다.
+2. **`main`에 처음 머지된 뒤 실제 GHCR 빌드에서 이 멀티스테이지가 QEMU 에뮬레이션으로 `compileJava` 하나에만 500초 넘게 걸리는 게 실측됐다.** JVM 컴파일이 에뮬레이션에서 특히 느리다. **최종 해결책:** Dockerfile을 완전히 단일 스테이지로 바꿔 `RUN`을 아예 없앴다 — 컴파일은 GitHub Actions 러너(amd64, 네이티브)에서 `./gradlew bootJar`로 미리 끝내고, Dockerfile은 그 jar를 `COPY`만 한다. `COPY`·`ENV`·`ENTRYPOINT`는 메타데이터 연산이라 타깃 아키텍처와 무관하게 에뮬레이션이 필요 없다. 이 변경 때문에 Task 3의 `docker/setup-qemu-action` 스텝도 제거했다(더 이상 어떤 스텝도 타깃 아키텍처 코드를 실행하지 않는다).
+
+이 두 번째 수정으로 `backend/build.gradle.kts`에 `tasks.named("test") { dependsOn("bootJar") }`가 추가됐다 — `DockerfileHealthcheckTest`가 이미지를 빌드하기 전에 `build/libs/*.jar`가 반드시 있어야 하기 때문이다.
 
 - [x] **Step 4: 테스트 실행 — 통과 확인**
 
@@ -418,10 +414,20 @@ Expected: 파일 모드 변경(`100644` → `100755`)이 `git diff`에 잡힌다
     steps:
       - uses: actions/checkout@v4
 
-      - name: QEMU 설정 (amd64 러너에서 arm64 크로스 빌드용)
-        uses: docker/setup-qemu-action@v3
+      - name: JDK 21 설치
+        uses: actions/setup-java@v4
         with:
-          platforms: arm64
+          distribution: temurin
+          java-version: '21'
+
+      - name: Gradle 설정 (캐시 포함)
+        uses: gradle/actions/setup-gradle@v4
+
+      # 이미지는 이미 만들어진 jar를 COPY만 한다 — RUN이 없어 크로스 빌드에 에뮬레이션이 불필요하다.
+      # 컴파일은 여기서(amd64 러너, 네이티브) 미리 끝낸다.
+      - name: bootJar 빌드 (네이티브)
+        working-directory: backend
+        run: ./gradlew bootJar --no-daemon
 
       - name: Buildx 설정
         uses: docker/setup-buildx-action@v3
@@ -619,7 +625,7 @@ git commit -m "docs(deploy): 백업 스크립트 + .env 템플릿 + 배포 런�
 **타입 일관성:** `docker-compose.prod.yml`의 서비스명(`app`)과 `deploy.sh`의 `docker compose ... pull app`, GitHub Actions의 이미지 태그(`${{ github.sha }}` = `deploy.sh`의 `$1`)가 전부 일치함
 
 **검증되지 않은 가정:**
-- **~~`FROM --platform=$BUILDPLATFORM`로 에뮬레이션을 피한다~~ — Task 1 구현 중 반증됨.** Testcontainers의 classic build API가 `$BUILDPLATFORM`을 치환하지 못해 빌드 자체가 깨졌다(`DockerClientException`). Dockerfile에서 플랫폼 고정을 뺐고, Global Constraints·Task 3에 반영했다. **새로 생긴 가정:** `docker/setup-qemu-action@v3` + `platforms: linux/arm64`로 GitHub Actions(amd64 러너)에서 JDK 빌드 스테이지가 에뮬레이션으로 정상 완료되는지는 아직 확인되지 않았다 — 실제로 여러 분 이상 걸릴 수 있다. Task 3을 `main`에 처음 머지할 때 워크플로 실행 시간과 성공 여부로 확인한다
+- **~~`FROM --platform=$BUILDPLATFORM`로 에뮬레이션을 피한다~~ — Task 1 구현 중 반증됨, 그다음 대안도 반증됨.** 1차: Testcontainers classic build API가 `$BUILDPLATFORM`을 치환 못해 깨짐 → 플랫폼 고정 없는 멀티스테이지로 변경. 2차: **`main`에 처음 머지한 실제 배포에서 그 멀티스테이지가 QEMU 에뮬레이션으로 `compileJava`에만 500초 이상 걸리는 게 확인됐다**(워크플로를 수동으로 취소함). **최종 확정:** `fix/docker-build-no-emulation`에서 Dockerfile을 `RUN` 없는 단일 스테이지로 바꾸고 `bootJar`를 GitHub Actions 러너에서 네이티브로 미리 빌드하도록 고쳤다 — 이 방식은 로컬(`./gradlew clean check`, 44초)에서 확인됐고, 실제 GHCR 크로스 빌드에서의 재시도 결과는 다음 세션에서 확인해야 한다
 - **`appleboy/scp-action`·`appleboy/ssh-action`의 최신 메이저 버전(v0.1.7, v1.2.0)이 실제로 존재하고 인터페이스가 이 계획과 같은지.** 마켓플레이스 액션은 계획 작성 시점 기준으로 골랐다 — Task 3 Step 3에서 실제 워크플로 실행 시 버전 태그가 유효한지 반드시 확인한다
 - **`docker exec kaldi-note-postgres pg_dump`가 `postgres:17-alpine` 이미지 안의 `pg_dump` 버전과 호환되는지.** 같은 메이저 버전(17)이라 문제없어야 하지만 실제 백업 파일을 한 번 복원해보기 전까지는 가정이다(스펙이 복구 리허설을 비목표로 뺐으므로 이 계획도 검증하지 않는다)
 - **OCI CLI 공식 설치 스크립트(`install.sh`)가 Ubuntu 24.04 aarch64에서 문제없이 도는지.** `infra/README.md`에 설치 단계를 추가했지만(자체 검토에서 발견해 반영), 실제 실행은 VM 접속 시점에 처음 확인된다

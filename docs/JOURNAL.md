@@ -7,6 +7,28 @@
 
 ---
 
+## 2026-08-18 · Dockerfile QEMU 에뮬레이션 버그 수정 (VM 배포 작업 중 발견)
+
+**브랜치:** `fix/docker-build-no-emulation` · **PR:** 아래 참조
+**상태:** 완료 — 로컬 `clean check` 통과(44초). 실제 GHCR 크로스 빌드 재검증은 다음 배포 시도에서 확인 필요
+
+### 한 일
+- PR #60 머지 직후 사용자가 VM 배포를 진행하다 `deploy` job의 이미지 빌드가 `compileJava`에서 500초 넘게 멈춘 걸 발견 — 계획의 "검증되지 않은 가정"(QEMU 에뮬레이션으로 JDK 빌드 스테이지가 느릴 수 있다)이 실제로 터진 것. 워크플로를 취소하고 근본 원인을 고쳤다
+- `backend/Dockerfile`을 멀티스테이지(JDK 빌드+JRE 런타임)에서 **`RUN` 없는 단일 스테이지**(`COPY build/libs/*.jar app.jar`)로 바꿨다. 컴파일은 GitHub Actions 러너(amd64, 네이티브)에서 `./gradlew bootJar`로 미리 끝내고, 이미지 빌드는 메타데이터 연산만 하므로 `linux/arm64`를 타깃으로 해도 에뮬레이션이 필요 없다
+- `backend/build.gradle.kts`에 `tasks.named("test") { dependsOn("bootJar") }` 추가 — `DockerfileHealthcheckTest`가 이미지를 빌드하기 전에 jar가 있어야 한다
+- `.github/workflows/backend.yml`의 `deploy` job에서 `docker/setup-qemu-action` 제거, 대신 JDK+Gradle 설치 후 `./gradlew bootJar` 스텝 추가
+
+### 발견한 것
+- **JVM/Gradle 컴파일은 QEMU 에뮬레이션에서 특히 느리다** — 로컬에서 45초면 끝나는 빌드가 500초를 넘기고도 안 끝났다. "COPY만 하는 스테이지는 에뮬레이션이 필요 없다"는 사실을 이번에 활용했다: RUN이 있는 스테이지만 타깃 아키텍처로 실행되고, COPY/ENV/ENTRYPOINT 같은 메타데이터 명령은 타깃 아키텍처와 무관하게 즉시 끝난다
+- 계획 문서(`docs/plans/2026-08-18-plan-oci-deploy.md`)의 Task 1·3·Global Constraints·"검증되지 않은 가정"을 전부 이 구조에 맞춰 갱신했다
+
+### 다음 세션에게
+- **VM 배포가 아직 완료되지 않았다.** 이 PR이 머지되면 다음 `main` 푸시(또는 이 PR 자체의 머지)로 `deploy` job이 다시 돈다 — 이번엔 에뮬레이션 없이 몇 분 안에 끝나야 한다. 실제로 그런지 반드시 확인할 것
+- **GHCR 패키지가 기본 private라 VM의 `docker compose pull`이 `denied`로 실패할 수 있다.** 이미지가 처음 푸시된 뒤 저장소 Packages 탭에서 `kaldi-note-api` 패키지 visibility를 Public으로 바꿔야 한다 — 아직 안 했다
+- `infra/README.md`의 VM 최초 설정이 진행 중이었다: SSH 배포 전용 키 생성+등록, GitHub Secrets(`OCI_VM_HOST`·`OCI_VM_USER`·`OCI_VM_SSH_KEY`) 등록까지 끝났고, `.env` 채우기·방화벽·crontab·DNS는 아직
+
+---
+
 ## 2026-08-18 · OCI 배포·CI/CD 구현 — Task 1~4 전부
 
 **브랜치:** `feat/oci-deploy` · **PR:** 아래 참조

@@ -435,7 +435,7 @@ cd .. && git add . && git commit -m "feat(media): attachments 스키마 + 엔티
 - Consumes: 없음
 - Produces: `ObjectStorageClient`(인터페이스 — `issueUploadUrl`, `head`, `delete`, `publicUrl`), `ObjectHead(long contentLength, String contentType)`, `FakeObjectStorageClient.stubUploaded(String, long, String)` / `wasDeleted(String): boolean` / `reset()`(테스트 전용, `@Profile("test")`로 스프링이 자동 주입)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/media/infrastructure/FakeObjectStorageClientTest.java`
 
@@ -487,12 +487,14 @@ class FakeObjectStorageClientTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*FakeObjectStorageClientTest'`
 Expected: FAIL — 컴파일 실패(`FakeObjectStorageClient`·`ObjectHead`가 없음).
 
-- [ ] **Step 3: 인터페이스·가짜 구현 작성**
+**실측:** 예측과 정확히 일치. `compileTestJava`에서 `cannot find symbol: class FakeObjectStorageClient`로 실패.
+
+- [x] **Step 3: 인터페이스·가짜 구현 작성**
 
 `backend/src/main/java/com/kaldinote/media/infrastructure/ObjectStorageClient.java`
 
@@ -589,12 +591,14 @@ public class FakeObjectStorageClient implements ObjectStorageClient {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*FakeObjectStorageClientTest'`
 Expected: PASS, 4 tests
 
-- [ ] **Step 5: OCI Java SDK 의존성 + 설정 + 실제 구현 추가, 컴파일 확인**
+**실측:** 4개 전부 PASS.
+
+- [x] **Step 5: OCI Java SDK 의존성 + 설정 + 실제 구현 추가, 컴파일 확인**
 
 `backend/build.gradle.kts` (Modify — `dependencies` 블록에 2줄 추가)
 
@@ -793,7 +797,9 @@ public class OciObjectStorageClient implements ObjectStorageClient {
 Run: `./gradlew clean check`
 Expected: 컴파일 성공, 기존 테스트 전부 PASS(회귀 없음), `FakeObjectStorageClientTest` 4개 PASS. **OCI Java SDK의 정확한 API 표면(클래스·메서드명)은 문서 검색으로 확인했지 컴파일해보지 않았다 — 여기서 처음 컴파일된다.** 이름이 다르면(예: `Region` 처리 방식, 빌더 메서드명) 실제 해석된 시그니처로 고친다. `ObjectStorageClient`(우리 인터페이스)와 `OciObjectStorageClient`의 다른 태스크(3~6)는 이 SDK 세부사항과 무관하므로 영향받지 않는다.
 
-- [ ] **Step 6: 커밋**
+**실측:** 계획에 적은 API 표면(`SimpleAuthenticationDetailsProvider.builder()`의 `tenantId`·`userId`·`fingerprint`·`privateKeySupplier`, `ObjectStorageClient.builder().region(String).build(provider)`, `CreatePreauthenticatedRequestDetails.AccessType.ObjectWrite`, `PreauthenticatedRequest.getAccessUri()`, `HeadObjectResponse.getContentLength/getContentType`, `BmcException.getStatusCode()`)가 **첫 시도에 그대로 컴파일됐다** — 이름을 하나도 고치지 않았다. `spotlessJavaCheck`가 두 파일의 Javadoc 줄바꿈만 걸어 `spotlessApply`로 자동 수정. `clean check` 전체 통과(회귀 없음).
+
+- [x] **Step 6: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

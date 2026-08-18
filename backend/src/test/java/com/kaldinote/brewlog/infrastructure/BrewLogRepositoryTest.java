@@ -114,6 +114,7 @@ class BrewLogRepositoryTest extends AbstractIntegrationTest {
             f.recipeId(),
             f.beanBatchId(),
             Instant.parse("2026-08-17T08:30:00Z"),
+            null, // visibility 생략 → 도메인이 PRIVATE으로 정한다
             new BigDecimal("15.0"),
             new BigDecimal("250.0"),
             new BigDecimal("92.0"),
@@ -154,6 +155,7 @@ class BrewLogRepositoryTest extends AbstractIntegrationTest {
             f.recipeId(),
             f.beanBatchId(),
             Instant.parse("2026-08-17T08:30:00Z"),
+            null, // visibility 생략 → 도메인이 PRIVATE으로 정한다
             new BigDecimal("15.0"),
             new BigDecimal("250.0"),
             new BigDecimal("92.0"),
@@ -190,6 +192,7 @@ class BrewLogRepositoryTest extends AbstractIntegrationTest {
             f.recipeId(),
             f.beanBatchId(),
             Instant.parse("2026-08-17T08:30:00Z"),
+            null, // visibility 생략 → 도메인이 PRIVATE으로 정한다
             new BigDecimal("15.0"),
             new BigDecimal("250.0"),
             new BigDecimal("92.0"),

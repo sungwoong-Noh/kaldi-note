@@ -6,6 +6,7 @@ import com.kaldinote.grind.domain.GrindSettingOutOfRangeException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -54,6 +55,13 @@ public class GlobalExceptionHandler {
     ErrorCode code = ErrorCode.INVALID_REQUEST;
     return ResponseEntity.status(code.getStatus())
         .body(ErrorResponse.of(code, code.getDefaultMessage(), fieldErrors));
+  }
+
+  /** 잘못된 enum 값·깨진 JSON 등 역직렬화 실패. 핸들러가 없으면 handleUnexpected로 떨어져 클라이언트 입력 오류가 500이 된다. */
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<ErrorResponse> handleUnreadable(HttpMessageNotReadableException e) {
+    log.warn("요청 본문을 읽을 수 없음: {}", e.getMessage());
+    return toResponse(ErrorCode.INVALID_REQUEST, "요청 본문을 읽을 수 없습니다.");
   }
 
   @ExceptionHandler(Exception.class)

@@ -659,4 +659,184 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.code").value("FORBIDDEN"));
   }
+
+  // ===== 공개범위 인가 (AC-VIS-18~28) =====
+
+  /** 팔로우 픽스처를 만들려면 상대의 id가 필요해 User를 그대로 돌려준다. */
+  private User newUser(String nickname) {
+    return userRepository.save(User.create(null, nickname, null));
+  }
+
+  private String tokenOf(User user) {
+    return "Bearer " + tokenProvider.createAccessToken(user.getId(), user.getRole());
+  }
+
+  private void follow(User follower, User followee) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/users/{id}/follow", followee.getId())
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(follower)))
+        .andExpect(status().isNoContent());
+  }
+
+  private void mutualFollow(User a, User b) throws Exception {
+    follow(a, b);
+    follow(b, a);
+  }
+
+  /** visibility를 지정해 브루잉 로그를 만들고 id를 돌려준다. */
+  private Long brewLogWith(String token, String visibility) throws Exception {
+    Long recipe = recipeId(token);
+    Long batch = beanBatchId(token, BREWED_AT, 6);
+    Long grinder = userGrinderId(token, c40Id());
+    return createdId(
+        createBrewLog(
+            token,
+            bodyWith(
+                recipe, batch, BREWED_AT, grinder, "\"visibility\":\"%s\"".formatted(visibility))));
+  }
+
+  // ---------- visibility 입력 ----------
+
+  @Test
+  @DisplayName("AC-VIS-18 · visibility를 생략하면 PRIVATE으로 저장된다")
+  void visibility를_생략하면_PRIVATE이다() throws Exception {
+    String token = token("vis-18");
+    Long recipe = recipeId(token);
+    Long batch = beanBatchId(token, BREWED_AT, 6);
+    Long grinder = userGrinderId(token, c40Id());
+
+    createBrewLog(token, minimalBody(recipe, batch, BREWED_AT, grinder))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.visibility").value("PRIVATE"));
+  }
+
+  @Test
+  @DisplayName("AC-VIS-19 · visibility에 PUBLIC을 주면 그대로 저장된다")
+  void visibility_PUBLIC은_그대로_저장된다() throws Exception {
+    String token = token("vis-19");
+    Long id = brewLogWith(token, "PUBLIC");
+
+    getBrewLog(token, id).andExpect(jsonPath("$.visibility").value("PUBLIC"));
+  }
+
+  @Test
+  @DisplayName("AC-VIS-20 · visibility에 FRIENDS를 주면 그대로 저장된다")
+  void visibility_FRIENDS는_그대로_저장된다() throws Exception {
+    String token = token("vis-20");
+    Long id = brewLogWith(token, "FRIENDS");
+
+    getBrewLog(token, id).andExpect(jsonPath("$.visibility").value("FRIENDS"));
+  }
+
+  @Test
+  @DisplayName("AC-VIS-21 · 허용값 밖의 visibility는 400이다")
+  void 허용값_밖_visibility는_400이다() throws Exception {
+    String token = token("vis-21");
+    Long recipe = recipeId(token);
+    Long batch = beanBatchId(token, BREWED_AT, 6);
+    Long grinder = userGrinderId(token, c40Id());
+
+    createBrewLog(token, bodyWith(recipe, batch, BREWED_AT, grinder, "\"visibility\":\"SECRET\""))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  // ---------- 조회 인가 ----------
+
+  @Test
+  @DisplayName("AC-VIS-22 · 소유자는 PRIVATE 로그를 본다")
+  void 소유자는_PRIVATE_로그를_본다() throws Exception {
+    String token = token("vis-22");
+    Long id = brewLogWith(token, "PRIVATE");
+
+    getBrewLog(token, id).andExpect(status().isOk());
+  }
+
+  @Test
+  @DisplayName("AC-VIS-23 · 타인의 PRIVATE 로그는 403이다")
+  void 타인의_PRIVATE_로그는_403이다() throws Exception {
+    User a = newUser("vis-23a");
+    User b = newUser("vis-23b");
+    Long id = brewLogWith(tokenOf(a), "PRIVATE");
+    mutualFollow(a, b);
+
+    getBrewLog(tokenOf(b), id)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  @Test
+  @DisplayName("AC-VIS-24 · 타인은 PUBLIC 로그를 본다")
+  void 타인은_PUBLIC_로그를_본다() throws Exception {
+    User a = newUser("vis-24a");
+    User b = newUser("vis-24b");
+    Long id = brewLogWith(tokenOf(a), "PUBLIC");
+
+    String ownerBody = getBrewLog(tokenOf(a), id).andReturn().getResponse().getContentAsString();
+    // Object로 받아야 한다. var로 두면 제네릭이 Matcher로 추론돼 value(Matcher) 오버로드가 잡힌다.
+    Object brewRatio = JsonPath.read(ownerBody, "$.brewRatio");
+    Object daysOffRoast = JsonPath.read(ownerBody, "$.daysOffRoast");
+
+    getBrewLog(tokenOf(b), id)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.brewRatio").value(brewRatio))
+        .andExpect(jsonPath("$.daysOffRoast").value(daysOffRoast));
+  }
+
+  @Test
+  @DisplayName("AC-VIS-25 · 상호 팔로우면 타인이 FRIENDS 로그를 본다")
+  void 상호_팔로우면_FRIENDS_로그를_본다() throws Exception {
+    User a = newUser("vis-25a");
+    User b = newUser("vis-25b");
+    Long id = brewLogWith(tokenOf(a), "FRIENDS");
+    mutualFollow(a, b);
+
+    getBrewLog(tokenOf(b), id).andExpect(status().isOk());
+  }
+
+  @Test
+  @DisplayName("AC-VIS-26 · 단방향 팔로우면 FRIENDS 로그는 403이다")
+  void 단방향_팔로우면_FRIENDS_로그는_403이다() throws Exception {
+    User a = newUser("vis-26a");
+    User b = newUser("vis-26b");
+    Long id = brewLogWith(tokenOf(a), "FRIENDS");
+    follow(b, a);
+
+    getBrewLog(tokenOf(b), id).andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("AC-VIS-27 · PRIVATE 레시피를 참조하는 PUBLIC 로그는 타인에게 200이다")
+  void PRIVATE_레시피를_참조하는_PUBLIC_로그는_타인에게_200이다() throws Exception {
+    User a = newUser("vis-27a");
+    User b = newUser("vis-27b");
+    String tokenA = tokenOf(a);
+
+    Long recipe = recipeId(tokenA); // 기본값 PRIVATE
+    Long batch = beanBatchId(tokenA, BREWED_AT, 6);
+    Long grinder = userGrinderId(tokenA, c40Id());
+    Long logId =
+        createdId(
+            createBrewLog(
+                tokenA, bodyWith(recipe, batch, BREWED_AT, grinder, "\"visibility\":\"PUBLIC\"")));
+
+    getBrewLog(tokenOf(b), logId)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.recipeId").value(recipe));
+
+    // 같은 사람이 그 레시피를 직접 열면 여전히 막힌다 — 둘의 visibility는 독립이다
+    mockMvc
+        .perform(get("/api/v1/recipes/{id}", recipe).header(HttpHeaders.AUTHORIZATION, tokenOf(b)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("AC-VIS-28 · 토큰 없이 PUBLIC 로그를 조회하면 401이다")
+  void 토큰_없이_PUBLIC_로그_조회는_401이다() throws Exception {
+    String token = token("vis-28");
+    Long id = brewLogWith(token, "PUBLIC");
+
+    mockMvc.perform(get("/api/v1/brew-logs/{id}", id)).andExpect(status().isUnauthorized());
+  }
 }

@@ -130,7 +130,6 @@ public class BrewLog extends BaseTimeEntity {
     this.recipeId = recipeId;
     this.beanBatchId = beanBatchId;
     this.brewedAt = brewedAt;
-    this.visibility = BrewLogVisibility.PRIVATE;
     this.actualDoseG = actualDoseG;
     this.actualWaterG = actualWaterG;
     this.actualWaterTempC = actualWaterTempC;
@@ -157,6 +156,7 @@ public class BrewLog extends BaseTimeEntity {
       Long recipeId,
       Long beanBatchId,
       Instant brewedAt,
+      BrewLogVisibility visibility,
       BigDecimal actualDoseG,
       BigDecimal actualWaterG,
       BigDecimal actualWaterTempC,
@@ -176,30 +176,34 @@ public class BrewLog extends BaseTimeEntity {
       Short bitterness,
       Short aftertaste,
       String overallNote) {
-    return new BrewLog(
-        userId,
-        recipeId,
-        beanBatchId,
-        brewedAt,
-        actualDoseG,
-        actualWaterG,
-        actualWaterTempC,
-        actualTotalTimeSeconds,
-        actualDrawdownSeconds,
-        userGrinderId,
-        actualGrindSettingValue,
-        actualGrindMicronEstimated,
-        beverageWeightG,
-        tdsPercent,
-        daysOffRoast,
-        degassingStatus,
-        rating,
-        acidity,
-        sweetness,
-        body,
-        bitterness,
-        aftertaste,
-        overallNote);
+    BrewLog log =
+        new BrewLog(
+            userId,
+            recipeId,
+            beanBatchId,
+            brewedAt,
+            actualDoseG,
+            actualWaterG,
+            actualWaterTempC,
+            actualTotalTimeSeconds,
+            actualDrawdownSeconds,
+            userGrinderId,
+            actualGrindSettingValue,
+            actualGrindMicronEstimated,
+            beverageWeightG,
+            tdsPercent,
+            daysOffRoast,
+            degassingStatus,
+            rating,
+            acidity,
+            sweetness,
+            body,
+            bitterness,
+            aftertaste,
+            overallNote);
+    // 기본값을 DTO가 아니라 도메인이 정한다. 다른 경로로 만들어도 같은 기본값이 되도록.
+    log.visibility = (visibility == null) ? BrewLogVisibility.PRIVATE : visibility;
+    return log;
   }
 
   public boolean isOwnedBy(Long userId) {

@@ -1,5 +1,6 @@
 package com.kaldinote.brewlog.presentation.dto;
 
+import com.kaldinote.brewlog.domain.BrewLogVisibility;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
@@ -14,6 +15,7 @@ public record BrewLogCreateRequest(
     @NotNull Long recipeId,
     @NotNull Long beanBatchId,
     @NotNull @PastOrPresent Instant brewedAt,
+    BrewLogVisibility visibility,
     @NotNull @DecimalMin(value = "0.0", inclusive = false) BigDecimal actualDoseG,
     @NotNull @DecimalMin(value = "0.0", inclusive = false) BigDecimal actualWaterG,
     @NotNull BigDecimal actualWaterTempC,

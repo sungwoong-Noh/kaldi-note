@@ -7,6 +7,31 @@
 
 ---
 
+## 2026-08-18 · 공개범위 인가 구현 — Task 1·2·3 전부
+
+**브랜치:** `feat/visibility` · **PR:** 아래 참조
+**상태:** 완료 — 계획의 자동 검증 항목 전부 초록. `clean check` 304개(258 → +46), `check-spec-coverage.sh` 스펙 6건·AC 238개, 스펙 `status: 구현완료`
+
+### 한 일
+- 태스크 3개를 한 세션에서 끝냈다. 커밋 경계로 구분: `e593883` 팔로우 API(AC-FOLLOW-01~18) → `d5fb33c` 레시피 조회 인가(AC-VIS-01~17) → `01cbd59` 브루로그 visibility(AC-VIS-18~28)
+- 계획 문서에 실측값을 반영했다(Task 2·3의 RED 개수, `AC-VIS-21`의 실제 응답, `BrewLogRepositoryTest` 영향, `findOwned` 처리)
+
+### 발견한 것
+- **`AC-VIS-21`의 RED는 두 단계였다.** 계획은 "잘못된 enum 값 → 500"을 Step 2에서 확인하라고 했으나, 그 시점엔 DTO에 `visibility` 필드가 없어 Jackson이 미지의 속성을 무시하고 **201**을 돌려준다. 필드를 추가한 뒤에야 500이 관측됐고 그때 `HttpMessageNotReadableException` 핸들러를 넣었다. **"Step 2에서 500이 확인된 경우에만 핸들러 추가"라는 조건은 순서상 만족될 수 없었다** — 필드 추가와 핸들러 추가가 같은 Step 안에 묶인다
+- **계획에 실린 `AC-VIS-24` 테스트 코드에 버그가 있었다.** `.value(JsonPath.read(...))`를 인라인으로 넘기면 제네릭이 `Matcher`로 추론돼 `value(Matcher)` 오버로드가 잡히고 `ClassCastException`이 난다. `Object` 변수로 받아야 한다. 계획 코드도 고쳤다
+- **`BrewLog.create` 시그니처 변경이 `BrewLogRepositoryTest` 3곳을 깨뜨렸다.** 계획의 File Structure에 없던 파일이다. 23개짜리 위치 인자 팩토리는 파라미터 하나만 늘려도 호출부 전부가 컴파일 실패한다 — 계획을 쓸 때 `grep`으로 호출자를 세어봐야 했다
+- **`BrewLogService.findOwned`는 남기지 않고 `findViewable`로 대체했다.** 브루로그에는 `PUT`/`DELETE`가 없어(`BrewLogController`는 `POST`·`GET`뿐) `get`이 유일한 호출자라, 계획대로 두면 죽은 코드가 된다. `RecipeService.findOwned`는 계획대로 그대로 뒀다 — `AC-VIS-14`·`15`가 그것을 지킨다
+- **Task 2의 RED는 예상 3개가 아니라 4개.** `AC-VIS-10`이 "끊기 전에는 보인다"는 전제 단언에서 먼저 걸린다
+- 검증된 가정: `RecipeControllerTest`에 클래스 레벨 `@Transactional`이 **이미 있었다**. 새로 만든 `FollowControllerTest`에는 처음부터 붙였고 `UserRepositoryTest`는 깨지지 않았다
+- 부수적 확인: 매핑이 없는 경로로 온 요청은 404가 아니라 **500**으로 떨어진다(`handleUnexpected`). Task 1의 RED 15개가 전부 500이었던 이유다
+
+### 다음 세션에게
+- **수동 확인 2건이 미처리다.** 계획 완료 기준의 마지막 두 항목(상호 팔로우 → `FRIENDS` 레시피 200, 해제 직후 403)은 체크하지 않았다. 자동 테스트 `AC-VIS-05`·`AC-VIS-10`이 같은 경로를 덮지만 실기 확인은 남았다. **카카오·구글 실계정 2개로 로그인해야 한다** — 계정 생성 경로가 OAuth뿐이라 curl만으로는 두 번째 계정을 만들 수 없다
+- **`HttpMessageNotReadableException` 핸들러는 영향 범위가 넓다.** 이제 깨진 JSON·잘못된 enum·타입 불일치가 전부 400이다. 이전에 500을 기대하던 테스트는 없었으나(`clean check`로 확인), 앞으로 500을 단언하는 테스트를 쓸 일이 있다면 이 핸들러를 먼저 본다
+- 남은 스펙 후보는 **포크 1건**이다. 공개범위가 구현됐으므로 이제 "남의 공개 레시피를 복제한다"의 AC를 리터럴로 쓸 수 있다
+
+---
+
 ## 2026-08-17 · 공개범위 인가 구현 계획
 
 **브랜치:** `docs/plan-visibility` · **PR:** 아래 참조

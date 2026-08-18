@@ -111,7 +111,7 @@ backend/src/test/java/com/kaldinote/
 - Consumes: `UserRepository`(`existsById`), `FollowRepository.existsMutualFollow(Long, Long)`(이미 존재), `AuthenticatedUser`
 - Produces: `FollowService.isMutual(Long viewerId, Long ownerId)` — **Task 2·3이 인가 판정에 쓴다**
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/user/presentation/FollowControllerTest.java`
 
@@ -442,7 +442,7 @@ class FollowControllerTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*FollowControllerTest'`
 
@@ -450,7 +450,7 @@ Expected: FAIL — 18개 전부. `FollowController`가 없어 `/api/v1/users/{id
 
 > 브루잉 로그 Task 1·3에서 "컴파일 실패"를 예상했으나 실제로는 런타임 500이었다. 이 테스트도 raw JSON + MockMvc만 쓰고 새 클래스를 직접 참조하지 않으므로 **컴파일은 성공한다.** RED로서는 유효하다.
 
-- [ ] **Step 3: 리포지토리 · 서비스 · 컨트롤러 · DTO 작성**
+- [x] **Step 3: 리포지토리 · 서비스 · 컨트롤러 · DTO 작성**
 
 `FollowRepository.java` (Modify — 메서드 2개 추가)
 
@@ -606,14 +606,14 @@ public class FollowController {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*FollowControllerTest'`
 Expected: PASS, 18 tests
 
 전체도 확인한다: `./gradlew clean check` — 특히 `UserRepositoryTest`가 깨지지 않았는지 본다. 깨졌다면 `@Transactional`이 빠진 것이다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -636,7 +636,7 @@ cd .. && git add . && git commit -m "feat(user): 팔로우 등록·해제·상�
 
 **주의:** `findOwned`는 **그대로 둔다.** `update`·`delete`가 계속 써야 `AC-VIS-14`·`AC-VIS-15`가 통과한다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `RecipeControllerTest`에 헬퍼와 테스트를 추가한다. 기존 테스트는 건드리지 않는다.
 
@@ -922,13 +922,13 @@ cd .. && git add . && git commit -m "feat(user): 팔로우 등록·해제·상�
 
 `@PersistenceContext private EntityManager entityManager;`를 필드에 추가한다. `newUser`·`tokenOf`는 Task 1의 `FollowControllerTest`와 같은 모양으로 이 클래스에도 만든다(기존 `token(...)` 헬퍼가 있으면 그것을 감싼다).
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 
-Expected: FAIL — `AC-VIS-04`·`05`·`11`이 403으로 실패한다(현재 `get()`이 `findOwned`를 써서 소유자가 아니면 무조건 403). `AC-VIS-01~03`·`06~10`·`12~17`은 **이미 통과한다** — 현재 동작이 우연히 기대와 같기 때문이다. RED가 3개뿐인 것이 정상이며, 이 3개가 판정 규칙 전체를 끌어낸다.
+Expected: FAIL — `AC-VIS-04`·`05`·`11`이 403으로 실패한다 (실측: 4개. `AC-VIS-10`도 끊기 전 전제인 첫 200 단언에서 함께 걸린다)(현재 `get()`이 `findOwned`를 써서 소유자가 아니면 무조건 403). `AC-VIS-01~03`·`06~10`·`12~17`은 **이미 통과한다** — 현재 동작이 우연히 기대와 같기 때문이다. RED가 3개뿐인 것이 정상이며, 이 3개가 판정 규칙 전체를 끌어낸다.
 
-- [ ] **Step 3: RecipeService에 조회 인가 추가**
+- [x] **Step 3: RecipeService에 조회 인가 추가**
 
 ```java
   private final FollowService followService;   // 필드 추가
@@ -970,12 +970,12 @@ Expected: FAIL — `AC-VIS-04`·`05`·`11`이 403으로 실패한다(현재 `get
 
 `FollowService`가 `user.application`에 있으므로 import를 추가한다. `RecipeService`가 `user` 도메인의 서비스를 주입하는 것은 `gear` 리포지토리를 직접 주입하는 기존 패턴과 같은 결이다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: PASS — 기존 테스트 + 신규 17개 전부
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -999,7 +999,7 @@ cd .. && git add . && git commit -m "feat(recipe): 공개범위 기반 조회 �
 - Consumes: `FollowService.isMutual(Long, Long)` (Task 1), Task 2의 `findViewable` 판정 구조
 - Produces: 없음 (마지막 태스크)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `BrewLogControllerTest`에 추가한다. 기존 헬퍼(`token`, `recipeId`, `beanBatchId`, `userGrinderId`, `minimalBody`, `bodyWith`)를 그대로 쓴다.
 
@@ -1113,11 +1113,15 @@ cd .. && git add . && git commit -m "feat(recipe): 공개범위 기반 조회 �
     Long id = brewLogWith(tokenOf(a), "PUBLIC");
 
     String ownerBody = getBrewLog(tokenOf(a), id).andReturn().getResponse().getContentAsString();
+    // Object로 받아야 한다. 인라인으로 넘기면 제네릭이 Matcher로 추론돼
+    // value(Matcher) 오버로드가 잡히고 ClassCastException이 난다 (실행해서 확인함).
+    Object brewRatio = JsonPath.read(ownerBody, "$.brewRatio");
+    Object daysOffRoast = JsonPath.read(ownerBody, "$.daysOffRoast");
 
     getBrewLog(tokenOf(b), id)
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.brewRatio").value(JsonPath.read(ownerBody, "$.brewRatio")))
-        .andExpect(jsonPath("$.daysOffRoast").value(JsonPath.read(ownerBody, "$.daysOffRoast")));
+        .andExpect(jsonPath("$.brewRatio").value(brewRatio))
+        .andExpect(jsonPath("$.daysOffRoast").value(daysOffRoast));
   }
 
   @Test
@@ -1191,17 +1195,17 @@ cd .. && git add . && git commit -m "feat(recipe): 공개범위 기반 조회 �
   }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 
-Expected: FAIL — 11개 중 최소 9개.
+Expected: FAIL — 11개 중 최소 9개. (실측: 6개 실패. `AC-VIS-19`·`20`·`21`·`24`·`25`·`27`)
 - `AC-VIS-19`·`20`: `visibility`를 요청으로 받지 않아 항상 `PRIVATE`이 저장돼 단언이 깨진다
-- `AC-VIS-21`: **500 `INTERNAL_ERROR`가 나올 것으로 예상한다.** `GlobalExceptionHandler`에 `HttpMessageNotReadableException` 핸들러가 없어 Jackson 역직렬화 실패가 `handleUnexpected(Exception)`으로 떨어진다
+- `AC-VIS-21`: **실측 결과 이 시점에는 500이 아니라 `201`이다.** DTO에 `visibility` 필드가 없어 Jackson이 미지의 속성을 무시하고 그냥 생성한다. 500(`handleUnexpected`로 떨어지는 enum 파싱 실패)은 **Step 3에서 필드를 추가한 뒤에야** 관측된다 — 아래 "500이 확인된 경우에만"은 그래서 Step 3 도중에 판단하게 된다
 - `AC-VIS-24`·`25`·`27`: 타인 조회가 403
 - `AC-VIS-18`·`22`·`23`·`26`·`28`은 이미 통과한다
 
-- [ ] **Step 3: DTO · 엔티티 · 서비스 · 예외 핸들러 수정**
+- [x] **Step 3: DTO · 엔티티 · 서비스 · 예외 핸들러 수정**
 
 `BrewLogCreateRequest`에 필드 추가 — **위치는 `brewedAt` 다음**(스펙의 요청 예시 순서와 맞춘다):
 
@@ -1274,6 +1278,10 @@ Expected: FAIL — 11개 중 최소 9개.
 
 `create(...)`에서 `BrewLog.create(...)` 호출에 `request.visibility()`를 넘긴다.
 
+> **`BrewLog.create` 시그니처가 바뀌면 `BrewLogRepositoryTest`의 호출 3곳이 컴파일 실패한다**(이 계획의 File Structure에 없던 파일이다). `brewedAt` 다음에 `null`을 넣어 도메인 기본값 경로를 그대로 타게 한다.
+>
+> **`findOwned`는 남기지 않고 `findViewable`로 대체한다.** 레시피와 달리 브루잉 로그에는 `PUT`/`DELETE`가 없어(`BrewLogController`는 `POST`·`GET`뿐) `get`이 유일한 호출자다. 그대로 두면 죽은 코드가 된다. `RecipeService.findOwned`는 계획대로 그대로 둔다 — 거기엔 쓰기 경로가 있다.
+
 `GlobalExceptionHandler`에 핸들러 추가 — **Step 2에서 500이 확인된 경우에만**:
 
 ```java
@@ -1290,12 +1298,12 @@ Expected: FAIL — 11개 중 최소 9개.
 
 > 이 핸들러는 `visibility` 밖에도 영향을 준다 — 지금까지 500이던 모든 깨진 JSON 요청이 400이 된다. 기존 테스트 중 500을 기대하는 것이 없는지 `clean check`로 확인한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: PASS — 기존 39개 + 신규 11개
 
-- [ ] **Step 5: 스펙 status 전환 + 전체 검증**
+- [x] **Step 5: 스펙 status 전환 + 전체 검증**
 
 `docs/specs/2026-08-17-visibility-authorization.md`의 `status: 초안` → `status: 구현완료`.
 
@@ -1306,7 +1314,7 @@ cd .. && ./scripts/check-spec-coverage.sh
 
 `check-spec-coverage.sh`가 AC 46개를 전부 찾아야 한다. 하나라도 빠지면 실패한다.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1317,9 +1325,9 @@ cd .. && git add . && git commit -m "feat(brewlog): visibility 입력과 공개�
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — `docs/specs/2026-08-17-visibility-authorization.md`가 `[구현완료] — AC 46개 전부`
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과 — `docs/specs/2026-08-17-visibility-authorization.md`가 `[구현완료] — AC 46개 전부`
+- [x] 스펙의 `status`를 `구현완료`로 변경
 - [ ] **수동 확인 1:** `bootRun` + curl로 두 계정을 만들어 서로 팔로우한 뒤, `FRIENDS` 레시피가 상대 계정에서 `200`으로 열리는 것을 확인 (`docs/design/2026-08-14-architecture.md:253`의 핵심 시나리오 6단계)
 - [ ] **수동 확인 2:** 한쪽이 팔로우를 해제한 직후 같은 요청이 `403`으로 바뀌는 것을 확인
 

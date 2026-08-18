@@ -132,7 +132,7 @@ backend/src/test/java/com/kaldinote/media/
 - Consumes: 없음 (선행 태스크 없음)
 - Produces: `Attachment.create(Long ownerUserId, TargetType targetType, Long targetId, String objectKey, String contentType, Integer width, Integer height, Integer sortOrder): Attachment`, `AttachmentRepository`(`countByTargetTypeAndTargetId`, `existsByObjectKey`, `findByTargetTypeAndTargetIdOrderBySortOrderAsc`)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/media/infrastructure/AttachmentRepositoryTest.java`
 
@@ -237,12 +237,14 @@ class AttachmentRepositoryTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*AttachmentRepositoryTest'`
 Expected: FAIL — 컴파일 실패(`Attachment`·`TargetType`·`AttachmentRepository`가 없음).
 
-- [ ] **Step 3: 마이그레이션·엔티티·리포지토리 구현**
+**실측:** 예측과 정확히 일치. `compileTestJava` 단계에서 3개 컴파일 오류(`package com.kaldinote.media.domain does not exist` 등)로 실패.
+
+- [x] **Step 3: 마이그레이션·엔티티·리포지토리 구현**
 
 `backend/src/main/resources/db/migration/V9__create_attachments_table.sql`
 
@@ -396,12 +398,14 @@ public interface AttachmentRepository extends JpaRepository<Attachment, Long> {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*AttachmentRepositoryTest'`
 Expected: PASS, 5 tests
 
-- [ ] **Step 5: 커밋**
+**실측:** 5개 전부 PASS. `./gradlew clean check` 전체도 통과(회귀 없음). `spotlessApply`가 `Attachment.java` Javadoc 줄바꿈만 자동 정리(로직 변경 없음).
+
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -431,7 +435,7 @@ cd .. && git add . && git commit -m "feat(media): attachments 스키마 + 엔티
 - Consumes: 없음
 - Produces: `ObjectStorageClient`(인터페이스 — `issueUploadUrl`, `head`, `delete`, `publicUrl`), `ObjectHead(long contentLength, String contentType)`, `FakeObjectStorageClient.stubUploaded(String, long, String)` / `wasDeleted(String): boolean` / `reset()`(테스트 전용, `@Profile("test")`로 스프링이 자동 주입)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/media/infrastructure/FakeObjectStorageClientTest.java`
 
@@ -483,12 +487,14 @@ class FakeObjectStorageClientTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*FakeObjectStorageClientTest'`
 Expected: FAIL — 컴파일 실패(`FakeObjectStorageClient`·`ObjectHead`가 없음).
 
-- [ ] **Step 3: 인터페이스·가짜 구현 작성**
+**실측:** 예측과 정확히 일치. `compileTestJava`에서 `cannot find symbol: class FakeObjectStorageClient`로 실패.
+
+- [x] **Step 3: 인터페이스·가짜 구현 작성**
 
 `backend/src/main/java/com/kaldinote/media/infrastructure/ObjectStorageClient.java`
 
@@ -585,12 +591,14 @@ public class FakeObjectStorageClient implements ObjectStorageClient {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*FakeObjectStorageClientTest'`
 Expected: PASS, 4 tests
 
-- [ ] **Step 5: OCI Java SDK 의존성 + 설정 + 실제 구현 추가, 컴파일 확인**
+**실측:** 4개 전부 PASS.
+
+- [x] **Step 5: OCI Java SDK 의존성 + 설정 + 실제 구현 추가, 컴파일 확인**
 
 `backend/build.gradle.kts` (Modify — `dependencies` 블록에 2줄 추가)
 
@@ -789,7 +797,9 @@ public class OciObjectStorageClient implements ObjectStorageClient {
 Run: `./gradlew clean check`
 Expected: 컴파일 성공, 기존 테스트 전부 PASS(회귀 없음), `FakeObjectStorageClientTest` 4개 PASS. **OCI Java SDK의 정확한 API 표면(클래스·메서드명)은 문서 검색으로 확인했지 컴파일해보지 않았다 — 여기서 처음 컴파일된다.** 이름이 다르면(예: `Region` 처리 방식, 빌더 메서드명) 실제 해석된 시그니처로 고친다. `ObjectStorageClient`(우리 인터페이스)와 `OciObjectStorageClient`의 다른 태스크(3~6)는 이 SDK 세부사항과 무관하므로 영향받지 않는다.
 
-- [ ] **Step 6: 커밋**
+**실측:** 계획에 적은 API 표면(`SimpleAuthenticationDetailsProvider.builder()`의 `tenantId`·`userId`·`fingerprint`·`privateKeySupplier`, `ObjectStorageClient.builder().region(String).build(provider)`, `CreatePreauthenticatedRequestDetails.AccessType.ObjectWrite`, `PreauthenticatedRequest.getAccessUri()`, `HeadObjectResponse.getContentLength/getContentType`, `BmcException.getStatusCode()`)가 **첫 시도에 그대로 컴파일됐다** — 이름을 하나도 고치지 않았다. `spotlessJavaCheck`가 두 파일의 Javadoc 줄바꿈만 걸어 `spotlessApply`로 자동 수정. `clean check` 전체 통과(회귀 없음).
+
+- [x] **Step 6: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -815,7 +825,7 @@ cd .. && git add . && git commit -m "feat(media): ObjectStorageClient 인터페�
 - Consumes: `AttachmentRepository`(Task 1), `ObjectStorageClient`(Task 2), `RecipeService.requireOwned(Long, Long): void`(신설), `BrewLogService.requireOwned(Long, Long): void`(신설)
 - Produces: `AttachmentService.issueUploadUrl(Long userId, UploadUrlRequest): UploadUrlResponse`, `AttachmentService`의 private `requireOwned(TargetType, Long, Long)`·`attachmentCount(TargetType, Long)` — Task 4~6이 재사용한다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/media/presentation/AttachmentControllerTest.java`
 
@@ -1138,13 +1148,15 @@ class AttachmentControllerTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 
 Expected: FAIL. `AC-MEDIA-11`(미인증)은 `SecurityConfig`의 `anyRequest().authenticated()`가 매핑 여부와 무관하게 먼저 걸려 **처음부터 통과할 수 있다**(포크·공개범위 계획에서 관찰된 패턴). 나머지 10개는 `POST /api/v1/attachments/upload-url` 매핑이 없어 404 또는 500으로 실패한다. 정확한 개수는 실행해서 확인하고 이 항목에 실측값을 남긴다.
 
-- [ ] **Step 3: RecipeService·BrewLogService에 requireOwned 추가, AttachmentService·Controller 구현**
+**실측:** 예측과 정확히 일치. 11개 중 10개 실패, `AC-MEDIA-11`(미인증) 1개만 처음부터 통과.
+
+- [x] **Step 3: RecipeService·BrewLogService에 requireOwned 추가, AttachmentService·Controller 구현**
 
 `backend/src/main/java/com/kaldinote/recipe/application/RecipeService.java` (Modify — `fork` 메서드 다음에 추가)
 
@@ -1301,14 +1313,16 @@ public class AttachmentController {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: PASS, 11 tests
 
 전체도 확인한다: `./gradlew clean check`
 
-- [ ] **Step 5: 커밋**
+**실측:** 11개 전부 PASS. `clean check` 전체 통과(회귀 없음).
+
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1332,7 +1346,7 @@ cd .. && git add . && git commit -m "feat(media): 업로드 URL 발급 API" && c
 - Consumes: Task 3의 `requireOwned`·`attachmentCount`(private, 같은 클래스 내부 재사용), `ObjectStorageClient.head`·`delete`·`publicUrl`(Task 2)
 - Produces: `AttachmentService.confirm(Long userId, ConfirmAttachmentRequest): AttachmentResponse`
 
-- [ ] **Step 1: 실패하는 테스트 추가**
+- [x] **Step 1: 실패하는 테스트 추가**
 
 `backend/src/test/java/com/kaldinote/media/presentation/AttachmentControllerTest.java` (Modify — 클래스 상단에 필드·헬퍼 추가, 하단에 테스트 10개 추가)
 
@@ -1522,12 +1536,14 @@ cd .. && git add . && git commit -m "feat(media): 업로드 URL 발급 API" && c
   }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: 새로 추가된 10개 중 `AC-MEDIA-21`은 처음부터 통과(401은 매핑과 무관), 나머지 9개는 `POST /api/v1/attachments` 매핑이 없어 실패. 기존 11개(Task 3)는 계속 PASS. 실행해서 정확한 개수를 이 항목에 남긴다.
 
-- [ ] **Step 3: confirm 구현**
+**실측:** 예측과 정확히 일치. 21개 중 9개 실패, `AC-MEDIA-21`(미인증) 1개만 처음부터 통과. 기존 11개는 계속 PASS.
+
+- [x] **Step 3: confirm 구현**
 
 `backend/src/main/java/com/kaldinote/media/presentation/dto/ConfirmAttachmentRequest.java`
 
@@ -1645,14 +1661,16 @@ public record AttachmentResponse(
 
 (같은 이유로 FQN을 썼다 — 반영 시 `import org.springframework.http.HttpStatus;`, `import org.springframework.web.bind.annotation.ResponseStatus;`, `import com.kaldinote.media.presentation.dto.AttachmentResponse;`, `import com.kaldinote.media.presentation.dto.ConfirmAttachmentRequest;`를 상단에 추가하고 본문을 단순화한다.)
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: PASS, 21 tests (Task 3의 11개 + 이번 10개)
 
 전체도 확인한다: `./gradlew clean check`
 
-- [ ] **Step 5: 커밋**
+**실측:** 21개 전부 PASS. `clean check` 전체 통과(회귀 없음). FQN 대신 처음부터 일반 import로 작성해 별도 정리가 필요 없었다.
+
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1676,7 +1694,7 @@ cd .. && git add . && git commit -m "feat(media): 업로드 확정 API" && cd ba
 - Consumes: `RecipeService.requireViewable(Long, Long): void`(신설), `BrewLogService.requireViewable(Long, Long): void`(신설), `AttachmentRepository.findByTargetTypeAndTargetIdOrderBySortOrderAsc`(Task 1)
 - Produces: `AttachmentService.list(Long userId, TargetType, Long targetId): List<AttachmentResponse>`
 
-- [ ] **Step 1: 실패하는 테스트 추가**
+- [x] **Step 1: 실패하는 테스트 추가**
 
 `backend/src/test/java/com/kaldinote/media/presentation/AttachmentControllerTest.java` (Modify — 헬퍼·테스트 7개 추가)
 
@@ -1798,12 +1816,14 @@ cd .. && git add . && git commit -m "feat(media): 업로드 확정 API" && cd ba
   }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: 새로 추가된 7개 중 `AC-MEDIA-28`은 처음부터 통과, 나머지 6개는 `GET /api/v1/attachments` 매핑이 없어 실패. 실측값을 남긴다.
 
-- [ ] **Step 3: requireViewable 추가 + list 구현**
+**실측:** 예측과 정확히 일치. 28개 중 6개 실패, `AC-MEDIA-28`(미인증) 1개만 처음부터 통과.
+
+- [x] **Step 3: requireViewable 추가 + list 구현**
 
 `backend/src/main/java/com/kaldinote/recipe/application/RecipeService.java` (Modify — `requireOwned` 다음에 추가)
 
@@ -1861,14 +1881,16 @@ Expected: 새로 추가된 7개 중 `AC-MEDIA-28`은 처음부터 통과, 나머
 
 (반영 시 `import org.springframework.web.bind.annotation.GetMapping;`, `import org.springframework.web.bind.annotation.RequestParam;`, `import com.kaldinote.media.domain.TargetType;`, `import java.util.List;`, `import com.kaldinote.media.presentation.dto.AttachmentResponse;`를 정리하고 FQN을 단순화한다.)
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: PASS, 28 tests
 
 전체도 확인한다: `./gradlew clean check`
 
-- [ ] **Step 5: 커밋**
+**실측:** 28개 전부 PASS. `clean check` 전체 통과(회귀 없음).
+
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1890,7 +1912,7 @@ cd .. && git add . && git commit -m "feat(media): 첨부 목록 조회 API" && c
 - Consumes: `AttachmentRepository.findById`·`delete`(JpaRepository 기본 제공), `ObjectStorageClient.delete`(Task 2)
 - Produces: `AttachmentService.delete(Long userId, Long attachmentId): void` — 이 태스크가 마지막이므로 뒤 태스크가 의존할 것 없음
 
-- [ ] **Step 1: 실패하는 테스트 추가**
+- [x] **Step 1: 실패하는 테스트 추가**
 
 `backend/src/test/java/com/kaldinote/media/presentation/AttachmentControllerTest.java` (Modify — 테스트 4개 추가)
 
@@ -1972,12 +1994,14 @@ cd .. && git add . && git commit -m "feat(media): 첨부 목록 조회 API" && c
   }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: `AC-MEDIA-32`는 처음부터 통과, 나머지 3개는 `DELETE /api/v1/attachments/{id}` 매핑이 없어 실패. 실측값을 남긴다.
 
-- [ ] **Step 3: delete 구현**
+**실측:** 예측과 정확히 일치. 32개 중 3개 실패, `AC-MEDIA-32`(미인증) 1개만 처음부터 통과.
+
+- [x] **Step 3: delete 구현**
 
 `backend/src/main/java/com/kaldinote/media/application/AttachmentService.java` (Modify — `list` 다음에 추가)
 
@@ -2009,14 +2033,16 @@ Expected: `AC-MEDIA-32`는 처음부터 통과, 나머지 3개는 `DELETE /api/v
 
 (반영 시 `import org.springframework.web.bind.annotation.DeleteMapping;`, `import org.springframework.web.bind.annotation.PathVariable;`을 정리하고 FQN을 단순화한다. 이 시점에 `AttachmentController.java`·`AttachmentService.java`에 남은 모든 FQN을 일반 import로 정리한다 — `spotlessApply`는 import *추가*는 안 해주지만 미사용 import는 지워준다.)
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: PASS, 32 tests
 
 전체도 확인한다: `./gradlew clean check`
 
-- [ ] **Step 5: 커밋**
+**실측:** 32개(스펙 AC 전체 개수와 일치) 전부 PASS. `clean check` 전체 통과(회귀 없음). 처음부터 일반 import로 작성해 FQN 정리가 필요 없었다.
+
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -2027,11 +2053,11 @@ cd .. && git add . && git commit -m "feat(media): 첨부 삭제 API" && cd backe
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 (스펙 status를 `구현완료`로 바꾼 뒤 실행)
-- [ ] 스펙(`docs/specs/2026-08-18-media-attachment.md`)의 `status`를 `구현완료`로 변경
-- [ ] Swagger UI(`/swagger-ui.html`)에서 4개 엔드포인트(`POST /upload-url`, `POST`, `GET`, `DELETE /{id}`)가 등록되어 보인다
-- [ ] **실제 OCI 자격증명으로 하는 검증은 이번 계획의 완료 기준에 포함하지 않는다** — 스펙의 "수동 확인" 항목대로 배포 이후로 미룬다
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과 (스펙 status를 `구현완료`로 바꾼 뒤 실행) — 스펙 8건, AC 294개(기존 262개 + 이번 32개) 확인
+- [x] 스펙(`docs/specs/2026-08-18-media-attachment.md`)의 `status`를 `구현완료`로 변경
+- [x] Swagger UI(`/swagger-ui.html`)에서 4개 엔드포인트(`POST /upload-url`, `POST`, `GET`, `DELETE /{id}`)가 등록되어 보인다 — `local` 프로필로 `bootRun` 후 `/v3/api-docs`로 확인. **이 과정에서 버그를 하나 발견했다:** `OciObjectStorageClient`가 생성자에서 즉시 OCI SDK 클라이언트를 만들면서 `private-key: dummy`를 PEM으로 파싱하려다 실패해 애플리케이션 컨텍스트 전체가 기동되지 않았다. OAuth 클라이언트(dummy 값으로도 기동됨)와 달리 이 SDK는 키 파싱이 즉시 실행된다는 게 원인. `OciObjectStorageClientTest`(TDD)로 재현 후 클라이언트 생성을 지연 초기화로 바꿔 해결(`fix(media)` 커밋). Task 2의 "검증되지 않은 가정" 중 하나가 실제로 걸린 사례다.
+- [x] **실제 OCI 자격증명으로 하는 검증은 이번 계획의 완료 기준에 포함하지 않는다** — 스펙의 "수동 확인" 항목대로 배포 이후로 미룬다
 
 ---
 

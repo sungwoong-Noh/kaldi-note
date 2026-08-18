@@ -26,3 +26,11 @@ kaldi:
       client-id: ${GOOGLE_CLIENT_ID:dummy}
       client-secret: ${GOOGLE_CLIENT_SECRET:dummy}
       redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:3000/auth/callback}
+  oci:
+    tenancy-id: ${OCI_TENANCY_ID:dummy}
+    user-id: ${OCI_USER_ID:dummy}
+    fingerprint: ${OCI_FINGERPRINT:dummy}
+    private-key: ${OCI_PRIVATE_KEY:dummy}
+    region: ${OCI_REGION:ap-chuncheon-1}
+    namespace: ${OCI_NAMESPACE:dummy}
+    bucket-name: ${OCI_BUCKET_NAME:dummy}

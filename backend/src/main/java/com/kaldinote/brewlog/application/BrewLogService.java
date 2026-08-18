@@ -114,6 +114,24 @@ public class BrewLogService {
     return BrewLogResponse.from(log, analysis);
   }
 
+  /** media 도메인이 업로드 권한을 확인할 때 쓴다. */
+  public void requireOwned(Long userId, Long brewLogId) {
+    BrewLog log =
+        brewLogRepository
+            .findById(brewLogId)
+            .orElseThrow(
+                () ->
+                    new BusinessException(ErrorCode.NOT_FOUND, "브루잉 로그를 찾을 수 없습니다: " + brewLogId));
+    if (!log.isOwnedBy(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN, "본인의 브루잉 로그만 접근할 수 있습니다.");
+    }
+  }
+
+  /** media 도메인이 조회(첨부 목록) 권한을 확인할 때 쓴다. */
+  public void requireViewable(Long userId, Long brewLogId) {
+    findViewable(userId, brewLogId);
+  }
+
   /** 판정 규칙은 RecipeService.findViewable과 같다. enum이 달라 공통 함수로 묶지 않는다. */
   private BrewLog findViewable(Long userId, Long brewLogId) {
     BrewLog log =

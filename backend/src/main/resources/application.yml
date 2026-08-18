@@ -46,3 +46,11 @@ kaldi:
       redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:3000/auth/callback}
       token-uri: https://oauth2.googleapis.com/token
       user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+  oci:
+    tenancy-id: ${OCI_TENANCY_ID}
+    user-id: ${OCI_USER_ID}
+    fingerprint: ${OCI_FINGERPRINT}
+    private-key: ${OCI_PRIVATE_KEY}
+    region: ${OCI_REGION:ap-chuncheon-1}
+    namespace: ${OCI_NAMESPACE}
+    bucket-name: ${OCI_BUCKET_NAME}

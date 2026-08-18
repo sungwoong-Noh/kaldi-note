@@ -16,3 +16,11 @@ kaldi:
     google:
       client-id: dummy
       client-secret: dummy
+  oci:
+    tenancy-id: dummy
+    user-id: dummy
+    fingerprint: dummy
+    private-key: dummy
+    region: ap-chuncheon-1
+    namespace: dummy
+    bucket-name: dummy

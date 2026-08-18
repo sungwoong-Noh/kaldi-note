@@ -7,6 +7,28 @@
 
 ---
 
+## 2026-08-18 · 사진 첨부 구현 — Task 1~6 전부
+
+**브랜치:** `feat/media-attachment` · **PR:** 아래 참조
+**상태:** 완료 — `docs/plans/2026-08-18-plan-media.md` Task 1~6 전부. `clean check` 통과, `check-spec-coverage.sh` 스펙 8건·AC 294개, 스펙 `status: 구현완료`
+
+### 한 일
+- Plan 3 첫 덩어리(사진 첨부)를 계획대로 6개 태스크로 나눠 전부 구현했다: attachments 스키마+엔티티 → `ObjectStorageClient` 인터페이스(가짜/OCI SDK 구현) → 업로드URL 발급 → 확정 → 목록조회 → 삭제
+- `AttachmentControllerTest` 32개(스펙 AC 개수와 정확히 일치) 전부 PASS. 각 태스크의 RED 예측(실패 개수, 미인증 케이스만 처음부터 통과)이 전부 정확히 들어맞았다
+- 스펙 `status`를 `구현완료`로 변경
+
+### 발견한 것
+- **계획의 "검증되지 않은 가정"이었던 OCI Java SDK API 표면은 문서 검색만으로 첫 컴파일에 성공했다** — `SimpleAuthenticationDetailsProvider` 빌더, `ObjectStorageClient.builder().region(String)` 오버로드, `PreauthenticatedRequest.getAccessUri()` 등 이름을 하나도 고치지 않았다.
+- **반면 계획에 없던 진짜 버그를 하나 찾았다.** `OciObjectStorageClient`가 생성자에서 즉시 OCI SDK 클라이언트를 만드는데, `SimpleAuthenticationDetailsProvider`가 개인 키를 PEM으로 **즉시 파싱**해서 로컬 dummy 값(`private-key: dummy`)으로는 `bootRun` 자체가 컨텍스트 기동 실패로 죽었다. OAuth 클라이언트(dummy 값으로도 잘 뜬다)와 달리 이 SDK는 지연 파싱이 아니다. **자동 테스트(test 프로필)는 이 빈을 아예 만들지 않아서 이 버그를 잡지 못한다** — 완료 기준의 Swagger UI 수동 확인(`bootRun`)을 실제로 하지 않았으면 배포 때까지 몰랐을 것. `OciObjectStorageClientTest`로 재현(TDD) 후 클라이언트 생성을 지연 초기화(double-checked locking)로 바꿔 해결했다.
+- 실제 OCI 자격증명으로 하는 검증(PAR 발급→업로드→공개 URL 확인)은 스펙이 이미 "수동 확인" 항목으로 배포 이후로 미뤄뒀다 — 이번 완료 기준에 포함하지 않았다.
+
+### 다음 세션에게
+- **사진 첨부(스펙+계획)가 끝났다.** 다음은 Plan 3 나머지(OCI 배포·CI/CD) 설계 세션 — `/interview`부터.
+- 배포 시 `kaldi.oci.*` 환경변수(`OCI_TENANCY_ID`·`OCI_USER_ID`·`OCI_FINGERPRINT`·`OCI_PRIVATE_KEY`·`OCI_REGION`·`OCI_NAMESPACE`·`OCI_BUCKET_NAME`)를 실제 값으로 채워야 사진 첨부가 동작한다. 안 채우면 `OciObjectStorageClient`가 지연 생성이라 앱은 뜨지만, 실제 업로드 시도 시 PEM 파싱 예외로 실패한다.
+- 공개범위 스펙의 수동 확인 2건(상호 팔로우 → FRIENDS 200, 해제 직후 403)이 여전히 미처리다 — 카카오·구글 실계정 2개가 필요해 계속 미뤄지고 있다.
+
+---
+
 ## 2026-08-18 · 사진 첨부 스펙 인터뷰
 
 **브랜치:** `docs/spec-media` · **PR:** 아래 참조

@@ -586,15 +586,15 @@ OCI_BUCKET_NAME=
 
 ## 배포 후 확인 (스펙의 "수동 확인" 그대로)
 
-- [ ] `main`에 머지하면 `backend.yml`의 `deploy` job이 돌고, GHCR에 `:<git-sha>`·`:latest` 두 태그가 모두 올라간다
-- [ ] SSH 액션이 VM에 접속해 배포하고, VM에서 새 컨테이너가 뜬다
-- [ ] 배포 직후 `https://api.kaldi-note.today/actuator/health`가 60초 이내 HTTP 200을 반환한다
+- [x] `main`에 머지하면 `backend.yml`의 `deploy` job이 돌고, GHCR에 `:<git-sha>`·`:latest` 두 태그가 모두 올라간다
+- [x] SSH 액션이 VM에 접속해 배포하고, VM에서 새 컨테이너가 뜬다
+- [x] 배포 직후 `https://api.kaldi-note.today/actuator/health`가 60초 이내 HTTP 200을 반환한다
 - [ ] 헬스체크가 실패하도록 강제했을 때, 직전 태그로 자동 롤백되고 워크플로가 실패로 표시된다
-- [ ] `nmap`이나 외부 접속 시도로 5432(PostgreSQL)가 막혀 있는지 확인한다
-- [ ] `https://api.kaldi-note.today`가 유효한 HTTPS 인증서로 응답한다(Caddy 자동 발급)
-- [ ] `crontab -l`에 백업 작업이 등록돼 있고, 다음날 Object Storage에 백업 파일이 실제로 생긴다
-- [ ] 백업 버킷이 private이고 사진 버킷(public)과 분리돼 있다
-- [ ] 8일 연속 백업 후 버킷에 최근 7개만 남아 있다
+- [x] `nmap`이나 외부 접속 시도로 5432(PostgreSQL)가 막혀 있는지 확인한다 — 2026-08-19
+- [x] `https://api.kaldi-note.today`가 유효한 HTTPS 인증서로 응답한다(Caddy 자동 발급)
+- [x] `crontab -l`에 백업 작업이 등록돼 있고, 다음날 Object Storage에 백업 파일이 실제로 생긴다 — 2026-08-19, 매분 임시 등록으로 cron 실동작까지 확인
+- [x] 백업 버킷이 private이고 사진 버킷(public)과 분리돼 있다 — 2026-08-19, 인증 없는 GET이 404
+- [x] 8일 연속 백업 후 버킷에 최근 7개만 남아 있다 — 2026-08-19, 과거 날짜 더미로 회전 검증
 - [ ] `.env`의 값으로 카카오/구글 실계정 로그인과 사진 업로드가 실제로 동작한다
 ```
 

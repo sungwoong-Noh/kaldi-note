@@ -999,7 +999,7 @@ cd .. && git add . && git commit -m "feat(recipe): 공개범위 기반 조회 �
 - Consumes: `FollowService.isMutual(Long, Long)` (Task 1), Task 2의 `findViewable` 판정 구조
 - Produces: 없음 (마지막 태스크)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `BrewLogControllerTest`에 추가한다. 기존 헬퍼(`token`, `recipeId`, `beanBatchId`, `userGrinderId`, `minimalBody`, `bodyWith`)를 그대로 쓴다.
 
@@ -1191,7 +1191,7 @@ cd .. && git add . && git commit -m "feat(recipe): 공개범위 기반 조회 �
   }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 
@@ -1201,7 +1201,7 @@ Expected: FAIL — 11개 중 최소 9개.
 - `AC-VIS-24`·`25`·`27`: 타인 조회가 403
 - `AC-VIS-18`·`22`·`23`·`26`·`28`은 이미 통과한다
 
-- [ ] **Step 3: DTO · 엔티티 · 서비스 · 예외 핸들러 수정**
+- [x] **Step 3: DTO · 엔티티 · 서비스 · 예외 핸들러 수정**
 
 `BrewLogCreateRequest`에 필드 추가 — **위치는 `brewedAt` 다음**(스펙의 요청 예시 순서와 맞춘다):
 
@@ -1290,12 +1290,12 @@ Expected: FAIL — 11개 중 최소 9개.
 
 > 이 핸들러는 `visibility` 밖에도 영향을 준다 — 지금까지 500이던 모든 깨진 JSON 요청이 400이 된다. 기존 테스트 중 500을 기대하는 것이 없는지 `clean check`로 확인한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: PASS — 기존 39개 + 신규 11개
 
-- [ ] **Step 5: 스펙 status 전환 + 전체 검증**
+- [x] **Step 5: 스펙 status 전환 + 전체 검증**
 
 `docs/specs/2026-08-17-visibility-authorization.md`의 `status: 초안` → `status: 구현완료`.
 
@@ -1306,7 +1306,7 @@ cd .. && ./scripts/check-spec-coverage.sh
 
 `check-spec-coverage.sh`가 AC 46개를 전부 찾아야 한다. 하나라도 빠지면 실패한다.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1317,9 +1317,9 @@ cd .. && git add . && git commit -m "feat(brewlog): visibility 입력과 공개�
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — `docs/specs/2026-08-17-visibility-authorization.md`가 `[구현완료] — AC 46개 전부`
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과 — `docs/specs/2026-08-17-visibility-authorization.md`가 `[구현완료] — AC 46개 전부`
+- [x] 스펙의 `status`를 `구현완료`로 변경
 - [ ] **수동 확인 1:** `bootRun` + curl로 두 계정을 만들어 서로 팔로우한 뒤, `FRIENDS` 레시피가 상대 계정에서 `200`으로 열리는 것을 확인 (`docs/design/2026-08-14-architecture.md:253`의 핵심 시나리오 6단계)
 - [ ] **수동 확인 2:** 한쪽이 팔로우를 해제한 직후 같은 요청이 `403`으로 바뀌는 것을 확인
 

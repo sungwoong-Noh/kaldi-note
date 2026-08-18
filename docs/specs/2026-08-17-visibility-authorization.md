@@ -1,7 +1,7 @@
 ---
 id: VIS
 title: 공개범위 인가 + 팔로우
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-08-17-plan-visibility.md
 ---
 

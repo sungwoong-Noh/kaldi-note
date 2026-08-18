@@ -1,6 +1,7 @@
 package com.kaldinote.brewlog.application;
 
 import com.kaldinote.brewlog.domain.BrewLog;
+import com.kaldinote.brewlog.domain.BrewLogVisibility;
 import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
@@ -20,6 +21,7 @@ import com.kaldinote.inventory.domain.DegassingStatus;
 import com.kaldinote.inventory.infrastructure.BeanBatchRepository;
 import com.kaldinote.recipe.domain.Recipe;
 import com.kaldinote.recipe.infrastructure.RecipeRepository;
+import com.kaldinote.user.application.FollowService;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -42,6 +44,7 @@ public class BrewLogService {
   private final BeanBatchRepository beanBatchRepository;
   private final UserGrinderRepository userGrinderRepository;
   private final GrinderModelRepository grinderModelRepository;
+  private final FollowService followService;
   private final GrindConverter grindConverter = new GrindConverter();
   private final ExtractionAnalyzer extractionAnalyzer = new ExtractionAnalyzer();
 
@@ -75,6 +78,7 @@ public class BrewLogService {
             recipe.getId(),
             beanBatch.getId(),
             request.brewedAt(),
+            request.visibility(),
             request.actualDoseG(),
             request.actualWaterG(),
             request.actualWaterTempC(),
@@ -99,7 +103,7 @@ public class BrewLogService {
   }
 
   public BrewLogResponse get(Long userId, Long brewLogId) {
-    BrewLog log = findOwned(userId, brewLogId);
+    BrewLog log = findViewable(userId, brewLogId);
     ExtractionAnalysis analysis =
         extractionAnalyzer.analyze(
             new BrewMeasurement(
@@ -110,17 +114,29 @@ public class BrewLogService {
     return BrewLogResponse.from(log, analysis);
   }
 
-  private BrewLog findOwned(Long userId, Long brewLogId) {
+  /** 판정 규칙은 RecipeService.findViewable과 같다. enum이 달라 공통 함수로 묶지 않는다. */
+  private BrewLog findViewable(Long userId, Long brewLogId) {
     BrewLog log =
         brewLogRepository
             .findById(brewLogId)
             .orElseThrow(
                 () ->
                     new BusinessException(ErrorCode.NOT_FOUND, "브루잉 로그를 찾을 수 없습니다: " + brewLogId));
-    if (!log.isOwnedBy(userId)) {
-      throw new BusinessException(ErrorCode.FORBIDDEN, "본인의 브루잉 로그만 조회할 수 있습니다.");
+    if (isViewable(userId, log)) {
+      return log;
     }
-    return log;
+    throw new BusinessException(ErrorCode.FORBIDDEN, "이 브루잉 로그를 볼 권한이 없습니다.");
+  }
+
+  private boolean isViewable(Long userId, BrewLog log) {
+    if (log.isOwnedBy(userId)) {
+      return true;
+    }
+    if (log.getVisibility() == BrewLogVisibility.PUBLIC) {
+      return true;
+    }
+    return log.getVisibility() == BrewLogVisibility.FRIENDS
+        && followService.isMutual(userId, log.getUserId());
   }
 
   private void validateRatingStep(BigDecimal rating) {

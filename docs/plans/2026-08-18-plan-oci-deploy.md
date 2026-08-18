@@ -212,7 +212,7 @@ cd .. && git add backend/Dockerfile backend/src/test/java/com/kaldinote/deploy/D
 - Consumes: Task 1의 `backend/Dockerfile` (이미지 빌드 방식)
 - Produces: `infra/docker-compose.prod.yml`의 서비스명 `app`·`postgres`·`caddy` — Task 3의 `deploy.sh`가 `docker compose -f infra/docker-compose.prod.yml pull app`으로 이 서비스명을 그대로 쓴다. 이미지 태그는 컴포즈 변수 `KALDI_IMAGE_TAG`로 주입한다(기본값 `latest`).
 
-- [ ] **Step 1: `application-prod.yml` 작성**
+- [x] **Step 1: `application-prod.yml` 작성**
 
 ```yaml
 spring:
@@ -227,7 +227,7 @@ logging:
 
 운영에 필요한 값(`KALDI_JWT_SECRET`, `KAKAO_CLIENT_ID` 등)은 전부 루트 `application.yml`이 이미 `${VAR}` 형태로 요구하고 있어 이 파일에 다시 쓸 필요가 없다. `spring.datasource.*`도 `docker-compose.prod.yml`이 환경변수로 주입하므로 여기서 하드코딩하지 않는다.
 
-- [ ] **Step 2: `infra/docker-compose.prod.yml` 작성**
+- [x] **Step 2: `infra/docker-compose.prod.yml` 작성**
 
 ```yaml
 services:
@@ -237,7 +237,8 @@ services:
     restart: unless-stopped
     mem_limit: "4g"
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/kaldinote
@@ -294,9 +295,9 @@ volumes:
   caddy-config:
 ```
 
-`env_file: .env`가 `app` 서비스 컨테이너에 `.env`의 모든 줄(`KALDI_JWT_SECRET`, `KAKAO_CLIENT_ID`, `OCI_*` 등)을 그대로 환경변수로 주입한다. `POSTGRES_PASSWORD`는 컴포즈 파일 자체의 변수 치환(`${...}`)에도 쓰이므로 `.env`가 두 역할을 동시에 한다 — Global Constraints에 적어둔 대로다.
+`env_file`이 `app` 서비스 컨테이너에 `.env`의 모든 줄(`KALDI_JWT_SECRET`, `KAKAO_CLIENT_ID`, `OCI_*` 등)을 그대로 환경변수로 주입한다. `POSTGRES_PASSWORD`는 컴포즈 파일 자체의 변수 치환(`${...}`)에도 쓰이므로 `.env`가 두 역할을 동시에 한다 — Global Constraints에 적어둔 대로다. `required: false`를 쓴 이유는 Step 4에서 실제로 확인됨 — 아래 참조.
 
-- [ ] **Step 3: `infra/Caddyfile` 작성**
+- [x] **Step 3: `infra/Caddyfile` 작성**
 
 ```
 api.kaldi-note.today {
@@ -306,15 +307,18 @@ api.kaldi-note.today {
 
 루트 도메인(`kaldi-note.today`)은 프론트(Cloudflare, Plan 4)가 맡으므로 이 Caddy 인스턴스는 API 서브도메인만 처리한다.
 
-- [ ] **Step 4: 구문 검증**
+- [x] **Step 4: 구문 검증**
 
-Run (backend 디렉터리 밖, 저장소 루트에서 — 실제 `.env`가 없어도 변수 경고만 뜨고 성공해야 한다):
+Run:
 ```bash
 cd infra && POSTGRES_PASSWORD=dummy docker compose -f docker-compose.prod.yml config -q && cd ..
+docker run --rm -v "$(pwd)/infra/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile
 ```
-Expected: 종료 코드 0. (Docker Desktop이 로컬에 떠 있어야 한다 — `backend/CLAUDE.md`의 사전 준비와 동일)
+Expected: 둘 다 종료 코드 0.
 
-- [ ] **Step 5: 커밋**
+**계획 작성 시점과 다른 점(실제 실행으로 확인됨):** `env_file: - .env`(짧은 형식)는 `.env` 파일이 실제로 없으면 `docker compose config`가 "env file ... not found"로 즉시 실패했다 — "변수 경고만 뜨고 성공"이라는 원래 예상은 틀렸다. Compose Spec의 긴 형식(`path` + `required: false`)으로 바꿔 파일이 없어도 구문 검증이 통과하게 했다(운영에서 `.env`가 실제로 없으면 앱이 필수 환경변수 누락으로 기동 실패하니 안전은 그대로 유지된다). `docker-compose.prod.yml`의 `env_file` 블록에 반영했다.
+
+- [x] **Step 5: 커밋**
 
 ```bash
 git add backend/src/main/resources/application-prod.yml infra/docker-compose.prod.yml infra/Caddyfile

@@ -7,6 +7,30 @@
 
 ---
 
+## 2026-08-18 · 사진 첨부 스펙 인터뷰
+
+**브랜치:** `docs/spec-media` · **PR:** 아래 참조
+**상태:** 완료 — 스펙 1건. `docs/specs/2026-08-18-media-attachment.md`, AC 32개, `status: 초안`. `check-spec-coverage.sh` 초록(초안이라 정상 건너뜀)
+
+### 한 일
+- Plan 3의 첫 덩어리(사진 첨부·OCI 배포·CI/CD 중 사진 첨부)를 다뤘다. 이 세션은 인터뷰 중간에 한 번 끊겼다 — 앞 절반은 저장 없이 대화에서만 진행되다 새 `/resume`으로 유실됐고, 이번 세션이 그 결정들을 사람 확인 없이 그대로 믿지 않고 **다시 한 번 확인받으며** 이어갔다. 최종 결정은 전부 이 세션에서 재확인된 것이다
+- 업로드 플로우를 PAR 2단계(발급 → 클라이언트 직접 업로드 → 메타데이터 확정)로 확정, OCI 호출은 인터페이스로 추출해 테스트에서 가짜 구현으로 대체하기로 함
+
+### 발견한 것
+- **아키텍처 문서가 `attachments` 테이블 컬럼(owner_user_id·target_type·target_id·object_key·content_type·width·height·sort_order)과 "PAR로 직접 업로드"까지는 이미 정해뒀지만, 그 외 전부 — API 형태·검증 규칙·인가·조회 URL 방식 — 는 이번 인터뷰에서 처음 정했다.** 포크·공개범위 때보다 미정 항목이 훨씬 많았다(질문 15라운드)
+- **OCI PAR은 업로드 용량 자체를 제한하지 못한다.** 10MB 제한은 업로드를 막는 게 아니라, 확정 시점에 HEAD의 `Content-Length`로 사후 검사해 초과분을 지우는 방식으로만 강제할 수 있다 — 처음엔 놓칠 뻔한 함정이라 별도로 짚어 확인받았다
+- **버킷을 public-read로 하기로 하면서 PRIVATE·FRIENDS 대상의 사진도 URL만 알면 인증 없이 볼 수 있게 된다.** 이 서비스가 지금까지 공들여 만든 조회 인가(`findViewable`)가 사진 URL 자체에는 적용되지 않는다는 뜻이라 명시적으로 재확인받았다 — 2인 취미 프로젝트, UUID 경로 추측 불가를 근거로 감안하고 진행하기로 결정
+- **`content_type`은 클라이언트가 확정 요청에 실어 보내는 값이 아니라, 확정 시점에 OCI HEAD로 읽은 값을 신뢰한다.** PAR 발급 시점에 이미 content-type을 검증했으므로 위조 여지를 없애는 선택
+- **삭제 인가는 대상을 다시 조회하지 않고 `attachments.owner_user_id` 컬럼으로 직접 판정한다.** 소프트 삭제된 레시피에 딸린 사진도 소유자는 여전히 지울 수 있다는 뜻이지만, 이건 스펙에 별도 AC로 못박지 않고 설계로만 남겼다
+
+### 다음 세션에게
+- **구현 계획(`docs/plans/`)을 아직 안 썼다.** 스펙이 승인되면 계획 작성부터 — 마이그레이션(`V9__create_attachments_table.sql`) 신설, `media` 패키지 신설, `ObjectStorageClient` 인터페이스 + 로컬 테스트용 가짜 구현이 선행 작업이 될 것으로 보인다. 팔로우·공개범위 때처럼 "선행 태스크 없음"이 아니다 — 이번엔 `ObjectStorageClient` 추상화가 첫 태스크가 될 가능성이 높다
+- **`FollowService.isMutual`·기존 `findViewable` 패턴을 재사용하되, 이번엔 `media` 도메인이 `recipe`·`brewlog` 두 도메인을 모두 참조해야 한다.** 대상이 두 타입이라 인가 판정 로직을 어느 계층에 둘지(각 도메인의 `findViewable`을 호출하는 라우팅 계층을 media에 둘지) 계획에서 정해야 한다
+- **AC-MEDIA-14(HEAD의 Content-Type 신뢰)·17(10MB 초과 시 OCI 객체 삭제)이 이 스펙의 핵심이다.** 가짜 `ObjectStorageClient` 구현이 HEAD 응답의 `Content-Length`·`Content-Type`을 테스트마다 다르게 스텁할 수 있어야 이 둘을 검증할 수 있다
+- 남은 스펙 후보는 **OCI 배포·CI/CD**(Plan 3의 나머지)다. 사진 첨부 구현이 끝난 뒤 다룬다
+
+---
+
 ## 2026-08-18 · 레시피 포크 — Swagger 수동 확인 + PR #55 마무리
 
 **브랜치:** `feat/recipe-fork` · **PR:** #55

@@ -493,7 +493,7 @@ git commit -m "feat(deploy): GitHub Actions 배포 job + deploy.sh (SSH 배포, 
 - Consumes: Task 2의 `docker-compose.prod.yml` 컨테이너명 `kaldi-note-postgres`
 - Produces: 없음 (이 계획의 마지막 태스크)
 
-- [ ] **Step 1: `infra/scripts/backup-pg-dump.sh` 작성**
+- [x] **Step 1: `infra/scripts/backup-pg-dump.sh` 작성**
 
 ```bash
 #!/usr/bin/env bash
@@ -528,11 +528,11 @@ for old in "${OLD_BACKUPS[@]:-}"; do
 done
 ```
 
-- [ ] **Step 2: `infra/.env.example` 작성**
+- [x] **Step 2: `infra/.env.example` 작성**
 
 ```bash
 # 실제 값을 채운 .env 파일을 VM의 /opt/kaldi-note/infra/ 안에 직접 만든다.
-# .env는 git에 커밋하지 않는다 (infra/.gitignore에 이미 등록).
+# .env는 git에 커밋하지 않는다 (루트 .gitignore의 .env / .env.* 패턴이 이미 커버한다).
 
 POSTGRES_PASSWORD=
 
@@ -553,13 +553,9 @@ OCI_NAMESPACE=
 OCI_BUCKET_NAME=
 ```
 
-`infra/.gitignore`에 `.env`를 추가한다 (`infra/.env.example`만 커밋 대상):
+**계획 작성 시점과 다른 점(실제 실행으로 확인됨):** `infra/.gitignore`는 만들지 않는다. `git check-ignore -v infra/.env`로 직접 확인해보니 루트 `.gitignore`의 `.env`/`.env.*`/`!.env.example` 패턴(경로 접두어 없음)이 이미 모든 하위 디렉터리에 적용돼 `infra/.env`도 무시되고 `infra/.env.example`만 예외로 살아남는다. 별도 파일을 만들면 중복이었다.
 
-```
-.env
-```
-
-- [ ] **Step 3: `infra/README.md`(배포 런북) 작성**
+- [x] **Step 3: `infra/README.md`(배포 런북) 작성**
 
 ```markdown
 # 배포 런북
@@ -595,10 +591,10 @@ OCI_BUCKET_NAME=
 - [ ] `.env`의 값으로 카카오/구글 실계정 로그인과 사진 업로드가 실제로 동작한다
 ```
 
-- [ ] **Step 4: 커밋**
+- [x] **Step 4: 커밋**
 
 ```bash
-git add infra/scripts/backup-pg-dump.sh infra/.env.example infra/.gitignore infra/README.md
+git add infra/scripts/backup-pg-dump.sh infra/.env.example infra/README.md
 git commit -m "docs(deploy): 백업 스크립트 + .env 템플릿 + 배포 런북"
 ```
 
@@ -606,11 +602,11 @@ git commit -m "docs(deploy): 백업 스크립트 + .env 템플릿 + 배포 런�
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과 (`DockerfileHealthcheckTest` 포함 — 이미지 빌드가 들어가 다른 태스크보다 느리다)
-- [ ] `./scripts/check-spec-coverage.sh` 통과 (스펙 `status`를 `구현완료`로 바꾼 뒤 실행) — AC-DEPLOY-01·02가 테스트에 존재하는지 확인
-- [ ] 스펙(`docs/specs/2026-08-18-oci-deploy.md`)의 `status`를 `구현완료`로 변경
-- [ ] `infra/docker-compose.prod.yml`·`Caddyfile`·`deploy.sh`·`backup-pg-dump.sh`가 전부 존재하고, `docker compose config`로 구문 검증됨
-- [ ] **`infra/README.md`의 "배포 후 확인" 체크리스트(= 스펙의 수동 확인)는 이 계획의 완료 기준에 포함하지 않는다.** 실제 OCI VM·도메인·GitHub Secrets가 있어야 확인 가능해, 코드 작성 세션이 아니라 사용자가 직접 VM에 접속해 진행할 별도 단계다. 미디어 첨부 계획 때도 실제 OCI 자격증명 검증은 동일하게 배포 이후로 미뤘다
+- [x] `cd backend && ./gradlew clean check` 통과 (`DockerfileHealthcheckTest` 포함 — 이미지 빌드가 들어가 다른 태스크보다 느리다)
+- [x] `./scripts/check-spec-coverage.sh` 통과 (스펙 `status`를 `구현완료`로 바꾼 뒤 실행) — AC-DEPLOY-01·02가 테스트에 존재하는지 확인
+- [x] 스펙(`docs/specs/2026-08-18-oci-deploy.md`)의 `status`를 `구현완료`로 변경
+- [x] `infra/docker-compose.prod.yml`·`Caddyfile`·`deploy.sh`·`backup-pg-dump.sh`가 전부 존재하고, `docker compose config`로 구문 검증됨
+- [x] **`infra/README.md`의 "배포 후 확인" 체크리스트(= 스펙의 수동 확인)는 이 계획의 완료 기준에 포함하지 않는다.** 실제 OCI VM·도메인·GitHub Secrets가 있어야 확인 가능해, 코드 작성 세션이 아니라 사용자가 직접 VM에 접속해 진행할 별도 단계다. 미디어 첨부 계획 때도 실제 OCI 자격증명 검증은 동일하게 배포 이후로 미뤘다
 
 ---
 

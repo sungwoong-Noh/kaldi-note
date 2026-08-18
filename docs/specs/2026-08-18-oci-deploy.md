@@ -1,7 +1,7 @@
 ---
 id: DEPLOY
 title: OCI 배포 · CI/CD
-status: 초안
+status: 승인
 plan:
 ---
 

@@ -825,7 +825,7 @@ cd .. && git add . && git commit -m "feat(media): ObjectStorageClient 인터페�
 - Consumes: `AttachmentRepository`(Task 1), `ObjectStorageClient`(Task 2), `RecipeService.requireOwned(Long, Long): void`(신설), `BrewLogService.requireOwned(Long, Long): void`(신설)
 - Produces: `AttachmentService.issueUploadUrl(Long userId, UploadUrlRequest): UploadUrlResponse`, `AttachmentService`의 private `requireOwned(TargetType, Long, Long)`·`attachmentCount(TargetType, Long)` — Task 4~6이 재사용한다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/media/presentation/AttachmentControllerTest.java`
 
@@ -1148,13 +1148,15 @@ class AttachmentControllerTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 
 Expected: FAIL. `AC-MEDIA-11`(미인증)은 `SecurityConfig`의 `anyRequest().authenticated()`가 매핑 여부와 무관하게 먼저 걸려 **처음부터 통과할 수 있다**(포크·공개범위 계획에서 관찰된 패턴). 나머지 10개는 `POST /api/v1/attachments/upload-url` 매핑이 없어 404 또는 500으로 실패한다. 정확한 개수는 실행해서 확인하고 이 항목에 실측값을 남긴다.
 
-- [ ] **Step 3: RecipeService·BrewLogService에 requireOwned 추가, AttachmentService·Controller 구현**
+**실측:** 예측과 정확히 일치. 11개 중 10개 실패, `AC-MEDIA-11`(미인증) 1개만 처음부터 통과.
+
+- [x] **Step 3: RecipeService·BrewLogService에 requireOwned 추가, AttachmentService·Controller 구현**
 
 `backend/src/main/java/com/kaldinote/recipe/application/RecipeService.java` (Modify — `fork` 메서드 다음에 추가)
 
@@ -1311,14 +1313,16 @@ public class AttachmentController {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: PASS, 11 tests
 
 전체도 확인한다: `./gradlew clean check`
 
-- [ ] **Step 5: 커밋**
+**실측:** 11개 전부 PASS. `clean check` 전체 통과(회귀 없음).
+
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

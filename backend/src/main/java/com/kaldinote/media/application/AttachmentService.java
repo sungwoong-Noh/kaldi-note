@@ -108,6 +108,19 @@ public class AttachmentService {
         .toList();
   }
 
+  public void delete(Long userId, Long attachmentId) {
+    Attachment attachment =
+        attachmentRepository
+            .findById(attachmentId)
+            .orElseThrow(
+                () -> new BusinessException(ErrorCode.NOT_FOUND, "첨부를 찾을 수 없습니다: " + attachmentId));
+    if (!attachment.isOwnedBy(userId)) {
+      throw new BusinessException(ErrorCode.FORBIDDEN, "본인의 첨부만 삭제할 수 있습니다.");
+    }
+    objectStorageClient.delete(attachment.getObjectKey());
+    attachmentRepository.delete(attachment);
+  }
+
   private void requireOwned(TargetType targetType, Long targetId, Long userId) {
     switch (targetType) {
       case RECIPE -> recipeService.requireOwned(userId, targetId);

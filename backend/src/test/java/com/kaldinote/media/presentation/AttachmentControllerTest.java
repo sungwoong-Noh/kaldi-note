@@ -613,4 +613,80 @@ class AttachmentControllerTest extends AbstractIntegrationTest {
                 .param("targetId", String.valueOf(r1)))
         .andExpect(status().isUnauthorized());
   }
+
+  @Test
+  @DisplayName("AC-MEDIA-29 · 소유자가 삭제하면 204이고 DB 행과 OCI 객체가 모두 사라진다")
+  void 소유자가_삭제하면_204이고_모두_사라진다() throws Exception {
+    User owner = newUser("media-29");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    String objectKey = objectKeyFor(tokenOf(owner), "RECIPE", r1, "image/jpeg");
+    fakeObjectStorageClient.stubUploaded(objectKey, 100_000L, "image/jpeg");
+    String confirmBody =
+        confirm(tokenOf(owner), "RECIPE", r1, objectKey, 100, 100)
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    Long attachmentId = Long.valueOf(JsonPath.read(confirmBody, "$.id").toString());
+
+    mockMvc
+        .perform(
+            delete("/api/v1/attachments/{id}", attachmentId)
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(owner)))
+        .andExpect(status().isNoContent());
+
+    assertThat(attachmentRepository.findById(attachmentId)).isEmpty();
+    assertThat(fakeObjectStorageClient.head(objectKey)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-30 · 소유자가 아니면 403이다")
+  void 삭제_소유자가_아니면_403이다() throws Exception {
+    User owner = newUser("media-30a");
+    User other = newUser("media-30b");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    seedAttachment(TargetType.RECIPE, r1, owner.getId(), 1);
+    Long attachmentId =
+        attachmentRepository
+            .findByTargetTypeAndTargetIdOrderBySortOrderAsc(TargetType.RECIPE, r1)
+            .get(0)
+            .getId();
+
+    mockMvc
+        .perform(
+            delete("/api/v1/attachments/{id}", attachmentId)
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(other)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+    assertThat(attachmentRepository.findById(attachmentId)).isPresent();
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-31 · 없는 첨부를 삭제하면 404다")
+  void 없는_첨부를_삭제하면_404다() throws Exception {
+    User owner = newUser("media-31");
+
+    mockMvc
+        .perform(
+            delete("/api/v1/attachments/{id}", 999999L)
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(owner)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-MEDIA-32 · 토큰 없이 삭제하면 401이다")
+  void 토큰_없이_삭제하면_401이다() throws Exception {
+    User owner = newUser("media-32");
+    Long r1 = recipeId(tokenOf(owner), "PUBLIC");
+    seedAttachment(TargetType.RECIPE, r1, owner.getId(), 1);
+    Long attachmentId =
+        attachmentRepository
+            .findByTargetTypeAndTargetIdOrderBySortOrderAsc(TargetType.RECIPE, r1)
+            .get(0)
+            .getId();
+
+    mockMvc
+        .perform(delete("/api/v1/attachments/{id}", attachmentId))
+        .andExpect(status().isUnauthorized());
+  }
 }

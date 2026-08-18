@@ -1,8 +1,8 @@
 ---
 id: FORK
 title: 레시피 포크
-status: 초안
-plan:
+status: 구현완료
+plan: docs/plans/2026-08-18-plan-fork.md
 ---
 
 # 레시피 포크 스펙
@@ -295,7 +295,7 @@ Authorization: Bearer <token>
 
 ## 수동 확인
 
-- [ ] Swagger UI에서 `POST /api/v1/recipes/{id}/fork`가 요청 본문 없이 실행되고, 응답에 `parentRecipeId`·`forkRootId`가 보인다
+- [x] Swagger UI에서 `POST /api/v1/recipes/{id}/fork`가 요청 본문 없이 실행되고, 응답에 `parentRecipeId`·`forkRootId`가 보인다
 
 ## 열어둔 결정
 

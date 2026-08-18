@@ -7,6 +7,48 @@
 
 ---
 
+## 2026-08-18 · 레시피 포크 — Swagger 수동 확인 + PR #55 마무리
+
+**브랜치:** `feat/recipe-fork` · **PR:** #55
+**상태:** 완료 — 계획의 완료 기준 4개 전부 체크, 스펙 `status: 구현완료`
+
+### 한 일
+- OAuth 실계정 로그인 없이 확인했다. `docker compose up -d` → `bootRun`(local 프로필) → 로컬 JWT 시크릿(`application-local.yml`)으로 HS256 토큰을 직접 만들어 실제 서버에 curl로 요청했다
+- `POST /api/v1/recipes/3/fork`(본문 없음) → `201`, 응답에 `parentRecipeId:3`·`forkRootId:3` 확인. `/v3/api-docs`에 엔드포인트가 요청 본문 없이 등록된 것도 확인
+- 검증에 쓴 사용자·레시피 행은 DB에서 삭제해 로컬 dev 상태를 원래대로 돌려놨다
+
+### 발견한 것
+- **`non_null` Jackson 직렬화 때문에 포크가 아닌 레시피 응답엔 `parentRecipeId`가 아예 나타나지 않는다.** null이 아니라 필드 자체가 없다 — 처음 원본 레시피 응답을 보고 "필드가 안 붙었나" 순간 헷갈렸는데 기존 `ownerUserId` 필드도 owner가 null일 때 같은 방식으로 생략되는 것과 동일한 패턴이었다. 버그 아님
+- **Swagger UI(브라우저)를 직접 켜지 않고도 같은 것을 검증할 수 있었다.** OAuth 로그인이 막혀 있는 로컬 환경에서도 `application-local.yml`의 고정 시크릿으로 유효한 JWT를 직접 만들 수 있다는 걸 이번에 확인했다 — 다음에 비슷한 "Swagger 수동 확인"이 필요하면 이 방법을 재사용할 수 있다(카카오·구글 실계정이 필요한 건 OAuth 플로우 자체를 검증할 때뿐이다)
+
+### 다음 세션에게
+- **PR #55를 머지하면 Plan 2가 전부 끝난다.** 다음은 Plan 3(사진 첨부·OCI 배포·CI/CD) 계획 작성 — 새 설계 세션에서 시작
+- 공개범위 스펙의 수동 확인 2건(상호 팔로우 시나리오)은 여전히 미처리 — 이건 OAuth 실계정이 실제로 필요하다(팔로우 관계가 두 개의 서로 다른 실사용자를 요구하므로, 위에서 쓴 "가짜 JWT" 트릭으로는 대체 불가)
+
+---
+
+## 2026-08-18 · 레시피 포크 구현 — Task 1 (계획의 유일한 태스크)
+
+**브랜치:** `feat/recipe-fork` · **PR:** 아래 참조
+**상태:** 완료 — `docs/plans/2026-08-18-plan-fork.md` Step 1~5 전부. `clean check` 통과, `check-spec-coverage.sh` 스펙 7건·AC 262개, 스펙 `status: 구현완료`
+
+### 한 일
+- `Recipe.forkFrom`·`RecipeStep.copyOf` 정적 팩토리로 깊은 복사, `RecipeService.fork`가 기존 `findViewable`(조회 인가)을 그대로 재사용, `RecipeController`에 `POST /{id}/fork`, `RecipeResponse`에 `parentRecipeId`·`forkRootId` 2필드 추가
+- `RecipeForkControllerTest` 24개 전부 통과. RED는 예측(23개 실패, 미인증 1개만 처음부터 통과)과 정확히 일치했다
+
+### 발견한 것
+- **계획 작성 세션이 남긴 "검증되지 않은 가정" 둘 다 이번에 확인됐다.** `RecipeResponse`에 필드 2개만 추가하고 `AC-FORK-15`(출처 3필드 승계)를 `RecipeRepository` 직접 조회로 검증한 판단이 그대로 통했다. `doseG`·`waterG` 같은 스케일 1 `BigDecimal`의 `jsonPath.value(15.0)` 비교도 별문제 없이 통과했다 — 마이크론(스케일 0)과 다른 스케일이라 걱정했으나 Jackson 3의 기본 직렬화가 둘 다 평범한 숫자로 내보낸다
+- `spotlessJavaCheck`가 Javadoc 2줄 주석과 체이닝된 `andExpect` 한 줄을 각각 걸었다. `spotlessApply`로 자동 수정, 로직 변경 없음
+- **PR #53(스펙만)이 내가 만들지 않은 채로 이미 머지돼 있었다.** `docs/spec-fork` 브랜치로 계획 문서를 이어 쓰던 중 발견 — 내용은 동일해서 충돌 없이 합쳐졌지만, 원인은 확인하지 못했다. 이후 PR #54(계획 추가분)를 머지하고 `main`에서 `feat/recipe-fork`를 새로 땄다(스택 PR 방지)
+
+### 다음 세션에게
+- **Plan 2가 이걸로 전부 끝났다.** 다음은 Plan 3(사진 첨부·OCI 배포·CI/CD) 계획 작성 — 새 설계 세션에서 시작
+- **Swagger UI 수동 확인이 미실시다**(계획의 완료 기준 마지막 항목). `POST /api/v1/recipes/{id}/fork` 실행 후 응답에 `parentRecipeId`·`forkRootId`가 보이는지 확인할 것
+- PR #53이 왜 나 없이 생겼는지는 알아내지 못했다. 같은 패턴이 또 보이면(내가 만들지 않은 PR·브랜치) 병렬 세션을 의심하고 `gh pr list --state all`로 먼저 확인할 것
+- 공개범위 스펙의 수동 확인 2건(상호 팔로우 → FRIENDS 200, 해제 직후 403)은 여전히 미처리다
+
+---
+
 ## 2026-08-18 · 레시피 포크 스펙 인터뷰
 
 **브랜치:** `docs/spec-fork` · **PR:** 아래 참조

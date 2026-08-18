@@ -39,6 +39,12 @@ public class RecipeController {
     return recipeService.get(user.id(), id);
   }
 
+  @PostMapping("/{id}/fork")
+  @ResponseStatus(HttpStatus.CREATED)
+  public RecipeResponse fork(@PathVariable Long id, AuthenticatedUser user) {
+    return recipeService.fork(user.id(), id);
+  }
+
   @PutMapping("/{id}")
   public RecipeResponse update(
       @PathVariable Long id,

@@ -82,6 +82,19 @@ public class RecipeService {
   }
 
   /**
+   * 포크. 인가는 조회 인가와 동일하다(findViewable 재사용) — 스펙이 "볼 수 있으면 포크 가능"으로 정의했다. 원본과 스텝을 깊은 복사하므로 이후 원본이
+   * 수정·삭제돼도 포크본은 변하지 않는다.
+   */
+  @Transactional
+  public RecipeResponse fork(Long userId, Long recipeId) {
+    Recipe original = findViewable(userId, recipeId);
+    Recipe fork = Recipe.forkFrom(original, userId);
+    List<RecipeStep> copiedSteps = original.getSteps().stream().map(RecipeStep::copyOf).toList();
+    fork.replaceSteps(copiedSteps);
+    return RecipeResponse.from(recipeRepository.save(fork));
+  }
+
+  /**
    * 조회 인가. 스펙의 판정 순서를 그대로 따른다: 소유자 → PUBLIC → FRIENDS+상호팔로우 → 403.
    *
    * <p>쓰기(update/delete)는 findOwned를 계속 쓴다. 여기서 갈라놓지 않으면 PUBLIC 레시피를 남이 수정할 수 있게 된다(AC-VIS-14·15).

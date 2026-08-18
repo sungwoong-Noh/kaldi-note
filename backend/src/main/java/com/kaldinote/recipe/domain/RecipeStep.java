@@ -99,4 +99,17 @@ public class RecipeStep {
   void assignTo(Recipe recipe) {
     this.recipe = recipe;
   }
+
+  /** 값을 그대로 복사한 새 미영속 스텝을 만든다. recipe 연관관계는 assignTo가 나중에 채운다. */
+  public static RecipeStep copyOf(RecipeStep original) {
+    return new RecipeStep(
+        original.stepOrder,
+        original.stepType,
+        original.startAtSeconds,
+        original.durationSeconds,
+        original.waterG,
+        original.pourTechnique,
+        original.agitation,
+        original.note);
+  }
 }

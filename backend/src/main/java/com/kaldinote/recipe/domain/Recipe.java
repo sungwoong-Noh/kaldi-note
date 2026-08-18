@@ -211,4 +211,33 @@ public class Recipe extends BaseTimeEntity {
   public boolean isOwnedBy(Long userId) {
     return ownerUserId != null && ownerUserId.equals(userId);
   }
+
+  /**
+   * 포크본을 만든다. sourceType은 항상 USER(기존 생성자가 하드코딩), visibility는 항상 PRIVATE. grindMicronEstimated는
+   * 재계산하지 않고 원본 값을 그대로 옮긴다.
+   */
+  public static Recipe forkFrom(Recipe original, Long forkedByUserId) {
+    Recipe fork =
+        new Recipe(
+            forkedByUserId,
+            original.title,
+            original.description,
+            RecipeVisibility.PRIVATE,
+            original.doseG,
+            original.waterG,
+            original.waterTempC,
+            original.totalTimeSeconds,
+            original.brewerId,
+            original.filterId,
+            original.grinderModelId,
+            original.grindSettingValue,
+            original.grindSettingUnit,
+            original.grindMicronEstimated);
+    fork.parentRecipeId = original.id;
+    fork.forkRootId = original.forkRootId != null ? original.forkRootId : original.id;
+    fork.authorName = original.authorName;
+    fork.sourceUrl = original.sourceUrl;
+    fork.sourceNote = original.sourceNote;
+    return fork;
+  }
 }

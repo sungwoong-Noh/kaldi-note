@@ -926,7 +926,7 @@ cd .. && git add . && git commit -m "feat(user): 팔로우 등록·해제·상�
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 
-Expected: FAIL — `AC-VIS-04`·`05`·`11`이 403으로 실패한다(현재 `get()`이 `findOwned`를 써서 소유자가 아니면 무조건 403). `AC-VIS-01~03`·`06~10`·`12~17`은 **이미 통과한다** — 현재 동작이 우연히 기대와 같기 때문이다. RED가 3개뿐인 것이 정상이며, 이 3개가 판정 규칙 전체를 끌어낸다.
+Expected: FAIL — `AC-VIS-04`·`05`·`11`이 403으로 실패한다 (실측: 4개. `AC-VIS-10`도 끊기 전 전제인 첫 200 단언에서 함께 걸린다)(현재 `get()`이 `findOwned`를 써서 소유자가 아니면 무조건 403). `AC-VIS-01~03`·`06~10`·`12~17`은 **이미 통과한다** — 현재 동작이 우연히 기대와 같기 때문이다. RED가 3개뿐인 것이 정상이며, 이 3개가 판정 규칙 전체를 끌어낸다.
 
 - [x] **Step 3: RecipeService에 조회 인가 추가**
 
@@ -1113,11 +1113,15 @@ cd .. && git add . && git commit -m "feat(recipe): 공개범위 기반 조회 �
     Long id = brewLogWith(tokenOf(a), "PUBLIC");
 
     String ownerBody = getBrewLog(tokenOf(a), id).andReturn().getResponse().getContentAsString();
+    // Object로 받아야 한다. 인라인으로 넘기면 제네릭이 Matcher로 추론돼
+    // value(Matcher) 오버로드가 잡히고 ClassCastException이 난다 (실행해서 확인함).
+    Object brewRatio = JsonPath.read(ownerBody, "$.brewRatio");
+    Object daysOffRoast = JsonPath.read(ownerBody, "$.daysOffRoast");
 
     getBrewLog(tokenOf(b), id)
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.brewRatio").value(JsonPath.read(ownerBody, "$.brewRatio")))
-        .andExpect(jsonPath("$.daysOffRoast").value(JsonPath.read(ownerBody, "$.daysOffRoast")));
+        .andExpect(jsonPath("$.brewRatio").value(brewRatio))
+        .andExpect(jsonPath("$.daysOffRoast").value(daysOffRoast));
   }
 
   @Test
@@ -1195,9 +1199,9 @@ cd .. && git add . && git commit -m "feat(recipe): 공개범위 기반 조회 �
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 
-Expected: FAIL — 11개 중 최소 9개.
+Expected: FAIL — 11개 중 최소 9개. (실측: 6개 실패. `AC-VIS-19`·`20`·`21`·`24`·`25`·`27`)
 - `AC-VIS-19`·`20`: `visibility`를 요청으로 받지 않아 항상 `PRIVATE`이 저장돼 단언이 깨진다
-- `AC-VIS-21`: **500 `INTERNAL_ERROR`가 나올 것으로 예상한다.** `GlobalExceptionHandler`에 `HttpMessageNotReadableException` 핸들러가 없어 Jackson 역직렬화 실패가 `handleUnexpected(Exception)`으로 떨어진다
+- `AC-VIS-21`: **실측 결과 이 시점에는 500이 아니라 `201`이다.** DTO에 `visibility` 필드가 없어 Jackson이 미지의 속성을 무시하고 그냥 생성한다. 500(`handleUnexpected`로 떨어지는 enum 파싱 실패)은 **Step 3에서 필드를 추가한 뒤에야** 관측된다 — 아래 "500이 확인된 경우에만"은 그래서 Step 3 도중에 판단하게 된다
 - `AC-VIS-24`·`25`·`27`: 타인 조회가 403
 - `AC-VIS-18`·`22`·`23`·`26`·`28`은 이미 통과한다
 
@@ -1273,6 +1277,10 @@ Expected: FAIL — 11개 중 최소 9개.
 ```
 
 `create(...)`에서 `BrewLog.create(...)` 호출에 `request.visibility()`를 넘긴다.
+
+> **`BrewLog.create` 시그니처가 바뀌면 `BrewLogRepositoryTest`의 호출 3곳이 컴파일 실패한다**(이 계획의 File Structure에 없던 파일이다). `brewedAt` 다음에 `null`을 넣어 도메인 기본값 경로를 그대로 타게 한다.
+>
+> **`findOwned`는 남기지 않고 `findViewable`로 대체한다.** 레시피와 달리 브루잉 로그에는 `PUT`/`DELETE`가 없어(`BrewLogController`는 `POST`·`GET`뿐) `get`이 유일한 호출자다. 그대로 두면 죽은 코드가 된다. `RecipeService.findOwned`는 계획대로 그대로 둔다 — 거기엔 쓰기 경로가 있다.
 
 `GlobalExceptionHandler`에 핸들러 추가 — **Step 2에서 500이 확인된 경우에만**:
 

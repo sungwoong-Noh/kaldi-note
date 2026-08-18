@@ -132,7 +132,7 @@ backend/src/test/java/com/kaldinote/media/
 - Consumes: 없음 (선행 태스크 없음)
 - Produces: `Attachment.create(Long ownerUserId, TargetType targetType, Long targetId, String objectKey, String contentType, Integer width, Integer height, Integer sortOrder): Attachment`, `AttachmentRepository`(`countByTargetTypeAndTargetId`, `existsByObjectKey`, `findByTargetTypeAndTargetIdOrderBySortOrderAsc`)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `backend/src/test/java/com/kaldinote/media/infrastructure/AttachmentRepositoryTest.java`
 
@@ -237,12 +237,14 @@ class AttachmentRepositoryTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*AttachmentRepositoryTest'`
 Expected: FAIL — 컴파일 실패(`Attachment`·`TargetType`·`AttachmentRepository`가 없음).
 
-- [ ] **Step 3: 마이그레이션·엔티티·리포지토리 구현**
+**실측:** 예측과 정확히 일치. `compileTestJava` 단계에서 3개 컴파일 오류(`package com.kaldinote.media.domain does not exist` 등)로 실패.
+
+- [x] **Step 3: 마이그레이션·엔티티·리포지토리 구현**
 
 `backend/src/main/resources/db/migration/V9__create_attachments_table.sql`
 
@@ -396,12 +398,14 @@ public interface AttachmentRepository extends JpaRepository<Attachment, Long> {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*AttachmentRepositoryTest'`
 Expected: PASS, 5 tests
 
-- [ ] **Step 5: 커밋**
+**실측:** 5개 전부 PASS. `./gradlew clean check` 전체도 통과(회귀 없음). `spotlessApply`가 `Attachment.java` Javadoc 줄바꿈만 자동 정리(로직 변경 없음).
+
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

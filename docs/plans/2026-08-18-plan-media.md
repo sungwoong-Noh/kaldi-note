@@ -1912,7 +1912,7 @@ cd .. && git add . && git commit -m "feat(media): 첨부 목록 조회 API" && c
 - Consumes: `AttachmentRepository.findById`·`delete`(JpaRepository 기본 제공), `ObjectStorageClient.delete`(Task 2)
 - Produces: `AttachmentService.delete(Long userId, Long attachmentId): void` — 이 태스크가 마지막이므로 뒤 태스크가 의존할 것 없음
 
-- [ ] **Step 1: 실패하는 테스트 추가**
+- [x] **Step 1: 실패하는 테스트 추가**
 
 `backend/src/test/java/com/kaldinote/media/presentation/AttachmentControllerTest.java` (Modify — 테스트 4개 추가)
 
@@ -1994,12 +1994,14 @@ cd .. && git add . && git commit -m "feat(media): 첨부 목록 조회 API" && c
   }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: `AC-MEDIA-32`는 처음부터 통과, 나머지 3개는 `DELETE /api/v1/attachments/{id}` 매핑이 없어 실패. 실측값을 남긴다.
 
-- [ ] **Step 3: delete 구현**
+**실측:** 예측과 정확히 일치. 32개 중 3개 실패, `AC-MEDIA-32`(미인증) 1개만 처음부터 통과.
+
+- [x] **Step 3: delete 구현**
 
 `backend/src/main/java/com/kaldinote/media/application/AttachmentService.java` (Modify — `list` 다음에 추가)
 
@@ -2031,14 +2033,16 @@ Expected: `AC-MEDIA-32`는 처음부터 통과, 나머지 3개는 `DELETE /api/v
 
 (반영 시 `import org.springframework.web.bind.annotation.DeleteMapping;`, `import org.springframework.web.bind.annotation.PathVariable;`을 정리하고 FQN을 단순화한다. 이 시점에 `AttachmentController.java`·`AttachmentService.java`에 남은 모든 FQN을 일반 import로 정리한다 — `spotlessApply`는 import *추가*는 안 해주지만 미사용 import는 지워준다.)
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: PASS, 32 tests
 
 전체도 확인한다: `./gradlew clean check`
 
-- [ ] **Step 5: 커밋**
+**실측:** 32개(스펙 AC 전체 개수와 일치) 전부 PASS. `clean check` 전체 통과(회귀 없음). 처음부터 일반 import로 작성해 FQN 정리가 필요 없었다.
+
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -2049,11 +2053,11 @@ cd .. && git add . && git commit -m "feat(media): 첨부 삭제 API" && cd backe
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 (스펙 status를 `구현완료`로 바꾼 뒤 실행)
-- [ ] 스펙(`docs/specs/2026-08-18-media-attachment.md`)의 `status`를 `구현완료`로 변경
-- [ ] Swagger UI(`/swagger-ui.html`)에서 4개 엔드포인트(`POST /upload-url`, `POST`, `GET`, `DELETE /{id}`)가 등록되어 보인다
-- [ ] **실제 OCI 자격증명으로 하는 검증은 이번 계획의 완료 기준에 포함하지 않는다** — 스펙의 "수동 확인" 항목대로 배포 이후로 미룬다
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과 (스펙 status를 `구현완료`로 바꾼 뒤 실행) — 스펙 8건, AC 294개(기존 262개 + 이번 32개) 확인
+- [x] 스펙(`docs/specs/2026-08-18-media-attachment.md`)의 `status`를 `구현완료`로 변경
+- [x] Swagger UI(`/swagger-ui.html`)에서 4개 엔드포인트(`POST /upload-url`, `POST`, `GET`, `DELETE /{id}`)가 등록되어 보인다 — `local` 프로필로 `bootRun` 후 `/v3/api-docs`로 확인. **이 과정에서 버그를 하나 발견했다:** `OciObjectStorageClient`가 생성자에서 즉시 OCI SDK 클라이언트를 만들면서 `private-key: dummy`를 PEM으로 파싱하려다 실패해 애플리케이션 컨텍스트 전체가 기동되지 않았다. OAuth 클라이언트(dummy 값으로도 기동됨)와 달리 이 SDK는 키 파싱이 즉시 실행된다는 게 원인. `OciObjectStorageClientTest`(TDD)로 재현 후 클라이언트 생성을 지연 초기화로 바꿔 해결(`fix(media)` 커밋). Task 2의 "검증되지 않은 가정" 중 하나가 실제로 걸린 사례다.
+- [x] **실제 OCI 자격증명으로 하는 검증은 이번 계획의 완료 기준에 포함하지 않는다** — 스펙의 "수동 확인" 항목대로 배포 이후로 미룬다
 
 ---
 

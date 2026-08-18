@@ -339,7 +339,7 @@ git commit -m "feat(deploy): 운영 프로필 + production docker-compose + Cadd
 - Consumes: Task 2의 `infra/docker-compose.prod.yml` 서비스명 `app`, 변수 `KALDI_IMAGE_TAG`
 - Produces: `infra/scripts/deploy.sh <git-sha>` — VM에서 실행되는 배포 진입점. 성공하면 종료 코드 0, 헬스체크 실패(롤백 성공 포함)면 종료 코드 1.
 
-- [ ] **Step 1: `infra/scripts/deploy.sh` 작성**
+- [x] **Step 1: `infra/scripts/deploy.sh` 작성**
 
 ```bash
 #!/usr/bin/env bash
@@ -396,12 +396,12 @@ fi
 exit 1
 ```
 
-- [ ] **Step 2: 실행 권한 부여 확인**
+- [x] **Step 2: 실행 권한 부여 확인**
 
 Run: `chmod +x infra/scripts/deploy.sh && git diff --stat infra/scripts/deploy.sh`
 Expected: 파일 모드 변경(`100644` → `100755`)이 `git diff`에 잡힌다. git이 실행 비트를 추적하므로 커밋에 포함돼야 VM에서 별도 `chmod` 없이도 동작한다(단, Step 4의 SSH 스텝에서도 안전하게 `chmod +x`를 한 번 더 실행한다).
 
-- [ ] **Step 3: `.github/workflows/backend.yml`에 `deploy` job 추가**
+- [x] **Step 3: `.github/workflows/backend.yml`에 `deploy` job 추가**
 
 기존 `check` job 아래에 추가한다 (전체 파일이 아니라 추가되는 부분만 표시):
 
@@ -466,12 +466,12 @@ Expected: 파일 모드 변경(`100644` → `100755`)이 `git diff`에 잡힌다
 
 `needs: check`와 `if: github.ref == 'refs/heads/main' && github.event_name == 'push'` 덕분에 PR에서는 이 job이 아예 돌지 않고, `main` 푸시에서 `check`가 통과했을 때만 돈다. GH Actions IP 대역 허용은 VM 방화벽 쪽 설정(Task 4 런북)이지 이 워크플로 파일의 책임이 아니다.
 
-- [ ] **Step 4: YAML 문법 검증**
+- [x] **Step 4: YAML 문법 검증**
 
 Run: `python3 -c "import yaml; yaml.safe_load(open('.github/workflows/backend.yml'))" && echo OK`
 Expected: `OK` 출력. (구문 오류만 잡는다 — GitHub Actions 자체 스키마 검증은 실제 푸시 시점에 GitHub이 한다.)
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add infra/scripts/deploy.sh .github/workflows/backend.yml

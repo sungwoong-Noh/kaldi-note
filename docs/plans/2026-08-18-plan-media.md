@@ -1346,7 +1346,7 @@ cd .. && git add . && git commit -m "feat(media): 업로드 URL 발급 API" && c
 - Consumes: Task 3의 `requireOwned`·`attachmentCount`(private, 같은 클래스 내부 재사용), `ObjectStorageClient.head`·`delete`·`publicUrl`(Task 2)
 - Produces: `AttachmentService.confirm(Long userId, ConfirmAttachmentRequest): AttachmentResponse`
 
-- [ ] **Step 1: 실패하는 테스트 추가**
+- [x] **Step 1: 실패하는 테스트 추가**
 
 `backend/src/test/java/com/kaldinote/media/presentation/AttachmentControllerTest.java` (Modify — 클래스 상단에 필드·헬퍼 추가, 하단에 테스트 10개 추가)
 
@@ -1536,12 +1536,14 @@ cd .. && git add . && git commit -m "feat(media): 업로드 URL 발급 API" && c
   }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: 새로 추가된 10개 중 `AC-MEDIA-21`은 처음부터 통과(401은 매핑과 무관), 나머지 9개는 `POST /api/v1/attachments` 매핑이 없어 실패. 기존 11개(Task 3)는 계속 PASS. 실행해서 정확한 개수를 이 항목에 남긴다.
 
-- [ ] **Step 3: confirm 구현**
+**실측:** 예측과 정확히 일치. 21개 중 9개 실패, `AC-MEDIA-21`(미인증) 1개만 처음부터 통과. 기존 11개는 계속 PASS.
+
+- [x] **Step 3: confirm 구현**
 
 `backend/src/main/java/com/kaldinote/media/presentation/dto/ConfirmAttachmentRequest.java`
 
@@ -1659,14 +1661,16 @@ public record AttachmentResponse(
 
 (같은 이유로 FQN을 썼다 — 반영 시 `import org.springframework.http.HttpStatus;`, `import org.springframework.web.bind.annotation.ResponseStatus;`, `import com.kaldinote.media.presentation.dto.AttachmentResponse;`, `import com.kaldinote.media.presentation.dto.ConfirmAttachmentRequest;`를 상단에 추가하고 본문을 단순화한다.)
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*AttachmentControllerTest'`
 Expected: PASS, 21 tests (Task 3의 11개 + 이번 10개)
 
 전체도 확인한다: `./gradlew clean check`
 
-- [ ] **Step 5: 커밋**
+**실측:** 21개 전부 PASS. `clean check` 전체 통과(회귀 없음). FQN 대신 처음부터 일반 import로 작성해 별도 정리가 필요 없었다.
+
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

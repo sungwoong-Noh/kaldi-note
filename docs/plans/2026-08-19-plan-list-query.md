@@ -1238,7 +1238,7 @@ cd .. && git add . && git commit -m "feat(brewlog): 브루잉 로그 부분 수�
 - Consumes: `UserRepository`, `UserGrinderRepository.findAllByUserId(Long)`, `GrinderModelRepository`
 - Produces: `MeResponse.from(User)`, `UserGrinderResponse.of(UserGrinder, GrinderModel)`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
 @Test
@@ -1312,12 +1312,12 @@ void 등록한_그라인더가_없으면_빈_배열이다() throws Exception {
 
 > `micronsPerClick`의 기대값은 시드 데이터(`V5__seed_gear.sql`)의 실제 값과 스케일에 맞춘다. `BigDecimal(precision 6, scale 2)`이므로 `30.00`으로 직렬화된다. Step 2에서 실제 응답을 확인해 확정한다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*UserControllerTest' --tests '*GearControllerTest'`
 Expected: FAIL — `UserControllerTest` 클래스가 없고, `GET /api/v1/gear/user-grinders` 매핑이 없어 405
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```java
 package com.kaldinote.user.presentation.dto;
@@ -1398,12 +1398,12 @@ public class UserController {
 
 `SecurityConfig`에서 `/api/v1/users/**`가 인증 필요 경로에 포함되는지 확인한다. 이미 `FollowController`가 같은 접두사를 쓰므로 별도 설정이 필요 없을 가능성이 높다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*UserControllerTest' --tests '*GearControllerTest'`
 Expected: PASS — 신규 7개 + 기존 `GearControllerTest` 전부
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -1414,11 +1414,11 @@ cd .. && git add . && git commit -m "feat(user): 내 프로필·내 그라인더
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — AC 62개가 모두 테스트에서 발견된다
-- [ ] 스펙 `docs/specs/2026-08-19-list-query-api.md`의 `status`를 `구현완료`로 변경
-- [ ] `docs/specs/2026-08-17-brew-log.md`에 정정 주석 추가 — 단건 조회에 `deleted_at IS NULL`이 붙었다
-- [ ] `docs/specs/2026-08-17-visibility-authorization.md`에 정정 주석 추가 — `visibility`를 생성 후에도 바꿀 수 있다
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과 — AC 62개가 모두 테스트에서 발견된다
+- [x] 스펙 `docs/specs/2026-08-19-list-query-api.md`의 `status`를 `구현완료`로 변경
+- [x] `docs/specs/2026-08-17-brew-log.md`에 정정 주석 추가 — 단건 조회에 `deleted_at IS NULL`이 붙었다
+- [x] `docs/specs/2026-08-17-visibility-authorization.md`에 정정 주석 추가 — `visibility`를 생성 후에도 바꿀 수 있다
 - [ ] Swagger UI에서 `GET /api/v1/recipes`의 `page`·`size`·`ownerUserId`가 설명과 함께 노출된다
 - [ ] 계정 2개로 상호 팔로우 → `FRIENDS` 레시피가 상대 목록에 나타남 → 팔로우 해제 후 사라짐 (`visibility` 계획의 미완료 수동 확인 2건을 여기서 함께 닫는다)
 - [ ] 시드 CURATED 레시피가 신규 계정의 목록 첫 화면에 보이고 거기서 포크가 된다

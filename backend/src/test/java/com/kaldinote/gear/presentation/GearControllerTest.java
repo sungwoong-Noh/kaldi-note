@@ -225,4 +225,72 @@ class GearControllerTest extends AbstractIntegrationTest {
                     """))
         .andExpect(status().isUnauthorized());
   }
+
+  // ===== 내 그라인더 목록 (AC-ME-04~07) =====
+
+  private void registerGrinder(String token, Long grinderModelId) throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/gear/user-grinders")
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"grinderModelId":%d,"nickname":"집 그라인더"}
+                    """
+                        .formatted(grinderModelId)))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  @DisplayName("AC-ME-04 · 내 그라인더 목록에 모델 정보가 펼쳐진다")
+  void 내_그라인더_목록에_모델_정보가_펼쳐진다() throws Exception {
+    String token = realUserToken();
+    registerGrinder(token, id("Comandante", "C40 MK4"));
+
+    mockMvc
+        .perform(get("/api/v1/gear/user-grinders").header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].brand").value("Comandante"))
+        .andExpect(jsonPath("$[0].grinderModelName").value("C40 MK4"))
+        .andExpect(jsonPath("$[0].micronsPerClick").value(30.00))
+        .andExpect(jsonPath("$[0].nickname").value("집 그라인더"))
+        // 첫 등록을 기본 그라인더로 만드는 로직은 없다. DB 기본값 그대로 false다
+        .andExpect(jsonPath("$[0].isDefault").value(false));
+  }
+
+  @Test
+  @DisplayName("AC-ME-05 · 타인의 그라인더는 보이지 않는다")
+  void 타인의_그라인더는_보이지_않는다() throws Exception {
+    String mine = realUserToken();
+    String others = realUserToken();
+    registerGrinder(mine, id("Comandante", "C40 MK4"));
+    registerGrinder(others, id("Comandante", "C40 MK4"));
+
+    mockMvc
+        .perform(get("/api/v1/gear/user-grinders").header(HttpHeaders.AUTHORIZATION, mine))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].nickname").value("집 그라인더"));
+  }
+
+  @Test
+  @DisplayName("AC-ME-06 · 등록한 그라인더가 없으면 빈 배열이다")
+  void 등록한_그라인더가_없으면_빈_배열이다() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/gear/user-grinders").header(HttpHeaders.AUTHORIZATION, realUserToken()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(0))
+        // 페이지 봉투가 아니라 배열이다
+        .andExpect(jsonPath("$.content").doesNotExist());
+  }
+
+  @Test
+  @DisplayName("AC-ME-07 · JWT 없이 그라인더 목록을 부르면 401이다")
+  void JWT_없이_내_그라인더_목록은_401이다() throws Exception {
+    mockMvc.perform(get("/api/v1/gear/user-grinders")).andExpect(status().isUnauthorized());
+  }
 }

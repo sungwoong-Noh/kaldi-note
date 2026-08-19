@@ -1,7 +1,7 @@
 ---
 id: LIST
 title: 목록 조회 API + 브루잉 로그 수정·삭제
-status: 승인
+status: 구현완료
 plan: docs/plans/2026-08-19-plan-list-query.md
 ---
 
@@ -664,7 +664,9 @@ Authorization: Bearer <토큰>
 
 - **Given** A가 `micronsPerClick`이 `30.00`인 `"C40 MK4"`(브랜드 `"Comandante"`) 모델을 `nickname: "집 그라인더"`로 등록해 두었다
 - **When** A가 `GET /api/v1/gear/user-grinders`
-- **Then** HTTP `200`, 배열 길이 `1`이고 `[0]`의 `brand`가 `"Comandante"`, `grinderModelName`이 `"C40 MK4"`, `micronsPerClick`이 `30.00`(`BigDecimal` scale 2), `nickname`이 `"집 그라인더"`, `isDefault`가 `true`다
+- **Then** HTTP `200`, 배열 길이 `1`이고 `[0]`의 `brand`가 `"Comandante"`, `grinderModelName`이 `"C40 MK4"`, `micronsPerClick`이 `30.00`(`BigDecimal` scale 2), `nickname`이 `"집 그라인더"`, `isDefault`가 `false`다
+
+> `isDefault`는 `false`다. `user_grinders.is_default`의 DB 기본값이 `false`이고 **첫 등록을 자동으로 기본 그라인더로 만드는 로직이 없다**(`V4__create_gear_tables.sql:25`). 기본 그라인더 지정 기능은 이 스펙의 범위가 아니다 — 아래 "열어둔 결정" 참조.
 - **검증** API 테스트 `GearControllerTest`
 
 #### AC-ME-05 · 타인의 그라인더는 보이지 않는다
@@ -700,5 +702,6 @@ Authorization: Bearer <토큰>
 
 - **`GET /users/me`의 팔로워·팔로잉 수 포함 여부** — 프로필 화면을 실제로 그릴 때(Plan 4) 정한다. 지금 넣으면 매 요청마다 `COUNT` 두 번이 붙는데 쓰는 화면이 없다.
 - **레시피 목록의 브루잉 로그 건수 표시** — "이 레시피로 12번 내렸다"는 유용하지만 목록마다 집계 쿼리가 필요하다. 프론트 카드 디자인이 확정될 때 판단한다.
+- **기본 그라인더 지정 기능** — `user_grinders.is_default` 컬럼과 `findByUserIdAndIsDefaultTrue` 쿼리는 있지만 값을 `true`로 만드는 경로가 서버 어디에도 없다. 브루잉 로그 작성 폼에서 그라인더를 매번 고르는 것이 실제로 번거로워질 때 별도 스펙으로 다룬다.
 - **커서 페이지네이션 전환 시점** — 한 사용자의 브루잉 로그가 500건을 넘고 오프셋 스크롤에서 중복이 실제로 관측될 때.
 - **`AttachmentController`의 목록 조회에 페이지 봉투 적용 여부** — 지금은 `targetType`+`targetId`로 좁혀 몇 건뿐이라 배열 그대로 둔다. 한 로그에 사진이 20장을 넘기 시작하면 다시 본다.

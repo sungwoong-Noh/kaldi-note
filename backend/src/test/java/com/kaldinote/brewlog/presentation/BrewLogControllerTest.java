@@ -2,6 +2,8 @@ package com.kaldinote.brewlog.presentation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -893,6 +895,204 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.code").value("FORBIDDEN"));
 
     assertThat(brewLogRepository.findById(id).orElseThrow().getDeletedAt()).isNull();
+  }
+
+  // ===== 목록 조회 (AC-LIST-18~27, 34, 36) =====
+
+  private ResultActions listBrewLogs(String token, String query) throws Exception {
+    return mockMvc.perform(
+        get("/api/v1/brew-logs" + query).header(HttpHeaders.AUTHORIZATION, token));
+  }
+
+  /** 픽스처를 공유해 여러 건을 만들 때 쓴다. 로스팅일을 넉넉히 과거로 잡아 경과일이 음수가 되지 않게 한다. */
+  private Long brewLogOf(String token, Long recipe, Long batch, Long grinder, Instant brewedAt)
+      throws Exception {
+    return createdId(createBrewLog(token, minimalBody(recipe, batch, brewedAt, grinder)));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-18 · 타인의 PRIVATE 로그는 제외된다")
+  void 타인의_PRIVATE_로그는_제외된다() throws Exception {
+    User a = newUser("list-18-a");
+    User b = newUser("list-18-b");
+    Long id = brewLogWith(tokenOf(b), "PRIVATE");
+
+    listBrewLogs(tokenOf(a), "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == " + id + ")]").isEmpty())
+        .andExpect(jsonPath("$.totalElements").value(0));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-19 · 상호 팔로우 상대의 FRIENDS 로그는 포함된다")
+  void 상호_팔로우_상대의_FRIENDS_로그는_포함된다() throws Exception {
+    User a = newUser("list-19-a");
+    User b = newUser("list-19-b");
+    Long id = brewLogWith(tokenOf(b), "FRIENDS");
+    mutualFollow(a, b);
+
+    listBrewLogs(tokenOf(a), "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(id));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-20 · recipeId 필터가 해당 레시피의 기록만 남긴다")
+  void recipeId_필터가_해당_레시피의_기록만_남긴다() throws Exception {
+    String token = token("list-20");
+    Long batch = beanBatchId(token, BREWED_AT, 30);
+    Long grinder = userGrinderId(token, c40Id());
+    Long recipeA = recipeId(token);
+    Long recipeB = recipeId(token);
+
+    brewLogOf(token, recipeA, batch, grinder, BREWED_AT);
+    brewLogOf(token, recipeA, batch, grinder, BREWED_AT);
+    brewLogOf(token, recipeA, batch, grinder, BREWED_AT);
+    brewLogOf(token, recipeB, batch, grinder, BREWED_AT);
+    brewLogOf(token, recipeB, batch, grinder, BREWED_AT);
+
+    listBrewLogs(token, "?recipeId=" + recipeA)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(3))
+        .andExpect(jsonPath("$.content[*].recipeId").value(everyItem(equalTo(recipeA.intValue()))));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-21 · userId 필터가 해당 사용자의 기록만 남긴다")
+  void userId_필터가_해당_사용자의_기록만_남긴다() throws Exception {
+    User a = newUser("list-21-a");
+    User b = newUser("list-21-b");
+    String tokenA = tokenOf(a);
+    Long batch = beanBatchId(tokenA, BREWED_AT, 30);
+    Long grinder = userGrinderId(tokenA, c40Id());
+    Long recipe = recipeId(tokenA);
+    brewLogOf(tokenA, recipe, batch, grinder, BREWED_AT);
+    brewLogOf(tokenA, recipe, batch, grinder, BREWED_AT);
+    brewLogWith(tokenOf(b), "PUBLIC");
+
+    listBrewLogs(tokenA, "?userId=" + b.getId())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.content[0].userId").value(b.getId()));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-22 · beanBatchId 필터가 해당 봉지의 기록만 남긴다")
+  void beanBatchId_필터가_해당_봉지의_기록만_남긴다() throws Exception {
+    String token = token("list-22");
+    Long grinder = userGrinderId(token, c40Id());
+    Long recipe = recipeId(token);
+    Long batchA = beanBatchId(token, BREWED_AT, 30);
+    Long batchB = beanBatchId(token, BREWED_AT, 30);
+
+    brewLogOf(token, recipe, batchA, grinder, BREWED_AT);
+    brewLogOf(token, recipe, batchA, grinder, BREWED_AT);
+    brewLogOf(token, recipe, batchB, grinder, BREWED_AT);
+
+    listBrewLogs(token, "?beanBatchId=" + batchA)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(2))
+        .andExpect(
+            jsonPath("$.content[*].beanBatchId").value(everyItem(equalTo(batchA.intValue()))));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-23 · 필터를 함께 쓰면 AND로 결합한다")
+  void 필터를_함께_쓰면_AND로_결합한다() throws Exception {
+    String token = token("list-23");
+    Long grinder = userGrinderId(token, c40Id());
+    Long recipe = recipeId(token);
+    Long batchA = beanBatchId(token, BREWED_AT, 30);
+    Long batchB = beanBatchId(token, BREWED_AT, 30);
+
+    brewLogOf(token, recipe, batchA, grinder, BREWED_AT);
+    brewLogOf(token, recipe, batchB, grinder, BREWED_AT);
+
+    listBrewLogs(token, "?recipeId=" + recipe + "&beanBatchId=" + batchA)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-24 · brewedAt 내림차순으로 나오고 동점이면 id 내림차순이다")
+  void brewedAt_내림차순이고_동점이면_id_내림차순이다() throws Exception {
+    String token = token("list-24");
+    Long batch = beanBatchId(token, BREWED_AT, 30);
+    Long grinder = userGrinderId(token, c40Id());
+    Long recipe = recipeId(token);
+
+    Instant older = BREWED_AT.minus(2, ChronoUnit.DAYS);
+    Instant newer = BREWED_AT.minus(1, ChronoUnit.DAYS);
+    Long oldest = brewLogOf(token, recipe, batch, grinder, older);
+    Long tie1 = brewLogOf(token, recipe, batch, grinder, newer);
+    Long tie2 = brewLogOf(token, recipe, batch, grinder, newer);
+
+    listBrewLogs(token, "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(tie2))
+        .andExpect(jsonPath("$.content[1].id").value(tie1))
+        .andExpect(jsonPath("$.content[2].id").value(oldest));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-25 · 목록 응답에 overallNote 키가 없다")
+  void 목록_응답에_overallNote_키가_없다() throws Exception {
+    String token = token("list-25");
+    createdId(createWith(token, "\"overallNote\":\"묽고 밍밍하다\""));
+
+    listBrewLogs(token, "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].overallNote").doesNotExist())
+        .andExpect(jsonPath("$.content[0].actualDoseG").value(15.0));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-26 · TDS가 없는 로그도 목록에 나오고 분석 필드가 없다")
+  void TDS가_없는_로그도_목록에_나온다() throws Exception {
+    String token = token("list-26");
+    newBrewLog(token);
+
+    listBrewLogs(token, "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].extractionYieldPercent").doesNotExist())
+        .andExpect(jsonPath("$.content[0].strengthZone").doesNotExist())
+        .andExpect(jsonPath("$.content[0].brewRatio").exists());
+  }
+
+  @Test
+  @DisplayName("AC-LIST-27 · 소프트 삭제된 로그는 목록에서 제외된다")
+  void 소프트_삭제된_로그는_목록에서_제외된다() throws Exception {
+    String token = token("list-27");
+    Long batch = beanBatchId(token, BREWED_AT, 30);
+    Long grinder = userGrinderId(token, c40Id());
+    Long recipe = recipeId(token);
+    brewLogOf(token, recipe, batch, grinder, BREWED_AT);
+    Long doomed = brewLogOf(token, recipe, batch, grinder, BREWED_AT);
+
+    deleteBrewLog(token, doomed).andExpect(status().isNoContent());
+
+    listBrewLogs(token, "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.content[?(@.id == " + doomed + ")]").isEmpty());
+  }
+
+  @Test
+  @DisplayName("AC-LIST-34 · 볼 수 없는 레시피 id로 필터해도 빈 목록이다")
+  void 볼_수_없는_레시피_id로_필터해도_빈_목록이다() throws Exception {
+    User a = newUser("list-34-a");
+    User b = newUser("list-34-b");
+    Long bRecipe = recipeId(tokenOf(b)); // 기본 visibility는 PRIVATE
+
+    listBrewLogs(tokenOf(a), "?recipeId=" + bRecipe)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @DisplayName("AC-LIST-36 · JWT 없이 브루잉 로그 목록을 부르면 401이다")
+  void JWT_없이_브루잉_로그_목록은_401이다() throws Exception {
+    mockMvc.perform(get("/api/v1/brew-logs")).andExpect(status().isUnauthorized());
   }
 
   @Test

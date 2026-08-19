@@ -779,7 +779,7 @@ cd .. && git add . && git commit -m "feat(recipe): 레시피 목록 조회 + 공
 - Consumes: `PageParams`, `PageResponse` (Task 1), `BrewLog.getDeletedAt()` (Task 2)
 - Produces: `BrewLogRepository.findVisible(...)` → `Page<BrewLog>`, `BrewLogSummaryResponse.from(BrewLog, ExtractionAnalysis)`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
 @Test
@@ -850,12 +850,12 @@ void 볼_수_없는_레시피_id로_필터해도_빈_목록이다() throws Excep
 
 > `jsonPath(...).doesNotExist()`는 **Jackson이 null 필드를 생략할 때만** 통과한다. 프로젝트의 직렬화 설정이 `NON_NULL`이 아니면 `.value(nullValue())`로 바꾼다. Step 2에서 실제 응답을 보고 결정한다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: FAIL — `GET /api/v1/brew-logs` 매핑이 없다. 이때 응답 본문을 출력해 null 필드가 생략되는지 확인하고 Step 1의 `doesNotExist()` / `nullValue()`를 확정한다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `BrewLogRepository.java`:
 
@@ -929,12 +929,12 @@ Expected: FAIL — `GET /api/v1/brew-logs` 매핑이 없다. 이때 응답 본�
   }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: PASS — 기존 테스트 전부 + 신규 12개
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

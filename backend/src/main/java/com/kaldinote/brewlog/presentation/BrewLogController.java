@@ -3,6 +3,9 @@ package com.kaldinote.brewlog.presentation;
 import com.kaldinote.brewlog.application.BrewLogService;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
+import com.kaldinote.brewlog.presentation.dto.BrewLogSummaryResponse;
+import com.kaldinote.common.response.PageParams;
+import com.kaldinote.common.response.PageResponse;
 import com.kaldinote.common.security.AuthenticatedUser;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,6 +34,17 @@ public class BrewLogController {
   public BrewLogResponse create(
       @Valid @RequestBody BrewLogCreateRequest request, AuthenticatedUser user) {
     return brewLogService.create(user.id(), request);
+  }
+
+  @GetMapping
+  public PageResponse<BrewLogSummaryResponse> list(
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) Long recipeId,
+      @RequestParam(required = false) Long userId,
+      @RequestParam(required = false) Long beanBatchId,
+      AuthenticatedUser user) {
+    return brewLogService.list(user.id(), recipeId, userId, beanBatchId, PageParams.of(page, size));
   }
 
   @GetMapping("/{id}")

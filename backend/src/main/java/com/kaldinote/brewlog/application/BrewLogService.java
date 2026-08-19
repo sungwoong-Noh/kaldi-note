@@ -5,8 +5,11 @@ import com.kaldinote.brewlog.domain.BrewLogVisibility;
 import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
+import com.kaldinote.brewlog.presentation.dto.BrewLogSummaryResponse;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
+import com.kaldinote.common.response.PageParams;
+import com.kaldinote.common.response.PageResponse;
 import com.kaldinote.extraction.domain.BrewMeasurement;
 import com.kaldinote.extraction.domain.ExtractionAnalysis;
 import com.kaldinote.extraction.domain.ExtractionAnalyzer;
@@ -28,6 +31,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +42,8 @@ public class BrewLogService {
 
   /** 평가는 ½점 단위 버튼으로만 매긴다. 범위는 DTO가 막고, 배수 여부는 Bean Validation으로 표현할 수 없어 여기서 검사한다. */
   private static final BigDecimal RATING_STEP = new BigDecimal("0.5");
+
+  private static final Sort LIST_SORT = Sort.by(Sort.Order.desc("brewedAt"), Sort.Order.desc("id"));
 
   private final BrewLogRepository brewLogRepository;
   private final RecipeRepository recipeRepository;
@@ -104,14 +110,29 @@ public class BrewLogService {
 
   public BrewLogResponse get(Long userId, Long brewLogId) {
     BrewLog log = findViewable(userId, brewLogId);
-    ExtractionAnalysis analysis =
-        extractionAnalyzer.analyze(
-            new BrewMeasurement(
-                log.getActualDoseG(),
-                log.getActualWaterG(),
-                log.getBeverageWeightG(),
-                log.getTdsPercent()));
-    return BrewLogResponse.from(log, analysis);
+    return BrewLogResponse.from(log, analyze(log));
+  }
+
+  /**
+   * 볼 수 있는 브루잉 로그 목록. 정렬은 brewedAt 내림차순이다 — 어제 내린 것을 오늘 입력해도 시간순이 맞게 들어간다. createdAt으로 정렬하면 과거 기록을
+   * 몰아 입력할 때 순서가 엉킨다.
+   */
+  public PageResponse<BrewLogSummaryResponse> list(
+      Long viewerId, Long recipeId, Long userId, Long beanBatchId, PageParams params) {
+    return PageResponse.from(
+        brewLogRepository.findVisible(
+            viewerId, recipeId, userId, beanBatchId, params.toPageable(LIST_SORT)),
+        log -> BrewLogSummaryResponse.from(log, analyze(log)));
+  }
+
+  /** EY·SCA는 DB에 없다. 저장된 실측값으로 조회할 때마다 계산한다. */
+  private ExtractionAnalysis analyze(BrewLog log) {
+    return extractionAnalyzer.analyze(
+        new BrewMeasurement(
+            log.getActualDoseG(),
+            log.getActualWaterG(),
+            log.getBeverageWeightG(),
+            log.getTdsPercent()));
   }
 
   @Transactional

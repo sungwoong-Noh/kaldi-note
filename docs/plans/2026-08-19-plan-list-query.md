@@ -152,7 +152,7 @@ backend/src/test/java/com/kaldinote/
 - Produces: `PageParams.of(Integer page, Integer size)` → `PageParams`, `PageParams.toPageable(Sort)` → `Pageable`
 - Produces: `PageResponse.from(Page<E> page, Function<E, T> mapper)` → `PageResponse<T>`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
 package com.kaldinote.common.response;
@@ -212,12 +212,12 @@ class PageParamsTest {
 
 > `BusinessException.getErrorCode()`의 실제 이름은 구현 전에 `BusinessException.java`에서 확인하고 맞춘다. 다르면 이 테스트의 `extracting` 줄만 고친다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*PageParamsTest'`
 Expected: FAIL — `PageParams` 클래스가 없어 컴파일 실패
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```java
 package com.kaldinote.common.response;
@@ -286,12 +286,12 @@ public record PageResponse<T>(
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*PageParamsTest'`
 Expected: PASS, 6 tests
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

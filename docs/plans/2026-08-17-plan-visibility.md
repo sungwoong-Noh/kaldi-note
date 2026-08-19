@@ -1328,8 +1328,8 @@ cd .. && git add . && git commit -m "feat(brewlog): visibility 입력과 공개�
 - [x] `cd backend && ./gradlew clean check` 통과
 - [x] `./scripts/check-spec-coverage.sh` 통과 — `docs/specs/2026-08-17-visibility-authorization.md`가 `[구현완료] — AC 46개 전부`
 - [x] 스펙의 `status`를 `구현완료`로 변경
-- [ ] **수동 확인 1:** `bootRun` + curl로 두 계정을 만들어 서로 팔로우한 뒤, `FRIENDS` 레시피가 상대 계정에서 `200`으로 열리는 것을 확인 (`docs/design/2026-08-14-architecture.md:253`의 핵심 시나리오 6단계)
-- [ ] **수동 확인 2:** 한쪽이 팔로우를 해제한 직후 같은 요청이 `403`으로 바뀌는 것을 확인
+- [x] **수동 확인 1:** `bootRun` + curl로 두 계정을 만들어 서로 팔로우한 뒤, `FRIENDS` 레시피가 상대 계정에서 `200`으로 열리는 것을 확인 (`docs/design/2026-08-14-architecture.md:253`의 핵심 시나리오 6단계)
+- [x] **수동 확인 2:** 한쪽이 팔로우를 해제한 직후 같은 요청이 `403`으로 바뀌는 것을 확인
 
 ---
 
@@ -1348,3 +1348,5 @@ cd .. && git add . && git commit -m "feat(brewlog): visibility 입력과 공개�
 3. **`orphan()` 네이티브 쿼리와 영속성 컨텍스트.** `@Transactional` 테스트 안에서 네이티브 update를 한 뒤 `flush`/`clear`를 해야 이후 조회가 갱신된 값을 본다. 이 순서가 맞는지는 Step 2에서 확인한다.
 4. **`RecipeControllerTest`에 `@Transactional`이 이미 있는지.** 없다면 Task 2에서 추가해야 하고, 추가하는 순간 기존 테스트의 커밋 의존성이 드러날 수 있다. 브루잉 로그 Task 1에서 `GearControllerTest`가 정확히 이 문제를 냈다.
 5. **`Follow.of()`가 자기 팔로우에 `IllegalArgumentException`을 던진다.** `FollowService`가 그 앞에서 `BusinessException(INVALID_REQUEST)`로 막으므로 도달하지 않지만, 만약 순서가 뒤바뀌면 `handleIllegalArgument`가 잡아 같은 400 `INVALID_REQUEST`를 낸다 — 어느 쪽이든 AC는 통과한다.
+
+> **2026-08-19 완료:** 위 수동 확인 2건은 `docs/plans/2026-08-19-plan-list-query.md` 세션에서 실제 서버(`bootRun` + local 프로파일)로 검증했다. 계정 2개를 DB에 직접 넣고 JWT를 발급해(로컬·테스트 프로파일의 시크릿이 같다) 단방향 팔로우 → 목록 미노출, 상호 팔로우 → 목록 노출 + 단건 `200`, 해제 직후 → 목록 미노출 + 단건 `403`을 전부 확인했다.

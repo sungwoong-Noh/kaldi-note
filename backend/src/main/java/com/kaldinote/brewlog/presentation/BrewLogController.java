@@ -8,6 +8,9 @@ import com.kaldinote.brewlog.presentation.dto.BrewLogSummaryResponse;
 import com.kaldinote.common.response.PageParams;
 import com.kaldinote.common.response.PageResponse;
 import com.kaldinote.common.security.AuthenticatedUser;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,12 +42,22 @@ public class BrewLogController {
   }
 
   @GetMapping
+  @Operation(
+      summary = "볼 수 있는 브루잉 로그 목록",
+      description =
+          "공개범위 판정은 레시피 목록과 같다. brewedAt 내림차순(동점 시 id 내림차순). 필터 셋은 AND로 결합하며, 볼 수 없는 대상을 가리켜도 403이 아니라 빈 목록이다.")
   public PageResponse<BrewLogSummaryResponse> list(
-      @RequestParam(required = false) Integer page,
-      @RequestParam(required = false) Integer size,
-      @RequestParam(required = false) Long recipeId,
-      @RequestParam(required = false) Long userId,
-      @RequestParam(required = false) Long beanBatchId,
+      @Parameter(description = "0-based 페이지 번호. 음수면 400.", schema = @Schema(defaultValue = "0"))
+          @RequestParam(required = false)
+          Integer page,
+      @Parameter(
+              description = "페이지 크기. 1 이상 100 이하(양끝 포함), 벗어나면 400.",
+              schema = @Schema(defaultValue = "20"))
+          @RequestParam(required = false)
+          Integer size,
+      @Parameter(description = "그 레시피로 내린 기록만.") @RequestParam(required = false) Long recipeId,
+      @Parameter(description = "그 사용자가 남긴 기록만.") @RequestParam(required = false) Long userId,
+      @Parameter(description = "그 원두 봉지로 내린 기록만.") @RequestParam(required = false) Long beanBatchId,
       AuthenticatedUser user) {
     return brewLogService.list(user.id(), recipeId, userId, beanBatchId, PageParams.of(page, size));
   }

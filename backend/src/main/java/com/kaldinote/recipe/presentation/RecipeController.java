@@ -8,6 +8,9 @@ import com.kaldinote.recipe.presentation.dto.CreateRecipeRequest;
 import com.kaldinote.recipe.presentation.dto.RecipeResponse;
 import com.kaldinote.recipe.presentation.dto.RecipeSummaryResponse;
 import com.kaldinote.recipe.presentation.dto.UpdateRecipeRequest;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,10 +42,21 @@ public class RecipeController {
   }
 
   @GetMapping
+  @Operation(
+      summary = "볼 수 있는 레시피 목록",
+      description =
+          "내 것 + 남의 PUBLIC + 상호 팔로우 상대의 FRIENDS + 주인 없는 CURATED. createdAt 내림차순(동점 시 id 내림차순).")
   public PageResponse<RecipeSummaryResponse> list(
-      @RequestParam(required = false) Integer page,
-      @RequestParam(required = false) Integer size,
-      @RequestParam(required = false) Long ownerUserId,
+      @Parameter(description = "0-based 페이지 번호. 음수면 400.", schema = @Schema(defaultValue = "0"))
+          @RequestParam(required = false)
+          Integer page,
+      @Parameter(
+              description = "페이지 크기. 1 이상 100 이하(양끝 포함), 벗어나면 400.",
+              schema = @Schema(defaultValue = "20"))
+          @RequestParam(required = false)
+          Integer size,
+      @Parameter(description = "지정하면 그 사용자가 소유한 레시피만. 없는 id면 빈 목록.") @RequestParam(required = false)
+          Long ownerUserId,
       AuthenticatedUser user) {
     return recipeService.list(user.id(), ownerUserId, PageParams.of(page, size));
   }

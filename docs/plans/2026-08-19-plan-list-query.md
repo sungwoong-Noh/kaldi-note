@@ -1419,9 +1419,9 @@ cd .. && git add . && git commit -m "feat(user): 내 프로필·내 그라인더
 - [x] 스펙 `docs/specs/2026-08-19-list-query-api.md`의 `status`를 `구현완료`로 변경
 - [x] `docs/specs/2026-08-17-brew-log.md`에 정정 주석 추가 — 단건 조회에 `deleted_at IS NULL`이 붙었다
 - [x] `docs/specs/2026-08-17-visibility-authorization.md`에 정정 주석 추가 — `visibility`를 생성 후에도 바꿀 수 있다
-- [ ] Swagger UI에서 `GET /api/v1/recipes`의 `page`·`size`·`ownerUserId`가 설명과 함께 노출된다
-- [ ] 계정 2개로 상호 팔로우 → `FRIENDS` 레시피가 상대 목록에 나타남 → 팔로우 해제 후 사라짐 (`visibility` 계획의 미완료 수동 확인 2건을 여기서 함께 닫는다)
-- [ ] 시드 CURATED 레시피가 신규 계정의 목록 첫 화면에 보이고 거기서 포크가 된다
+- [x] Swagger UI에서 `GET /api/v1/recipes`의 `page`·`size`·`ownerUserId`가 설명과 함께 노출된다
+- [x] 계정 2개로 상호 팔로우 → `FRIENDS` 레시피가 상대 목록에 나타남 → 팔로우 해제 후 사라짐 (`visibility` 계획의 미완료 수동 확인 2건을 여기서 함께 닫는다)
+- [ ] ~~시드 CURATED 레시피가 신규 계정의 목록 첫 화면에 보이고 거기서 포크가 된다~~ — **확인 불가.** 시드 레시피가 아직 존재하지 않는다(마이그레이션에 `recipes` INSERT가 없다). 시드를 넣는 별도 작업이 선행돼야 한다. 주인 없는 `PUBLIC` 레시피가 목록에 뜨는 것 자체는 `AC-LIST-13`이 자동 검증한다
 
 ---
 

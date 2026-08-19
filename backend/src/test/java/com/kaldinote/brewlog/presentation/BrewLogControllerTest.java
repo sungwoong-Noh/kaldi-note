@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -895,6 +896,310 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.code").value("FORBIDDEN"));
 
     assertThat(brewLogRepository.findById(id).orElseThrow().getDeletedAt()).isNull();
+  }
+
+  // ===== 부분 수정 (AC-BLEDIT-01~11, 14, 16, 17, 19) =====
+
+  private ResultActions patchBrewLog(String token, Long id, String body) throws Exception {
+    return mockMvc.perform(
+        patch("/api/v1/brew-logs/{id}", id)
+            .header(HttpHeaders.AUTHORIZATION, token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-01 · 보낸 필드만 바뀐다")
+  void 보낸_필드만_바뀐다() throws Exception {
+    String token = token("bledit-01");
+    Long id = createdId(createWith(token, "\"rating\":3.0,\"overallNote\":\"묽다\""));
+
+    patchBrewLog(
+            token,
+            id,
+            """
+        {"rating":4.0}
+        """)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.rating").value(4.0))
+        .andExpect(jsonPath("$.actualDoseG").value(15.0))
+        .andExpect(jsonPath("$.overallNote").value("묽다"));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-02 · 생략한 필드는 null로 지워지지 않는다")
+  void 생략한_필드는_유지된다() throws Exception {
+    String token = token("bledit-02");
+    Long id = createdId(createWith(token, "\"beverageWeightG\":250.0,\"tdsPercent\":1.35"));
+
+    patchBrewLog(
+            token,
+            id,
+            """
+        {"rating":4.0}
+        """)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tdsPercent").value(1.35));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-03 · 명시적 null도 변경 없음으로 취급한다")
+  void 명시적_null도_변경_없음이다() throws Exception {
+    String token = token("bledit-03");
+    Long id = createdId(createWith(token, "\"beverageWeightG\":250.0,\"tdsPercent\":1.35"));
+
+    patchBrewLog(
+            token,
+            id,
+            """
+        {"tdsPercent":null}
+        """)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.tdsPercent").value(1.35));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-04 · TDS를 넣으면 추출 수율이 계산되어 응답에 나온다")
+  void TDS를_넣으면_추출_수율이_계산된다() throws Exception {
+    String token = token("bledit-04");
+    Long id = createdId(createWith(token, "\"beverageWeightG\":250.0"));
+
+    getBrewLog(token, id).andExpect(jsonPath("$.extractionYieldPercent").doesNotExist());
+
+    patchBrewLog(
+            token,
+            id,
+            """
+        {"tdsPercent":1.35}
+        """)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.extractionYieldPercent").value(22.5))
+        .andExpect(jsonPath("$.extractionZone").value("OVER"));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-05 · 음료 중량을 바꾸면 추출 수율이 따라 바뀐다")
+  void 음료_중량을_바꾸면_추출_수율이_바뀐다() throws Exception {
+    String token = token("bledit-05");
+    Long id = createdId(createWith(token, "\"beverageWeightG\":250.0,\"tdsPercent\":1.35"));
+
+    getBrewLog(token, id).andExpect(jsonPath("$.extractionYieldPercent").value(22.5));
+
+    patchBrewLog(
+            token,
+            id,
+            """
+        {"beverageWeightG":225.0}
+        """)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.extractionYieldPercent").value(20.3));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-06 · 분쇄도 설정을 바꾸면 마이크론 추정값이 다시 저장된다")
+  void 분쇄도를_바꾸면_마이크론이_재저장된다() throws Exception {
+    String token = token("bledit-06");
+    Long id = createdId(createWith(token, "\"rating\":3.0"));
+
+    getBrewLog(token, id).andExpect(jsonPath("$.actualGrindMicronEstimated").value(660));
+
+    patchBrewLog(
+            token,
+            id,
+            """
+        {"actualGrindSettingValue":24.0}
+        """)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.actualGrindMicronEstimated").value(720));
+
+    assertThat(brewLogRepository.findById(id).orElseThrow().getActualGrindMicronEstimated())
+        .isEqualByComparingTo("720");
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-07 · 추출 시각을 바꾸면 경과일과 디게싱 상태가 다시 저장된다")
+  void 추출_시각을_바꾸면_경과일과_디게싱이_재저장된다() throws Exception {
+    String token = token("bledit-07");
+    // 로스팅 10일 전 재고로, 추출은 9일 전에 했다 → 경과 1일 TOO_FRESH
+    Long batch = beanBatchId(token, BREWED_AT, 10);
+    Long grinder = userGrinderId(token, c40Id());
+    Long recipe = recipeId(token);
+    Instant nineDaysAgo = BREWED_AT.minus(9, ChronoUnit.DAYS);
+    Long id = brewLogOf(token, recipe, batch, grinder, nineDaysAgo);
+
+    getBrewLog(token, id)
+        .andExpect(jsonPath("$.daysOffRoast").value(1))
+        .andExpect(jsonPath("$.degassingStatus").value("TOO_FRESH"));
+
+    patchBrewLog(
+            token,
+            id,
+            """
+        {"brewedAt":"%s"}
+        """
+                .formatted(BREWED_AT))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.daysOffRoast").value(10))
+        .andExpect(jsonPath("$.degassingStatus").value("IDEAL"));
+
+    assertThat(brewLogRepository.findById(id).orElseThrow().getDaysOffRoast()).isEqualTo(10);
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-08 · 원두 재고가 삭제된 뒤 추출 시각을 바꿔도 경과일은 유지된다")
+  void 재고_삭제_후에도_경과일은_유지된다() throws Exception {
+    String token = token("bledit-08");
+    Long batch = beanBatchId(token, BREWED_AT, 10);
+    Long grinder = userGrinderId(token, c40Id());
+    Long recipe = recipeId(token);
+    Instant nineDaysAgo = BREWED_AT.minus(9, ChronoUnit.DAYS);
+    Long id = brewLogOf(token, recipe, batch, grinder, nineDaysAgo);
+
+    mockMvc
+        .perform(
+            delete("/api/v1/bean-batches/{id}", batch).header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isNoContent());
+
+    patchBrewLog(
+            token,
+            id,
+            """
+        {"brewedAt":"%s"}
+        """
+                .formatted(BREWED_AT))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.daysOffRoast").value(1));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-09 · 공개범위를 FRIENDS로 바꾸면 상호 팔로우 상대가 볼 수 있다")
+  void 공개범위를_FRIENDS로_바꾸면_상대가_본다() throws Exception {
+    User a = newUser("bledit-09-a");
+    User b = newUser("bledit-09-b");
+    mutualFollow(a, b);
+    Long id = brewLogWith(tokenOf(a), "PRIVATE");
+
+    getBrewLog(tokenOf(b), id).andExpect(status().isForbidden());
+
+    patchBrewLog(
+            tokenOf(a),
+            id,
+            """
+        {"visibility":"FRIENDS"}
+        """)
+        .andExpect(status().isOk());
+
+    getBrewLog(tokenOf(b), id).andExpect(status().isOk());
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-10 · recipeId를 보내도 무시된다")
+  void recipeId를_보내도_무시된다() throws Exception {
+    String token = token("bledit-10");
+    Long id = createdId(createWith(token, "\"rating\":3.0"));
+    Long before = brewLogRepository.findById(id).orElseThrow().getRecipeId();
+    Long other = recipeId(token);
+
+    patchBrewLog(
+            token,
+            id,
+            """
+        {"recipeId":%d,"rating":4.0}
+        """
+                .formatted(other))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.recipeId").value(before))
+        .andExpect(jsonPath("$.rating").value(4.0));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-11 · 레시피를 수정해도 목록의 실측 스냅샷은 불변이다")
+  void 레시피를_수정해도_목록의_스냅샷은_불변이다() throws Exception {
+    String token = token("bledit-11");
+    Long batch = beanBatchId(token, BREWED_AT, 6);
+    Long grinder = userGrinderId(token, c40Id());
+    Long recipe = recipeId(token);
+    brewLogOf(token, recipe, batch, grinder, BREWED_AT);
+
+    mockMvc
+        .perform(
+            put("/api/v1/recipes/{id}", recipe)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"물량 바뀐 레시피","doseG":16.0,"waterG":250.0}
+                    """))
+        .andExpect(status().isOk());
+
+    listBrewLogs(token, "?recipeId=" + recipe)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].actualDoseG").value(15.0));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-14 · 타인의 로그는 수정할 수 없다")
+  void 타인의_로그는_수정할_수_없다() throws Exception {
+    User a = newUser("bledit-14-a");
+    User b = newUser("bledit-14-b");
+    mutualFollow(a, b);
+    Long id = brewLogWith(tokenOf(a), "PUBLIC");
+
+    // 볼 수는 있다
+    getBrewLog(tokenOf(b), id).andExpect(status().isOk());
+
+    patchBrewLog(
+            tokenOf(b),
+            id,
+            """
+        {"rating":4.0}
+        """)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-16 · 존재하지 않는 로그를 수정하면 404다")
+  void 존재하지_않는_로그를_수정하면_404다() throws Exception {
+    patchBrewLog(
+            token("bledit-16"),
+            999999L,
+            """
+        {"rating":4.0}
+        """)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-17 · 삭제된 로그를 수정하면 404다")
+  void 삭제된_로그를_수정하면_404다() throws Exception {
+    String token = token("bledit-17");
+    Long id = newBrewLog(token);
+    deleteBrewLog(token, id).andExpect(status().isNoContent());
+
+    patchBrewLog(
+            token,
+            id,
+            """
+        {"rating":4.0}
+        """)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-19 · JWT 없이 수정하면 401이다")
+  void JWT_없이_수정하면_401이다() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/v1/brew-logs/{id}", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"rating":4.0}
+                    """))
+        .andExpect(status().isUnauthorized());
   }
 
   // ===== 목록 조회 (AC-LIST-18~27, 34, 36) =====

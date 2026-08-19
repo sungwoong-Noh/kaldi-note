@@ -2,6 +2,7 @@ package com.kaldinote.brewlog.presentation;
 
 import com.kaldinote.brewlog.application.BrewLogService;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
+import com.kaldinote.brewlog.presentation.dto.BrewLogPatchRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogSummaryResponse;
 import com.kaldinote.common.response.PageParams;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,6 +52,14 @@ public class BrewLogController {
   @GetMapping("/{id}")
   public BrewLogResponse get(@PathVariable Long id, AuthenticatedUser user) {
     return brewLogService.get(user.id(), id);
+  }
+
+  @PatchMapping("/{id}")
+  public BrewLogResponse patch(
+      @PathVariable Long id,
+      @Valid @RequestBody BrewLogPatchRequest request,
+      AuthenticatedUser user) {
+    return brewLogService.patch(user.id(), id, request);
   }
 
   @DeleteMapping("/{id}")

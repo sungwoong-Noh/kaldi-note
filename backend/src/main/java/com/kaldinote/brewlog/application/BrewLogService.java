@@ -1,9 +1,11 @@
 package com.kaldinote.brewlog.application;
 
 import com.kaldinote.brewlog.domain.BrewLog;
+import com.kaldinote.brewlog.domain.BrewLogPatch;
 import com.kaldinote.brewlog.domain.BrewLogVisibility;
 import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
+import com.kaldinote.brewlog.presentation.dto.BrewLogPatchRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogSummaryResponse;
 import com.kaldinote.common.error.BusinessException;
@@ -133,6 +135,81 @@ public class BrewLogService {
             log.getActualWaterG(),
             log.getBeverageWeightG(),
             log.getTdsPercent()));
+  }
+
+  /**
+   * 부분 수정. 실측값이 바뀌면 파생 값을 다시 계산해 저장한다.
+   *
+   * <p>EY·SCA는 여기서 다루지 않는다. DB에 없고 조회할 때마다 계산하므로 실측값만 고치면 자동으로 따라온다. 실제로 다시 저장해야 하는 것은 DB 컬럼인
+   * actualGrindMicronEstimated·daysOffRoast·degassingStatus뿐이다.
+   */
+  @Transactional
+  public BrewLogResponse patch(Long userId, Long brewLogId, BrewLogPatchRequest request) {
+    validateRatingStep(request.rating());
+    BrewLog log = requireOwnedLog(userId, brewLogId);
+
+    BigDecimal micron = recomputeMicron(userId, log, request);
+    Integer daysOffRoast = null;
+    String degassingStatus = null;
+    if (request.brewedAt() != null) {
+      // 재고가 이미 삭제됐으면 다시 셀 수 없다. 과거 기록을 보존하려고 기존 값을 그대로 둔다.
+      BeanBatch batch =
+          beanBatchRepository.findByIdAndDeletedAtIsNull(log.getBeanBatchId()).orElse(null);
+      if (batch != null) {
+        int recomputed = computeDaysOffRoast(request.brewedAt(), batch.getRoastedAt());
+        daysOffRoast = recomputed;
+        degassingStatus = DegassingStatus.of(recomputed).name();
+      }
+    }
+
+    log.applyPatch(toDomainPatch(request), micron, daysOffRoast, degassingStatus);
+    return BrewLogResponse.from(log, analyze(log));
+  }
+
+  /** 그라인더나 설정값이 바뀐 경우에만 다시 계산한다. 그대로면 null을 돌려 기존 값을 유지시킨다. */
+  private BigDecimal recomputeMicron(Long userId, BrewLog log, BrewLogPatchRequest request) {
+    if (request.userGrinderId() == null && request.actualGrindSettingValue() == null) {
+      return null;
+    }
+    Long grinderId =
+        request.userGrinderId() != null ? request.userGrinderId() : log.getUserGrinderId();
+    BigDecimal setting =
+        request.actualGrindSettingValue() != null
+            ? request.actualGrindSettingValue()
+            : log.getActualGrindSettingValue();
+
+    UserGrinder userGrinder = requireOwnedUserGrinder(userId, grinderId);
+    GrinderModel grinderModel =
+        grinderModelRepository
+            .findById(userGrinder.getGrinderModelId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        ErrorCode.NOT_FOUND,
+                        "그라인더 모델을 찾을 수 없습니다: " + userGrinder.getGrinderModelId()));
+    return computeActualGrindMicronEstimated(grinderModel, setting);
+  }
+
+  private BrewLogPatch toDomainPatch(BrewLogPatchRequest r) {
+    return new BrewLogPatch(
+        r.brewedAt(),
+        r.visibility(),
+        r.actualDoseG(),
+        r.actualWaterG(),
+        r.actualWaterTempC(),
+        r.actualTotalTimeSeconds(),
+        r.actualDrawdownSeconds(),
+        r.userGrinderId(),
+        r.actualGrindSettingValue(),
+        r.beverageWeightG(),
+        r.tdsPercent(),
+        r.rating(),
+        r.acidity(),
+        r.sweetness(),
+        r.body(),
+        r.bitterness(),
+        r.aftertaste(),
+        r.overallNote());
   }
 
   @Transactional

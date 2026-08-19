@@ -216,4 +216,79 @@ public class BrewLog extends BaseTimeEntity {
   public void softDelete() {
     this.deletedAt = Instant.now();
   }
+
+  /**
+   * 부분 수정. null은 변경 없음이며 값 지우기는 지원하지 않는다.
+   *
+   * <p>파생 값 셋은 서비스가 계산해 넘긴다. 넘어온 값이 null이면 그대로 둔다 — 원두 재고가 삭제돼 경과일을 다시 셀 수 없을 때 과거 기록을 보존하는 경로다.
+   */
+  public void applyPatch(
+      BrewLogPatch patch,
+      BigDecimal recomputedMicron,
+      Integer recomputedDaysOffRoast,
+      String recomputedDegassingStatus) {
+    if (patch.brewedAt() != null) {
+      this.brewedAt = patch.brewedAt();
+    }
+    if (patch.visibility() != null) {
+      this.visibility = patch.visibility();
+    }
+    if (patch.actualDoseG() != null) {
+      this.actualDoseG = patch.actualDoseG();
+    }
+    if (patch.actualWaterG() != null) {
+      this.actualWaterG = patch.actualWaterG();
+    }
+    if (patch.actualWaterTempC() != null) {
+      this.actualWaterTempC = patch.actualWaterTempC();
+    }
+    if (patch.actualTotalTimeSeconds() != null) {
+      this.actualTotalTimeSeconds = patch.actualTotalTimeSeconds();
+    }
+    if (patch.actualDrawdownSeconds() != null) {
+      this.actualDrawdownSeconds = patch.actualDrawdownSeconds();
+    }
+    if (patch.userGrinderId() != null) {
+      this.userGrinderId = patch.userGrinderId();
+    }
+    if (patch.actualGrindSettingValue() != null) {
+      this.actualGrindSettingValue = patch.actualGrindSettingValue();
+    }
+    if (patch.beverageWeightG() != null) {
+      this.beverageWeightG = patch.beverageWeightG();
+    }
+    if (patch.tdsPercent() != null) {
+      this.tdsPercent = patch.tdsPercent();
+    }
+    if (patch.rating() != null) {
+      this.rating = patch.rating();
+    }
+    if (patch.acidity() != null) {
+      this.acidity = patch.acidity();
+    }
+    if (patch.sweetness() != null) {
+      this.sweetness = patch.sweetness();
+    }
+    if (patch.body() != null) {
+      this.body = patch.body();
+    }
+    if (patch.bitterness() != null) {
+      this.bitterness = patch.bitterness();
+    }
+    if (patch.aftertaste() != null) {
+      this.aftertaste = patch.aftertaste();
+    }
+    if (patch.overallNote() != null) {
+      this.overallNote = patch.overallNote();
+    }
+    if (recomputedMicron != null) {
+      this.actualGrindMicronEstimated = recomputedMicron;
+    }
+    if (recomputedDaysOffRoast != null) {
+      this.daysOffRoast = recomputedDaysOffRoast;
+    }
+    if (recomputedDegassingStatus != null) {
+      this.degassingStatus = recomputedDegassingStatus;
+    }
+  }
 }

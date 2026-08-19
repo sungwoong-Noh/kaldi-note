@@ -958,7 +958,7 @@ cd .. && git add . && git commit -m "feat(brewlog): 브루잉 로그 목록 조�
 - Consumes: `BrewLogService.requireOwnedLog(...)` (Task 2)
 - Produces: `BrewLog.applyPatch(...)`, `BrewLogService.patch(Long userId, Long id, BrewLogPatchRequest)`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
 @Test
@@ -1083,12 +1083,12 @@ void 타인의_로그는_수정할_수_없다() throws Exception {
 
 `createBrewLogWithTds(...)`, `createBrewLogWithBeverage(...)`는 `createBrewLog`와 같은 본문에 해당 필드만 더한 헬퍼로 만든다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: FAIL — `PATCH /api/v1/brew-logs/{id}` 매핑이 없어 405
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `BrewLogPatchRequest.java` — **`recipeId`·`beanBatchId`를 넣지 않는다.** 없는 필드는 Jackson이 무시하므로 `AC-BLEDIT-10`이 자동으로 성립한다.
 
@@ -1206,12 +1206,12 @@ public record BrewLogPatchRequest(
 
 > `DegassingStatus.of(int)`와 `beanBatchRepository.findByIdAndDeletedAtIsNull(...)`의 실제 시그니처는 구현 전에 확인해 맞춘다. `inventory` 도메인이 이미 같은 판정을 하고 있으므로 그 메서드를 재사용하고 새로 만들지 않는다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: PASS — 기존 테스트 전부 + 신규 15개
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

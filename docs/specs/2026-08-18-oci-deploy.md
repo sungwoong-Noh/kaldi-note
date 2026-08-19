@@ -12,7 +12,7 @@ plan:
 
 ## 무엇을
 
-`main` 브랜치에 푸시되면 GitHub Actions가 백엔드를 Docker 이미지로 빌드해 GHCR에 올리고, SSH로 OCI VM에 접속해 `docker compose pull && up -d`로 배포한다. 배포 직후 헬스체크로 성공 여부를 확인하고, 실패하면 직전 이미지로 자동 롤백한다. PostgreSQL은 VM의 crontab이 매일 새벽 `pg_dump`로 백업해 OCI Object Storage에 올린다.
+`main` 브랜치에 푸시되면 GitHub Actions가 백엔드를 Docker 이미지로 빌드해 GHCR에 올리고, SSH로 OCI VM에 접속해 `docker compose pull && up -d`로 배포한다. 배포 직후 헬스체크로 성공 여부를 확인하고, 실패하면 직전 이미지로 자동 롤백한다. PostgreSQL은 VM의 crontab이 매일 새벽 `pg_dump`로 백업해 OCI Object Storage에 올린다. **백업 버킷은 사진 첨부용 버킷과 분리된 private 버킷이다** — 사진 버킷은 public-read인데(`2026-08-18-media-attachment.md`) 백업 파일명은 날짜 기반이라 추측 가능해, 같은 버킷에 두면 DB 덤프가 공개된다.
 
 ### 범위 밖 (Non-goals)
 
@@ -78,6 +78,7 @@ plan:
 - [ ] `https://kaldi-note.today`·`https://api.kaldi-note.today`가 유효한 HTTPS 인증서로 응답한다(Caddy 자동 발급)
 - [ ] VM의 `crontab -l`에 매일 03:00 KST `pg_dump` 백업 작업이 등록돼 있다
 - [ ] 다음날 OCI Object Storage 백업 버킷에 전날 백업 파일이 실제로 생긴다
+- [ ] 백업 버킷이 private이고 사진 버킷과 분리돼 있다 — 백업 파일 URL로 인증 없이 접근하면 실패한다
 - [ ] 8일 연속 백업이 쌓인 뒤 버킷에 최근 7개 파일만 남아 있다(8일 전 파일이 삭제됐다)
 - [ ] VM의 `.env`에 채운 운영 비밀값으로 카카오/구글 실계정 로그인과 사진 업로드가 실제로 동작한다
 

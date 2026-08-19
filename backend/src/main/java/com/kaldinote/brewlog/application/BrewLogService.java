@@ -114,17 +114,31 @@ public class BrewLogService {
     return BrewLogResponse.from(log, analysis);
   }
 
+  @Transactional
+  public void delete(Long userId, Long brewLogId) {
+    requireOwnedLog(userId, brewLogId).softDelete();
+  }
+
   /** media 도메인이 업로드 권한을 확인할 때 쓴다. */
   public void requireOwned(Long userId, Long brewLogId) {
-    BrewLog log =
-        brewLogRepository
-            .findById(brewLogId)
-            .orElseThrow(
-                () ->
-                    new BusinessException(ErrorCode.NOT_FOUND, "브루잉 로그를 찾을 수 없습니다: " + brewLogId));
+    requireOwnedLog(userId, brewLogId);
+  }
+
+  /** 소유자 전용 동작(수정·삭제)의 공통 조회. 검증 순서는 404 → 403이다. */
+  private BrewLog requireOwnedLog(Long userId, Long brewLogId) {
+    BrewLog log = findAlive(brewLogId);
     if (!log.isOwnedBy(userId)) {
       throw new BusinessException(ErrorCode.FORBIDDEN, "본인의 브루잉 로그만 접근할 수 있습니다.");
     }
+    return log;
+  }
+
+  /** 소프트 삭제된 로그는 없는 것으로 취급한다. */
+  private BrewLog findAlive(Long brewLogId) {
+    return brewLogRepository
+        .findByIdAndDeletedAtIsNull(brewLogId)
+        .orElseThrow(
+            () -> new BusinessException(ErrorCode.NOT_FOUND, "브루잉 로그를 찾을 수 없습니다: " + brewLogId));
   }
 
   /** media 도메인이 조회(첨부 목록) 권한을 확인할 때 쓴다. */
@@ -134,12 +148,7 @@ public class BrewLogService {
 
   /** 판정 규칙은 RecipeService.findViewable과 같다. enum이 달라 공통 함수로 묶지 않는다. */
   private BrewLog findViewable(Long userId, Long brewLogId) {
-    BrewLog log =
-        brewLogRepository
-            .findById(brewLogId)
-            .orElseThrow(
-                () ->
-                    new BusinessException(ErrorCode.NOT_FOUND, "브루잉 로그를 찾을 수 없습니다: " + brewLogId));
+    BrewLog log = findAlive(brewLogId);
     if (isViewable(userId, log)) {
       return log;
     }

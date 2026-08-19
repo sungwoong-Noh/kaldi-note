@@ -102,6 +102,9 @@ public class BrewLog extends BaseTimeEntity {
   @Column(name = "overall_note", length = 1000)
   private String overallNote;
 
+  @Column(name = "deleted_at")
+  private Instant deletedAt;
+
   private BrewLog(
       Long userId,
       Long recipeId,
@@ -208,5 +211,9 @@ public class BrewLog extends BaseTimeEntity {
 
   public boolean isOwnedBy(Long userId) {
     return this.userId != null && this.userId.equals(userId);
+  }
+
+  public void softDelete() {
+    this.deletedAt = Instant.now();
   }
 }

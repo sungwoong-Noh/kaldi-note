@@ -316,7 +316,7 @@ cd .. && git add . && git commit -m "feat(common): 목록 조회용 PageResponse
 - Consumes: 없음
 - Produces: `BrewLog.softDelete()`, `BrewLogRepository.findByIdAndDeletedAtIsNull(Long)`, `BrewLogService.delete(Long userId, Long brewLogId)`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `BrewLogControllerTest`에 추가한다. `token(...)`, `createdId(...)` 등 기존 헬퍼를 그대로 쓴다.
 
@@ -403,12 +403,12 @@ private Long createBrewLog(String token) throws Exception {
 
 `@Autowired private BrewLogRepository brewLogRepository;` 와 `import static org.assertj.core.api.Assertions.assertThat;`를 추가한다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: FAIL — `DELETE /api/v1/brew-logs/{id}` 매핑이 없어 405, `getDeletedAt()` 컴파일 실패
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `V10__add_brew_logs_deleted_at.sql`:
 
@@ -481,12 +481,12 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
   }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: PASS — 기존 테스트 전부 + 신규 4개
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

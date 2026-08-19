@@ -1,5 +1,6 @@
 package com.kaldinote.brewlog.presentation;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -11,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
+import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
 import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.UserRepository;
@@ -40,6 +42,7 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
   @Autowired private JwtTokenProvider tokenProvider;
   @Autowired private UserRepository userRepository;
   @Autowired private GrinderModelRepository grinderModelRepository;
+  @Autowired private BrewLogRepository brewLogRepository;
 
   private String token(String nickname) {
     User user = userRepository.save(User.create(null, nickname, null));
@@ -838,5 +841,69 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
     Long id = brewLogWith(token, "PUBLIC");
 
     mockMvc.perform(get("/api/v1/brew-logs/{id}", id)).andExpect(status().isUnauthorized());
+  }
+
+  // ===== 소프트 삭제 (AC-BLEDIT-12·13·15·18) =====
+
+  /** 기본 픽스처(경과 6일)로 브루잉 로그 하나를 만들고 id를 돌려준다. */
+  private Long newBrewLog(String token) throws Exception {
+    Long recipe = recipeId(token);
+    Long batch = beanBatchId(token, BREWED_AT, 6);
+    Long grinder = userGrinderId(token, c40Id());
+    return createdId(createBrewLog(token, minimalBody(recipe, batch, BREWED_AT, grinder)));
+  }
+
+  private ResultActions deleteBrewLog(String token, Long id) throws Exception {
+    return mockMvc.perform(
+        delete("/api/v1/brew-logs/{id}", id).header(HttpHeaders.AUTHORIZATION, token));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-12 · 삭제하면 204이고 deleted_at이 채워진다")
+  void 삭제하면_204이고_deleted_at이_채워진다() throws Exception {
+    String token = token("bledit-12");
+    Long id = newBrewLog(token);
+
+    deleteBrewLog(token, id).andExpect(status().isNoContent());
+
+    assertThat(brewLogRepository.findById(id).orElseThrow().getDeletedAt()).isNotNull();
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-13 · 삭제 후 단건 조회는 404다")
+  void 삭제_후_단건_조회는_404다() throws Exception {
+    String token = token("bledit-13");
+    Long id = newBrewLog(token);
+    deleteBrewLog(token, id).andExpect(status().isNoContent());
+
+    getBrewLog(token, id)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-15 · 타인의 로그는 삭제할 수 없다")
+  void 타인의_로그는_삭제할_수_없다() throws Exception {
+    String owner = token("bledit-15-주인");
+    String other = token("bledit-15-남");
+    Long id = newBrewLog(owner);
+
+    deleteBrewLog(other, id)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+
+    assertThat(brewLogRepository.findById(id).orElseThrow().getDeletedAt()).isNull();
+  }
+
+  @Test
+  @DisplayName("AC-BLEDIT-18 · 이미 삭제된 로그를 다시 삭제하면 404다")
+  void 이미_삭제된_로그를_다시_삭제하면_404다() throws Exception {
+    String token = token("bledit-18");
+    Long id = newBrewLog(token);
+    deleteBrewLog(token, id).andExpect(status().isNoContent());
+
+    deleteBrewLog(token, id)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
   }
 }

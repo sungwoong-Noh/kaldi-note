@@ -1,9 +1,12 @@
 package com.kaldinote.recipe.presentation;
 
+import com.kaldinote.common.response.PageParams;
+import com.kaldinote.common.response.PageResponse;
 import com.kaldinote.common.security.AuthenticatedUser;
 import com.kaldinote.recipe.application.RecipeService;
 import com.kaldinote.recipe.presentation.dto.CreateRecipeRequest;
 import com.kaldinote.recipe.presentation.dto.RecipeResponse;
+import com.kaldinote.recipe.presentation.dto.RecipeSummaryResponse;
 import com.kaldinote.recipe.presentation.dto.UpdateRecipeRequest;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,6 +36,15 @@ public class RecipeController {
   public RecipeResponse create(
       @Valid @RequestBody CreateRecipeRequest request, AuthenticatedUser user) {
     return recipeService.create(user.id(), request);
+  }
+
+  @GetMapping
+  public PageResponse<RecipeSummaryResponse> list(
+      @RequestParam(required = false) Integer page,
+      @RequestParam(required = false) Integer size,
+      @RequestParam(required = false) Long ownerUserId,
+      AuthenticatedUser user) {
+    return recipeService.list(user.id(), ownerUserId, PageParams.of(page, size));
   }
 
   @GetMapping("/{id}")

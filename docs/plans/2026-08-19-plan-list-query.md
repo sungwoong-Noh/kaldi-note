@@ -510,7 +510,7 @@ cd .. && git add . && git commit -m "feat(brewlog): 브루잉 로그 소프트 �
 - Consumes: `PageParams.of(...)`, `PageResponse.from(...)` (Task 1)
 - Produces: `RecipeRepository.findVisible(Long viewerId, Long ownerUserId, Pageable)` → `Page<Recipe>`, `RecipeSummaryResponse.from(Recipe)`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 대표 4개만 싣는다. 나머지는 같은 형태로 스펙의 Given/When/Then을 그대로 옮긴다.
 
@@ -614,12 +614,12 @@ private void setVisibility(String token, Long recipeId, String visibility) throw
 
 > `tokenProvider.parse(...)`의 실제 메서드명은 `JwtTokenProvider`에서 확인해 맞춘다. 없으면 `userRepository`에 저장한 `User`의 id를 `token(...)` 헬퍼가 함께 돌려주도록 바꾸는 편이 간단하다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: FAIL — `GET /api/v1/recipes` 매핑이 없어 405 또는 404
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `RecipeRepository.java`:
 
@@ -750,12 +750,12 @@ public record RecipeSummaryResponse(
   }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: PASS — 기존 테스트 전부 + 신규 24개
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check

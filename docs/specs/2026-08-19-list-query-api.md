@@ -82,6 +82,8 @@ plan: docs/plans/2026-08-19-plan-list-query.md
 
 **검증 순서:** `401`(미인증) → `404`(대상 없음 / 소프트 삭제됨) → `403`(권한 없음) → `400`(필드 검증). 기존 스펙과 같다.
 
+> **null 필드는 응답에서 생략된다.** `application.yml`의 `default-property-inclusion: non_null` 설정 때문이다. 아래 인수 조건에서 "`X`가 없다"는 **키 자체가 응답 JSON에 존재하지 않는다**는 뜻이며, `"X": null`이 내려오는 것이 아니다.
+
 ### 쿼리 파라미터
 
 **공통 (`GET /recipes`, `GET /brew-logs`)**
@@ -320,7 +322,7 @@ Authorization: Bearer <토큰>
 
 - **Given** `owner_user_id IS NULL`이고 `visibility: PUBLIC`, `source_type: CURATED`인 레시피가 1건 있다
 - **When** A가 `GET /api/v1/recipes`
-- **Then** `content`에 그 레시피의 `id`가 있고 `ownerUserId`가 `null`이다
+- **Then** `content`에 그 레시피의 `id`가 있고 `ownerUserId` 키는 응답에 존재하지 않는다(null 생략)
 - **검증** API 테스트 `RecipeControllerTest`
 
 #### AC-LIST-14 · 소프트 삭제된 레시피는 제외된다
@@ -415,7 +417,7 @@ Authorization: Bearer <토큰>
 
 - **Given** A의 로그 1건의 `tds_percent`가 `null`이다
 - **When** A가 `GET /api/v1/brew-logs`
-- **Then** `content[0].extractionYieldPercent`가 `null`, `strengthZone`이 `null`이고 `brewRatio`는 `null`이 아니다
+- **Then** `content[0]`에 `extractionYieldPercent`·`strengthZone` 키가 존재하지 않고(null 생략) `brewRatio`는 존재한다
 - **검증** API 테스트 `BrewLogControllerTest`
 
 #### AC-LIST-27 · 소프트 삭제된 로그는 목록에서 제외된다
@@ -641,14 +643,14 @@ Authorization: Bearer <토큰>
 
 - **Given** 사용자 A의 `nickname`이 `"노성웅"`, `role`이 `USER`다
 - **When** A가 `GET /api/v1/users/me`
-- **Then** HTTP `200`, JSON 키 집합이 정확히 `["id","email","nickname","profileImageUrl","role","createdAt"]`이고 `nickname`이 `"노성웅"`, `role`이 `"USER"`다
+- **Then** HTTP `200`, JSON 키 집합이 정확히 `["id","email","nickname","profileImageUrl","role","createdAt"]`이고 `nickname`이 `"노성웅"`, `role`이 `"USER"`다. (`email`·`profileImageUrl`이 채워진 사용자로 검증한다 — null이면 키가 생략되어 집합이 달라진다)
 - **검증** API 테스트 `UserControllerTest`
 
 #### AC-ME-02 · 이메일이 없는 사용자도 200이다
 
 - **Given** 카카오 이메일 제공에 동의하지 않아 `users.email`이 `null`인 사용자 A
 - **When** A가 `GET /api/v1/users/me`
-- **Then** HTTP `200`이고 `email`이 `null`이다
+- **Then** HTTP `200`이고 `email` 키가 응답에 존재하지 않는다(null 생략). `nickname`은 정상적으로 채워져 있다
 - **검증** API 테스트 `UserControllerTest`
 
 #### AC-ME-03 · JWT 없이 내 프로필을 부르면 401이다

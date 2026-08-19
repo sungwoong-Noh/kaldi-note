@@ -1,5 +1,8 @@
 package com.kaldinote.recipe.presentation;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -14,6 +17,7 @@ import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -883,6 +887,349 @@ class RecipeControllerTest extends AbstractIntegrationTest {
   private ResultActions getRecipe(String token, Long recipeId) throws Exception {
     return mockMvc.perform(
         get("/api/v1/recipes/{id}", recipeId).header(HttpHeaders.AUTHORIZATION, token));
+  }
+
+  // ===== 목록 조회 (AC-LIST-01~17, 28~33, 35) =====
+
+  private ResultActions listRecipes(String token, String query) throws Exception {
+    return mockMvc.perform(get("/api/v1/recipes" + query).header(HttpHeaders.AUTHORIZATION, token));
+  }
+
+  /** 제목만 다른 최소 레시피를 만들고 id를 돌려준다. */
+  private Long simpleRecipe(String token, String title) throws Exception {
+    return createdId(
+        createRecipe(
+            token,
+            """
+            {"title":"%s","doseG":15.0,"waterG":250.0}
+            """
+                .formatted(title)));
+  }
+
+  private void createRecipes(String token, int count) throws Exception {
+    for (int i = 0; i < count; i++) {
+      simpleRecipe(token, "레시피 " + i);
+    }
+  }
+
+  /** created_at을 같은 값으로 맞춘다. 2차 정렬 기준(id DESC)을 검증하려면 동점을 만들어야 한다. */
+  private void sameCreatedAt(Long... recipeIds) {
+    for (Long id : recipeIds) {
+      entityManager
+          .createNativeQuery(
+              "update recipes set created_at = timestamptz '2026-08-19 00:00:00+00' where id = :id")
+          .setParameter("id", id)
+          .executeUpdate();
+    }
+    entityManager.flush();
+    entityManager.clear();
+  }
+
+  @Test
+  @DisplayName("AC-LIST-01 · size를 생략하면 20개를 반환한다")
+  void size를_생략하면_20개를_반환한다() throws Exception {
+    String token = token();
+    createRecipes(token, 25);
+
+    listRecipes(token, "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(20))
+        .andExpect(jsonPath("$.size").value(20))
+        .andExpect(jsonPath("$.page").value(0));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-02 · size=100은 허용한다 (상한 포함)")
+  void size_100은_허용한다() throws Exception {
+    String token = token();
+    createRecipes(token, 3);
+
+    listRecipes(token, "?size=100")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.size").value(100))
+        .andExpect(jsonPath("$.content.length()").value(3));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-03 · size=1은 허용한다 (하한 포함)")
+  void size_1은_허용한다() throws Exception {
+    String token = token();
+    createRecipes(token, 3);
+
+    listRecipes(token, "?size=1")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(1))
+        .andExpect(jsonPath("$.totalElements").value(3))
+        .andExpect(jsonPath("$.totalPages").value(3))
+        .andExpect(jsonPath("$.hasNext").value(true));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-04 · page=0이 첫 페이지다")
+  void page_0이_첫_페이지다() throws Exception {
+    String token = token();
+    simpleRecipe(token, "첫째");
+    simpleRecipe(token, "둘째");
+    Long last = simpleRecipe(token, "셋째");
+
+    listRecipes(token, "?page=0&size=1")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(last));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-05 · 47건에서 첫 페이지 봉투 값이 정확하다")
+  void 첫_페이지_봉투_값이_정확하다() throws Exception {
+    String token = token();
+    createRecipes(token, 47);
+
+    listRecipes(token, "?page=0&size=20")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(20))
+        .andExpect(jsonPath("$.page").value(0))
+        .andExpect(jsonPath("$.size").value(20))
+        .andExpect(jsonPath("$.totalElements").value(47))
+        .andExpect(jsonPath("$.totalPages").value(3))
+        .andExpect(jsonPath("$.hasNext").value(true));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-06 · 마지막 페이지에서 hasNext가 false다")
+  void 마지막_페이지에서_hasNext가_false다() throws Exception {
+    String token = token();
+    createRecipes(token, 47);
+
+    listRecipes(token, "?page=2&size=20")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(7))
+        .andExpect(jsonPath("$.page").value(2))
+        .andExpect(jsonPath("$.totalPages").value(3))
+        .andExpect(jsonPath("$.hasNext").value(false));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-07 · 응답 봉투는 여섯 키만 갖는다")
+  void 응답_봉투는_여섯_키만_갖는다() throws Exception {
+    String token = token();
+    simpleRecipe(token, "하나");
+
+    String body =
+        listRecipes(token, "")
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    assertThat(com.jayway.jsonpath.JsonPath.<Map<String, Object>>read(body, "$").keySet())
+        .containsExactlyInAnyOrder(
+            "content", "page", "size", "totalElements", "totalPages", "hasNext");
+  }
+
+  @Test
+  @DisplayName("AC-LIST-08 · 내 PRIVATE 레시피는 목록에 포함된다")
+  void 내_PRIVATE_레시피는_포함된다() throws Exception {
+    String token = token();
+    Long id = recipeWith(token, "PRIVATE");
+
+    listRecipes(token, "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(id));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-09 · 타인의 PRIVATE 레시피는 제외된다")
+  void 타인의_PRIVATE_레시피는_제외된다() throws Exception {
+    User a = newUser("list-09-a");
+    User b = newUser("list-09-b");
+    Long id = recipeWith(tokenOf(b), "PRIVATE");
+
+    listRecipes(tokenOf(a), "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == " + id + ")]").isEmpty())
+        .andExpect(jsonPath("$.totalElements").value(0));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-10 · 타인의 PUBLIC 레시피는 포함된다")
+  void 타인의_PUBLIC_레시피는_포함된다() throws Exception {
+    User a = newUser("list-10-a");
+    User b = newUser("list-10-b");
+    Long id = recipeWith(tokenOf(b), "PUBLIC");
+
+    listRecipes(tokenOf(a), "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(id));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-11 · 상호 팔로우 상대의 FRIENDS 레시피는 포함된다")
+  void 상호_팔로우_상대의_FRIENDS_레시피는_포함된다() throws Exception {
+    User a = newUser("list-11-a");
+    User b = newUser("list-11-b");
+    Long id = recipeWith(tokenOf(b), "FRIENDS");
+    mutualFollow(a, b);
+
+    listRecipes(tokenOf(a), "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(id));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-12 · 단방향 팔로우 상대의 FRIENDS 레시피는 제외된다")
+  void 단방향_팔로우_상대의_FRIENDS_레시피는_제외된다() throws Exception {
+    User a = newUser("list-12-a");
+    User b = newUser("list-12-b");
+    Long id = recipeWith(tokenOf(b), "FRIENDS");
+    follow(a, b);
+
+    listRecipes(tokenOf(a), "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == " + id + ")]").isEmpty());
+  }
+
+  @Test
+  @DisplayName("AC-LIST-13 · 주인 없는 CURATED 시드 레시피는 포함된다")
+  void 주인_없는_CURATED_시드_레시피는_포함된다() throws Exception {
+    User a = newUser("list-13-a");
+    User b = newUser("list-13-b");
+    Long id = recipeWith(tokenOf(b), "PUBLIC");
+    orphan(id);
+
+    listRecipes(tokenOf(a), "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(id))
+        // non_null 직렬화라 ownerUserId가 null이면 키 자체가 사라진다
+        .andExpect(jsonPath("$.content[0].ownerUserId").doesNotExist());
+  }
+
+  @Test
+  @DisplayName("AC-LIST-14 · 소프트 삭제된 레시피는 제외된다")
+  void 소프트_삭제된_레시피는_제외된다() throws Exception {
+    String token = token();
+    Long id = simpleRecipe(token, "지울 것");
+    mockMvc
+        .perform(delete("/api/v1/recipes/{id}", id).header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isNoContent());
+
+    listRecipes(token, "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(0));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-15 · createdAt이 같으면 id 내림차순으로 나온다")
+  void createdAt이_같으면_id_내림차순으로_나온다() throws Exception {
+    String token = token();
+    Long first = simpleRecipe(token, "먼저");
+    Long second = simpleRecipe(token, "나중");
+    sameCreatedAt(first, second);
+
+    listRecipes(token, "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].id").value(second))
+        .andExpect(jsonPath("$.content[1].id").value(first));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-16 · ownerUserId 필터가 소유자를 좁힌다")
+  void ownerUserId_필터가_소유자를_좁힌다() throws Exception {
+    User a = newUser("list-16-a");
+    User b = newUser("list-16-b");
+    simpleRecipe(tokenOf(a), "에이 1");
+    simpleRecipe(tokenOf(a), "에이 2");
+    recipeWith(tokenOf(b), "PUBLIC");
+
+    listRecipes(tokenOf(a), "?ownerUserId=" + a.getId())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(2))
+        .andExpect(
+            jsonPath("$.content[*].ownerUserId").value(everyItem(equalTo(a.getId().intValue()))));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-17 · 목록 응답에 steps 키가 없다")
+  void 목록_응답에_steps_키가_없다() throws Exception {
+    String token = token();
+    createRecipe(
+            token,
+            """
+            {"title":"스텝 있는 레시피","doseG":15.0,"waterG":250.0,"steps":%s}
+            """
+                // stepsJson은 스텝당 10.0g이다. 합계가 waterG와 같아야 통과한다
+                .formatted(stepsJson(25)))
+        .andExpect(status().isCreated());
+
+    listRecipes(token, "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[0].steps").doesNotExist())
+        .andExpect(jsonPath("$.content[0].title").value("스텝 있는 레시피"))
+        .andExpect(jsonPath("$.content[0].doseG").value(15.0));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-28 · size=101은 400이다")
+  void size_101은_400이다() throws Exception {
+    listRecipes(token(), "?size=101")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-29 · size=0은 400이다")
+  void size_0은_400이다() throws Exception {
+    listRecipes(token(), "?size=0")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-30 · page=-1은 400이다")
+  void page_음수는_400이다() throws Exception {
+    listRecipes(token(), "?page=-1")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-31 · page가 전체 페이지 수를 넘으면 빈 content를 반환한다")
+  void page가_범위를_넘으면_빈_content다() throws Exception {
+    String token = token();
+    createRecipes(token, 47);
+
+    listRecipes(token, "?page=99&size=20")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty())
+        .andExpect(jsonPath("$.totalElements").value(47))
+        .andExpect(jsonPath("$.totalPages").value(3))
+        .andExpect(jsonPath("$.hasNext").value(false));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-32 · 볼 수 있는 것이 하나도 없으면 빈 목록을 반환한다")
+  void 볼_수_있는_것이_없으면_빈_목록이다() throws Exception {
+    listRecipes(token(), "")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty())
+        .andExpect(jsonPath("$.totalElements").value(0))
+        .andExpect(jsonPath("$.totalPages").value(0))
+        .andExpect(jsonPath("$.hasNext").value(false));
+  }
+
+  @Test
+  @DisplayName("AC-LIST-33 · 존재하지 않는 ownerUserId는 빈 목록이다")
+  void 존재하지_않는_ownerUserId는_빈_목록이다() throws Exception {
+    String token = token();
+    simpleRecipe(token, "내 것");
+
+    listRecipes(token, "?ownerUserId=999999")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isEmpty());
+  }
+
+  @Test
+  @DisplayName("AC-LIST-35 · JWT 없이 레시피 목록을 부르면 401이다")
+  void JWT_없이_레시피_목록은_401이다() throws Exception {
+    mockMvc.perform(get("/api/v1/recipes")).andExpect(status().isUnauthorized());
   }
 
   /** owner_user_id를 null로 만든다. 탈퇴자 유기물·CURATED 시드와 같은 상태를 재현한다. */

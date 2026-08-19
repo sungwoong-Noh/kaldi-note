@@ -2,6 +2,8 @@ package com.kaldinote.recipe.application;
 
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
+import com.kaldinote.common.response.PageParams;
+import com.kaldinote.common.response.PageResponse;
 import com.kaldinote.gear.domain.GrinderModel;
 import com.kaldinote.gear.infrastructure.BrewerRepository;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
@@ -17,6 +19,7 @@ import com.kaldinote.recipe.infrastructure.RecipeRepository;
 import com.kaldinote.recipe.infrastructure.RecipeStepRepository;
 import com.kaldinote.recipe.presentation.dto.CreateRecipeRequest;
 import com.kaldinote.recipe.presentation.dto.RecipeResponse;
+import com.kaldinote.recipe.presentation.dto.RecipeSummaryResponse;
 import com.kaldinote.recipe.presentation.dto.StepRequest;
 import com.kaldinote.recipe.presentation.dto.UpdateRecipeRequest;
 import com.kaldinote.user.application.FollowService;
@@ -25,6 +28,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +39,9 @@ public class RecipeService {
 
   private static final BigDecimal MICRON_MIN = new BigDecimal("100");
   private static final BigDecimal MICRON_MAX = new BigDecimal("2000");
+
+  private static final Sort LIST_SORT =
+      Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
 
   private final RecipeRepository recipeRepository;
   private final RecipeStepRepository recipeStepRepository;
@@ -79,6 +86,19 @@ public class RecipeService {
 
   public RecipeResponse get(Long userId, Long recipeId) {
     return RecipeResponse.from(findViewable(userId, recipeId));
+  }
+
+  /**
+   * 볼 수 있는 레시피 목록. 정렬은 서버가 고정한다(sort 파라미터를 열지 않는다).
+   *
+   * <p>createdAt만으로 정렬하면 같은 시각에 만들어진 두 건의 순서를 PostgreSQL이 보장하지 않아 페이지를 넘길 때 중복·누락이 생긴다. id를 2차 기준으로
+   * 둔다.
+   */
+  public PageResponse<RecipeSummaryResponse> list(
+      Long viewerId, Long ownerUserId, PageParams params) {
+    return PageResponse.from(
+        recipeRepository.findVisible(viewerId, ownerUserId, params.toPageable(LIST_SORT)),
+        RecipeSummaryResponse::from);
   }
 
   /**

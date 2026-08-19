@@ -1438,8 +1438,20 @@ cd .. && git add . && git commit -m "feat(user): 내 프로필·내 그라인더
 
 **타입 일관성:** `PageParams`/`PageResponse`(Task 1)를 Task 3·4가 같은 시그니처로 쓴다. `requireOwnedLog(...)`(Task 2)를 Task 5가 재사용한다. `analyze(BrewLog)`(Task 4)를 Task 5의 `patch`가 재사용한다.
 
-**검증되지 않은 가정:**
-- **JPQL의 `exists` 서브쿼리 두 개가 붙은 쿼리에 `Pageable`을 넘겼을 때 Hibernate가 `count` 쿼리를 정상 생성하는지.** `Page<T>` 반환은 `select count(r)` 쿼리를 자동 파생하는데, `exists` 서브쿼리가 포함된 JPQL에서 파생이 실패한 사례가 있다. Task 3 Step 2에서 실패 사유가 이것으로 밝혀지면 `@Query(countQuery = "...")`로 count 쿼리를 명시한다.
-- **`:ownerUserId is null` 형태의 널 비교를 Hibernate가 파라미터 타입 추론 없이 처리하는지.** `Long` 파라미터라 문제없을 것으로 보지만, 타입 추론 오류가 나면 `nullif`나 `coalesce` 대신 **Specification 또는 두 개의 쿼리 메서드로 분리**한다. QueryDSL 도입은 이 스펙의 범위가 아니다.
-- **`brewedAt`이 `@PastOrPresent` 제약을 갖는지.** 기존 테스트 주석이 생성 시 그런 제약을 언급한다. `PATCH`에도 같은 제약을 걸어야 하는지는 스펙에 AC가 없다 — 걸지 않는 쪽으로 구현하고, 필요하면 후속 스펙에서 AC와 함께 추가한다.
-- **`RecipeSummaryResponse`가 `steps`를 안 담아도 목록 쿼리가 스텝을 조회하지 않는지.** `Recipe.steps`의 fetch 전략이 `EAGER`면 DTO에서 빼도 쿼리는 나간다. Task 3 Step 4에서 `--info`로 SQL 로그를 보고 확인한다. `EAGER`라면 이 계획에서 전략을 바꾸지 말고(다른 곳에 영향이 크다) 후속 과제로 남긴다.
+**검증되지 않은 가정:** — *아래는 계획 작성 시점의 가정이고, `→` 뒤가 구현 후 실제 결과다.*
+
+- **JPQL의 `exists` 서브쿼리 두 개가 붙은 쿼리에 `Pageable`을 넘겼을 때 Hibernate가 `count` 쿼리를 정상 생성하는지.** `Page<T>` 반환은 `select count(r)` 쿼리를 자동 파생하는데, `exists` 서브쿼리가 포함된 JPQL에서 파생이 실패한 사례가 있다.
+  → **검증하지 않고 회피했다.** 자동 파생에 기대는 대신 `@Query(countQuery = ...)`를 처음부터 명시했다. 따라서 "자동 파생이 되는가"는 **여전히 미확인**이다. 나중에 다른 목록 쿼리를 만들 때 `countQuery` 없이 시작하면 이 위험을 다시 만난다.
+- **`:ownerUserId is null` 형태의 널 비교를 Hibernate가 파라미터 타입 추론 없이 처리하는지.**
+  → **확인됨.** `Long` 파라미터로 문제없이 동작한다. `AC-LIST-16`(필터 지정)과 `AC-LIST-01`(필터 생략)이 같은 쿼리로 통과한다. 브루잉 로그의 필터 3개도 같은 형태로 동작한다.
+- **`brewedAt`이 `@PastOrPresent` 제약을 갖는지.**
+  → **생성에는 있고 `PATCH`에는 걸지 않았다.** `BrewLogPatchRequest.brewedAt`에 제약이 없어 미래 시각으로도 수정된다. 스펙에 AC가 없어 의도적으로 비워둔 것이며, 필요해지면 후속 스펙에서 AC와 함께 추가한다.
+- **`RecipeSummaryResponse`가 `steps`를 안 담아도 목록 쿼리가 스텝을 조회하지 않는지.**
+  → **확인됨.** `Recipe.steps`는 `@OneToMany(mappedBy = "recipe", ...)`이고 fetch 전략을 지정하지 않았다 — JPA 기본값이 `LAZY`다. 요약 DTO가 `getSteps()`를 부르지 않으므로 프록시가 초기화되지 않는다. (SQL 로그를 직접 읽어 확인한 것은 아니고 매핑으로 판단했다.)
+
+**구현 직전 확인하라고 남긴 시그니처 5건 — 전부 해소:**
+- `BusinessException.getErrorCode()` → Lombok `@Getter`로 그대로 존재
+- `JwtTokenProvider`의 파싱 메서드 → **불필요했다.** `RecipeControllerTest`에 `newUser`/`tokenOf` 헬퍼가 이미 있어 `User` 객체에서 id를 바로 얻는다
+- `beanBatchId(String)` 헬퍼 → 실제 시그니처는 `beanBatchId(String token, Instant brewedAt, long daysAgo)`. 계획이 예상한 것보다 헬퍼가 훨씬 충실했다(`newUser`·`tokenOf`·`follow`·`mutualFollow`·`brewLogWith`·`orphan`까지 존재)
+- `DegassingStatus.of(int)`·`BeanBatchRepository.findByIdAndDeletedAtIsNull(...)` → 둘 다 존재, 그대로 재사용
+- 시드 그라인더 `micronsPerClick` → `30.00`(`V5__seed_gear.sql:8`), `BigDecimal` scale 2로 직렬화

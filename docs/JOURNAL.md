@@ -7,6 +7,34 @@
 
 ---
 
+## 2026-08-19 · 목록 조회 API + 브루잉 로그 수정·삭제 — 스펙·계획·구현 전부
+
+**브랜치:** `feat/list-query` · **PR:** 아래 참조
+**상태:** 완료 — `clean check` 초록(테스트 440개), 스펙 10건·AC 360개. 계획 Task 1~6 전부, 수동 확인 3건 중 2건
+
+### 한 일
+- `/interview`로 스펙을 만들고 계획을 쓴 뒤 같은 세션에서 구현까지 했다. 한 세션에 설계와 구현 두 성격이 섞였다(`handover.md`는 나누라고 하지만 사용자가 이어서 요청했다). 브랜치·PR은 하나로 유지해 스택 PR을 피했다
+- 엔드포인트 6개: `GET /recipes`, `GET /brew-logs`, `PATCH`·`DELETE /brew-logs/{id}`, `GET /users/me`, `GET /gear/user-grinders`. AC 62개(`LIST` 36 / `BLEDIT` 19 / `ME` 7), 테스트 68개 추가
+- **`FRIENDS` 공개범위가 그동안 도달 불가능한 상태였다.** 판정 로직은 있었지만 상대의 레시피 `id`를 알아낼 방법이 서버에 없어 핵심 시나리오 6단계가 실행되지 않았다. 목록이 그 구멍을 메웠다
+
+### 발견한 것
+- **공개범위 판정을 SQL로 내려야 했다.** 단건 조회는 엔티티를 로드한 뒤 `FollowService.isMutual`로 자바에서 판정하는데, 목록에 같은 방식을 쓰면 전체를 메모리에 올려야 해 `totalElements`와 페이지네이션이 성립하지 않는다. `Follow`에 대한 `exists` 서브쿼리 두 개를 JPQL에 넣었다. `countQuery`는 자동 파생에 기대지 않고 처음부터 명시했다
+- **`ConstraintViolationException` 핸들러가 없다.** 컨트롤러 파라미터에 `@Min`/`@Max`를 걸면 500이 된다(`GlobalExceptionHandler`는 본문 검증만 다룬다). `PageParams.of()`에서 `BusinessException`을 던지는 방식으로 우회했다. **다른 곳에서 파라미터 검증이 필요해지면 같은 함정을 만난다**
+- **`default-property-inclusion: non_null`이라 null 필드는 키 자체가 사라진다.** `"x": null`이 아니다. 스펙에 "`ownerUserId`가 null이다"로 쓴 AC 3개를 "키가 존재하지 않는다"로 고쳤다. 테스트를 돌려서야 알았다
+- **`user_grinders.is_default`를 `true`로 만드는 경로가 서버 어디에도 없다.** 컬럼과 `findByUserIdAndIsDefaultTrue` 쿼리는 있는데 값을 세팅하는 코드가 없다. 스펙에 `isDefault: true`로 쓴 것이 틀려 `false`로 고쳤다. 기능 추가는 계획 밖이라 스펙의 "열어둔 결정"에 남겼다
+- **시드 CURATED 레시피가 실재하지 않는다.** `architecture.md:236`이 Plan 2에서 넣겠다고 했으나 마이그레이션에 `recipes` INSERT가 없다. 그래서 "레시피가 하나도 없다" Given이 성립했고(`AC-LIST-32`), 대신 시드 관련 수동 확인은 못 했다
+- (확인됨) **`local`과 `test` 프로파일의 JWT 시크릿이 같다.** 덕분에 카카오 실계정 없이 수동 확인을 했다 — DB에 사용자를 직접 넣고 HS256 토큰을 만들어 `bootRun` 서버에 붙였다. 스크립트는 저장소 밖 스크래치패드에 있어 사라진다(아래 참조)
+- (확인됨) `Recipe.steps`는 fetch 전략 미지정이라 `LAZY`다. 요약 DTO가 `getSteps()`를 안 부르므로 N+1이 나지 않는다
+
+### 다음 세션에게
+- **`AuthenticatedUser`가 Swagger에 `user`라는 필수 쿼리 파라미터로 노출된다.** 사용자가 채울 수 없는 값이라 Swagger UI가 지저분하다. **이번에 생긴 게 아니라 기존 19개 엔드포인트 전부에 있던 문제다.** `OpenApiConfig`에 `SpringDocUtils.getConfig().addRequestWrapperToIgnore(AuthenticatedUser.class)` 한 줄이면 전역 해결되지만, 문서 19개가 한꺼번에 바뀌어 이번 범위에서 손대지 않았다
+- **수동 확인용 JWT 생성 스크립트는 저장소에 없다.** 세션 스크래치패드에 `mktoken.py`로 만들었을 뿐이라 다음 세션에는 없다. 다시 필요하면 시크릿 `local-development-only-secret-key-32bytes-minimum`으로 HS256 토큰을 만들면 된다(claims: `iss=kaldi-note`, `sub=<userId>`, `role`, `iat`, `exp`, `jti`). 자주 쓸 것 같으면 `scripts/`에 넣는 것을 고려할 것
+- **시드 CURATED 레시피 추가가 선행 과제로 남았다.** Hoffmann V60·Kasuya 4:6을 `source_type=CURATED`, `owner_user_id=NULL`, `visibility=PUBLIC`으로 넣어야 한다. 이게 없으면 신규 사용자가 포크할 대상이 하나도 없어 서비스 첫인상이 빈 화면이다
+- `PATCH /brew-logs`의 `brewedAt`에는 `@PastOrPresent`가 없다(생성에는 있다). 미래 시각으로 수정된다. 스펙에 AC가 없어 의도적으로 비워뒀다
+- 백엔드 Plan 1~3에 이 스펙까지 끝났다. **다음은 Plan 4(프론트) 착수** — 스펙이 없으므로 `/interview`부터다. 목록·프로필 API가 생겼으니 이제 화면을 그릴 재료는 갖춰졌다
+
+---
+
 ## 2026-08-19 · 인프라 시리즈 블로그 초안 (저장소 밖 산출물)
 
 **브랜치:** `chore/oci-storage-backup`(같은 세션 연장) · **PR:** #63에 이 항목만 추가

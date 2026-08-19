@@ -56,6 +56,11 @@ public class GearController {
     return GrindConversionResponse.from(conversionService.convert(request));
   }
 
+  @GetMapping("/user-grinders")
+  public List<UserGrinderResponse> myGrinders(AuthenticatedUser user) {
+    return gearService.findMyGrinders(user.id());
+  }
+
   @PostMapping("/user-grinders")
   @ResponseStatus(HttpStatus.CREATED)
   @Operation(

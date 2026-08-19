@@ -1,12 +1,17 @@
 package com.kaldinote.brewlog.application;
 
 import com.kaldinote.brewlog.domain.BrewLog;
+import com.kaldinote.brewlog.domain.BrewLogPatch;
 import com.kaldinote.brewlog.domain.BrewLogVisibility;
 import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
+import com.kaldinote.brewlog.presentation.dto.BrewLogPatchRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
+import com.kaldinote.brewlog.presentation.dto.BrewLogSummaryResponse;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
+import com.kaldinote.common.response.PageParams;
+import com.kaldinote.common.response.PageResponse;
 import com.kaldinote.extraction.domain.BrewMeasurement;
 import com.kaldinote.extraction.domain.ExtractionAnalysis;
 import com.kaldinote.extraction.domain.ExtractionAnalyzer;
@@ -28,6 +33,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +44,8 @@ public class BrewLogService {
 
   /** 평가는 ½점 단위 버튼으로만 매긴다. 범위는 DTO가 막고, 배수 여부는 Bean Validation으로 표현할 수 없어 여기서 검사한다. */
   private static final BigDecimal RATING_STEP = new BigDecimal("0.5");
+
+  private static final Sort LIST_SORT = Sort.by(Sort.Order.desc("brewedAt"), Sort.Order.desc("id"));
 
   private final BrewLogRepository brewLogRepository;
   private final RecipeRepository recipeRepository;
@@ -104,27 +112,131 @@ public class BrewLogService {
 
   public BrewLogResponse get(Long userId, Long brewLogId) {
     BrewLog log = findViewable(userId, brewLogId);
-    ExtractionAnalysis analysis =
-        extractionAnalyzer.analyze(
-            new BrewMeasurement(
-                log.getActualDoseG(),
-                log.getActualWaterG(),
-                log.getBeverageWeightG(),
-                log.getTdsPercent()));
-    return BrewLogResponse.from(log, analysis);
+    return BrewLogResponse.from(log, analyze(log));
+  }
+
+  /**
+   * 볼 수 있는 브루잉 로그 목록. 정렬은 brewedAt 내림차순이다 — 어제 내린 것을 오늘 입력해도 시간순이 맞게 들어간다. createdAt으로 정렬하면 과거 기록을
+   * 몰아 입력할 때 순서가 엉킨다.
+   */
+  public PageResponse<BrewLogSummaryResponse> list(
+      Long viewerId, Long recipeId, Long userId, Long beanBatchId, PageParams params) {
+    return PageResponse.from(
+        brewLogRepository.findVisible(
+            viewerId, recipeId, userId, beanBatchId, params.toPageable(LIST_SORT)),
+        log -> BrewLogSummaryResponse.from(log, analyze(log)));
+  }
+
+  /** EY·SCA는 DB에 없다. 저장된 실측값으로 조회할 때마다 계산한다. */
+  private ExtractionAnalysis analyze(BrewLog log) {
+    return extractionAnalyzer.analyze(
+        new BrewMeasurement(
+            log.getActualDoseG(),
+            log.getActualWaterG(),
+            log.getBeverageWeightG(),
+            log.getTdsPercent()));
+  }
+
+  /**
+   * 부분 수정. 실측값이 바뀌면 파생 값을 다시 계산해 저장한다.
+   *
+   * <p>EY·SCA는 여기서 다루지 않는다. DB에 없고 조회할 때마다 계산하므로 실측값만 고치면 자동으로 따라온다. 실제로 다시 저장해야 하는 것은 DB 컬럼인
+   * actualGrindMicronEstimated·daysOffRoast·degassingStatus뿐이다.
+   */
+  @Transactional
+  public BrewLogResponse patch(Long userId, Long brewLogId, BrewLogPatchRequest request) {
+    validateRatingStep(request.rating());
+    BrewLog log = requireOwnedLog(userId, brewLogId);
+
+    BigDecimal micron = recomputeMicron(userId, log, request);
+    Integer daysOffRoast = null;
+    String degassingStatus = null;
+    if (request.brewedAt() != null) {
+      // 재고가 이미 삭제됐으면 다시 셀 수 없다. 과거 기록을 보존하려고 기존 값을 그대로 둔다.
+      BeanBatch batch =
+          beanBatchRepository.findByIdAndDeletedAtIsNull(log.getBeanBatchId()).orElse(null);
+      if (batch != null) {
+        int recomputed = computeDaysOffRoast(request.brewedAt(), batch.getRoastedAt());
+        daysOffRoast = recomputed;
+        degassingStatus = DegassingStatus.of(recomputed).name();
+      }
+    }
+
+    log.applyPatch(toDomainPatch(request), micron, daysOffRoast, degassingStatus);
+    return BrewLogResponse.from(log, analyze(log));
+  }
+
+  /** 그라인더나 설정값이 바뀐 경우에만 다시 계산한다. 그대로면 null을 돌려 기존 값을 유지시킨다. */
+  private BigDecimal recomputeMicron(Long userId, BrewLog log, BrewLogPatchRequest request) {
+    if (request.userGrinderId() == null && request.actualGrindSettingValue() == null) {
+      return null;
+    }
+    Long grinderId =
+        request.userGrinderId() != null ? request.userGrinderId() : log.getUserGrinderId();
+    BigDecimal setting =
+        request.actualGrindSettingValue() != null
+            ? request.actualGrindSettingValue()
+            : log.getActualGrindSettingValue();
+
+    UserGrinder userGrinder = requireOwnedUserGrinder(userId, grinderId);
+    GrinderModel grinderModel =
+        grinderModelRepository
+            .findById(userGrinder.getGrinderModelId())
+            .orElseThrow(
+                () ->
+                    new BusinessException(
+                        ErrorCode.NOT_FOUND,
+                        "그라인더 모델을 찾을 수 없습니다: " + userGrinder.getGrinderModelId()));
+    return computeActualGrindMicronEstimated(grinderModel, setting);
+  }
+
+  private BrewLogPatch toDomainPatch(BrewLogPatchRequest r) {
+    return new BrewLogPatch(
+        r.brewedAt(),
+        r.visibility(),
+        r.actualDoseG(),
+        r.actualWaterG(),
+        r.actualWaterTempC(),
+        r.actualTotalTimeSeconds(),
+        r.actualDrawdownSeconds(),
+        r.userGrinderId(),
+        r.actualGrindSettingValue(),
+        r.beverageWeightG(),
+        r.tdsPercent(),
+        r.rating(),
+        r.acidity(),
+        r.sweetness(),
+        r.body(),
+        r.bitterness(),
+        r.aftertaste(),
+        r.overallNote());
+  }
+
+  @Transactional
+  public void delete(Long userId, Long brewLogId) {
+    requireOwnedLog(userId, brewLogId).softDelete();
   }
 
   /** media 도메인이 업로드 권한을 확인할 때 쓴다. */
   public void requireOwned(Long userId, Long brewLogId) {
-    BrewLog log =
-        brewLogRepository
-            .findById(brewLogId)
-            .orElseThrow(
-                () ->
-                    new BusinessException(ErrorCode.NOT_FOUND, "브루잉 로그를 찾을 수 없습니다: " + brewLogId));
+    requireOwnedLog(userId, brewLogId);
+  }
+
+  /** 소유자 전용 동작(수정·삭제)의 공통 조회. 검증 순서는 404 → 403이다. */
+  private BrewLog requireOwnedLog(Long userId, Long brewLogId) {
+    BrewLog log = findAlive(brewLogId);
     if (!log.isOwnedBy(userId)) {
       throw new BusinessException(ErrorCode.FORBIDDEN, "본인의 브루잉 로그만 접근할 수 있습니다.");
     }
+    return log;
+  }
+
+  /** 소프트 삭제된 로그는 없는 것으로 취급한다. */
+  private BrewLog findAlive(Long brewLogId) {
+    return brewLogRepository
+        .findByIdAndDeletedAtIsNull(brewLogId)
+        .orElseThrow(
+            () -> new BusinessException(ErrorCode.NOT_FOUND, "브루잉 로그를 찾을 수 없습니다: " + brewLogId));
   }
 
   /** media 도메인이 조회(첨부 목록) 권한을 확인할 때 쓴다. */
@@ -134,12 +246,7 @@ public class BrewLogService {
 
   /** 판정 규칙은 RecipeService.findViewable과 같다. enum이 달라 공통 함수로 묶지 않는다. */
   private BrewLog findViewable(Long userId, Long brewLogId) {
-    BrewLog log =
-        brewLogRepository
-            .findById(brewLogId)
-            .orElseThrow(
-                () ->
-                    new BusinessException(ErrorCode.NOT_FOUND, "브루잉 로그를 찾을 수 없습니다: " + brewLogId));
+    BrewLog log = findAlive(brewLogId);
     if (isViewable(userId, log)) {
       return log;
     }

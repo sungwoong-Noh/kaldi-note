@@ -1,7 +1,7 @@
 ---
 id: SEED
 title: 시드 CURATED 레시피 + Swagger 파라미터 정리
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-08-21-plan-seed-curated.md
 ---
 

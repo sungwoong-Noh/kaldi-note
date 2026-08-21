@@ -85,7 +85,7 @@ backend/src/test/java/com/kaldinote/common/config/
 **Interfaces:**
 - Produces: `classpath:db/seed/V11__seed_curated_recipes.sql` — Task 2·3의 `@Sql`이 이 경로를 가리킨다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 이 태스크는 설정 변경이라 단독 테스트를 쓰지 않는다. 대신 **기존 테스트가 계속 초록인 것**이 이 태스크의 검증이다. Step 3에서 시드 파일을 만든 뒤 Step 4에서 전체 `check`를 돌려 `AC-LIST-32` 등이 여전히 통과하는지 확인한다.
 
@@ -95,7 +95,7 @@ backend/src/test/java/com/kaldinote/common/config/
 ./gradlew test --tests '*RecipeControllerTest' | tail -3
 ```
 
-- [ ] **Step 2: locations 설정 변경**
+- [x] **Step 2: locations 설정 변경**
 
 `application.yml`:
 
@@ -122,7 +122,7 @@ spring:
 
 > `application-test.yml`은 `spring.jpa.properties.hibernate.format_sql`을 이미 갖고 있다. `flyway`를 같은 `spring:` 블록 아래 형제로 넣는다. YAML은 같은 키를 두 번 쓰면 뒤엣것이 앞엣것을 통째로 덮으므로 `spring:`을 새로 열지 않는다.
 
-- [ ] **Step 3: 시드 SQL 작성**
+- [x] **Step 3: 시드 SQL 작성**
 
 `backend/src/main/resources/db/seed/V11__seed_curated_recipes.sql`:
 
@@ -200,7 +200,7 @@ WHERE r.title = 'Tetsu Kasuya 4:6 Method';
 
 > **`VALUES` 목록의 타입 추론에 주의한다.** PostgreSQL은 `VALUES` 안 컬럼의 타입을 첫 행에서 추론한다. `water_g`의 첫 행이 `60.0`(numeric)이라 이후 `NULL`은 numeric으로 떨어지지만, `pour_technique`은 첫 행이 `'SPIRAL'`(text)이고 Kasuya 6번 행의 `NULL`은 text가 된다 — 둘 다 대상 컬럼과 호환된다. Step 4에서 실패하면 `NULL::numeric`·`NULL::varchar`로 명시한다.
 
-- [ ] **Step 4: 기존 테스트가 여전히 초록인지 확인**
+- [x] **Step 4: 기존 테스트가 여전히 초록인지 확인**
 
 Run:
 ```bash
@@ -210,7 +210,7 @@ Expected: PASS — 기존 테스트 수가 Step 1에서 기록한 것과 같고,
 
 **여기서 목록 조회 테스트가 깨지면 location 분리가 동작하지 않은 것이다.** `application-test.yml`의 `spring.flyway.locations`가 실제로 먹었는지 확인한다(로그의 `Migrating schema "public" to version "11"`이 test 실행에 나오면 안 된다).
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -230,7 +230,7 @@ cd .. && git add . && git commit -m "feat(seed): 시드 CURATED 레시피 마이
 - Consumes: `classpath:db/seed/V11__seed_curated_recipes.sql` (Task 1), `RecipeRepository`, `AbstractIntegrationTest`
 - Produces: `SeedCuratedRecipesTest` — Task 3이 같은 클래스에 API 레벨 테스트를 덧붙인다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
 package com.kaldinote.recipe;
@@ -414,21 +414,21 @@ class SeedCuratedRecipesTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*SeedCuratedRecipesTest'`
 Expected: FAIL — Task 1의 시드 SQL이 없거나 값이 어긋나면 여기서 잡힌다. Task 1을 이미 마쳤다면 **이 단계에서 바로 통과할 수 있다.** 그 경우 시드 SQL의 값 하나를 일부러 틀리게 고쳐 테스트가 실제로 그것을 잡는지 확인한 뒤 되돌린다 — 통과만 보고 넘어가면 `@Sql`이 적용되지 않았는데도 초록인 상황(예: 경로 오타로 조용히 무시)을 구분할 수 없다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 구현 코드가 없다. Task 1의 SQL이 구현이다. Step 2에서 드러난 불일치만 SQL에서 고친다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*SeedCuratedRecipesTest'`
 Expected: PASS, 9 tests
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -448,7 +448,7 @@ cd .. && git add . && git commit -m "test(seed): 시드 레시피 행·스텝 �
 **Interfaces:**
 - Consumes: `SeedCuratedRecipesTest`(Task 2), `JwtTokenProvider`, `UserRepository`, `GET /api/v1/recipes`, `GET /api/v1/recipes/{id}`, `POST /api/v1/recipes/{id}/fork`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `SeedCuratedRecipesTest`에 필드와 테스트를 덧붙인다:
 
@@ -556,21 +556,21 @@ class SeedIsolationTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*SeedCuratedRecipesTest' --tests '*SeedIsolationTest'`
 Expected: Task 1이 끝난 상태라면 통과할 수 있다. Task 2 Step 2와 같은 방식으로 **일부러 깨뜨려 확인한다** — `application-test.yml`의 `flyway.locations`에서 `db/migration`만 남긴 줄을 잠시 지우면 `SeedIsolationTest`가 `totalElements=2`로 실패해야 한다. 확인 후 되돌린다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 구현 코드가 없다. 실패하면 Task 1의 설정이나 SQL을 고친다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*SeedCuratedRecipesTest' --tests '*SeedIsolationTest'`
 Expected: PASS — `SeedCuratedRecipesTest` 12 tests, `SeedIsolationTest` 1 test
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -590,7 +590,7 @@ cd .. && git add . && git commit -m "test(seed): 시드 목록 노출·포크·�
 **Interfaces:**
 - Consumes: `AuthenticatedUser`, `SpringDocUtils`(springdoc-openapi-starter-common 3.1.0), `GET /v3/api-docs`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
 package com.kaldinote.common.config;
@@ -648,12 +648,12 @@ class OpenApiDocsTest extends AbstractIntegrationTest {
 
 > **`/v3/api-docs`가 인증 없이 열려 있는지 먼저 확인한다.** `SecurityConfig`에서 permitAll이 아니면 이 테스트가 401로 실패한다. 그 경우 요청에 유효한 토큰을 붙이는 방식으로 바꾼다(보안 설정을 느슨하게 바꾸지 않는다 — 이 계획의 범위 밖이다).
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*OpenApiDocsTest'`
 Expected: FAIL — `AC-SWAGGER-01`이 실패한다. `$..parameters[?(@.name == 'user' && @.in == 'query')]`가 비어 있지 않다(엔드포인트 19개분이 잡힌다). `02`·`03`은 이미 통과한다 — 이것이 정상이며, 숨김 적용 후에도 계속 통과해야 하는 회귀 방지선이다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `OpenApiConfig`에 `AuthenticatedUser` 무시 등록을 추가한다:
 
@@ -700,12 +700,12 @@ public class OpenApiConfig {
 
 > `static` 블록이 안 먹으면 `@Bean` 메서드 첫 줄로 옮긴다. springdoc의 `SpringDocUtils`는 전역 정적 설정이라 등록 시점이 스캔보다 앞서기만 하면 된다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*OpenApiDocsTest'`
 Expected: PASS, 3 tests
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -716,12 +716,12 @@ cd .. && git add . && git commit -m "fix(swagger): AuthenticatedUser가 쿼리 �
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — AC 16개가 모두 테스트에서 발견된다
-- [ ] 스펙 `docs/specs/2026-08-21-seed-curated-recipes.md`의 `status`를 `구현완료`로 변경
-- [ ] `docs/plans/2026-08-19-plan-list-query.md`의 미체크 항목(시드 CURATED 확인 불가)에 후속 결과를 주석으로 남긴다
-- [ ] `bootRun`(`local`)으로 서버를 띄워 Flyway가 `V11`을 적용하는 것과, 신규 계정의 `GET /api/v1/recipes`에 시드 2건이 보이는 것을 확인한다
-- [ ] Swagger UI에서 임의 엔드포인트에 `user` 입력란이 없는 것을 눈으로 확인한다
+- [x] `cd backend && ./gradlew clean check` 통과 — 테스트 456개(기준선 440 + 16)
+- [x] `./scripts/check-spec-coverage.sh` 통과 — 스펙 11건·AC 378개. 이 스펙은 AC 18개로 집계된다(본문이 `AC-LIST-03`·`AC-LIST-32`를 상호 참조하며, 스크립트는 문서 안의 모든 AC ID를 센다. 둘 다 기존 테스트에 존재해 통과한다)
+- [x] 스펙 `docs/specs/2026-08-21-seed-curated-recipes.md`의 `status`를 `구현완료`로 변경
+- [x] `docs/plans/2026-08-19-plan-list-query.md`의 미체크 항목(시드 CURATED 확인 불가)에 후속 결과를 주석으로 남긴다
+- [x] `bootRun`(`local`)으로 서버를 띄워 Flyway가 `V11`을 적용하는 것과, 신규 계정의 `GET /api/v1/recipes`에 시드 2건이 보이는 것을 확인한다 — Flyway 로그 `Migrating schema "public" to version "11 - seed curated recipes"` → `Successfully applied 1 migration`, 신규 사용자(id 9) 목록에서 `totalElements: 2`, `ratio` 16.7·15.0 확인. 이어서 Kasuya 시드 포크도 실행해 `sourceType: USER`·`ownerUserId: 9`·`visibility: PRIVATE`·`steps: 6`·`parentRecipeId: 9` 확인
+- [x] Swagger UI에서 임의 엔드포인트에 `user` 입력란이 없는 것을 눈으로 확인한다 — `/v3/api-docs`를 직접 파싱해 `user` 쿼리 파라미터 **0개**, `paths` 26개 유지, `bearerAuth` 스키마 유지 확인(눈확인보다 확정적이라 이 방식으로 대체)
 
 ---
 
@@ -733,7 +733,19 @@ cd .. && git add . && git commit -m "fix(swagger): AuthenticatedUser가 쿼리 �
 
 **타입 일관성:** `RecipeResponse.ratio`(필드명 `ratio`, 스케일 1 HALF_UP), `POST /api/v1/recipes/{id}/fork`(201, `RecipeResponse` 반환), `Recipe`의 getter 이름을 실제 코드에서 확인해 반영함
 
-**검증되지 않은 가정:**
+**검증되지 않은 가정 — 실행 결과 (2026-08-21 기록):**
+
+| # | 가정 | 결과 |
+|---|---|---|
+| 1 | `flyway.locations` 프로파일별 교체 | **확인.** 병합이 아니라 교체된다. `AC-LIST-32`가 계속 통과하는 것이 증거 |
+| 2 | `@Sql` + `@Transactional` 롤백 | **확인.** 매 테스트마다 롤백된다. 9개 테스트가 각각 `hasSize(1)`을 만족했다(누적됐다면 두 번째부터 깨진다) |
+| 3 | `/v3/api-docs` 인증 없이 접근 | **확인.** `SecurityConfig`에 `/v3/api-docs/**` permitAll이 이미 있었다 |
+| 4 | `VALUES` 목록의 `NULL` 타입 추론 | **미검증으로 두지 않고 선제 대응.** 첫 행에 `::numeric`·`::varchar` 캐스트를 넣었다. psql 롤백 트랜잭션으로 SQL을 먼저 돌려 13행이 의도대로 들어가는 것을 확인한 뒤 테스트를 썼다 |
+| 5 | `SpringDocUtils`를 `static` 블록에서 등록 | **확인.** springdoc 스캔보다 앞선다. `@Bean` 안으로 옮길 필요가 없었다 |
+
+**계획의 예측이 빗나간 것:** 격리를 실제로 제거해보니 깨지는 테스트가 예측한 6개(`AC-LIST-03`·`05`·`09`·`13`·`14`·`32`)가 아니라 **9개 이상**이었다. `AC-LIST-02`·`06`·`15`·`31`이 추가로 깨진다 — 시드 2건이 페이지네이션 경계값 테스트의 전체 건수와 정렬 순서까지 흔든다. 격리 결정이 예상보다 더 정당했다.
+
+**원래 적었던 가정 서술 (참고용):**
 
 1. **`spring.flyway.locations`를 프로파일별로 덮어쓸 수 있는가.** Spring Boot의 프로파일 오버라이드는 리스트 타입 프로퍼티를 병합하지 않고 통째로 교체하는 것이 기본 동작이지만, `application-test.yml`이 실제로 `application.yml`의 두 항목을 하나로 교체하는지 Task 1 Step 4에서 확인한다. 병합돼 버리면 `SeedIsolationTest`가 즉시 실패해 잡힌다.
 2. **`@Sql`이 Flyway 이후에 실행되는가.** `@Sql`은 테스트 메서드 직전에 실행되고 Flyway는 컨텍스트 기동 시점에 끝나므로 순서는 보장되지만, `@Transactional`과 조합했을 때 `@Sql`이 같은 트랜잭션에서 롤백되는지 확인한다. 롤백되지 않으면 시드 행이 누적돼 `SeedCuratedRecipesTest`의 `hasSize(1)`이 두 번째 테스트부터 깨진다. 깨지면 `@Sql(executionPhase = BEFORE_TEST_METHOD)` 기본값과 `@Transactional`의 상호작용을 확인하고, 필요하면 클래스 레벨 `@Sql` 대신 `@BeforeEach`에서 스크립트를 실행하거나 `AFTER_TEST_METHOD`로 정리 스크립트를 추가한다.

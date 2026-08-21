@@ -7,6 +7,38 @@
 
 ---
 
+## 2026-08-21 · 시드 CURATED 레시피 + Swagger 파라미터 정리 — 백엔드 마감
+
+**브랜치:** `feat/seed-curated` · **PR:** 아래 참조
+**상태:** 완료 — `clean check` 초록(테스트 456개), 스펙 11건·AC 378개. 계획 Task 1~4 전부, 수동 확인 2건 전부
+
+### 한 일
+- Hoffmann V60(30g/500g/100°C, 7스텝)와 Kasuya 4:6(20g/300g/92°C, 6스텝)을 `owner_user_id=NULL`·`source_type=CURATED`·`visibility=PUBLIC`으로 넣었다. **`architecture.md:236`이 Plan 2에서 넣겠다고 적어둔 것이 계획 문서로 옮겨지지 않은 채 남아 있었다** — `recipe-crud` 스펙은 "후속 관리자 API 소관"으로, `visibility` 스펙(`:508`)은 "포크 스펙의 몫"으로 넘겼고 포크 스펙은 받지 않았다. 그래서 지금까지 아무도 안 했다
+- Swagger에 `user`라는 필수 쿼리 파라미터로 새어 나오던 `AuthenticatedUser`를 `SpringDocUtils.addRequestWrapperToIgnore` 한 줄로 막았다. 앞 세션이 "이번 범위 아니라 손대지 않았다"고 남긴 것이다
+- AC 16개(`SEED` 13 / `SWAGGER` 3), 테스트 16개 추가
+
+### 발견한 것
+- **시드를 모든 프로파일에 넣으면 기존 테스트가 무너진다.** `@Transactional` 롤백으로 테스트끼리는 격리되지만 Flyway가 넣은 행은 전부가 공유한다. 그래서 시드를 `db/seed`라는 별도 location에 두고 `application-test.yml`에서 제외했다. **격리를 실제로 제거해 확인해보니 계획이 예측한 6개가 아니라 9개 이상이 깨졌다** — `AC-LIST-02`·`06`·`15`·`31`이 추가로 깨진다. 시드 2건이 페이지네이션 경계값 테스트의 전체 건수와 정렬 순서까지 흔든다
+- **location을 나누면 시드 SQL이 CI에서 한 번도 실행되지 않는 사각지대가 생긴다.** enum 오타나 제약 위반이 배포 시점에야 드러난다. 그래서 `SeedCuratedRecipesTest`가 `@Sql("/db/seed/V11__seed_curated_recipes.sql")`로 **운영에 나가는 바로 그 파일을** 적용해 검증한다
+- **Task 1을 먼저 끝내면 Task 2·3의 테스트가 곧바로 통과해 TDD의 Red를 볼 수 없다.** 값 2개(`water_temp_c` 100.0→99.0, STIR 스텝 105→104초)를 일부러 틀리게 만들어 `AC-SEED-01`·`02`가 실제로 그것을 잡는 것을 확인한 뒤 되돌렸다. `@Sql` 경로 오타로 스크립트가 조용히 무시됐는데도 초록인 상황과 구분하기 위해서다
+- **분쇄도는 넣지 않았다.** 두 원문 모두 "medium fine"·"coarse"라는 서술뿐이라 특정 그라인더 클릭 수로 옮기면 추측이 된다. `V5__seed_gear.sql`의 "추측값은 넣지 않는다. 틀린 환산값은 값이 없는 것보다 해롭다"와 설계 결정 3번을 그대로 따랐다
+- (확인됨) `spring.flyway.locations`는 프로파일별로 **병합이 아니라 교체**된다
+- (확인됨) `@Sql`은 `@Transactional`과 함께 매 테스트마다 롤백된다. 9개 테스트가 각각 `hasSize(1)`을 만족한 것이 증거다
+- (확인됨) `SpringDocUtils` 등록은 `static` 초기화 블록 시점에 유효하다. springdoc 스캔보다 앞선다
+- (확인됨) `/v3/api-docs/**`는 이미 permitAll이었다
+- **커버리지 스크립트는 스펙 문서 안의 모든 AC ID를 센다.** 본문에서 `AC-LIST-03`·`AC-LIST-32`를 상호 참조했더니 이 스펙이 AC 18개로 집계됐다(실제로는 16개). 둘 다 기존 테스트에 있어 통과하지만, 숫자를 세는 문서를 쓸 때 알아둘 것
+
+### 다음 세션에게
+- **백엔드는 여기서 끝났다. 다음은 Plan 4(프론트) 착수** — 스펙이 없으므로 `/interview`부터다. 이제 시드 콘텐츠가 있으므로 첫 화면을 "빈 목록"이 아니라 실제 데이터 위에 설계할 수 있다
+- **롤백 검증이 여전히 남은 유일한 배포 항목이다**(`docs/plans/2026-08-18-plan-oci-deploy.md`). 일부러 깨진 이미지를 배포해야 해서 잠시 서비스가 내려간다
+- **이번 배포 때 운영 DB에 `V11`이 적용된다.** 로컬에서는 Flyway 로그로 확인했다(`Successfully applied 1 migration ... now at version v11`). 운영 배포 후 `GET /api/v1/recipes`에 시드 2건이 뜨는지 한 번 봐두면 좋다
+- **`source_url`은 유튜브 원본이 아니라 레시피 정리 페이지(honestcoffeeguide.com)다.** 검색 주간 한도에 걸려 원본 영상 URL을 확정하지 못했다. 바꾸려면 새 마이그레이션이 필요하다
+- 시드를 3건 이상으로 늘릴 생각이면 마이그레이션 방식은 한계에 닿는다(내용 수정마다 새 파일). 그때 `POST /admin/recipes`를 만든다
+- `user_grinders.is_default`를 `true`로 세팅하는 경로는 **여전히 서버 어디에도 없다.** 앞 세션이 남긴 항목이 그대로 남아 있다
+- 수동 확인용 JWT 생성 스크립트는 이번에도 스크래치패드에만 만들었다. `scripts/`에 넣는 것을 계속 미루고 있다 — 세 번째 세션에서 또 만들었다
+
+---
+
 ## 2026-08-19 · 목록 조회 API + 브루잉 로그 수정·삭제 — 스펙·계획·구현 전부
 
 **브랜치:** `feat/list-query` · **PR:** 아래 참조

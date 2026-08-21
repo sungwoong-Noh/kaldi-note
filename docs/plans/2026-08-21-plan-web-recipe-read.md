@@ -530,7 +530,7 @@ cd .. && git add . && git commit -m "feat(web): 인증 가드와 401 자동 갱�
 - Consumes: `apiClient`(Task 4)
 - Produces: `recipeSummarySchema`, `useRecipeList()` — Task 6이 같은 스키마 모듈을 쓴다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it('AC-WEB-09 · 카드에 추출 파라미터가 표시된다', async () => {
@@ -557,23 +557,23 @@ it('AC-WEB-12 · 더 보기가 다음 페이지를 뒤에 이어붙인다', asyn
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- Recipe`
 Expected: FAIL — 페이지가 없다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `useInfiniteQuery`로 `getNextPageParam`을 `hasNext ? page + 1 : undefined`로 둔다. 카드는 `<Link href={`/recipes/${id}`}>`로 감싼다(AC-WEB-12가 `getAllByRole('link')`로 센다).
 
 `m:ss` 포맷과 `1:16.7` 조립은 `lib/utils.ts`에 순수 함수로 두고 별도 단위 테스트를 붙인다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- Recipe`
 Expected: PASS, 5 tests
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -595,7 +595,7 @@ cd .. && git add . && git commit -m "feat(web): 레시피 목록 + 더 보기 (A
 **Interfaces:**
 - Consumes: `recipeSchema`(Task 5), `apiClient`(Task 4), 로그인 응답의 `userId`(Task 3)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 // RecipeStepList.test.tsx
@@ -642,24 +642,24 @@ it('AC-WEB-24 · 포크에 성공하면 새 레시피로 이동한다', async ()
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- RecipeDetail RecipeStepList`
 Expected: FAIL — 컴포넌트가 없다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 - `RecipeStepList` — `stepOrder` 순으로 렌더링하고, 붓는 스텝만 누적 물량을 계산한다. **`key`는 `step.id`를 쓴다**(인덱스 금지)
 - 장비 이름은 `useQuery`로 `/gear/brewers`·`/gear/filters`를 부르고 `staleTime: Infinity`로 둔다(마스터 데이터다)
 - 포크 버튼은 `ownerUserId !== currentUserId`일 때만 렌더링한다. `ownerUserId`가 없으면(주인 없는 CURATED) 항상 보인다
 - 포크 실패 시 `mutation.error`의 `message`를 표시하고 버튼을 다시 활성화한다
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test`
 Expected: PASS — 전체 테스트 초록
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build

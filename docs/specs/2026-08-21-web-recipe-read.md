@@ -1,7 +1,7 @@
 ---
 id: WEB
 title: 프론트 첫 슬라이스 — 로그인 + 레시피 읽기 + 포크
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-08-21-plan-web-recipe-read.md
 ---
 
@@ -44,7 +44,7 @@ plan: docs/plans/2026-08-21-plan-web-recipe-read.md
 |---|---|
 | BFF Route Handler | `app/api/auth/*`의 Next.js 서버 핸들러. 브라우저와 백엔드 사이에서 인증만 중계하며 `httpOnly` 쿠키를 심는다 |
 | 직호출 | 브라우저가 Next 서버를 거치지 않고 백엔드(`localhost:8080`)를 바로 부르는 것. 레시피 조회가 여기 해당하며 CORS를 탄다 |
-| 누적 물량 | 1번 스텝부터 해당 스텝까지 붓는 스텝의 `waterG` 합계. 서버가 주지 않고 화면에서 계산한다 |
+| 누적 물량 | 1번 스텝부터 해당 스텝까지 붓는 스텝의 `waterG` 합계. **서버가 `cumulativeWaterG`로 준다** (아래 정정 참조) |
 | 붓는 스텝 | `stepType`이 `BLOOM` 또는 `POUR`인 스텝 |
 | 프리플라이트 | 브라우저가 실제 요청 전에 보내는 `OPTIONS` 요청 |
 
@@ -101,12 +101,18 @@ plan: docs/plans/2026-08-21-plan-web-recipe-read.md
 
 | 값 | 계산식 | 표시 형식 |
 |---|---|---|
-| 누적 물량 | 1번 스텝부터 해당 스텝까지 붓는 스텝 `waterG` 합계 | `60g` (소수점 이하가 0이면 생략) |
+| 값 | 출처 | 표시 형식 |
 | 스텝 시작 시각 | `startAtSeconds` | `0:00`, `0:45`, `1:15` (`m:ss`) |
 | 총 시간 | `totalTimeSeconds` | `3:30` (`m:ss`) |
 | 장비 이름 | `brewerId`·`filterId`를 `/gear/brewers`·`/gear/filters` 결과에서 조회 | `Hario V60 02` (`brand` + 공백 + `name`) |
 
 `ratio`·`doseG`·`waterG`·`waterTempC`는 **서버가 준 값을 그대로 표시한다.** 프론트에서 다시 계산하지 않는다 — 반올림 규칙이 두 곳에 생기면 어긋난다.
+
+> **정정 (2026-08-21 구현):** 이 절의 제목과 첫 항목이 틀렸다. **누적 물량은 서버가 `cumulativeWaterG`로 이미 준다** — 프론트가 계산할 것이 아니었다. 스펙을 쓸 때 실제 응답을 확인하지 않고 "안 줄 것"이라 가정했고, 픽스처도 그 가정으로 지어냈다. 그 결과 테스트 54개가 전부 초록인데 실제 상세 화면은 열리지 않았다(스텝 응답에 `id`가 없는데 스키마가 필수로 요구해 Zod 파싱이 실패했다). **픽스처는 실행 중인 백엔드의 응답을 떠서 만든다** — `src/test/fixtures.ts`에 그렇게 고쳐뒀다.
+>
+> 서버는 붓지 않는 스텝(`WAIT`·`STIR`·`SWIRL`·`DRAWDOWN`)에도 직전 누적값을 실어 보낸다. 표시는 붓는 스텝에만 하므로 `AC-WEB-16`·`AC-WEB-17`은 그대로 유효하다.
+>
+> 스텝에는 `id`가 없다. 식별자는 `stepOrder`이고 `UNIQUE(recipe_id, step_order)`라 리스트 `key`로 안전하다.
 
 ## 에러 처리
 

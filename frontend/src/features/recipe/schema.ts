@@ -1,30 +1,31 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * 백엔드는 `default-property-inclusion: non_null`이라 **null인 필드는 키 자체가 없다.**
  * 그래서 전부 `.nullable()`이 아니라 `.optional()`이다. 이걸 틀리면 시드 레시피처럼 분쇄도가 비어 있는 데이터에서 파싱이 깨진다.
  */
 export const recipeStepSchema = z.object({
-  id: z.number(),
+  // 스텝 응답에는 id가 없다. 식별자는 `stepOrder`이고 레시피 안에서 UNIQUE다.
   stepOrder: z.number(),
-  stepType: z.enum(['BLOOM', 'POUR', 'WAIT', 'SWIRL', 'STIR', 'DRAWDOWN']),
+  stepType: z.enum(["BLOOM", "POUR", "WAIT", "SWIRL", "STIR", "DRAWDOWN"]),
   startAtSeconds: z.number(),
   durationSeconds: z.number(),
   waterG: z.number().optional(),
+  // 서버가 계산해서 준다. 붓지 않는 스텝에도 직전 누적값이 실려 온다.
   cumulativeWaterG: z.number().optional(),
-  pourTechnique: z.enum(['CENTER', 'SPIRAL', 'PULSE', 'EDGE']).optional(),
-  agitation: z.enum(['NONE', 'SWIRL', 'STIR']).optional(),
+  pourTechnique: z.enum(["CENTER", "SPIRAL", "PULSE", "EDGE"]).optional(),
+  agitation: z.enum(["NONE", "SWIRL", "STIR"]).optional(),
   note: z.string().optional(),
 });
 
 const recipeCommonShape = {
   id: z.number(),
   ownerUserId: z.number().optional(),
-  sourceType: z.enum(['USER', 'CURATED']),
+  sourceType: z.enum(["USER", "CURATED"]),
   title: z.string(),
   description: z.string().optional(),
   brewMethod: z.string(),
-  visibility: z.enum(['PRIVATE', 'FRIENDS', 'PUBLIC']),
+  visibility: z.enum(["PRIVATE", "FRIENDS", "PUBLIC"]),
   parentRecipeId: z.number().optional(),
   forkRootId: z.number().optional(),
   doseG: z.number(),
@@ -36,7 +37,7 @@ const recipeCommonShape = {
   filterId: z.number().optional(),
   grinderModelId: z.number().optional(),
   grindSettingValue: z.number().optional(),
-  grindSettingUnit: z.enum(['CLICK', 'NUMBER', 'MICRON']).optional(),
+  grindSettingUnit: z.enum(["CLICK", "NUMBER", "MICRON"]).optional(),
   grindMicronEstimated: z.number().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),

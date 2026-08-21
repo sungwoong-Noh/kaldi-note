@@ -1,3 +1,4 @@
+
 INSERT INTO varieties (name, name_ko, is_system) VALUES
     ('Geisha', '게이샤', true),
     ('Bourbon', '버번', true),

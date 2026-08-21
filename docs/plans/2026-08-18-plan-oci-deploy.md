@@ -589,7 +589,7 @@ OCI_BUCKET_NAME=
 - [x] `main`에 머지하면 `backend.yml`의 `deploy` job이 돌고, GHCR에 `:<git-sha>`·`:latest` 두 태그가 모두 올라간다
 - [x] SSH 액션이 VM에 접속해 배포하고, VM에서 새 컨테이너가 뜬다
 - [x] 배포 직후 `https://api.kaldi-note.today/actuator/health`가 60초 이내 HTTP 200을 반환한다
-- [ ] 헬스체크가 실패하도록 강제했을 때, 직전 태그로 자동 롤백되고 워크플로가 실패로 표시된다
+- [x] 헬스체크가 실패하도록 강제했을 때, 직전 태그로 자동 롤백되고 워크플로가 실패로 표시된다 — **2026-08-21 검증 완료.** `infra/scripts/verify-rollback.sh`로 재현 가능하다. 깨진 이미지를 만들 필요 없이 정상 이미지 두 개로 확인한다 — 진짜 `deploy.sh`를 복사해 `HEALTH_URL`만 가짜 서버로 바꾸고, 그 서버가 처음 12번은 503을 이후에는 200을 돌려주게 하면 "새 배포는 실패하고 직전 이미지는 멀쩡한" 상황이 된다. 결과: 60초 실패 → 롤백 → `헬스체크 통과 (시도 1/12)` → exit 1, 상태 파일 무오염, 실서비스 `UP`. **워크플로 실패 표시**는 `deploy.sh`가 exit 1을 반환하는 것으로 성립한다 — Actions의 `run:` 스텝은 0이 아닌 종료 코드에서 실패로 표시되며, 이 프로젝트에서 이미 여러 번 관측됐다(PR #66의 pnpm 경로 실패 등)
 - [x] `nmap`이나 외부 접속 시도로 5432(PostgreSQL)가 막혀 있는지 확인한다 — 2026-08-19
 - [x] `https://api.kaldi-note.today`가 유효한 HTTPS 인증서로 응답한다(Caddy 자동 발급)
 - [x] `crontab -l`에 백업 작업이 등록돼 있고, 다음날 Object Storage에 백업 파일이 실제로 생긴다 — 2026-08-19, 매분 임시 등록으로 cron 실동작까지 확인

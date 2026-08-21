@@ -8,24 +8,28 @@ Next.js PWA. **주 사용 환경은 "부엌에서 폰으로"** 다. 데스크톱
 >
 > **스펙 없이 코드를 쓰지 않는다.** 기능 개발은 `docs/specs/`의 스펙과 `docs/plans/`의 계획이 승인된 뒤에 시작한다. 테스트에는 인수 조건 ID를 `it('AC-GRIND-08 · ...')` 형태로 반드시 남긴다.
 
-> **현재 상태: 미착수.** 백엔드 Plan 3(배포)이 끝난 뒤 `../docs/plans/2026-08-14-plan4-frontend.md`로 시작한다. 그 전까지 API 검증은 Swagger UI로 한다.
+> **현재 상태: 첫 슬라이스 구현 완료.** 로그인·레시피 목록·상세·포크가 동작한다(`../docs/specs/2026-08-21-web-recipe-read.md`). **아직 로컬 전용이다** — Vercel 배포와 `kaldi-note.today` DNS는 다음 슬라이스다.
+>
+> **Next 16이 설치돼 있다.** 생성된 `AGENTS.md`가 "APIs, conventions, and file structure may all differ from your training data"라고 경고한다. **코드를 쓰기 전에 `node_modules/next/dist/docs/`의 해당 문서를 확인한다.** 실제로 다른 것들: `params`·`searchParams`는 Promise이고, `LayoutProps`·`PageProps` 같은 타입은 빌드가 생성한다(그래서 `typecheck` 스크립트가 `next typegen`을 먼저 돌린다).
+>
+> `pnpm`이 없으면 `corepack enable pnpm`으로 활성화한다.
 
 ---
 
 ## 기술 스택
 
-| 항목 | 선택 | 이유 |
-|---|---|---|
-| 프레임워크 | **Next.js (App Router)** | |
-| 언어 | **TypeScript (strict)** | `any` 금지 |
-| 패키지 매니저 | **pnpm** | |
-| 스타일 | **Tailwind CSS** + **shadcn/ui** | shadcn은 라이브러리가 아니라 소스 복사 방식 — 컴포넌트를 직접 소유하고 수정한다 |
-| 서버 상태 | **TanStack Query** | 캐싱·재검증·낙관적 업데이트 |
-| 폼 | **React Hook Form** + **Zod** | Zod 스키마는 검증과 타입 정의를 겸한다 |
-| 테스트 | **Vitest** + **Testing Library** | |
-| E2E | **Playwright** | 로그인 → 레시피 포크 → 로그 작성 흐름 |
-| 린트/포맷 | **ESLint** + **Prettier** | |
-| 배포 | **Vercel** (무료) | 백엔드는 OCI에 따로 있다 |
+| 항목          | 선택                             | 이유                                                                            |
+| ------------- | -------------------------------- | ------------------------------------------------------------------------------- |
+| 프레임워크    | **Next.js (App Router)**         |                                                                                 |
+| 언어          | **TypeScript (strict)**          | `any` 금지                                                                      |
+| 패키지 매니저 | **pnpm**                         |                                                                                 |
+| 스타일        | **Tailwind CSS** + **shadcn/ui** | shadcn은 라이브러리가 아니라 소스 복사 방식 — 컴포넌트를 직접 소유하고 수정한다 |
+| 서버 상태     | **TanStack Query**               | 캐싱·재검증·낙관적 업데이트                                                     |
+| 폼            | **React Hook Form** + **Zod**    | Zod 스키마는 검증과 타입 정의를 겸한다                                          |
+| 테스트        | **Vitest** + **Testing Library** |                                                                                 |
+| E2E           | **Playwright**                   | 로그인 → 레시피 포크 → 로그 작성 흐름                                           |
+| 린트/포맷     | **ESLint** + **Prettier**        |                                                                                 |
+| 배포          | **Vercel** (무료)                | 백엔드는 OCI에 따로 있다                                                        |
 
 ### PWA인 이유
 
@@ -143,6 +147,7 @@ cd .. && docker compose up -d && cd backend && ./gradlew bootRun
 ```
 
 `.env.local`:
+
 ```
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 NEXT_PUBLIC_KAKAO_CLIENT_ID=<카카오 REST API 키>

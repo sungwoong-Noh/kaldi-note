@@ -670,15 +670,15 @@ cd .. && git add . && git commit -m "feat(web): 레시피 상세 + 푸어 스텝
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 전부 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — AC 28개가 모두 테스트에서 발견된다
-- [ ] `.github/workflows/frontend.yml`의 임시 가드가 **제거**되어 CI가 실제로 검사한다
-- [ ] 스펙 `docs/specs/2026-08-21-web-recipe-read.md`의 `status`를 `구현완료`로 변경
-- [ ] `frontend/CLAUDE.md`의 "현재 상태: 미착수" 문구를 갱신한다
-- [ ] 실제 카카오 계정으로 로그인 → 목록 → 상세 → 포크가 끝까지 동작한다
-- [ ] 375px 뷰포트에서 네 화면 모두 가로 스크롤이 없다
-- [ ] 개발자도구 Application 탭에서 `kaldi_refresh`에 `HttpOnly`가 켜져 있고 `localStorage`가 비어 있다
+- [x] `cd backend && ./gradlew clean check` 통과 — 테스트 459개
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 전부 통과 — 테스트 59개
+- [x] `./scripts/check-spec-coverage.sh` 통과 — AC 28개가 모두 테스트에서 발견된다 (스펙 12건·AC 408개)
+- [x] `.github/workflows/frontend.yml`의 임시 가드가 **제거**되어 CI가 실제로 검사한다 — PR #66에서 실제로 돌아 pnpm 경로 문제를 잡아냈다
+- [x] 스펙 `docs/specs/2026-08-21-web-recipe-read.md`의 `status`를 `구현완료`로 변경
+- [x] `frontend/CLAUDE.md`의 "현재 상태: 미착수" 문구를 갱신한다
+- [x] 실제 카카오 계정으로 로그인 → 목록 → 상세 → 포크가 끝까지 동작한다 — **이 확인에서 버그 3건이 나왔다**(스텝 `id`, 누적 물량 재계산, StrictMode 복구 잠금). 자동 테스트 54개는 전부 초록이었다
+- [x] 375px 뷰포트에서 네 화면 모두 가로 스크롤이 없다
+- [x] 개발자도구 Application 탭에서 `kaldi_refresh` 쿠키가 값과 함께 존재하고 `localStorage`가 비어 있다 — `HttpOnly`·`SameSite=lax` 자체는 `AC-WEB-05`가 실제 Route Handler의 `Set-Cookie`로 기계 검증한다
 
 ---
 

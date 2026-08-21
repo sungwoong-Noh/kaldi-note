@@ -7,6 +7,31 @@
 
 ---
 
+## 2026-08-21 · 배포 스펙 — 프론트 호스팅을 Vercel에서 Cloudflare Workers로 뒤집었다
+
+**브랜치:** `docs/spec-web-deploy` · **PR:** #67
+**상태:** 완료 — 스펙 1건(AC 6개) + 계획 1건(Task 4개). 코드는 건드리지 않았다
+
+### 한 일
+- `docs/specs/2026-08-21-web-deploy.md`(id `WEBDEPLOY`)와 `docs/plans/2026-08-21-plan-web-deploy.md`를 썼다
+- 스펙의 「열어둔 결정」 6개를 계획에서 전부 해소했다
+
+### 발견한 것
+- **문서가 서로 어긋나 있었다.** `CLAUDE.md`·`architecture.md:81`·`frontend/CLAUDE.md:32`는 Vercel인데 `plan-oci-deploy.md:304`는 "루트 도메인은 프론트(Cloudflare)가 맡는다"였다. 8/18에 Caddy 설정을 쓰면서 슬쩍 들어간 줄이다. 정정은 계획 Task 4
+- **Workers로 뒤집은 근거 셋.** ① 도메인 NS가 이미 Cloudflare다(`ernest`/`josephine.ns.cloudflare.com`) ② Vercel KB가 프록시 앞단 구성을 권장하지 않는다 — "reverse proxies like Cloudflare will limit Vercel's traffic visibility" ③ `@opennextjs/cloudflare`가 Next 16 전 버전 지원을 명시한다. **Pages가 아니라 Workers다** — Next 어댑터의 대상이 Workers다
+- **WAF를 걸어야 할 곳은 프론트가 아니라 api다.** `dig A api.kaldi-note.today`가 OCI VM IP(`158.179.172.168`)를 그대로 뱉고 응답에 `cf-ray`가 없다 — 회색 구름이라 WAF가 아무 데도 안 걸려 있다. 브라우저가 백엔드를 직접 호출하는 구조라(BFF는 auth 3개뿐) 공격 표면 전부가 저기다. **별도 스펙(APIWAF)으로 뺐다** — 프론트 배포와 한 덩어리로 묶으면 장애 시 원인이 구분되지 않는다
+- **Workers 무료 한도 확인:** 10만 요청/일, **호출당 CPU 10ms**, 정적 자산 요청은 무료·무제한. 요청 수는 여유가 크지만 CPU 10ms는 SSR에서 실제로 닿을 수 있다
+- **AC를 workerd에서 검증하기로 한 이유.** 프론트 테스트 59개는 전부 Node+jsdom에서 돈다. 배포 대상은 workerd다. BFF 3개가 그쪽에서 쿠키를 심는지는 아무도 검증한 적이 없다
+
+### 다음 세션에게
+- **계획 Task 1이 급소다.** OpenNext가 Next 16.3.1 + React 19.2.8에서 실제로 빌드되는지는 **문서의 지원 범위 선언만 봤고 돌려본 적이 없다.** 거기서 막히면 Task 2~4의 모양이 전부 달라지므로 멈추고 보고할 것
+- **AC-WEBDEPLOY-05가 실패하면 테스트를 고치지 마라.** `cookie.ts:18`이 `NODE_ENV === "production"`으로 `Secure`를 켜는데 OpenNext 번들에서 그 값이 뭔지 모른다. 테스트를 완화하면 운영에서 refresh token이 평문 채널로 나가도 된다고 선언하는 셈이다
+- **이 브랜치는 문서 전용이다.** 구현은 `feat/web-deploy`를 새로 파서 한다
+- **APIWAF 스펙은 아직 없다.** 인터뷰부터 시작해야 한다. 그때 다룰 것: Caddy가 지금 Let's Encrypt로 자동 발급하는데(HTTP-01 추정) 프록시를 켜면 443을 Cloudflare가 종단해 챌린지가 원본에 닿지 못한다 — SSL 모드와 발급 방식을 함께 정해야 한다. VM 방화벽을 Cloudflare 대역으로 조이는 것도 같이
+- 스펙·계획을 쓰면서 확인한 것은 전부 문서에 근거로 남겼다. 계획의 「검증되지 않은 가정」 6개를 먼저 읽을 것
+
+---
+
 ## 2026-08-21 · 세션 종료 정리 — 인계 시점 상태
 
 **브랜치:** `feat/frontend-spec` · **PR:** #66 (Ready, CI 초록, **아직 미머지**)

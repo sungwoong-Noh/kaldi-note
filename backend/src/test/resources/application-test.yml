@@ -1,4 +1,9 @@
 spring:
+  # db/seed(시드 CURATED 레시피)를 제외한다. 시드가 들어오면 목록 조회 테스트가
+  # 전제하는 "레시피가 하나도 없다"가 깨져 AC-LIST-03·05·09·13·14·32가 어긋난다.
+  # 시드 SQL 자체는 SeedCuratedRecipesTest가 @Sql로 직접 적용해 검증한다.
+  flyway:
+    locations: classpath:db/migration
   jpa:
     properties:
       hibernate:

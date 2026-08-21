@@ -60,17 +60,30 @@ echo
 echo "=== 2. 가짜 헬스 서버 기동 (처음 12번 503, 이후 200) ==="
 python3 - > /tmp/fake-health.log 2>&1 <<PY &
 from http.server import BaseHTTPRequestHandler, HTTPServer
+
+# deploy.sh의 wait_healthy는 12번까지 시도한다. 그 12번을 모두 실패시켜야
+# 롤백 분기로 들어간다. 롤백본은 통과해야 하므로 13번째부터 200을 준다.
+FAIL_UNTIL = 12
 count = 0
+
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         global count
+        # /reset은 카운터를 건드리지 않는다. 점검용 요청이 실패 예산을 갉아먹어
+        # 12번째에 통과해버리는 오프바이원을 실제로 겪었다.
+        if self.path == "/reset":
+            count = 0
+            self.send_response(200); self.end_headers(); self.wfile.write(b"reset")
+            return
         count += 1
-        healthy = count > 12
+        healthy = count > FAIL_UNTIL
         self.send_response(200 if healthy else 503)
         self.end_headers()
         self.wfile.write(b'{"status":"UP"}' if healthy else b'{"status":"DOWN"}')
+
     def log_message(self, *args):
         pass
+
 HTTPServer(("127.0.0.1", $FAKE_PORT), Handler).serve_forever()
 PY
 FAKE_PID=$!
@@ -79,7 +92,8 @@ sleep 1
 
 FIRST=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$FAKE_PORT/health")
 [ "$FIRST" = "503" ] || fail "가짜 서버 첫 응답이 $FIRST 다 (503이어야 한다)"
-echo "  첫 응답 503 확인"
+curl -s -o /dev/null "http://127.0.0.1:$FAKE_PORT/reset"
+echo "  첫 응답 503 확인, 카운터 초기화 (점검 요청이 실패 예산을 쓰지 않게)"
 
 echo
 echo "=== 3. 진짜 deploy.sh 복사, HEALTH_URL만 교체 ==="
@@ -92,10 +106,24 @@ echo "=== 4. 실행 — 헬스 실패 60초 대기 후 롤백 ==="
 bash /tmp/deploy-rbtest.sh "$NEW" 2>&1 | tee /tmp/rbtest.out
 EXIT=${PIPESTATUS[0]}
 
-echo
-echo "=== 5. 판정 ==="
+# 판정에 쓸 상태는 자동 복구보다 **먼저** 찍는다. 복구한 뒤에 재면 무엇이 일어났든
+# 원래 태그로 보여 거짓 PASS가 난다.
 AFTER_IMAGE=$(docker inspect --format '{{.Config.Image}}' kaldi-note-app 2>/dev/null)
 AFTER_STATE=$(cat "$STATE_FILE")
+
+# 안전장치: 예상은 "헬스 실패 → 롤백 → exit 1"이다. 배포가 성공해버리면 이 테스트가
+# 운영 상태를 바꾼 것이므로 즉시 원래 태그로 되돌린다. 실제로 이걸 빠뜨려 운영이
+# 예전 이미지로 넘어간 적이 있다.
+if [ "$EXIT" = "0" ]; then
+  echo
+  echo "!! 예상과 다르게 배포가 성공했다. 운영 상태가 바뀌었으므로 되돌린다"
+  echo "   ($CURRENT 로 복구)"
+  "$REAL_SCRIPT" "$CURRENT" || fail "자동 복구 실패 — 수동으로 '$REAL_SCRIPT $CURRENT' 실행할 것"
+  echo "   복구 완료"
+fi
+
+echo
+echo "=== 5. 판정 ==="
 PASS=0
 
 check() { # check <설명> <조건결과>

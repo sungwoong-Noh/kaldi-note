@@ -696,7 +696,7 @@ Authorization: Bearer <토큰>
 
 - [ ] Swagger UI에서 `GET /api/v1/recipes`의 `page`·`size`·`ownerUserId` 파라미터가 설명과 기본값을 갖고 노출된다
 - [ ] 계정 2개로 상호 팔로우한 뒤, 한쪽의 `FRIENDS` 레시피가 상대의 목록에 실제로 나타나고 팔로우를 해제하면 다음 요청부터 사라진다 (`visibility` 계획의 미완료 수동 확인 2건을 이 스펙에서 함께 처리한다)
-- [ ] 시드 CURATED 레시피(Hoffmann V60, Kasuya 4:6)가 신규 계정의 목록 첫 화면에 보이고, 거기서 바로 포크가 된다
+- [x] 시드 CURATED 레시피(Hoffmann V60, Kasuya 4:6)가 신규 계정의 목록 첫 화면에 보이고, 거기서 바로 포크가 된다 — 2026-08-21 `docs/specs/2026-08-21-seed-curated-recipes.md`가 시드를 넣은 뒤 확인 완료. `AC-SEED-10`·`AC-SEED-12`가 자동 검증한다
 
 ## 열어둔 결정
 

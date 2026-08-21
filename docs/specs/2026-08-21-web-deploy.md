@@ -2,7 +2,7 @@
 id: WEBDEPLOY
 title: 프론트엔드 배포 — Cloudflare Workers
 status: 초안
-plan:
+plan: docs/plans/2026-08-21-plan-web-deploy.md
 ---
 
 # 프론트엔드 배포 — Cloudflare Workers 스펙
@@ -169,9 +169,11 @@ VM `.env`의 두 값을 바꾸고 백엔드를 재기동해야 한다. **둘 다
 
 ## 열어둔 결정
 
-- **Worker 이름과 `wrangler` 설정 파일의 위치·형식**(`frontend/wrangler.jsonc` 등) — 구현 계획에서 정한다
-- **`nodejs_compat` 등 호환성 플래그와 `compatibility_date`** — 구현 계획에서 OpenNext 문서를 확인해 정한다
-- **테스트에서 workerd를 띄우는 방식** — `wrangler dev`를 자식 프로세스로 띄울지, 프로그래매틱 API를 쓸지. 구현 계획에서 정한다
-- **OpenNext 빌드 스크립트 이름**(`build:worker` 등) — 구현 계획에서 정한다
-- **문서 3곳의 "Vercel" 표기 정정** — `CLAUDE.md`, `docs/design/2026-08-14-architecture.md:81`, `frontend/CLAUDE.md:32`. 구현 계획의 마지막 태스크로 넣는다
-- **Cloudflare Workers 무료 플랜의 요청 한도가 이 서비스에 충분한지** — 사용자 수가 한 자릿수라 문제될 가능성은 낮지만 확인된 바 없다. 구현 계획에서 확인한다
+인터뷰 시점에 열려 있던 항목은 구현 계획(`docs/plans/2026-08-21-plan-web-deploy.md`)에서 전부 정해졌다. 결과만 남긴다.
+
+- **Worker 이름은 `kaldi-note-web`, 설정은 `frontend/wrangler.jsonc`** — 사람이 Cloudflare에서 Worker를 만들 때 이 이름을 그대로 써야 한다. `services` 자기참조 바인딩이 같은 이름을 가리키기 때문이다
+- **`compatibility_flags`는 `nodejs_compat`·`global_fetch_strictly_public`, `compatibility_date`는 `2024-12-30`** — OpenNext 문서가 요구하는 최소 조건
+- **테스트에서 workerd는 `wrangler dev --local`을 자식 프로세스로 띄운다** — 프로그래매틱 API보다 버전 변화에 덜 민감하다
+- **빌드 스크립트는 `pnpm build:worker`**, 배포는 `pnpm deploy:worker`, 워커 테스트는 `pnpm test:worker`
+- **문서 3곳의 "Vercel" 표기 정정**은 계획의 Task 4다. `oci-deploy` 스펙과 `JOURNAL.md`의 과거 서술은 고치지 않는다 — 그때의 판단을 사후에 바꾸면 방향이 왜 바뀌었는지 추적할 수 없다
+- **Workers 무료 플랜은 10만 요청/일, 호출당 CPU 10ms, 정적 자산 요청은 무료·무제한.** 요청 수는 사용자가 한 자릿수라 여유가 크다. **CPU 10ms는 SSR 페이지에서 실제로 닿을 수 있는 제약이므로** 배포 후 Cloudflare 대시보드에서 실측한다

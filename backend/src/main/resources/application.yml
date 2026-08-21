@@ -30,6 +30,9 @@ management:
       show-details: never
 
 kaldi:
+  cors:
+    # 브라우저에서 백엔드를 직접 부르는 출처. 운영 도메인은 프론트 배포 슬라이스에서 추가한다.
+    allowed-origins: ${KALDI_CORS_ALLOWED_ORIGINS:http://localhost:3000}
   jwt:
     # HS256은 최소 256비트(32바이트) 키가 필요하다. 운영은 환경변수로 주입한다.
     secret: ${KALDI_JWT_SECRET}

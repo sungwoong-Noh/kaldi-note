@@ -1,19 +1,28 @@
 package com.kaldinote.recipe;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.kaldinote.AbstractIntegrationTest;
+import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
 import com.kaldinote.recipe.domain.Recipe;
 import com.kaldinote.recipe.domain.RecipeSourceType;
 import com.kaldinote.recipe.domain.RecipeStep;
 import com.kaldinote.recipe.domain.RecipeVisibility;
 import com.kaldinote.recipe.domain.StepType;
 import com.kaldinote.recipe.infrastructure.RecipeRepository;
+import com.kaldinote.user.domain.User;
+import com.kaldinote.user.infrastructure.UserRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +42,17 @@ class SeedCuratedRecipesTest extends AbstractIntegrationTest {
 
   @Autowired private RecipeRepository recipeRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
+  @Autowired private JwtTokenProvider tokenProvider;
+  @Autowired private UserRepository userRepository;
+
+  /** 레시피를 하나도 만들지 않은 신규 사용자. */
+  private User newUser(String nickname) {
+    return userRepository.save(User.create(null, nickname, null));
+  }
+
+  private String tokenOf(User user) {
+    return "Bearer " + tokenProvider.createAccessToken(user.getId(), user.getRole());
+  }
 
   private Recipe seed(String title) {
     List<Recipe> found =
@@ -162,6 +182,54 @@ class SeedCuratedRecipesTest extends AbstractIntegrationTest {
     for (String title : List.of(HOFFMANN, KASUYA)) {
       assertThat(seed(title).getSourceUrl()).isNotNull().startsWith("https://");
     }
+  }
+
+  @Test
+  @DisplayName("AC-SEED-10 · 레시피가 없는 신규 사용자의 목록에 시드 2건이 보인다")
+  void 신규_사용자_목록에_시드_2건이_보인다() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/recipes").header(HttpHeaders.AUTHORIZATION, tokenOf(newUser("신규가입자"))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(2))
+        .andExpect(jsonPath("$.content[*].title", hasItem(HOFFMANN)))
+        .andExpect(jsonPath("$.content[*].title", hasItem(KASUYA)));
+  }
+
+  @Test
+  @DisplayName("AC-SEED-11 · 시드 레시피 단건 조회의 비율이 정확하다")
+  void 시드_레시피의_비율이_정확하다() throws Exception {
+    String token = tokenOf(newUser("비율보는사람"));
+
+    mockMvc
+        .perform(
+            get("/api/v1/recipes/{id}", seed(HOFFMANN).getId())
+                .header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.ratio").value(16.7));
+
+    mockMvc
+        .perform(
+            get("/api/v1/recipes/{id}", seed(KASUYA).getId())
+                .header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.ratio").value(15.0));
+  }
+
+  @Test
+  @DisplayName("AC-SEED-12 · 신규 사용자가 시드를 포크하면 자기 레시피가 된다")
+  void 신규_사용자가_시드를_포크할_수_있다() throws Exception {
+    User user = newUser("포크하는사람");
+
+    mockMvc
+        .perform(
+            post("/api/v1/recipes/{id}/fork", seed(KASUYA).getId())
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(user)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.sourceType").value("USER"))
+        .andExpect(jsonPath("$.ownerUserId").value(user.getId()))
+        .andExpect(jsonPath("$.visibility").value("PRIVATE"))
+        .andExpect(jsonPath("$.steps.length()").value(6));
   }
 
   private void assertStep(

@@ -8,12 +8,12 @@
 export function formatDuration(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
 /** 소수점 이하가 0이면 지운다. `100.0` → `100`, `93.5` → `93.5` */
 function trimTrailingZero(value: number): string {
-  return value.toFixed(1).replace(/\.0$/, '');
+  return value.toFixed(1).replace(/\.0$/, "");
 }
 
 /** 레시피 카드·헤더의 중량. 계량 정밀도를 드러내려고 스케일 1을 유지한다. */

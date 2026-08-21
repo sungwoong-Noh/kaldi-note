@@ -1,6 +1,6 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, type RenderResult } from '@testing-library/react';
-import type { ReactElement } from 'react';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, type RenderResult } from "@testing-library/react";
+import type { ReactElement } from "react";
 
 /**
  * TanStack Query가 필요한 화면을 렌더링한다.
@@ -16,5 +16,7 @@ export function renderWithQuery(ui: ReactElement): RenderResult {
     },
   });
 
-  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+  return render(
+    <QueryClientProvider client={client}>{ui}</QueryClientProvider>,
+  );
 }

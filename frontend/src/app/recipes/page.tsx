@@ -1,23 +1,31 @@
-'use client';
+"use client";
 
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { ErrorState } from '@/components/ErrorState';
-import { useRequireSession } from '@/features/auth/useRequireSession';
-import { fetchRecipePage } from '@/features/recipe/api';
-import { RecipeCard } from '@/features/recipe/components/RecipeCard';
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { ErrorState } from "@/components/ErrorState";
+import { useRequireSession } from "@/features/auth/useRequireSession";
+import { fetchRecipePage } from "@/features/recipe/api";
+import { RecipeCard } from "@/features/recipe/components/RecipeCard";
 
 export default function RecipesPage() {
   const { ready, onSessionLost } = useRequireSession();
 
-  const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
-    useInfiniteQuery({
-      queryKey: ['recipes'],
-      initialPageParam: 0,
-      queryFn: ({ pageParam }) => fetchRecipePage(pageParam, onSessionLost),
-      // 봉투의 hasNext가 다음 페이지 존재 여부의 유일한 근거다.
-      getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.page + 1 : undefined),
-      enabled: ready,
-    });
+  const {
+    data,
+    error,
+    isPending,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ["recipes"],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => fetchRecipePage(pageParam, onSessionLost),
+    // 봉투의 hasNext가 다음 페이지 존재 여부의 유일한 근거다.
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNext ? lastPage.page + 1 : undefined,
+    enabled: ready,
+  });
 
   if (!ready || isPending) {
     return <Shell>{null}</Shell>;
@@ -36,7 +44,9 @@ export default function RecipesPage() {
   if (recipes.length === 0) {
     return (
       <Shell>
-        <p className="py-12 text-center text-sm text-neutral-500">레시피가 없습니다</p>
+        <p className="py-12 text-center text-sm text-neutral-500">
+          레시피가 없습니다
+        </p>
       </Shell>
     );
   }

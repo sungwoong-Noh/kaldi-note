@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /** 백엔드 공통 에러 형식. message는 사용자에게 그대로 보여줄 수 있는 한국어다. */
 const errorBodySchema = z.object({
@@ -28,7 +28,7 @@ export class ApiError extends Error {
     fieldErrors?: FieldError[];
   }) {
     super(params.message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
     this.code = params.code;
     this.status = params.status;
     this.fieldErrors = params.fieldErrors ?? [];
@@ -36,12 +36,12 @@ export class ApiError extends Error {
 }
 
 /** 응답이 JSON이 아니거나 네트워크가 실패했을 때 쓰는 코드. 백엔드에는 없는 값이다. */
-export const CLIENT_ERROR_CODE = 'CLIENT_ERROR';
+export const CLIENT_ERROR_CODE = "CLIENT_ERROR";
 
-const CLIENT_ERROR_MESSAGE = '일시적인 오류가 발생했습니다.';
+const CLIENT_ERROR_MESSAGE = "일시적인 오류가 발생했습니다.";
 
 function apiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
+  return process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
 }
 
 /** 백엔드 절대 URL을 만든다. `/api/...`로 시작하는 BFF 경로에는 쓰지 않는다. */
@@ -83,7 +83,11 @@ export async function request<T>(
   try {
     response = await fetch(url, rest);
   } catch {
-    throw new ApiError({ code: CLIENT_ERROR_CODE, message: CLIENT_ERROR_MESSAGE, status: 0 });
+    throw new ApiError({
+      code: CLIENT_ERROR_CODE,
+      message: CLIENT_ERROR_MESSAGE,
+      status: 0,
+    });
   }
 
   if (!response.ok) {

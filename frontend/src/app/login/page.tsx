@@ -1,4 +1,4 @@
-import { kakaoAuthorizeUrl, safeNextPath } from '@/features/auth/kakao';
+import { kakaoAuthorizeUrl, safeNextPath } from "@/features/auth/kakao";
 
 /**
  * 카카오 인가 페이지로 보낸다.

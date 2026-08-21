@@ -1,6 +1,6 @@
-import { NextResponse, type NextRequest } from 'next/server';
-import { REFRESH_COOKIE_NAME } from '@/features/auth/cookie';
-import { backendUrl } from '@/lib/api-client';
+import { NextResponse, type NextRequest } from "next/server";
+import { REFRESH_COOKIE_NAME } from "@/features/auth/cookie";
+import { backendUrl } from "@/lib/api-client";
 
 /**
  * 백엔드에서 refresh token을 무효화하고 쿠키를 지운다.
@@ -11,9 +11,9 @@ export async function POST(request: NextRequest) {
   const refreshToken = request.cookies.get(REFRESH_COOKIE_NAME)?.value;
 
   if (refreshToken) {
-    await fetch(backendUrl('/api/v1/auth/logout'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    await fetch(backendUrl("/api/v1/auth/logout"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken }),
     }).catch(() => undefined);
   }

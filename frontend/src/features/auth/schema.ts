@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /** 백엔드 `TokenPair`. refreshToken은 BFF가 쿠키로 옮기므로 브라우저까지 내려가지 않는다. */
 export const tokenPairSchema = z.object({

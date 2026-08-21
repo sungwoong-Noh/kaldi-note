@@ -1,6 +1,11 @@
-import Link from 'next/link';
-import { formatDuration, formatGrams, formatRatio, formatTemperature } from '@/lib/format';
-import type { RecipeSummary } from '../schema';
+import Link from "next/link";
+import {
+  formatDuration,
+  formatGrams,
+  formatRatio,
+  formatTemperature,
+} from "@/lib/format";
+import type { RecipeSummary } from "../schema";
 
 /** 목록의 한 항목. 카드 전체가 링크라 탭 타깃이 크다 — 부엌에서 폰으로 쓰는 환경을 전제한다. */
 export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
@@ -12,7 +17,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
       >
         <div className="flex items-start justify-between gap-2">
           <h2 className="font-medium">{recipe.title}</h2>
-          {recipe.sourceType === 'CURATED' && (
+          {recipe.sourceType === "CURATED" && (
             <span className="shrink-0 rounded bg-neutral-100 px-1.5 py-0.5 text-xs text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
               CURATED
             </span>

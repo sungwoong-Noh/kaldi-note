@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { z } from 'zod';
-import { backendUrl } from '@/lib/api-client';
-import { authedRequest } from '@/lib/authed-fetch';
+import { useQuery } from "@tanstack/react-query";
+import { z } from "zod";
+import { backendUrl } from "@/lib/api-client";
+import { authedRequest } from "@/lib/authed-fetch";
 
 /** 카카오는 이메일 제공 동의가 선택이라 `email`이 없을 수 있다. */
 export const meSchema = z.object({
@@ -9,7 +9,7 @@ export const meSchema = z.object({
   email: z.string().optional(),
   nickname: z.string(),
   profileImageUrl: z.string().optional(),
-  role: z.enum(['USER', 'ADMIN']),
+  role: z.enum(["USER", "ADMIN"]),
   createdAt: z.string(),
 });
 
@@ -23,9 +23,12 @@ export type Me = z.infer<typeof meSchema>;
  */
 export function useMe(onSessionLost?: () => void) {
   return useQuery({
-    queryKey: ['me'],
+    queryKey: ["me"],
     queryFn: () =>
-      authedRequest(backendUrl('/api/v1/users/me'), { schema: meSchema, onSessionLost }),
+      authedRequest(backendUrl("/api/v1/users/me"), {
+        schema: meSchema,
+        onSessionLost,
+      }),
     staleTime: 5 * 60 * 1000,
   });
 }

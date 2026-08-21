@@ -171,14 +171,18 @@ plan: docs/plans/2026-08-21-plan-web-recipe-read.md
 
 #### AC-WEB-03 · 로그인 화면에서 카카오 인가 URL로 이동한다
 
-- **Given** `/login`이 열려 있다
-- **When** "카카오로 로그인" 버튼을 누른다
-- **Then** `https://kauth.kakao.com/oauth/authorize`로 시작하고 `client_id`·`redirect_uri`·`response_type=code`를 포함하는 URL로 이동한다
+- **Given** `/login?next=/recipes/1`이 열려 있다
+- **When** "카카오로 로그인"을 확인한다
+- **Then** `https://kauth.kakao.com/oauth/authorize`로 시작하고 `client_id`·`redirect_uri`·`response_type=code`·`state=%2Frecipes%2F1`을 포함하는 곳을 가리킨다
 - **검증** 페이지 테스트 `LoginPage.test.tsx`
+
+> **정정 (2026-08-21 구현):** 원래 "버튼을 누른다"로 썼으나 **링크(`<a href>`)로 구현했다.** 실제로 하는 일이 다른 문서로의 이동이라, 링크로 두면 새 탭 열기·가운데 클릭이 동작하고 스크린리더도 이동임을 알린다. 검증은 `getByRole('link', { name: '카카오로 로그인' })`의 `href`를 확인한다.
+>
+> **로그인 후 돌아갈 경로는 `state` 파라미터에 싣는다.** 카카오가 그대로 되돌려주므로 콜백에서 꺼내 쓴다. 외부 주소(`//evil.example`)가 들어오면 `/recipes`로 떨어뜨린다 — 오픈 리다이렉트를 막기 위해서다.
 
 #### AC-WEB-04 · 콜백이 인가코드를 넘기고 원래 경로로 돌아간다
 
-- **Given** `/auth/callback?code=test-code&next=%2Frecipes%2F1`이 열린다
+- **Given** `/auth/callback?code=test-code&state=%2Frecipes%2F1`이 열린다 (원래 `next=`로 썼으나 카카오가 돌려주는 것은 `state`다)
 - **When** 페이지가 마운트된다
 - **Then** `POST /api/auth/login`이 `{ "code": "test-code" }`로 호출되고, 성공 후 `/recipes/1`로 이동한다
 - **검증** 페이지 테스트 `AuthCallbackPage.test.tsx`

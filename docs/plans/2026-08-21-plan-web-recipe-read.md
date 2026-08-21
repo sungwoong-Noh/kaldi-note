@@ -116,7 +116,7 @@ frontend/
 **Interfaces:**
 - Produces: `http://localhost:3000` 출처의 브라우저 요청이 통과하는 백엔드 — Task 4~6의 직호출이 이것에 의존한다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
 package com.kaldinote.common.security;
@@ -173,12 +173,12 @@ class CorsConfigTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd backend && ./gradlew test --tests '*CorsConfigTest'`
 Expected: FAIL — `AC-CORS-01`이 실패한다. CORS 설정이 없어 `Access-Control-Allow-Origin` 헤더가 붙지 않는다. `AC-CORS-03`은 상태 코드에 따라 통과할 수도 있다(Spring이 `OPTIONS`를 어떻게 처리하는지에 달림) — **그 경우에도 `01`이 빨간 것이 이 태스크의 Red다.**
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `CorsProperties.java`:
 
@@ -228,12 +228,12 @@ kaldi:
 
 `@ConfigurationProperties`를 쓰므로 `KaldiNoteApplication`에 `@ConfigurationPropertiesScan`이 있는지 확인하고, 없으면 `@EnableConfigurationProperties(CorsProperties.class)`를 `SecurityConfig`에 붙인다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd backend && ./gradlew clean check`
 Expected: PASS — `CorsConfigTest` 3개 포함, 기존 456개도 그대로 초록
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd backend && ./gradlew spotlessApply && ./gradlew clean check
@@ -255,7 +255,7 @@ cd .. && git add . && git commit -m "feat(cors): 브라우저 직호출을 위�
 **Interfaces:**
 - Produces: `apiClient`(fetch 래퍼), `queryClient`, MSW 서버 — Task 3~6이 전부 이것을 쓴다
 
-- [ ] **Step 1: 프로젝트 생성**
+- [x] **Step 1: 프로젝트 생성**
 
 ```bash
 cd frontend
@@ -285,7 +285,7 @@ pnpm dlx shadcn@latest init
 }
 ```
 
-- [ ] **Step 2: 테스트 하네스 구성**
+- [x] **Step 2: 테스트 하네스 구성**
 
 `vitest.config.ts`(jsdom + setup), `vitest.setup.ts`(`@testing-library/jest-dom`, MSW 서버 `beforeAll`/`afterEach`/`afterAll`), `src/test/msw-server.ts`를 만든다.
 
@@ -304,7 +304,7 @@ describe('테스트 하네스', () => {
 });
 ```
 
-- [ ] **Step 3: `.env.example`과 API 클라이언트**
+- [x] **Step 3: `.env.example`과 API 클라이언트**
 
 ```
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
@@ -314,13 +314,13 @@ NEXT_PUBLIC_KAKAO_REDIRECT_URI=http://localhost:3000/auth/callback
 
 `lib/api-client.ts`는 이 태스크에서 **뼈대만** 만든다(baseUrl 결합, JSON 파싱, `{code, message}` 에러를 던지는 것까지). 401 재시도는 Task 4에서 붙인다.
 
-- [ ] **Step 4: CI 가드 제거 ★**
+- [x] **Step 4: CI 가드 제거 ★**
 
 `.github/workflows/frontend.yml`에서 **`프론트엔드 프로젝트 존재 확인` step 전체와 각 step의 `if: steps.guard.outputs.ready == 'true'` 조건을 전부 지운다.**
 
 > **이걸 빠뜨리면 CI가 초록인데 아무것도 검사하지 않는 상태가 된다.** 백엔드에서 같은 함정을 겪었고 `docs/JOURNAL.md` 2026-08-14 항목이 경고로 남겨뒀다.
 
-- [ ] **Step 5: 검증 + 커밋**
+- [x] **Step 5: 검증 + 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -344,7 +344,7 @@ cd .. && git add . && git commit -m "chore(web): Next.js 스캐폴딩 + 테스�
 - Consumes: `apiClient`(Task 2)
 - Produces: `getAccessToken()`/`setAccessToken()`(메모리), `POST /api/auth/login|refresh|logout` — Task 4의 401 재시도가 refresh를 쓴다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 // src/app/login/LoginPage.test.tsx
@@ -417,24 +417,24 @@ it('AC-WEB-05 · refreshToken은 본문에 없고 httpOnly 쿠키로 나간다',
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- auth`
 Expected: FAIL — 모듈이 없어 import 단계에서 깨진다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 - `features/auth/schema.ts` — `LoginResponse`·`TokenPair`를 Zod로 정의하고 `z.infer`로 타입을 뽑는다
 - `app/api/auth/login/route.ts` — 백엔드를 부르고, `tokens.refreshToken`을 `kaldi_refresh` 쿠키(`httpOnly`, `sameSite: 'lax'`, `path: '/'`, `maxAge`는 14일)로 심고, 본문에는 `accessToken`·`userId`·`nickname`만 담아 돌려준다
 - `lib/session.ts` — 모듈 스코프 변수에 accessToken을 보관한다. **저장소에 쓰지 않는다**
 - `app/login/page.tsx` — `next`를 인가 URL의 `state`나 `redirect_uri` 쿼리로 보존한다
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- auth`
 Expected: PASS, 4 tests
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -456,7 +456,7 @@ cd .. && git add . && git commit -m "feat(web): 카카오 로그인 + BFF 토큰
 - Consumes: `POST /api/auth/refresh`(Task 3), `apiClient`(Task 2)
 - Produces: 401을 스스로 처리하는 `apiClient` — Task 5·6은 이걸 그냥 쓰기만 하면 된다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it('AC-WEB-01 · 미인증으로 목록에 접근하면 로그인으로 보낸다', async () => {
@@ -492,23 +492,23 @@ it('AC-WEB-08 · refresh가 무효면 재시도 없이 로그인으로 보낸다
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- RecipesPage`
 Expected: FAIL — 재시도 로직이 없어 `refreshCalls`가 0이다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `apiClient`에 401 처리를 넣는다. **재시도는 정확히 1회**이고, refresh 자체가 실패하거나 `code`가 `REFRESH_TOKEN_INVALID`면 재시도하지 않고 `/login?next=<현재경로>`로 보낸다.
 
 > **동시에 여러 요청이 401을 받는 경우를 주의한다.** 상세 화면은 레시피·브루어·필터를 함께 부르므로 refresh가 3번 호출될 수 있다. 진행 중인 refresh Promise를 공유해 1회로 합친다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- RecipesPage`
 Expected: PASS, 4 tests
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build

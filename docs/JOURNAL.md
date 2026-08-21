@@ -7,6 +7,37 @@
 
 ---
 
+## 2026-08-21 · 프론트 착수 — 스펙·계획 + Task 1~4 (Plan 4 첫 슬라이스)
+
+**브랜치:** `feat/frontend-spec` · **PR:** 아래 참조
+**상태:** 진행 중 — 계획 Task 6개 중 **1~4 완료**, 5·6 미착수. 백엔드 459개·프론트 23개 테스트 초록
+
+### 한 일
+- 세션 앞부분에서 **PR #65를 머지하고 운영 배포까지 확인했다.** Flyway `V11`이 운영 DB에 적용됐고(`success = t`, 05:48:07), 시드 2건이 정확한 값으로 들어갔다(`brewer_id`·`filter_id` 모두 2, 스텝 7·6개). 운영 `/v3/api-docs`에서 `user` 쿼리 파라미터가 **0개**임도 확인했다 — `AC-SWAGGER`가 운영에서 검증됐다
+- `/interview`로 프론트 첫 슬라이스 스펙을 만들고 계획을 쓴 뒤 Task 1~4를 구현했다. 화면 4개(`/login`·`/auth/callback`·`/recipes`·`/recipes/[id]`) 중 **인증 계층까지** 끝냈다. AC 28개(`WEB` 25 / `CORS` 3)
+
+### 발견한 것
+- **백엔드에 CORS가 없었다.** `SecurityConfig`에 `.cors(...)`도 `CorsConfigurationSource` 빈도 없어 브라우저의 프리플라이트가 401로 막혔다. **Swagger UI는 동일 출처이고 `MockMvc`는 실제 프리플라이트를 보내지 않아** 지금까지 드러나지 않았다. "백엔드는 끝났다"는 앞 세션 판단이 프론트 관점에선 한 칸 모자랐다
+- **규약과 백엔드 사이에 틈이 있었다.** `frontend/CLAUDE.md`는 refresh token을 `httpOnly` 쿠키에 두라고 하는데 백엔드는 JSON 본문으로 반환한다. **`httpOnly` 쿠키는 브라우저 JS가 만들 수 없다.** 인증 3개만 Next Route Handler를 BFF로 경유해 쿠키를 심는 방식으로 메웠다 — 백엔드 무변경이다
+- **설치된 Next가 16.3.1이고, 프레임워크가 직접 경고한다.** 생성된 `AGENTS.md`가 *"This is NOT the Next.js you know — read `node_modules/next/dist/docs/` before writing any code"*라고 적어뒀다. 그래서 `params` 시그니처와 Route Handler 쿠키 API를 추측하지 않고 번들 문서에서 확인했다. **다음 세션도 코드를 쓰기 전에 그 문서를 본다**
+- **`tsc --noEmit` 단독으로는 타입 검사가 실패한다.** Next 16이 `LayoutProps` 같은 타입을 빌드 시점에 생성해서, 깨끗한 체크아웃에서 `pnpm typecheck`가 깨진다. **문서와 CI에 적힌 검증 순서(`typecheck → lint → test → build`)가 성립하지 않는다는 뜻이었다.** `next typegen`을 `typecheck` 스크립트 앞에 묶어 문서를 고치지 않고 순서를 지켰다
+- **`.gitignore`의 `.env*`가 `.env.example`까지 제외하고 있었다.** 예외를 추가했다
+- **로그인을 버튼이 아니라 링크로 만들었다.** 하는 일이 다른 문서로의 이동이라 새 탭·가운데 클릭이 동작하고 스크린리더도 이동임을 알린다. 스펙에 정정 주석을 남겼다(`AC-WEB-03`의 검증은 `getByRole('link')`)
+- **동시 401을 refresh 1회로 합쳐야 한다.** 상세 화면은 레시피·브루어·필터를 함께 부르므로 셋이 동시에 401을 받을 수 있고, 합치지 않으면 백엔드가 토큰을 회전시킬 때 뒤의 둘이 무효해진 토큰으로 요청한다. 진행 중인 Promise를 공유해 막았고 테스트로 고정했다
+- **인가코드는 1회용이라 StrictMode의 이중 effect 실행에 취약하다.** `useRef`로 막았다
+- (확인됨) `params`·`searchParams`는 Promise다. `.cors(...)`만 넣으면 `CorsFilter`가 인가 필터보다 앞선다. Route Handler를 Vitest에서 직접 import해 호출할 수 있고 `NextResponse.cookies`가 jsdom에서 동작한다. MSW는 상대 경로도 가로챈다 — **계획의 미검증 가정 5건이 전부 해소됐다**(1건은 반증)
+
+### 다음 세션에게
+- **Task 5(레시피 목록)와 Task 6(상세 + 포크)이 남았다.** 계획 문서의 체크박스가 정확하다 — Step 20개 체크, 10개 미체크. `feat/frontend-spec` 브랜치를 그대로 이어받는다
+- **Task 6이 가장 무겁다(AC 12개).** 장비 id→이름 매핑에 `/gear/brewers`·`/gear/filters`를 부르고 `staleTime`을 길게 잡는 것을 잊지 말 것
+- **`GET /users/me` 호출 시점이 아직 열린 결정이다.** 포크 버튼 노출 판정에 내 `userId`가 필요한데, 로그인 응답의 `userId`를 쓸지 매번 `/users/me`를 부를지 정하지 않았다. 지금은 `lib/session.ts`의 `setCurrentUserId`로 로그인 시점에 넣어두는 방식이 절반쯤 들어가 있다 — 새로고침하면 사라지므로 Task 6에서 결론을 내야 한다
+- **스펙 `status`는 아직 `초안`이다.** Task 5·6이 끝나야 `구현완료`로 바꾼다. 커버리지 스크립트가 초안을 건너뛰므로 지금은 `AC-WEB`·`AC-CORS`가 검사되지 않는다
+- **로컬 Node는 24.3.0인데 CI는 22를 쓴다.** Next 16의 요구는 ≥20.9라 문제없을 것으로 보지만 CI를 아직 돌려보지 않았다. **이 브랜치의 첫 CI 실행이 프론트 워크플로의 첫 실전이다** — `frontend.yml`의 임시 가드를 이번에 제거했으므로 이제 진짜로 검사한다
+- `pnpm`은 이 머신에 없어 `corepack enable pnpm`으로 활성화했다(11.22.0). 새 머신에서도 같은 절차가 필요하다
+- 수동 확인(실제 카카오 로그인, 375px 레이아웃)은 화면이 다 생긴 뒤 Task 6 끝에 한 번에 한다
+
+---
+
 ## 2026-08-21 · 시드 CURATED 레시피 + Swagger 파라미터 정리 — 백엔드 마감
 
 **브랜치:** `feat/seed-curated` · **PR:** 아래 참조

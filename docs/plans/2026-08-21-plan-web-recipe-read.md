@@ -690,7 +690,19 @@ cd .. && git add . && git commit -m "feat(web): 레시피 상세 + 푸어 스텝
 
 **타입 일관성:** 백엔드 응답 필드명을 실제 OpenAPI 문서에서 확인해 반영함 — `LoginResponse{tokens:{accessToken,refreshToken,expiresInSeconds},userId,nickname,newUser}`, `RecipeResponse`에 장비는 `brewerId`·`filterId`만(이름 없음), `PageResponse{content,page,size,totalElements,totalPages,hasNext}`, `ErrorResponse{code,message,fieldErrors}`
 
-**검증되지 않은 가정:**
+**검증되지 않은 가정 — 실행 결과 (2026-08-21 기록):**
+
+| # | 가정 | 결과 |
+|---|---|---|
+| 1 | `create-next-app`이 `CLAUDE.md`를 보존하는가 | **반증.** 비어 있지 않은 디렉터리를 거부하므로 파일을 옮겼다가 되돌렸다. 함께 생성되는 `AGENTS.md`는 `next dev`가 재생성하므로 지우지 않고 커밋한다 |
+| 2 | `params`·`searchParams`가 Promise인가 | **확인.** Next **16.3.1**이 설치됐고 `node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/page.md`가 `params: Promise<{...}>`로 못박는다. `await` 없이는 값을 못 읽는다 — 계획에 적었던 테스트 시그니처는 `Promise.resolve(...)`로 바꾼다 |
+| 3 | Route Handler를 Vitest에서 호출 가능한가 | Task 3에서 확인 |
+| 4 | `OPTIONS`가 인가 필터보다 앞서는가 | **확인.** `.cors(...)`만 넣으면 `CorsFilter`가 앞단에서 처리한다. `authorizeHttpRequests`에 `OPTIONS` permitAll을 추가할 필요가 없었다 |
+| 5 | MSW가 상대 경로를 가로채는가 | Task 3에서 확인 |
+
+**계획을 쓸 때 몰랐던 것:** 설치된 Next가 **16.3.1**이고, 생성된 `AGENTS.md`가 *"This is NOT the Next.js you know — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code"* 라고 경고한다. **코드를 쓰기 전에 번들된 문서를 확인한다.** 로컬 Node는 24.3.0인데 CI는 22를 쓴다(`.github/workflows/frontend.yml`) — 차이가 문제를 일으키면 CI 쪽을 24로 올린다.
+
+**원래 적었던 가정 서술 (참고용):**
 
 1. **`create-next-app`을 비어 있지 않은 `frontend/`에 돌릴 때 `CLAUDE.md`가 보존되는가.** 덮어쓰기 경고가 날 수 있다. Task 2 Step 1에서 확인하고, 위험하면 파일을 옮겼다가 되돌린다.
 2. **Next 15/16의 `searchParams`·`params`가 Promise인가.** App Router의 최신 버전은 이 둘을 비동기로 넘긴다. 테스트에서 동기 객체로 렌더링하면 어긋난다 — Task 3 Step 2에서 실제 버전을 확인하고 테스트 시그니처를 맞춘다.

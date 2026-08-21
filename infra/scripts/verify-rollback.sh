@@ -137,10 +137,20 @@ grep -q "롤백 성공" /tmp/rbtest.out; check "롤백 성공 메시지가 찍�
 
 echo
 echo "=== 6. 실서비스 확인 ==="
-sleep 3
-REAL=$(curl -fsS https://api.kaldi-note.today/actuator/health 2>/dev/null)
+# 롤백 컨테이너가 막 떴을 수 있다. Spring 앱은 기동에 20~30초가 걸리므로
+# 한 번 물어보고 끝내면 아직 안 뜬 것을 "장애"로 오판한다. deploy.sh의
+# wait_healthy와 같은 간격으로 최대 60초 기다린다.
+REAL=""
+for i in $(seq 1 12); do
+  REAL=$(curl -fsS https://api.kaldi-note.today/actuator/health 2>/dev/null)
+  case "$REAL" in *'"status":"UP"'*) break ;; esac
+  sleep 5
+done
 echo "  $REAL"
-case "$REAL" in *'"status":"UP"'*) check "서비스가 정상이다" 0 ;; *) check "서비스가 정상이다" 1 ;; esac
+case "$REAL" in
+  *'"status":"UP"'*) check "서비스가 정상이다 (시도 $i/12)" 0 ;;
+  *) check "서비스가 정상이다 — 60초 기다려도 UP이 아니다" 1 ;;
+esac
 
 echo
 if [ "$PASS" = "0" ]; then

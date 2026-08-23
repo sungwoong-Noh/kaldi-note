@@ -447,7 +447,7 @@ git add . && git commit -m "test(web): workerd 스모크 테스트 (AC-WEBDEPLOY
 **Interfaces:**
 - Consumes: Task 1의 `pnpm build:worker`, Task 2의 `pnpm test:worker`
 
-- [ ] **Step 1: 기존 check job에 워커 테스트 추가**
+- [x] **Step 1: 기존 check job에 워커 테스트 추가**
 
 `빌드` 단계 뒤에 이어 붙인다:
 ```yaml
@@ -457,7 +457,7 @@ git add . && git commit -m "test(web): workerd 스모크 테스트 (AC-WEBDEPLOY
         run: pnpm test:worker
 ```
 
-- [ ] **Step 2: deploy job 추가**
+- [x] **Step 2: deploy job 추가**
 
 ```yaml
   deploy:
@@ -498,7 +498,21 @@ git add . && git commit -m "test(web): workerd 스모크 테스트 (AC-WEBDEPLOY
 
 > **오프바이원을 주의한다.** 지난 세션에서 검증 스크립트의 재시도 횟수를 한 번 소진해 롤백이 아니라 배포 성공으로 끝난 사고가 있었다(`docs/JOURNAL.md` 2026-08-21). 위 루프는 6회 시도하고 각 시도 뒤에 5초를 쉬므로, 마지막 실패 후에도 5초를 더 기다린 뒤 종료한다. 총 대기가 30초를 넘는 것은 의도된 여유다.
 
-- [ ] **Step 3: 워크플로 문법 검증**
+> **★ 실행 결과(2026-08-23) — 위 Step 2 코드는 틀렸다. 고쳐서 구현했다.**
+>
+> `opennextjs-cloudflare --help`가 `deploy`를 **"Deploy a *built* OpenNext app"** 으로 정의한다. 빌드를 포함하지 않는다. 위 코드처럼 `pnpm deploy:worker` 하나만 돌리면 **올릴 산출물이 없고**, `NEXT_PUBLIC_*`를 배포 단계 `env`에 걸어봐야 그 값들은 빌드 타임에 번들에 박히므로 **아무 효과가 없다.**
+>
+> 실제 구현은 단계를 둘로 나눴다:
+> - **빌드 단계** — `NEXT_PUBLIC_*` 3개를 여기 준다. `run: pnpm build:worker`
+> - **배포 단계** — `CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`만. `run: pnpm deploy:worker`
+>
+> **스모크 체크 스크립트는 양쪽 경로를 로컬에서 실제로 돌려 확인했다**(운영에 들이대기 전에 로컬에서 먼저 돌린다 — 지난 세션 교훈):
+> - 실패 경로(미배포 상태의 `kaldi-note.today`): `시도 1/6`~`시도 6/6` 정확히 6회 → exit 1, 31초. **오프바이원 없음**
+> - 성공 경로(`api.kaldi-note.today/actuator/health`로 URL만 교체): `스모크 체크 통과 (시도 1/6)` → exit 0
+>
+> `gh workflow view`는 푸시된 워크플로만 보므로 쓰지 않았다. 대신 YAML을 파싱해 job 2개·의존 관계·단계 순서를 대조했다.
+
+- [x] **Step 3: 워크플로 문법 검증**
 
 Run:
 ```bash

@@ -60,3 +60,70 @@ jobs:
       - name: 빌드
         working-directory: frontend
         run: pnpm build
+
+      # 위 테스트 59개는 Node + jsdom에서 돈다. 배포 대상은 workerd다.
+      # 이 단계만이 "노드에선 되는데 Workers에선 안 되는" 부류를 잡는다.
+      # OpenNext 빌드를 포함하므로 다른 단계보다 느리다.
+      - name: 워커 테스트
+        working-directory: frontend
+        run: pnpm test:worker
+
+  deploy:
+    name: Cloudflare Workers 배포
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: pnpm 설치
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: frontend/package.json
+
+      - name: Node 22 설치
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: 의존성 설치
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      # NEXT_PUBLIC_*은 런타임 값이 아니라 빌드 타임에 번들에 박힌다.
+      # 그래서 이 단계에 줘야 한다 — 배포 단계에 걸면 번들에 들어가지 않는다.
+      # opennextjs-cloudflare deploy는 "이미 빌드된" 앱을 올릴 뿐 빌드하지 않는다.
+      - name: 빌드
+        working-directory: frontend
+        env:
+          # 공개값이라 리터럴로 둔다 — 무엇이 배포되는지 diff에 보이는 편이 낫다.
+          NEXT_PUBLIC_API_BASE_URL: https://api.kaldi-note.today
+          NEXT_PUBLIC_KAKAO_REDIRECT_URI: https://kaldi-note.today/auth/callback
+          # 카카오 REST API 키. 어차피 브라우저 번들에 노출되지만 저장소에는 남기지 않는다.
+          NEXT_PUBLIC_KAKAO_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_KAKAO_CLIENT_ID }}
+        run: pnpm build:worker
+
+      - name: 배포
+        working-directory: frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm deploy:worker
+
+      - name: 스모크 체크
+        run: |
+          # Workers는 부팅 과정이 없다. 백엔드의 60초를 베끼지 않는다.
+          for i in $(seq 1 6); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://kaldi-note.today/login || true)
+            if [ "$code" = "200" ]; then
+              echo "스모크 체크 통과 (시도 $i/6)"
+              exit 0
+            fi
+            echo "시도 $i/6: HTTP $code"
+            sleep 5
+          done
+          echo "30초 안에 200을 받지 못했다"
+          exit 1

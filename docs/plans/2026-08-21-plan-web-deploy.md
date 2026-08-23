@@ -294,7 +294,7 @@ git add . && git commit -m "chore(web): OpenNext 빌드 파이프라인 (AC-WEBD
 - Consumes: Task 1의 `.open-next/worker.js`, `pnpm build:worker`, `STUB_PORT`
 - Produces: `pnpm test:worker`가 AC 6개를 전부 검사하는 상태
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `frontend/src/test/worker/smoke.test.ts`:
 ```ts
@@ -352,12 +352,12 @@ describe("WorkerSmokeTest", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test:worker`
 Expected: FAIL — 5개 전부. `localhost:8787`에 아무것도 떠 있지 않아 `fetch`가 `ECONNREFUSED`로 던진다.
 
-- [ ] **Step 3: globalSetup에 백엔드 스텁과 workerd 기동 추가**
+- [x] **Step 3: globalSetup에 백엔드 스텁과 workerd 기동 추가**
 
 `globalSetup.ts`에 추가한다. 빌드(Task 1 Step 6) 뒤에 이어진다:
 
@@ -409,7 +409,7 @@ async function waitForHttp(url: string, timeoutMs: number) {
 
 > **`loginResponseSchema`와 스텁 응답의 모양이 일치해야 한다.** 지어낸 픽스처는 코드가 아니라 내 가정을 검증한다(`docs/conventions/frontend.md`). **스텁을 쓰기 전에 `frontend/src/features/auth/schema.ts`의 `loginResponseSchema`를 열어 필드 이름과 중첩 구조를 그대로 옮긴다.** 위 코드는 `route.ts:49~56`에서 읽어낸 모양이지만, 스키마 원본과 대조해 확인한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test:worker`
 Expected: PASS, 6 tests (Task 1의 build 1개 + smoke 5개)
@@ -418,7 +418,17 @@ Expected: PASS, 6 tests (Task 1의 build 1개 + smoke 5개)
 
 **AC-04·05가 `global_fetch_strictly_public` 때문에 실패할 수도 있다.** 이 플래그는 워커의 `fetch`를 공개 인터넷 규칙에 맞추는데, `localhost` 스텁으로의 호출이 막힐 가능성이 있다. 막히면 스텁을 워커 바인딩으로 바꾸거나 이 테스트에 한해 플래그를 빼는 방안을 검토한다.
 
-- [ ] **Step 5: 커밋**
+> **실행 결과(2026-08-23) — PASS, 6 tests. 위 두 우려는 모두 기우였다.**
+>
+> - **AC-WEBDEPLOY-05 통과** → OpenNext 번들에서 `process.env.NODE_ENV`가 `"production"`이다. `cookie.ts:18`을 고칠 필요가 없었다
+> - **AC-04·05 통과** → `global_fetch_strictly_public`이 `localhost` 스텁 호출을 막지 않았다. 스텁을 바인딩으로 바꾸는 대안은 불필요
+> - **`GET /`는 정확히 `307 Temporary Redirect`였다.** 스펙이 스모크 체크 대상으로 `/login`을 고른 판단이 맞았다 — 루트로 200을 기대했으면 실패했을 것이다
+>
+> `wrangler dev` 기동에 걸린 시간을 포함해 스위트 전체가 13.6초다.
+>
+> **`globalSetup`이 계획보다 커졌다.** `waitForHttp`(최대 120초 폴링)로 workerd 준비를 기다리고, teardown 함수를 반환해 워커 프로세스와 스텁 서버를 함께 내린다. 준비 시간을 `sleep`으로 때우지 않은 것은 지난 세션의 실패(`docs/JOURNAL.md` 2026-08-21, "검사 시점을 대상의 준비 시간에 맞추지 않았다")를 반복하지 않기 위해서다.
+
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm format && cd ..
@@ -561,8 +571,8 @@ git add . && git commit -m "docs: 프론트 배포 대상을 Cloudflare Workers�
 이 계획은 확인된 문서 위에 서 있지만, 아래는 **직접 돌려보기 전에는 모르는 것들**이다. 실제로 이 중 하나라도 어긋나면 계획을 고쳐야 한다.
 
 1. ~~**OpenNext가 Next 16.3.1 + React 19.2.8에서 빌드된다.**~~ → **확인됨(2026-08-23).** `@opennextjs/cloudflare 1.20.2`로 종료 코드 0, 번들 생성. 우려했던 세 지점(산출물 구조 변화·typegen 충돌·React 버전 불일치) 모두 발생하지 않았다.
-2. **`wrangler dev --local`로 띄운 workerd가 `localhost` 스텁으로 `fetch`할 수 있다.** `global_fetch_strictly_public` 플래그와 충돌할 가능성이 있다(Task 2 Step 4에 대안을 적어뒀다).
-3. **OpenNext 번들에서 `process.env.NODE_ENV`가 `"production"`이다.** 아니면 AC-WEBDEPLOY-05가 실패하고, 그건 테스트가 아니라 `cookie.ts`를 고쳐야 하는 신호다.
+2. ~~**`wrangler dev --local`로 띄운 workerd가 `localhost` 스텁으로 `fetch`할 수 있다.**~~ → **확인됨(2026-08-23).** `global_fetch_strictly_public`이 켜진 채로 AC-04·05가 통과했다. 대안은 불필요했다.
+3. ~~**OpenNext 번들에서 `process.env.NODE_ENV`가 `"production"`이다.**~~ → **확인됨(2026-08-23).** AC-WEBDEPLOY-05가 통과했다 — 쿠키에 `Secure`가 실제로 붙는다. `cookie.ts`는 손대지 않았다.
 4. **`wrangler.jsonc`의 `services` 자기참조 바인딩에 쓴 이름 `kaldi-note-web`이 실제 Worker 이름과 같아야 한다.** 파싱 레벨은 `wrangler deploy --dry-run`으로 확인했다(바인딩 2개 인식). **다만 사람이 Cloudflare에서 Worker를 만들 때 다른 이름을 쓰면 여전히 어긋난다** — 실제 배포 전까지 열려 있다.
 5. **CPU 10ms/호출 한도가 이 앱의 SSR에 충분하다.** 레시피 상세는 클라이언트 렌더가 대부분이라 여유가 있을 것으로 보지만 측정한 적이 없다. 배포 후 Cloudflare 대시보드에서 실제 CPU 시간을 확인한다.
 6. ~~**`vitest.config.mts`의 `include`가 `src/test/worker/`를 집어삼키지 않는다.**~~ → **깨졌다(2026-08-23).** 실제로 집어삼킨다. `exclude`에 `src/test/worker/**`·`.open-next/**`를 추가해 막았다. 함께 드러난 것: `eslint.config.mjs`도 `.open-next/**`를 무시해야 한다(안 하면 lint가 377 errors로 실패). 둘 다 Step 2에 기록했다.

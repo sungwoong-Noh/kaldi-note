@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // OpenNext 빌드 산출물. 생성된 번들이라 린트 대상이 아니다.
+    ".open-next/**",
+    ".wrangler/**",
   ]),
 ]);
 

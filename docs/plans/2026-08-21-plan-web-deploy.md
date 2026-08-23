@@ -80,7 +80,7 @@ frontend/CLAUDE.md                        Modify: 같음
 
 > **이 태스크가 이 계획에서 가장 불확실하다.** Next 16.3.1 + React 19.2.8 조합에서 OpenNext가 실제로 도는지는 문서의 지원 범위 선언(`"All minor and patch versions of Next.js 16 ... are supported"`)만 확인했을 뿐 직접 돌려본 적이 없다. **Step 3에서 막히면 뒤 태스크의 모양이 전부 달라지므로, 여기서 실패하면 계획을 이어가지 말고 사람에게 보고한다.**
 
-- [ ] **Step 1: 의존성 설치**
+- [x] **Step 1: 의존성 설치**
 
 Run:
 ```bash
@@ -94,7 +94,14 @@ Expected: `package.json`에 두 패키지가 추가되고 설치가 성공한다
 pnpm exec wrangler --version
 ```
 
-- [ ] **Step 2: 설정 파일 작성**
+> **실행 결과(2026-08-23):** `@opennextjs/cloudflare 1.20.2`, `wrangler 4.125.0`.
+>
+> **계획에 없던 것 — `pnpm-workspace.yaml`의 `allowBuilds`.** 설치가 `[ERR_PNPM_IGNORED_BUILDS] Ignored build scripts: esbuild, workerd`로 끝나고, pnpm이 `frontend/pnpm-workspace.yaml`에 두 항목을 `set this to true or false` 자리표시자로 추가한다. **둘 다 `true`로 바꾸고 `pnpm install`을 다시 돌려야 한다** — `workerd`는 Workers 런타임 바이너리를 postinstall로 받아오므로 막히면 Task 2의 `wrangler dev`가 뜨지 않는다. 심볼릭 링크가 생긴 것만으로는 확인이 안 되니 바이너리를 직접 실행해 검증한다:
+> ```bash
+> node_modules/.pnpm/node_modules/.bin/workerd --version   # workerd 2026-08-20
+> ```
+
+- [x] **Step 2: 설정 파일 작성**
 
 `frontend/wrangler.jsonc`:
 ```jsonc
@@ -131,9 +138,17 @@ export default defineCloudflareConfig({});
 `frontend/.gitignore`에 추가:
 ```
 .open-next
+.wrangler
 ```
 
-- [ ] **Step 3: 빌드 스크립트 추가 후 실제로 돌려본다**
+> **실행 결과(2026-08-23) — 계획이 놓친 무시 설정 둘.**
+>
+> 1. **`eslint.config.mjs`의 `globalIgnores`에 `.open-next/**`·`.wrangler/**`를 넣어야 한다.** 안 넣으면 `pnpm lint`가 생성된 번들을 검사해 **377 errors / 12354 warnings**로 터진다. `.gitignore`와 ESLint의 ignore는 별개다.
+> 2. **`vitest.config.mts`의 `exclude`에 `src/test/worker/**`·`.open-next/**`를 넣어야 한다.** 이 계획은 Step 8에서 확인하라고 했지만 **Step 4보다 먼저 해야 한다** — 기존 설정의 `include`가 기본값이라 워커 테스트를 집어삼키고, 그러면 `pnpm test`가 매번 OpenNext 빌드를 돌려 4초짜리 스위트가 분 단위가 된다.
+>
+> 반면 **`.prettierignore`는 필요 없다.** Prettier v3는 `.gitignore`를 이미 존중한다 — `prettier --check .`로 `.open-next` 아래 대상이 0개임을 확인했다.
+
+- [x] **Step 3: 빌드 스크립트 추가 후 실제로 돌려본다**
 
 `package.json`의 `scripts`에 추가:
 ```json
@@ -154,7 +169,17 @@ Expected: 종료 코드 0. `.open-next/worker.js`와 `.open-next/assets/`가 생
 
 **실패하면 여기서 멈추고 보고한다.** 흔히 걸릴 지점: Next 16의 빌드 산출물 구조 변화, `next typegen`이 만드는 타입과의 충돌, React 19.2.8과 어댑터의 불일치. 어느 쪽이든 계획 수정이 필요하다.
 
-- [ ] **Step 4: 실패하는 테스트 작성**
+> **실행 결과(2026-08-23) — 통과했다.** 종료 코드 `0`, `.open-next/worker.js`(2278바이트)와 `.open-next/assets/` 생성. **이 계획의 가장 큰 가정이 확인됐다.** 우려했던 세 지점 중 어느 것도 발생하지 않았다.
+>
+> 추가로 `wrangler`가 설정을 읽는지도 검증했다(계획에 없던 단계):
+> ```bash
+> pnpm exec wrangler deploy --dry-run
+> ```
+> 결과: 바인딩 2개(`WORKER_SELF_REFERENCE`·`ASSETS`)를 인식, 자산 29개 / 6609 KiB(gzip 1304 KiB), 종료 코드 0. **가정 4번(`services` 자기참조 이름이 실제 Worker 이름과 같아야 한다)이 최소한 파싱 레벨에서 확인됐고, Task 3의 배포 경로도 미리 검증된 셈이다.**
+>
+> 주의: `pnpm format`이 `wrangler.jsonc`에 trailing comma를 넣는다. JSONC 문법상 유효하고 위 dry-run이 그 상태로 통과했으므로 되돌리지 않는다.
+
+- [x] **Step 4: 실패하는 테스트 작성**
 
 `frontend/vitest.worker.config.mts`:
 ```ts
@@ -198,7 +223,7 @@ describe("WorkerBuildTest", () => {
 });
 ```
 
-- [ ] **Step 5: 테스트 실행 — 실패 확인**
+- [x] **Step 5: 테스트 실행 — 실패 확인**
 
 `globalSetup.ts`를 아직 만들지 않았으므로 먼저 빈 파일로 만든 뒤, `.open-next`를 지우고 돌린다.
 
@@ -208,7 +233,7 @@ cd frontend && rm -rf .open-next && pnpm test:worker
 ```
 Expected: FAIL — `.open-next/worker.js`가 없어 `existsSync`가 `false`를 반환한다.
 
-- [ ] **Step 6: globalSetup에 빌드 실행 추가**
+- [x] **Step 6: globalSetup에 빌드 실행 추가**
 
 `frontend/src/test/worker/globalSetup.ts`:
 ```ts
@@ -236,19 +261,19 @@ export default async function setup() {
 }
 ```
 
-- [ ] **Step 7: 테스트 실행 — 통과 확인**
+- [x] **Step 7: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && rm -rf .open-next && pnpm test:worker`
 Expected: PASS, 1 test
 
-- [ ] **Step 8: 기존 검증이 깨지지 않았는지 확인**
+- [x] **Step 8: 기존 검증이 깨지지 않았는지 확인**
 
 Run: `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build`
 Expected: 전부 통과, 테스트 59개 그대로
 
 `vitest.config.mts`의 `include`가 `src/test/worker/`를 집어삼키지 않는지 확인한다. 삼킨다면 기존 설정에 `exclude`를 추가한다.
 
-- [ ] **Step 9: 커밋**
+- [x] **Step 9: 커밋**
 
 ```bash
 cd frontend && pnpm format && cd ..
@@ -535,9 +560,11 @@ git add . && git commit -m "docs: 프론트 배포 대상을 Cloudflare Workers�
 
 이 계획은 확인된 문서 위에 서 있지만, 아래는 **직접 돌려보기 전에는 모르는 것들**이다. 실제로 이 중 하나라도 어긋나면 계획을 고쳐야 한다.
 
-1. **OpenNext가 Next 16.3.1 + React 19.2.8에서 빌드된다.** 문서의 지원 범위 선언만 확인했다. Task 1 Step 3이 이걸 처음 시험한다 — 이 계획에서 가장 먼저 깨질 수 있는 지점이다.
+1. ~~**OpenNext가 Next 16.3.1 + React 19.2.8에서 빌드된다.**~~ → **확인됨(2026-08-23).** `@opennextjs/cloudflare 1.20.2`로 종료 코드 0, 번들 생성. 우려했던 세 지점(산출물 구조 변화·typegen 충돌·React 버전 불일치) 모두 발생하지 않았다.
 2. **`wrangler dev --local`로 띄운 workerd가 `localhost` 스텁으로 `fetch`할 수 있다.** `global_fetch_strictly_public` 플래그와 충돌할 가능성이 있다(Task 2 Step 4에 대안을 적어뒀다).
 3. **OpenNext 번들에서 `process.env.NODE_ENV`가 `"production"`이다.** 아니면 AC-WEBDEPLOY-05가 실패하고, 그건 테스트가 아니라 `cookie.ts`를 고쳐야 하는 신호다.
-4. **`wrangler.jsonc`의 `services` 자기참조 바인딩에 쓴 이름 `kaldi-note-web`이 실제 Worker 이름과 같아야 한다.** 사람이 Cloudflare에서 Worker를 만들 때 다른 이름을 쓰면 어긋난다.
+4. **`wrangler.jsonc`의 `services` 자기참조 바인딩에 쓴 이름 `kaldi-note-web`이 실제 Worker 이름과 같아야 한다.** 파싱 레벨은 `wrangler deploy --dry-run`으로 확인했다(바인딩 2개 인식). **다만 사람이 Cloudflare에서 Worker를 만들 때 다른 이름을 쓰면 여전히 어긋난다** — 실제 배포 전까지 열려 있다.
 5. **CPU 10ms/호출 한도가 이 앱의 SSR에 충분하다.** 레시피 상세는 클라이언트 렌더가 대부분이라 여유가 있을 것으로 보지만 측정한 적이 없다. 배포 후 Cloudflare 대시보드에서 실제 CPU 시간을 확인한다.
-6. **`vitest.config.mts`의 `include`가 `src/test/worker/`를 집어삼키지 않는다.** 삼키면 기존 `pnpm test`가 매번 빌드를 돌리게 된다(Task 1 Step 8에서 확인한다).
+6. ~~**`vitest.config.mts`의 `include`가 `src/test/worker/`를 집어삼키지 않는다.**~~ → **깨졌다(2026-08-23).** 실제로 집어삼킨다. `exclude`에 `src/test/worker/**`·`.open-next/**`를 추가해 막았다. 함께 드러난 것: `eslint.config.mjs`도 `.open-next/**`를 무시해야 한다(안 하면 lint가 377 errors로 실패). 둘 다 Step 2에 기록했다.
+
+7. **(신규) `pnpm` 설치가 `esbuild`·`workerd`의 빌드 스크립트를 기본 차단한다.** `pnpm-workspace.yaml`의 `allowBuilds`에서 `true`로 바꿔야 한다. Step 1에 기록했다.

@@ -1,6 +1,10 @@
 allowBuilds:
+  # OpenNext가 Worker 번들을 만들 때 쓴다.
+  esbuild: true
   # msw의 postinstall은 브라우저용 Service Worker를 public/에 복사한다.
   # 테스트는 msw/node만 쓰므로 필요 없다.
   msw: false
   sharp: false
   unrs-resolver: false
+  # Workers 런타임 바이너리를 postinstall로 받아온다. 막으면 wrangler dev가 뜨지 않는다.
+  workerd: true

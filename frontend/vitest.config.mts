@@ -14,6 +14,13 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     // next dev가 생성하는 빌드 산출물은 테스트 대상이 아니다.
-    exclude: ["node_modules/**", ".next/**"],
+    // src/test/worker는 workerd를 띄우는 별도 스위트다 — vitest.worker.config.mts가 맡는다.
+    // 여기 섞이면 OpenNext 빌드가 매번 돌아 이 스위트의 실행 시간이 분 단위가 된다.
+    exclude: [
+      "node_modules/**",
+      ".next/**",
+      ".open-next/**",
+      "src/test/worker/**",
+    ],
   },
 });

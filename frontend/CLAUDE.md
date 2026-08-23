@@ -8,7 +8,9 @@ Next.js PWA. **주 사용 환경은 "부엌에서 폰으로"** 다. 데스크톱
 >
 > **스펙 없이 코드를 쓰지 않는다.** 기능 개발은 `docs/specs/`의 스펙과 `docs/plans/`의 계획이 승인된 뒤에 시작한다. 테스트에는 인수 조건 ID를 `it('AC-GRIND-08 · ...')` 형태로 반드시 남긴다.
 
-> **현재 상태: 첫 슬라이스 구현 완료.** 로그인·레시피 목록·상세·포크가 동작한다(`../docs/specs/2026-08-21-web-recipe-read.md`). **아직 로컬 전용이다** — Vercel 배포와 `kaldi-note.today` DNS는 다음 슬라이스다.
+> **현재 상태: 첫 슬라이스 구현 완료 + 배포 파이프라인 준비 완료.** 로그인·레시피 목록·상세·포크가 동작한다(`../docs/specs/2026-08-21-web-recipe-read.md`).
+>
+> **아직 인터넷에 떠 있지 않다.** OpenNext 빌드·workerd 테스트·GitHub Actions 배포 job은 준비됐지만(`../docs/specs/2026-08-21-web-deploy.md`), **사람이 해야 하는 외부 설정이 남아 있다** — Cloudflare Worker 생성(이름은 `kaldi-note-web`이어야 한다), `kaldi-note.today` 커스텀 도메인 연결, GitHub Secret 3개(`CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`·`NEXT_PUBLIC_KAKAO_CLIENT_ID`), 카카오 콘솔 Redirect URI 추가, VM `.env`의 `KALDI_CORS_ALLOWED_ORIGINS`·`KAKAO_REDIRECT_URI` 변경. 체크리스트는 스펙의 「수동 확인」에 있다.
 >
 > **Next 16이 설치돼 있다.** 생성된 `AGENTS.md`가 "APIs, conventions, and file structure may all differ from your training data"라고 경고한다. **코드를 쓰기 전에 `node_modules/next/dist/docs/`의 해당 문서를 확인한다.** 실제로 다른 것들: `params`·`searchParams`는 Promise이고, `LayoutProps`·`PageProps` 같은 타입은 빌드가 생성한다(그래서 `typecheck` 스크립트가 `next typegen`을 먼저 돌린다).
 >
@@ -29,7 +31,7 @@ Next.js PWA. **주 사용 환경은 "부엌에서 폰으로"** 다. 데스크톱
 | 테스트        | **Vitest** + **Testing Library** |                                                                                 |
 | E2E           | **Playwright**                   | 로그인 → 레시피 포크 → 로그 작성 흐름                                           |
 | 린트/포맷     | **ESLint** + **Prettier**        |                                                                                 |
-| 배포          | **Vercel** (무료)                | 백엔드는 OCI에 따로 있다                                                        |
+| 배포          | **Cloudflare Workers** (무료)    | OpenNext 어댑터로 빌드한다. 백엔드는 OCI에 따로 있다                            |
 
 ### PWA인 이유
 
@@ -134,10 +136,23 @@ pnpm e2e:ui                 # Playwright UI 모드
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
+pnpm test:worker                              # workerd에서 실제로 도는지
 (cd .. && ./scripts/check-spec-coverage.sh)   # 인수 조건이 테스트에 있는지
 ```
 
 이 전부가 통과해야 "완료"라고 말할 수 있다. **`pnpm build`를 빠뜨리지 않는다** — 개발 서버에서는 통과하는데 빌드에서 깨지는 경우가 흔하다.
+
+**`pnpm test:worker`도 빠뜨리지 않는다.** 위 `pnpm test`의 테스트들은 Node + jsdom에서 돈다. 배포 대상은 workerd이고 둘은 다른 런타임이다. 이 스위트는 OpenNext 빌드 산출물을 실제 workerd에 띄워 HTTP로 검사하므로 느리지만(~14초), **"노드에선 되는데 Workers에선 안 되는" 부류를 잡는 유일한 장치**다.
+
+### 배포 관련 명령어
+
+```bash
+pnpm build:worker      # OpenNext로 Worker 번들 생성 → .open-next/
+pnpm preview:worker    # 번들을 로컬 workerd에 띄워 눈으로 확인
+pnpm deploy:worker     # Cloudflare에 배포 (빌드하지 않는다 — build:worker가 선행돼야 한다)
+```
+
+`deploy:worker`는 **이미 빌드된** 앱을 올릴 뿐이다. 그리고 `NEXT_PUBLIC_*`는 런타임이 아니라 **빌드 타임에 번들에 박히므로** `build:worker` 단계에 줘야 한다. 배포 단계에 걸면 아무 효과가 없다.
 
 ### 백엔드 연동
 

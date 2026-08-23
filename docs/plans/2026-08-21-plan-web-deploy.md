@@ -520,7 +520,7 @@ gh workflow view frontend.yml 2>&1 | head -5
 ```
 Expected: 파싱 오류 없이 워크플로 정보가 출력된다. (푸시 전이면 `actionlint`가 있을 경우 그것을 쓴다.)
 
-- [ ] **Step 4: 커밋**
+- [x] **Step 4: 커밋**
 
 ```bash
 git add . && git commit -m "ci(web): Cloudflare Workers 배포 job + 스모크 체크"
@@ -537,7 +537,7 @@ git add . && git commit -m "ci(web): Cloudflare Workers 배포 job + 스모크 �
 
 **Covers:** 없음
 
-- [ ] **Step 1: 세 곳을 고친다**
+- [x] **Step 1: 세 곳을 고친다**
 
 | 파일 | 현재 | 고칠 내용 |
 |---|---|---|
@@ -545,7 +545,7 @@ git add . && git commit -m "ci(web): Cloudflare Workers 배포 job + 스모크 �
 | `docs/design/2026-08-14-architecture.md:81` | "Vercel 무료 배포" | 같음. **`design/`은 왜 이런 구조인지를 설명하는 문서이므로**, 도메인이 이미 Cloudflare에 있다는 것과 Vercel이 Cloudflare 프록시 앞단 구성을 권장하지 않는다는 근거를 남긴다 |
 | `frontend/CLAUDE.md:32` | 배포 표에 "Vercel (무료)" | Cloudflare Workers (OpenNext)로. 11행의 "아직 로컬 전용이다" 문장도 배포 완료 상태로 갱신한다 |
 
-- [ ] **Step 2: 남은 표기가 없는지 확인**
+- [x] **Step 2: 남은 표기가 없는지 확인**
 
 Run:
 ```bash
@@ -553,7 +553,24 @@ grep -rn -i "vercel" --include="*.md" . | grep -v node_modules
 ```
 Expected: `docs/specs/2026-08-18-oci-deploy.md:19`(과거 스펙의 범위 밖 서술)과 `docs/JOURNAL.md`(과거 기록)만 남는다. **이 둘은 고치지 않는다** — 스펙과 일지는 append-only이고, 그때의 판단을 사후에 바꾸면 왜 방향이 바뀌었는지 추적할 수 없게 된다. `frontend/README.md`는 Next 기본 생성물이므로 확인 후 판단한다.
 
-- [ ] **Step 3: 커밋**
+> **실행 결과(2026-08-23) — 대상이 계획보다 많았다. 실제로 고친 곳 7군데:**
+>
+> | 파일 | 고친 것 |
+> |---|---|
+> | `CLAUDE.md:73` | 모노레포 설명의 "프론트 → Vercel" |
+> | `CLAUDE.md:162` | 배포 환경 제약. Workers 무료 한도를 수치로 적었다 |
+> | `docs/design/2026-08-14-architecture.md:81` | 근거 셋을 함께 남겼다 |
+> | `frontend/CLAUDE.md:11` | 현재 상태 |
+> | `frontend/CLAUDE.md:32` | 배포 표 |
+> | `frontend/CLAUDE.md` 「검증」 | **계획에 없던 것** — `pnpm test:worker`와 배포 명령어 3개를 추가했다. 안 넣으면 다음 세션이 워커 테스트를 빠뜨린다 |
+> | `README.md:23` | **계획이 놓친 곳** — 루트 README의 기술 스택 표 |
+> | `frontend/README.md:32` | **계획이 "판단하라"고 남긴 곳** — create-next-app의 "Deploy on Vercel" 섹션이 실제 배포 방법과 정면으로 달라 교체했다. 나머지 Vercel 언급(폰트·Next 저장소 링크)은 사실 서술이라 그대로 뒀다 |
+>
+> **`frontend/CLAUDE.md:11`은 계획 지시를 그대로 따르지 않았다.** 계획은 "배포 완료 상태로 갱신"하라고 했지만 **실제 배포는 아직 안 됐다** — Worker 생성·DNS·Secret 등록이 사람 작업으로 남아 있다. 그대로 썼으면 거짓이 된다. "파이프라인 준비 완료, 인터넷에 떠 있지 않음"으로 쓰고 남은 사람 작업을 나열했다.
+>
+> `docs/specs/2026-08-21-web-recipe-read.md`의 Vercel 언급 2곳도 고치지 않았다 — 위와 같은 이유(과거 스펙)다.
+
+- [x] **Step 3: 커밋**
 
 ```bash
 git add . && git commit -m "docs: 프론트 배포 대상을 Cloudflare Workers로 정정"

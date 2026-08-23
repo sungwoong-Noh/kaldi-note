@@ -20,7 +20,7 @@
 |---|---|
 | 백엔드 | Java 21 · Spring Boot 4.1 · PostgreSQL 17 · Flyway · Testcontainers |
 | 프론트 | Next.js (App Router) · TypeScript · Tailwind · PWA |
-| 배포 | 백엔드 → Oracle Cloud (ARM VM) / 프론트 → Vercel |
+| 배포 | 백엔드 → Oracle Cloud (ARM VM) / 프론트 → Cloudflare Workers (OpenNext) |
 
 ## 구조
 

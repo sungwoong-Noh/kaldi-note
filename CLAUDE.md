@@ -70,7 +70,7 @@
 
 ## 저장소 구조
 
-프론트엔드와 백엔드를 한 저장소에 두는 모노레포다. 배포 대상은 서로 다르다(백엔드 → OCI VM, 프론트 → Vercel).
+프론트엔드와 백엔드를 한 저장소에 두는 모노레포다. 배포 대상은 서로 다르다(백엔드 → OCI VM, 프론트 → Cloudflare Workers).
 
 ```
 kaldi-note/
@@ -159,7 +159,7 @@ kaldi-note/
 
 - **OCI Always Free ARM VM: 2 OCPU / 12GB** (인스턴스 생성 완료). 2026-06-15부로 한도가 4 OCPU/24GB에서 절반으로 축소됐다. 이 상한을 전제로 설계한다.
 - OCI Object Storage 무료 10GB — 이미지 저장용.
-- 프론트는 Vercel 무료 플랜.
+- **프론트는 Cloudflare Workers 무료 플랜** — 10만 요청/일, 호출당 CPU 10ms, 정적 자산 요청은 무료·무제한. 요청 수는 여유가 크지만 **CPU 10ms는 SSR에서 실제로 닿을 수 있는 상한**이다.
 
 ---
 

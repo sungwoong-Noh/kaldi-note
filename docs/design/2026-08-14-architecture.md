@@ -78,7 +78,9 @@ Oracle Autonomous DB를 쓰지 않는 이유: 로컬/운영 환경 불일치, Or
 
 **프론트 (방향만, 백엔드 완료 후 착수)**
 - Next.js App Router + TypeScript + **PWA** (부엌에서 폰으로 쓰는 게 주 사용 환경 → 홈화면 설치·오프라인 캐시)
-- Vercel 무료 배포, API는 OCI 백엔드 직접 호출(CORS)
+- **Cloudflare Workers 무료 배포**(OpenNext 어댑터), API는 OCI 백엔드 직접 호출(CORS)
+  - 2026-08-21에 Vercel에서 바꿨다. 근거 셋: ① `kaldi-note.today`의 네임서버가 이미 Cloudflare다 ② Vercel은 Cloudflare 프록시를 앞단에 두는 구성을 권장하지 않는다("reverse proxies like Cloudflare will limit Vercel's traffic visibility for security measures") — WAF를 쓰려면 양쪽 방어 기능이 서로를 가린다 ③ Next 어댑터(`@opennextjs/cloudflare`)의 대상이 Pages가 아니라 Workers다
+  - 상세는 `docs/specs/2026-08-21-web-deploy.md`
 - TanStack Query, Tailwind + shadcn/ui
 
 ---

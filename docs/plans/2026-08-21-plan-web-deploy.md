@@ -580,11 +580,12 @@ git add . && git commit -m "docs: 프론트 배포 대상을 Cloudflare Workers�
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (기존 59개 유지)
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `./scripts/check-spec-coverage.sh` 통과
-- [ ] 스펙 `docs/specs/2026-08-21-web-deploy.md`의 `status`를 `구현완료`로 변경
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (기존 59개 유지)
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `./scripts/check-spec-coverage.sh` 통과
+- [ ] 스펙 `docs/specs/2026-08-21-web-deploy.md`의 `status`를 `구현완료`로 변경 — **아래 두 항목이 끝나야 바꾼다**
 - [ ] 스펙의 「수동 확인」 10개 항목을 사람이 수행하고 결과를 확인 — 특히 **폰 브라우저에서 카카오 실계정 로그인 → 레시피 목록 → 상세 → 포크**가 동작하는 것
+  - **2026-08-29 진행: 10개 중 6개 완료.** 배포·도메인·Secret·CORS·CI 스모크 체크·HTTPS는 실제로 확인했다. 남은 4개는 스펙 문서 참조
 - [ ] 배포 후 `infra/scripts/verify-rollback.sh`로 백엔드 배포·롤백이 여전히 정상인지 확인
 
 ---
@@ -604,7 +605,7 @@ git add . && git commit -m "docs: 프론트 배포 대상을 Cloudflare Workers�
 1. ~~**OpenNext가 Next 16.3.1 + React 19.2.8에서 빌드된다.**~~ → **확인됨(2026-08-23).** `@opennextjs/cloudflare 1.20.2`로 종료 코드 0, 번들 생성. 우려했던 세 지점(산출물 구조 변화·typegen 충돌·React 버전 불일치) 모두 발생하지 않았다.
 2. ~~**`wrangler dev --local`로 띄운 workerd가 `localhost` 스텁으로 `fetch`할 수 있다.**~~ → **확인됨(2026-08-23).** `global_fetch_strictly_public`이 켜진 채로 AC-04·05가 통과했다. 대안은 불필요했다.
 3. ~~**OpenNext 번들에서 `process.env.NODE_ENV`가 `"production"`이다.**~~ → **확인됨(2026-08-23).** AC-WEBDEPLOY-05가 통과했다 — 쿠키에 `Secure`가 실제로 붙는다. `cookie.ts`는 손대지 않았다.
-4. **`wrangler.jsonc`의 `services` 자기참조 바인딩에 쓴 이름 `kaldi-note-web`이 실제 Worker 이름과 같아야 한다.** 파싱 레벨은 `wrangler deploy --dry-run`으로 확인했다(바인딩 2개 인식). **다만 사람이 Cloudflare에서 Worker를 만들 때 다른 이름을 쓰면 여전히 어긋난다** — 실제 배포 전까지 열려 있다.
+4. ~~**`wrangler.jsonc`의 `services` 자기참조 바인딩에 쓴 이름 `kaldi-note-web`이 실제 Worker 이름과 같아야 한다.**~~ → **확인됨(2026-08-29).** 대시보드에서 Worker를 미리 만들 필요가 없었다 — `wrangler deploy`가 `name` 값으로 Worker를 자동 생성하므로 이름이 어긋날 여지 자체가 없다. 자기참조 바인딩도 첫 배포에서 정상적으로 붙었다.
 5. **CPU 10ms/호출 한도가 이 앱의 SSR에 충분하다.** 레시피 상세는 클라이언트 렌더가 대부분이라 여유가 있을 것으로 보지만 측정한 적이 없다. 배포 후 Cloudflare 대시보드에서 실제 CPU 시간을 확인한다.
 6. ~~**`vitest.config.mts`의 `include`가 `src/test/worker/`를 집어삼키지 않는다.**~~ → **깨졌다(2026-08-23).** 실제로 집어삼킨다. `exclude`에 `src/test/worker/**`·`.open-next/**`를 추가해 막았다. 함께 드러난 것: `eslint.config.mjs`도 `.open-next/**`를 무시해야 한다(안 하면 lint가 377 errors로 실패). 둘 다 Step 2에 기록했다.
 

@@ -9,6 +9,14 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
+  // apex 도메인만 서비스한다. www는 만들지 않는다(스펙의 범위 밖).
+  // custom_domain을 쓰면 Cloudflare가 DNS 레코드와 인증서를 함께 관리한다.
+  "routes": [
+    {
+      "pattern": "kaldi-note.today",
+      "custom_domain": true,
+    },
+  ],
   "services": [
     {
       // 자기 자신을 가리킨다. 아래 name과 반드시 같아야 한다.

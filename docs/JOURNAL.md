@@ -7,6 +7,32 @@
 
 ---
 
+## 2026-08-23 · Task 1~4 — 배포 파이프라인 구현 (아직 인터넷에 떠 있지 않다)
+
+**브랜치:** `feat/web-deploy` · **PR:** #68
+**상태:** 완료 — 계획 Step 21/21. 백엔드 초록, 프론트 59개 + 워커 6개 초록
+
+### 한 일
+- OpenNext 빌드 파이프라인, workerd 스모크 테스트(AC 6개), `frontend.yml`의 `deploy` job, 문서의 Vercel 표기 정정
+- **코드로 할 수 있는 건 다 끝났다. 실제 배포는 사람이 외부 설정을 해야 시작된다**(아래 「다음 세션에게」)
+
+### 발견한 것
+- **계획의 「검증되지 않은 가정」 6개 중 5개 결론.** ①OpenNext가 Next 16.3.1에서 빌드된다 ✅ ②`global_fetch_strictly_public`이 localhost fetch를 막지 않는다 ✅ ③번들에서 `NODE_ENV`가 `production`이라 쿠키에 `Secure`가 붙는다 ✅(그래서 `cookie.ts`를 손대지 않았다) ④`services` 자기참조 이름은 파싱 레벨만 확인 ⑥**깨짐** — `vitest.config.mts`가 워커 테스트를 집어삼켰다. 상세는 계획 「자체 검토 결과」
+- **★ `opennextjs-cloudflare deploy`는 빌드하지 않는다.** `--help`가 "Deploy a **built** OpenNext app"이라고 말한다. 계획 Task 3 Step 2대로 `pnpm deploy:worker` 하나만 돌렸으면 올릴 산출물이 없었고, `NEXT_PUBLIC_*`를 배포 단계 `env`에 걸어도 무효였다(빌드 타임에 번들에 박히는 값이다). **빌드 단계를 분리해 고쳤다**
+- **`pnpm`이 `workerd` 빌드 스크립트를 기본 차단한다.** `pnpm-workspace.yaml`의 `allowBuilds`에서 `true`로 바꿔야 한다. 심볼릭 링크만 보고 판단하면 안 되고 바이너리를 직접 실행해 확인해야 한다
+- **`.gitignore`에 넣는 것만으로는 부족했다.** ESLint는 자체 ignore가 필요하고(안 하면 `pnpm lint`가 377 errors), vitest도 `exclude`가 필요하다. 반면 Prettier v3는 `.gitignore`를 이미 존중해 `.prettierignore`가 불필요했다
+- **`GET /`는 307을 반환한다.** 스펙이 스모크 체크 대상을 `/login`으로 고른 판단이 맞았다 — 루트에 200을 기대했으면 배포마다 실패했을 것이다
+- **스모크 체크는 양쪽 경로를 로컬에서 돌려 확인했다.** 실패 6회 → exit 1(31초), 성공 → `시도 1/6` exit 0. 오프바이원 없음
+
+### 다음 세션에게
+- **사람이 해야 배포가 시작된다.** ①Cloudflare에서 Worker 생성 — **이름은 반드시 `kaldi-note-web`**(`wrangler.jsonc`의 자기참조 바인딩이 이 이름을 가리킨다) + `kaldi-note.today` 커스텀 도메인 연결 ②GitHub Secret 3개(`CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`·`NEXT_PUBLIC_KAKAO_CLIENT_ID`) ③카카오 콘솔에 운영 Redirect URI **추가**(localhost는 지우지 말 것) ④VM `.env`의 `KALDI_CORS_ALLOWED_ORIGINS`·`KAKAO_REDIRECT_URI` 변경 후 재기동. 전체 목록은 스펙 「수동 확인」 10개
+- **스펙 `status`는 아직 `초안`이다.** 수동 확인이 끝나야 `구현완료`로 바꿀 수 있다. 그때까지 커버리지 스크립트는 AC 6개를 건너뛴다 — 테스트에는 이미 다 들어 있다
+- **`pnpm test:worker`를 빠뜨리지 마라.** 기존 59개는 Node+jsdom에서 돈다. 이 6개만이 workerd에서 실제로 도는지 본다. `frontend/CLAUDE.md` 「검증」에 추가해뒀다
+- **남은 미확인 가정 둘:** Worker 이름 일치(실제 배포 전까지 열림), CPU 10ms/호출이 SSR에 충분한지(배포 후 Cloudflare 대시보드에서 실측)
+- APIWAF 스펙은 여전히 없다. `api.kaldi-note.today`의 VM 원본 IP가 노출된 상태 그대로다
+
+---
+
 ## 2026-08-21 · 배포 스펙 — 프론트 호스팅을 Vercel에서 Cloudflare Workers로 뒤집었다
 
 **브랜치:** `docs/spec-web-deploy` · **PR:** #67

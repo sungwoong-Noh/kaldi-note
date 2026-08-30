@@ -163,7 +163,9 @@ describe("RecipeDetailPage", () => {
     );
   });
 
-  it("AC-WEB-24 · 포크에 성공하면 새 레시피로 이동한다", async () => {
+  // 이름에 두 ID를 함께 남긴다 — AC-WEBEDIT-06이 AC-WEB-24를 대체했고,
+  // 이 테스트 하나가 "그 자리에서 무엇이 일어나는가"를 검증한다.
+  it("AC-WEBEDIT-06 · 포크에 성공하면 새 레시피의 편집 화면으로 간다 (AC-WEB-24 대체)", async () => {
     server.use(
       http.post(`${BASE}/recipes/2/fork`, () =>
         HttpResponse.json(
@@ -185,7 +187,8 @@ describe("RecipeDetailPage", () => {
       await screen.findByRole("button", { name: "내 레시피로 가져오기" }),
     );
 
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/recipes/42"));
+    // 상세가 아니라 편집 화면으로 간다.
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/recipes/42/edit"));
   });
 
   it("AC-WEB-25 · 포크에 실패하면 페이지가 유지되고 메시지가 보인다", async () => {
@@ -210,5 +213,81 @@ describe("RecipeDetailPage", () => {
     expect(
       screen.getByRole("button", { name: "내 레시피로 가져오기" }),
     ).toBeEnabled();
+  });
+});
+
+describe("RecipeDetailPage — 편집과 삭제", () => {
+  /** 내가 소유한 레시피. 편집·삭제는 소유자에게만 보인다. */
+  function ownedByMe() {
+    return http.get(`${BASE}/recipes/2`, () =>
+      HttpResponse.json({ ...hoffmann, ownerUserId: 7, sourceType: "USER" }),
+    );
+  }
+
+  it("AC-WEBEDIT-02 · 내 레시피 상세에 편집·삭제가 보인다", async () => {
+    server.use(ownedByMe());
+
+    await renderDetail();
+
+    expect(await screen.findByRole("link", { name: "편집" })).toHaveAttribute(
+      "href",
+      "/recipes/2/edit",
+    );
+    expect(screen.getByRole("button", { name: "삭제" })).toBeInTheDocument();
+  });
+
+  it("AC-WEBEDIT-03 · 남의 레시피 상세에는 편집·삭제가 없다", async () => {
+    server.use(
+      http.get(`${BASE}/recipes/2`, () =>
+        HttpResponse.json({ ...hoffmann, ownerUserId: 9, sourceType: "USER" }),
+      ),
+    );
+
+    await renderDetail();
+    await screen.findByRole("button", { name: "내 레시피로 가져오기" });
+
+    expect(screen.queryByRole("link", { name: "편집" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "삭제" })).not.toBeInTheDocument();
+  });
+
+  it("AC-WEBEDIT-34 · 삭제를 확인하면 요청 후 목록으로 간다", async () => {
+    const user = userEvent.setup();
+    let deleted = 0;
+    server.use(
+      ownedByMe(),
+      http.delete(`${BASE}/recipes/2`, () => {
+        deleted += 1;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    await renderDetail();
+    await user.click(await screen.findByRole("button", { name: "삭제" }));
+    await user.click(screen.getByRole("button", { name: "삭제합니다" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/recipes"));
+    expect(deleted).toBe(1);
+  });
+
+  it("AC-WEBEDIT-35 · 삭제를 취소하면 아무 요청도 나가지 않는다", async () => {
+    const user = userEvent.setup();
+    let deleted = 0;
+    server.use(
+      ownedByMe(),
+      http.delete(`${BASE}/recipes/2`, () => {
+        deleted += 1;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    await renderDetail();
+    await user.click(await screen.findByRole("button", { name: "삭제" }));
+    await user.click(screen.getByRole("button", { name: "취소" }));
+
+    expect(deleted).toBe(0);
+    expect(push).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole("button", { name: "삭제합니다" }),
+    ).not.toBeInTheDocument();
   });
 });

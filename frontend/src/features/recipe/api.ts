@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { backendUrl } from "@/lib/api-client";
 import { authedRequest } from "@/lib/authed-fetch";
 import type { RecipeRequestBody } from "./formState";
@@ -74,6 +75,18 @@ export function updateRecipe(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
     schema: recipeSchema,
+    onSessionLost,
+  });
+}
+
+/** 소프트 삭제. 성공하면 204라 본문이 없다. */
+export function deleteRecipe(
+  id: number,
+  onSessionLost?: () => void,
+): Promise<void> {
+  return authedRequest(backendUrl(`/api/v1/recipes/${id}`), {
+    method: "DELETE",
+    schema: z.void(),
     onSessionLost,
   });
 }

@@ -366,7 +366,7 @@ cd .. && git add . && git commit -m "feat(web): 푸어 스텝 에디터 (AC-WEBE
 - Consumes: `authedRequest`, `backendUrl`
 - Produces: `useGrinders()`, `useGrindPreview({ grinderModelId, unit, value })` — 셋이 다 있고 `unit !== "MICRON"`일 때만 `enabled`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBEDIT-25 · 셋이 채워지면 같은 그라인더로 환산을 부른다", async () => {
@@ -412,12 +412,12 @@ it("AC-WEBEDIT-29 · 단위가 마이크론이면 환산을 부르지 않는다"
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test -- GrindSettingField`
 Expected: FAIL — `Failed to resolve import "./GrindSettingField"`
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `useGrindPreview`는 `useQuery`이고 `queryKey`가 `["grind-preview", grinderModelId, unit, value]`라 같은 조합은 캐시에서 나온다. `enabled`는 세 값이 모두 채워지고 `unit !== "MICRON"`일 때만 `true`. 오류는 `ApiError`의 `status`/`code`로 분기한다 — `422`면 고정 문구, `400 GRIND_SETTING_OUT_OF_RANGE`면 `error.message` 그대로. **어느 경우에도 저장을 막는 상태를 부모에게 올리지 않는다.**
 
@@ -432,12 +432,12 @@ curl -s -X POST -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/
   localhost:8080/api/v1/gear/grind-conversions | jq
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test -- GrindSettingField`
 Expected: PASS, 5 tests
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -459,7 +459,7 @@ cd .. && git add . && git commit -m "feat(web): 분쇄도 입력과 마이크론
 - Consumes: `RecipeStepEditor`(Task 2), `GrindSettingField`(Task 3), `useRequireSession`, `authedRequest`
 - Produces: `createRecipe(body, onSessionLost)`, `<RecipeForm mode="create" | "edit" initial onSubmit />`, `mapFieldErrors(fieldErrors)` → `{ byField: Record<string,string>; byStepIndex: Record<number,string>; unmapped: string[] }`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBEDIT-07 · 최소 입력만으로 저장하면 세 필드만 담아 보낸다", async () => {
@@ -512,21 +512,21 @@ it("AC-WEBEDIT-36 · 변경한 뒤에는 새로고침을 경고한다", async ()
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test -- recipes/new fieldErrors`
 Expected: FAIL — 페이지 모듈이 없다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `mapFieldErrors`는 `/^steps\[(\d+)\]\./`로 인덱스를 뽑고, 알려진 스칼라 필드 이름 집합에 없으면서 배열 표기도 아니면 `unmapped`에 남긴다. 요청 본문은 **빈 값을 키째 제외한다**(백엔드가 `non_null` 정책이라 응답과 대칭이고, `waterTempC: null`을 보내면 검증이 달라질 수 있다). `beforeunload`는 `dirty`가 `true`일 때만 리스너를 걸고 `event.preventDefault()`를 부른다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test -- recipes/new fieldErrors`
 Expected: PASS, 10 tests + fieldErrors 단위 테스트
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -772,8 +772,10 @@ git add . && git commit -m "docs(web-recipe-write): 폼 스택 정정 + 스펙 �
 **검증되지 않은 가정:**
 
 1. ~~**`crypto.randomUUID()`가 jsdom과 workerd 양쪽에서 쓸 수 있다.**~~ **✅ 확인됨 — jsdom에도 있다**(probe 테스트로 `typeof globalThis.crypto.randomUUID === "function"`을 확인했다). **그럼에도 구현은 모듈 스코프 카운터를 쓴다** — uid는 리스트 `key`로만 쓰이고 서버에 보내지 않으므로, 값이 재현 가능한 쪽이 실패한 테스트를 다시 돌릴 때 유리하다. Task 1 Step 3의 코드 예시(`crypto.randomUUID()` 기본 인자)는 실제 구현과 다르다.
-2. **`user.type`으로 `type="number"` 입력에 값을 넣었을 때 `toHaveValue(15)`가 숫자로 온다.** **부분 확인** — props로 준 값에 대해 `toHaveValue(0)`·`toHaveValue(20)` 같은 **숫자 단언이 통과한다**(Task 2). `user.type`으로 타이핑해 넣는 경로는 Task 4에서 처음 쓴다.
-3. **빈 값을 키째 제외하는 요청 본문이 백엔드에서 통과한다.** `AC-RECIPE-01`이 세 필드만으로 201을 받는다고 못박고 있어 근거는 있지만, `visibility`를 함께 보내는 형태는 확인되지 않았다.
+2. ~~**`user.type`으로 `type="number"` 입력에 값을 넣었을 때 `toHaveValue(15)`가 숫자로 온다.**~~ **✅ 확인됨** — props로 준 값(Task 2)과 `user.type`으로 친 값(Task 4) 모두 숫자 단언이 통과한다.
+3. ~~**빈 값을 키째 제외하는 요청 본문이 백엔드에서 통과한다.**~~ **✅ 실제 백엔드로 확인됨(2026-08-30)** — `{title, doseG, waterG, visibility, steps:[]}`를 `POST /api/v1/recipes`에 보내 **201**을 받았고 `ratio`가 `16.7`로 계산됐다. 응답에도 `waterTempC` 키가 없어 요청·응답이 대칭이다. **곁가지 발견:** DB에 없는 사용자 id로 서명한 유효 JWT로 같은 요청을 보내면 400이 아니라 **500**이 난다(실사용에서는 토큰이 로그인으로만 발급되므로 나지 않는다).
 4. **`useMe`가 목록 화면에서도 이미 동작한다.** 상세에서는 쓰이고 있으나 목록에서는 처음 부른다. `ownerUserId` 필터가 `me`를 기다려야 하므로 로딩 순서를 봐야 한다.
-5. **스텝 행을 `getByRole("listitem", { name: /스텝 3/ })`로 잡을 수 있다.** `<li>`에 접근명을 주려면 `aria-label`이 필요하다. 안 되면 스텝 행 안의 오류 텍스트를 `within(...)`으로 찾는 형태로 바꾼다.
-6. **`beforeunload`의 `defaultPrevented`로 경고 여부를 검증할 수 있다.** jsdom이 이 이벤트를 특별 취급하지 않는다는 전제다.
+5. ~~**스텝 행을 `getByRole("listitem", { name: /스텝 3/ })`로 잡을 수 있다.**~~ **✅ 확인됨** — `<li>`에 `aria-label={`스텝 ${number}`}`를 주면 잡힌다(AC-WEBEDIT-31).
+6. ~~**`beforeunload`의 `defaultPrevented`로 경고 여부를 검증할 수 있다.**~~ **✅ 확인됨** — jsdom에서 `dispatchEvent` 후 `defaultPrevented`가 그대로 읽힌다(AC-WEBEDIT-36·37).
+
+**새로 정해진 것:** 미리보기 환산 호출에 **400ms 디바운스**를 건다(`lib/useDebounced.ts`). 스펙·계획이 열어둔 결정이었고, `queryKey` 캐시만으로는 부족하다는 것을 Task 3의 테스트가 잡았다 — `22`를 치면 `2`·`22`로 요청이 두 번 나갔다.

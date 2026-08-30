@@ -380,9 +380,9 @@ POST /api/v1/gear/grind-conversions
 
 #### AC-WEBEDIT-28 · 범위 밖 설정값은 서버 문구로 경고하고 저장을 막지 않는다
 
-- **Given** `POST /api/v1/gear/grind-conversions`가 `400`과 `{ code: "GRIND_SETTING_OUT_OF_RANGE", message: "설정값이 그라인더 범위를 벗어났습니다." }`를 반환한다
+- **Given** `POST /api/v1/gear/grind-conversions`가 `400`과 `{ code: "GRIND_SETTING_OUT_OF_RANGE", message: "설정값 60는 이 그라인더의 상한 50.00를 넘습니다." }`를 반환한다 (2026-08-30에 실제 백엔드에서 뜬 문구다)
 - **When** `분쇄도 값`에 `60`을 넣는다
-- **Then** `설정값이 그라인더 범위를 벗어났습니다.`가 보이고 `저장` 버튼이 `disabled`가 아니다
+- **Then** `설정값 60는 이 그라인더의 상한 50.00를 넘습니다.`가 보이고 `저장` 버튼이 `disabled`가 아니다
 - **검증** 컴포넌트 테스트 `GrindSettingField.test.tsx`
 
 #### AC-WEBEDIT-29 · 단위가 마이크론이면 환산을 부르지 않는다
@@ -467,4 +467,4 @@ POST /api/v1/gear/grind-conversions
 
 - **스텝 행의 접기/펼치기.** 스텝 30개를 한 화면에 다 펼치면 모바일에서 스크롤이 길어진다. 실제로 만들어 본 뒤 필요하면 별도로 정한다.
 - **포크 diff 표시.** 이번 슬라이스로 편집이 생겨 원본과 값이 달라질 수 있게 됐다. 어떻게 보여줄지는 다음 슬라이스에서 정한다.
-- **미리보기 환산 호출의 디바운스.** 계획 단계에서 정한다 — TanStack Query의 `queryKey` 캐시만으로 충분한지, 입력 중 호출을 늦출지.
+- ~~**미리보기 환산 호출의 디바운스.**~~ **정해짐 (2026-08-30, 구현 중):** `queryKey` 캐시만으로는 부족했다 — 값이 매번 달라 캐시가 듣지 않고 `22`를 치면 `2`·`22` 두 번 요청이 나갔다. **분쇄도 값에 400ms 디바운스**를 건다(`lib/useDebounced.ts`). 그라인더·단위는 선택이라 한 번에 확정되므로 디바운스하지 않는다.

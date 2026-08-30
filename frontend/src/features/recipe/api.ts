@@ -1,5 +1,6 @@
 import { backendUrl } from "@/lib/api-client";
 import { authedRequest } from "@/lib/authed-fetch";
+import type { RecipeRequestBody } from "./formState";
 import {
   recipePageSchema,
   recipeSchema,
@@ -39,6 +40,34 @@ export function forkRecipe(
 ): Promise<Recipe> {
   return authedRequest(backendUrl(`/api/v1/recipes/${id}/fork`), {
     method: "POST",
+    schema: recipeSchema,
+    onSessionLost,
+  });
+}
+
+export function createRecipe(
+  body: RecipeRequestBody,
+  onSessionLost?: () => void,
+): Promise<Recipe> {
+  return authedRequest(backendUrl("/api/v1/recipes"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    schema: recipeSchema,
+    onSessionLost,
+  });
+}
+
+/** 전체 교체다. 스텝은 통째로 갈아끼운다(레시피 CRUD 스펙의 `RECIPE-10`). */
+export function updateRecipe(
+  id: number,
+  body: RecipeRequestBody,
+  onSessionLost?: () => void,
+): Promise<Recipe> {
+  return authedRequest(backendUrl(`/api/v1/recipes/${id}`), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
     schema: recipeSchema,
     onSessionLost,
   });

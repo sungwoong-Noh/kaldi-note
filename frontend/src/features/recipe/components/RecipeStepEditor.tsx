@@ -235,9 +235,14 @@ function NumberField({
 }) {
   return (
     <span className="flex items-baseline gap-1">
-      <label htmlFor={id} className="text-sm text-neutral-500">
+      {/*
+        접근명은 aria-label("스텝 3 물량")이 담당하고, 눈에 보이는 글자는 장식이다.
+        <label htmlFor>로 두면 레시피 전체의 "물량" 입력과 라벨 텍스트가 겹쳐
+        어느 쪽을 가리키는지 사람도 스크린리더도 알 수 없다.
+      */}
+      <span aria-hidden="true" className="text-sm text-neutral-500">
         {label.replace(/^스텝 \d+ /, "")}
-      </label>
+      </span>
       <input
         id={id}
         aria-label={label}

@@ -1,7 +1,9 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { errorMessageOf, ErrorState } from "@/components/ErrorState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useBrewFilters, useBrewers } from "@/features/gear/queries";
@@ -13,8 +15,9 @@ import {
   formatRatio,
   formatTemperature,
 } from "@/lib/format";
-import { fetchRecipe, forkRecipe } from "../api";
+import { deleteRecipe, fetchRecipe, forkRecipe } from "../api";
 import type { Recipe } from "../schema";
+import { DeleteRecipeDialog } from "./DeleteRecipeDialog";
 import { RecipeStepList } from "./RecipeStepList";
 
 export function RecipeDetail({ id }: { id: number }) {
@@ -31,9 +34,21 @@ export function RecipeDetail({ id }: { id: number }) {
   const filters = useBrewFilters(onSessionLost);
   const me = useMe(onSessionLost);
 
+  const queryClient = useQueryClient();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+
   const fork = useMutation({
     mutationFn: () => forkRecipe(id, onSessionLost),
-    onSuccess: (created) => router.push(`/recipes/${created.id}`),
+    // 포크한 뒤 바로 고칠 수 있게 편집 화면으로 보낸다(WEBEDIT 스펙이 기존 AC-WEB-24를 대체했다).
+    onSuccess: (created) => router.push(`/recipes/${created.id}/edit`),
+  });
+
+  const remove = useMutation({
+    mutationFn: () => deleteRecipe(id, onSessionLost),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      router.push("/recipes");
+    },
   });
 
   if (!ready || recipeQuery.isPending) {
@@ -171,6 +186,39 @@ export function RecipeDetail({ id }: { id: number }) {
         <h2 className="mb-2 text-sm font-medium">푸어 스텝</h2>
         <RecipeStepList steps={recipe.steps} />
       </section>
+
+      {isMine && (
+        <div className="mt-6 flex gap-2">
+          <Link
+            href={`/recipes/${id}/edit`}
+            className="flex-1 rounded-md border border-neutral-300 py-3 text-center text-sm font-medium dark:border-neutral-700"
+          >
+            편집
+          </Link>
+          <button
+            type="button"
+            onClick={() => setConfirmingDelete(true)}
+            className="rounded-md border border-red-300 px-4 py-3 text-sm font-medium text-red-600"
+          >
+            삭제
+          </button>
+        </div>
+      )}
+
+      {isMine && remove.error && (
+        <p className="mt-2 text-center text-sm text-red-600">
+          {errorMessageOf(remove.error)}
+        </p>
+      )}
+
+      {confirmingDelete && (
+        <DeleteRecipeDialog
+          title={recipe.title}
+          deleting={remove.isPending}
+          onConfirm={() => remove.mutate()}
+          onCancel={() => setConfirmingDelete(false)}
+        />
+      )}
 
       {!isMine && (
         <div className="mt-6">

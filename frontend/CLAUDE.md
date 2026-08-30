@@ -8,9 +8,11 @@ Next.js PWA. **주 사용 환경은 "부엌에서 폰으로"** 다. 데스크톱
 >
 > **스펙 없이 코드를 쓰지 않는다.** 기능 개발은 `docs/specs/`의 스펙과 `docs/plans/`의 계획이 승인된 뒤에 시작한다. 테스트에는 인수 조건 ID를 `it('AC-GRIND-08 · ...')` 형태로 반드시 남긴다.
 
-> **현재 상태: 첫 슬라이스 구현 완료 + 배포 파이프라인 준비 완료.** 로그인·레시피 목록·상세·포크가 동작한다(`../docs/specs/2026-08-21-web-recipe-read.md`).
+> **현재 상태: 읽기·쓰기 슬라이스 구현 완료, 인터넷에 떠 있다.** 로그인·목록·상세·포크(`../docs/specs/2026-08-21-web-recipe-read.md`)에 더해 **레시피 생성·편집·삭제와 푸어 스텝 에디터**가 동작한다(`../docs/specs/2026-08-30-web-recipe-write.md`).
 >
-> **아직 인터넷에 떠 있지 않다.** OpenNext 빌드·workerd 테스트·GitHub Actions 배포 job은 준비됐지만(`../docs/specs/2026-08-21-web-deploy.md`), **사람이 해야 하는 외부 설정이 남아 있다** — Cloudflare Worker 생성(이름은 `kaldi-note-web`이어야 한다), `kaldi-note.today` 커스텀 도메인 연결, GitHub Secret 3개(`CLOUDFLARE_API_TOKEN`·`CLOUDFLARE_ACCOUNT_ID`·`NEXT_PUBLIC_KAKAO_CLIENT_ID`), 카카오 콘솔 Redirect URI 추가, VM `.env`의 `KALDI_CORS_ALLOWED_ORIGINS`·`KAKAO_REDIRECT_URI` 변경. 체크리스트는 스펙의 「수동 확인」에 있다.
+> **`kaldi-note.today`에 배포돼 있다**(2026-08-29). Cloudflare Workers + OpenNext이고 `main`에 머지되면 GitHub Actions가 자동 배포한다(`../docs/specs/2026-08-21-web-deploy.md`). 백엔드는 `api.kaldi-note.today`(OCI VM)로 별개 인프라다.
+>
+> **운영 백엔드는 `localhost:3000` 출처를 403으로 막는다.** 로컬 프론트를 운영 API에 붙일 수 없으니, 로컬 개발은 `docker compose up -d` + `bootRun`으로 로컬 백엔드를 띄워서 한다.
 >
 > **Next 16이 설치돼 있다.** 생성된 `AGENTS.md`가 "APIs, conventions, and file structure may all differ from your training data"라고 경고한다. **코드를 쓰기 전에 `node_modules/next/dist/docs/`의 해당 문서를 확인한다.** 실제로 다른 것들: `params`·`searchParams`는 Promise이고, `LayoutProps`·`PageProps` 같은 타입은 빌드가 생성한다(그래서 `typecheck` 스크립트가 `next typegen`을 먼저 돌린다).
 >
@@ -27,11 +29,19 @@ Next.js PWA. **주 사용 환경은 "부엌에서 폰으로"** 다. 데스크톱
 | 패키지 매니저 | **pnpm**                         |                                                                                 |
 | 스타일        | **Tailwind CSS** + **shadcn/ui** | shadcn은 라이브러리가 아니라 소스 복사 방식 — 컴포넌트를 직접 소유하고 수정한다 |
 | 서버 상태     | **TanStack Query**               | 캐싱·재검증·낙관적 업데이트                                                     |
-| 폼            | **React Hook Form** + **Zod**    | Zod 스키마는 검증과 타입 정의를 겸한다                                          |
+| 폼            | **`useState`** + **Zod**(응답 스키마) | 폼 라이브러리를 쓰지 않는다 — 아래 참조                                    |
 | 테스트        | **Vitest** + **Testing Library** |                                                                                 |
 | E2E           | **Playwright**                   | 로그인 → 레시피 포크 → 로그 작성 흐름                                           |
 | 린트/포맷     | **ESLint** + **Prettier**        |                                                                                 |
 | 배포          | **Cloudflare Workers** (무료)    | OpenNext 어댑터로 빌드한다. 백엔드는 OCI에 따로 있다                            |
+
+### 폼 라이브러리를 쓰지 않는 이유
+
+원래 이 표에는 React Hook Form이 적혀 있었으나 **설치된 적이 없었고**, 2026-08-30 레시피 쓰기 슬라이스에서 `useState`로 확정했다.
+
+- **폼의 본체가 배열 변환이다.** 푸어 스텝의 밀기·당기기(`features/recipe/stepSequence.ts`)는 배열 → 배열 순수 함수다. `useFieldArray` 위에 그 변환을 얹으면 상태가 두 군데 생긴다.
+- **검증은 서버가 한다.** 물량 합계·시간 겹침·타입 모순은 백엔드가 400으로 거부하고, 화면은 `fieldErrors`를 각 입력칸에 붙이기만 한다(`lib/fieldErrors.ts`). 클라이언트 검증 기능을 쓸 일이 거의 없다.
+- Zod는 **응답 스키마**로 계속 쓴다. 요청 본문은 `features/recipe/formState.ts`가 만든다.
 
 ### PWA인 이유
 

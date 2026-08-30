@@ -548,7 +548,7 @@ cd .. && git add . && git commit -m "feat(web): 레시피 생성 화면과 서�
 - Consumes: `RecipeForm`(Task 4), `fromRecipe`(Task 1), `fetchRecipe`
 - Produces: `updateRecipe(id, body, onSessionLost)`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBEDIT-10 · 편집 저장은 PUT으로 스텝 배열을 통째로 보낸다", async () => {
@@ -572,21 +572,21 @@ it("AC-WEBEDIT-10 · 편집 저장은 PUT으로 스텝 배열을 통째로 보�
 
 `params`가 Promise인 것은 Next 16의 규약이다(`frontend/CLAUDE.md`).
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test -- recipes/\\[id\\]/edit`
 Expected: FAIL — 페이지 모듈이 없다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `fetchRecipe`로 받은 응답을 `fromRecipe`로 폼 상태에 옮기고 `RecipeForm`에 `mode="edit"`으로 넘긴다. 저장 성공 시 `router.push('/recipes/1')`, 쿼리 캐시의 `["recipe", 1]`과 `["recipes"]`를 무효화한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test -- recipes`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -607,7 +607,7 @@ cd .. && git add . && git commit -m "feat(web): 레시피 편집 화면 (AC-WEBE
 - Consumes: `useMe`(`features/user/queries.ts`)
 - Produces: `fetchRecipePage(page, { ownerUserId })` — 기존 시그니처에 옵션을 더한다. 기존 호출부가 깨지지 않게 세 번째 인자로 받는다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBEDIT-05 · '내 레시피만'을 켜면 ownerUserId를 붙여 다시 부른다", async () => {
@@ -628,21 +628,21 @@ it("AC-WEBEDIT-05 · '내 레시피만'을 켜면 ownerUserId를 붙여 다시 �
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test -- recipes/page`
 Expected: FAIL — `내 레시피만` 컨트롤이 없다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 토글 상태는 `useState`로 두고 `queryKey`에 `ownerUserId`를 포함시켜 켤 때 새 무한 쿼리가 시작되게 한다. 상단 링크는 `<Link href="/recipes/new">새 레시피</Link>`.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test -- recipes/page`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -665,7 +665,7 @@ cd .. && git add . && git commit -m "feat(web): 목록에 새 레시피 링크�
 - Consumes: `useMe`, `forkRecipe`
 - Produces: `deleteRecipe(id, onSessionLost)`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBEDIT-34 · 삭제를 확인하면 요청 후 목록으로 간다", async () => {
@@ -693,23 +693,23 @@ it("AC-WEBEDIT-06 · 포크에 성공하면 새 레시피의 편집 화면으로
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test -- recipes/\\[id\\]`
 Expected: FAIL — `삭제` 버튼이 없고, 포크 이동이 `/recipes/42`라 새 기대값과 어긋난다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `DeleteRecipeDialog`는 열렸을 때만 `role="dialog"` 요소를 렌더링하고 `삭제합니다`·`취소` 두 버튼을 둔다. `취소`는 상태만 닫고 어떤 요청도 만들지 않는다. 편집·삭제는 `me.data?.id === recipe.ownerUserId`일 때만 렌더링한다.
 
 **기존 스펙 정정:** `docs/specs/2026-08-21-web-recipe-read.md`의 `AC-WEB-24` 아래에 정정 블록을 추가한다 — 이동 대상이 `/recipes/42/edit`로 바뀌었고 근거는 `WEBEDIT` 스펙이라는 것. **기존 AC 본문은 지우지 않는다**(append-only 원칙).
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS — 기존 59개 + 이번에 늘어난 것 전부
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -725,11 +725,11 @@ cd .. && git add . && git commit -m "feat(web): 상세의 편집·삭제와 포�
 
 **Covers:** 없음
 
-- [ ] **Step 1: `frontend/CLAUDE.md`의 스택 표 정정**
+- [x] **Step 1: `frontend/CLAUDE.md`의 스택 표 정정**
 
 폼 행을 `React Hook Form + Zod`에서 `useState + Zod(응답 스키마)`로 바꾸고, **왜 그렇게 했는지**(스텝 배열 변환이 본체이고 검증은 서버가 한다)를 한 줄로 남긴다. 현재 상태 문단에 이번 슬라이스를 반영한다.
 
-- [ ] **Step 2: 전체 검증**
+- [x] **Step 2: 전체 검증**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -739,11 +739,11 @@ cd .. && ./scripts/check-spec-coverage.sh
 
 Expected: 전부 PASS. 커버리지는 스펙 14건·AC 451개(414 + 37).
 
-- [ ] **Step 3: 스펙 `status`를 `구현완료`로**
+- [x] **Step 3: 스펙 `status`를 `구현완료`로**
 
 수동 확인 4개를 끝낸 뒤에 바꾼다. **그 전까지 커버리지 스크립트는 이 스펙의 AC 37개를 건너뛴다.**
 
-- [ ] **Step 4: 커밋**
+- [x] **Step 4: 커밋**
 
 ```bash
 git add . && git commit -m "docs(web-recipe-write): 폼 스택 정정 + 스펙 구현완료"
@@ -753,10 +753,10 @@ git add . && git commit -m "docs(web-recipe-write): 폼 스택 정정 + 스펙 �
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `./scripts/check-spec-coverage.sh` 통과
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `./scripts/check-spec-coverage.sh` 통과
+- [x] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 4개 완료
 
 ---

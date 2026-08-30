@@ -104,7 +104,12 @@ describe("RecipesPage", () => {
       await screen.findByRole("button", { name: "더 보기" }),
     );
 
-    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(40));
+    // 레시피 카드만 센다. 상단의 "새 레시피" 링크는 목록 항목이 아니다.
+    await waitFor(() =>
+      expect(screen.getAllByRole("link", { name: /^레시피 \d+/ })).toHaveLength(
+        40,
+      ),
+    );
     expect(
       screen.queryByRole("button", { name: "더 보기" }),
     ).not.toBeInTheDocument();
@@ -187,5 +192,46 @@ describe("RecipesPage", () => {
     expect(
       screen.getByRole("button", { name: "다시 시도" }),
     ).toBeInTheDocument();
+  });
+});
+
+describe("RecipesPage — 쓰기 슬라이스", () => {
+  it("AC-WEBEDIT-04 · 목록 상단에서 생성 화면으로 갈 수 있다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([hoffmannSummary]))),
+    );
+
+    renderWithQuery(<RecipesPage />);
+
+    expect(await screen.findByRole("link", { name: "새 레시피" })).toHaveAttribute(
+      "href",
+      "/recipes/new",
+    );
+  });
+
+  it("AC-WEBEDIT-05 · '내 레시피만'을 켜면 ownerUserId를 붙여 다시 부른다", async () => {
+    const user = userEvent.setup();
+    const searches: string[] = [];
+    server.use(
+      http.get("http://localhost:8080/api/v1/users/me", () =>
+        HttpResponse.json({
+          id: 7,
+          nickname: "테스터",
+          role: "USER",
+          createdAt: "2026-08-21T00:00:00Z",
+        }),
+      ),
+      http.get(LIST_URL, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json(pageOf([hoffmannSummary]));
+      }),
+    );
+
+    renderWithQuery(<RecipesPage />);
+    await user.click(await screen.findByRole("checkbox", { name: "내 레시피만" }));
+
+    await waitFor(() =>
+      expect(searches.at(-1)).toBe("?page=0&size=20&ownerUserId=7"),
+    );
   });
 });

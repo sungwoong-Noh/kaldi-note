@@ -339,6 +339,8 @@ plan: docs/plans/2026-08-21-plan-web-recipe-read.md
 - **Then** `/recipes/42`로 이동한다
 - **검증** 페이지 테스트 `RecipeDetailPage.test.tsx`
 
+> **정정 (2026-08-30):** 이 조건은 **`docs/specs/2026-08-30-web-recipe-write.md`의 `AC-WEBEDIT-06`으로 대체됐다.** 이동 대상이 `/recipes/42`(상세)에서 **`/recipes/42/edit`(편집)** 으로 바뀌었다 — 편집 기능이 생기면서 "내 것으로 가져와서 고친다"를 한 흐름으로 잇는 편이 낫다고 판단했다. 위 본문은 당시 결정의 기록으로 남기고, **테스트는 `AC-WEBEDIT-06`이라는 이름으로 새 동작을 검증한다.**
+
 #### AC-WEB-25 · 포크에 실패하면 페이지가 유지되고 메시지가 보인다
 
 - **Given** `POST /recipes/1/fork`가 403과 `{ code: "FORBIDDEN", message: "권한이 없습니다." }`를 반환한다

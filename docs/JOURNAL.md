@@ -7,6 +7,31 @@
 
 ---
 
+## 2026-08-30 · 쓰기 슬라이스 스펙 — 레시피 생성·편집·삭제와 스텝 에디터
+
+**브랜치:** `docs/spec-recipe-write` · **PR:** #71
+**상태:** 완료 — 스펙 1건(id `WEBEDIT`, AC 37개) + 계획 1건(Task 8개). 코드는 건드리지 않았다
+
+### 한 일
+- `/interview`로 화면 동작을 확정하고 `docs/specs/2026-08-30-web-recipe-write.md`와 `docs/plans/2026-08-30-plan-web-recipe-write.md`를 썼다
+- **백엔드는 손대지 않는다** — `POST`/`PUT`/`DELETE`와 검증 규칙·에러 code가 이미 다 있어서 이번에 정할 것은 화면 동작뿐이었다
+
+### 발견한 것
+- **★ `GET /gear/grinders` 응답에 영점 보정(`zeroPointOffsetClicks`)이 없다.** `micronsPerClick`은 주므로 프론트에서 곱해 미리보기를 만들고 싶어지지만, **영점이 0이 아닌 그라인더에서 틀린 값이 나온다**(`GRIND-02`가 그 경우다). 그래서 환산 API를 `sourceGrinderModelId === targetGrinderModelId`로 불러 `micron`만 쓰기로 했다. 자기 자신과의 환산이라 `targetSetting`·`targetOutOfRange`는 의미가 없어 읽지 않는다
+- **★ `check-spec-coverage.sh`는 스펙 문서 전체에서 AC ID를 `sort -u`로 뽑는다.** 본문에 다른 스펙의 AC를 인용하면 **그것까지 이 스펙 소속으로 집계된다** — 처음에 40개로 세어졌고 인용 표기를 `AC-` 접두사 없이(`WEB-24`, `RECIPE-35`) 바꿔 37개로 맞췄다. 인용한 AC가 나중에 사라지면 엉뚱한 스펙이 실패했을 것이다
+- **`react-hook-form`이 설치돼 있지 않다.** `frontend/CLAUDE.md`의 스택 표는 "React Hook Form + Zod"라고 적혀 있는데 `package.json`에 없다. shadcn/ui도 없다(`components/ui/`가 없다). 스텝 배열의 밀기·당기기가 이 화면의 본체이고 검증은 서버가 하므로 **`useState`로 직접 가기로 했다.** 문서 정정이 계획 Task 8이다
+- **첫 슬라이스의 `WEB-24`를 뒤집는다.** 포크 성공 시 이동 대상이 상세 → 편집으로 바뀐다. 기존 스펙에 정정을 남기고 기존 테스트를 고치는 것이 계획 Task 7에 들어 있다
+
+### 다음 세션에게
+- **구현은 `feat/recipe-write` 브랜치를 새로 파서 한다.** 이 브랜치는 문서 전용이다
+- **Task 1이 첫 관문이다.** `crypto.randomUUID()`가 jsdom에서 노출되는지 확인한 적이 없다 — Step 2에서 바로 드러난다. 안 되면 모듈 스코프 카운터로 바꾼다(테스트가 `uid` 값을 단언하지 않으므로 영향 없음). 나머지 가정 5개는 계획 「검증되지 않은 가정」에 있다
+- **스펙 `status`는 `초안`이다.** 그동안 커버리지 스크립트는 AC 37개를 건너뛴다
+- **픽스처는 실행 중인 백엔드에서 뜬다.** 그라인더 목록·환산 응답·생성 응답이 새로 필요하다. 뜨는 명령은 계획 Task 3 Step 3에 적어뒀다
+- **남은 미확인 가정 하나(그대로):** Workers CPU 10ms/호출이 SSR에 충분한지. Cloudflare 대시보드에서 실측할 것
+- APIWAF는 사람이 미루기로 결정했다(2026-08-29). 먼저 제안하지 말 것
+
+---
+
 ## 2026-08-30 · 수동 확인 10/10 — 배포 슬라이스를 닫았다
 
 **브랜치:** `docs/web-deploy-done` · **PR:** #70

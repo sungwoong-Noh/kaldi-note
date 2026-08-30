@@ -27,6 +27,8 @@ type Props = {
   /** 레시피 총 물량. 합계 표시에만 쓰고 저장을 막는 데는 쓰지 않는다. */
   waterG: number | null;
   onChange: (steps: EditableStep[]) => void;
+  /** 서버가 준 스텝별 오류. 인덱스는 0부터이고 화면 번호는 여기에 1을 더한 값이다. */
+  errors?: Record<number, string>;
 };
 
 /**
@@ -37,7 +39,12 @@ type Props = {
  *
  * <p><b>합계는 보여주기만 한다.</b> 물량이 안 맞아도 저장을 막지 않는다 — 거부는 서버 몫이다.
  */
-export function RecipeStepEditor({ steps, waterG, onChange }: Props) {
+export function RecipeStepEditor({
+  steps,
+  waterG,
+  onChange,
+  errors = {},
+}: Props) {
   const atLimit = steps.length >= MAX_STEPS;
 
   function update(index: number, patch: Partial<EditableStep>) {
@@ -144,6 +151,12 @@ export function RecipeStepEditor({ steps, waterG, onChange }: Props) {
                   />
                 )}
               </div>
+
+              {errors[index] && (
+                <p className="whitespace-pre-line text-sm text-red-600">
+                  {errors[index]}
+                </p>
+              )}
 
               <button
                 type="button"

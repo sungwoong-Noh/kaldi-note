@@ -16,8 +16,39 @@ export const brewFilterSchema = z.object({
   isSystem: z.boolean().optional(),
 });
 
+/**
+ * 그라인더 모델. **`micronsPerClick`은 환산 불가 모델에서 키 자체가 없다**(`non_null` 정책).
+ *
+ * <p>영점 보정(`zeroPointOffsetClicks`)은 응답에 없다 — 그래서 프론트가 마이크론을 직접 곱해 구할 수 없고, 환산 API를 불러야 한다.
+ */
+export const grinderModelSchema = z.object({
+  id: z.number(),
+  brand: z.string(),
+  name: z.string(),
+  adjustmentType: z.string(),
+  micronsPerClick: z.number().optional(),
+  minSetting: z.number().optional(),
+  maxSetting: z.number().optional(),
+  burrType: z.string().optional(),
+  convertible: z.boolean(),
+  isSystem: z.boolean().optional(),
+});
+
+/** 환산 응답. 미리보기는 `micron`만 쓴다 — source와 target이 같은 그라인더라 나머지는 의미가 없다. */
+export const grindConversionSchema = z.object({
+  sourceSetting: z.number(),
+  micron: z.number(),
+  targetSetting: z.number().optional(),
+  targetOutOfRange: z.boolean().optional(),
+  estimated: z.boolean().optional(),
+  warning: z.string().optional(),
+});
+
 export const brewerListSchema = z.array(brewerSchema);
 export const brewFilterListSchema = z.array(brewFilterSchema);
+export const grinderModelListSchema = z.array(grinderModelSchema);
 
 export type Brewer = z.infer<typeof brewerSchema>;
 export type BrewFilter = z.infer<typeof brewFilterSchema>;
+export type GrinderModel = z.infer<typeof grinderModelSchema>;
+export type GrindConversion = z.infer<typeof grindConversionSchema>;

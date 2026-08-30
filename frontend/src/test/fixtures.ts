@@ -157,3 +157,60 @@ export function summaries(count: number, startId = 100): RecipeSummary[] {
     title: `레시피 ${startId + i}`,
   }));
 }
+
+/**
+ * 그라인더 마스터 데이터. **2026-08-30에 실행 중인 백엔드에서 그대로 뜬 것이다.**
+ *
+ * 두 가지가 지어낸 픽스처였다면 틀렸을 부분이다 —
+ * `micronsPerClick`은 없으면 **키 자체가 사라지고**(J-Max), 환산 가능 여부는 `convertible` 불리언으로 온다.
+ */
+export const comandanteC40 = {
+  id: 1,
+  brand: "Comandante",
+  name: "C40 MK4",
+  adjustmentType: "CLICK",
+  micronsPerClick: 30.0,
+  minSetting: 0.0,
+  maxSetting: 50.0,
+  burrType: "CONICAL",
+  convertible: true,
+  isSystem: true,
+};
+
+/** 무단계 그라인더. `micronsPerClick` 키가 없고 `convertible`이 false다. */
+export const wilfaUniform = {
+  id: 10,
+  brand: "Wilfa",
+  name: "Uniform",
+  adjustmentType: "STEPLESS",
+  minSetting: 0.0,
+  maxSetting: 0.0,
+  burrType: "FLAT",
+  convertible: false,
+  isSystem: true,
+};
+
+/** C40 22클릭을 같은 그라인더로 환산한 응답. `micron`만 쓰고 나머지는 읽지 않는다. */
+export const c40Conversion = {
+  sourceSetting: 22,
+  micron: 660,
+  targetSetting: 22.0,
+  targetOutOfRange: false,
+  estimated: true,
+  warning:
+    "버 형상과 입도 분포가 달라 정확한 등가 변환은 불가능합니다. 시작점으로만 사용하세요.",
+};
+
+/** 무단계 그라인더로 환산을 시도했을 때의 422 본문. */
+export const grindNotConvertibleError = {
+  code: "GRIND_NOT_CONVERTIBLE",
+  message: "대상 그라인더의 클릭당 마이크론 정보가 없어 환산할 수 없습니다.",
+  fieldErrors: [],
+};
+
+/** 그라인더 상한을 넘겼을 때의 400 본문. */
+export const grindOutOfRangeError = {
+  code: "GRIND_SETTING_OUT_OF_RANGE",
+  message: "설정값 60는 이 그라인더의 상한 50.00를 넘습니다.",
+  fieldErrors: [],
+};

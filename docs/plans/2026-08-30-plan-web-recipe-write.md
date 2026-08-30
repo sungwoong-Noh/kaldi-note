@@ -129,9 +129,11 @@ frontend/CLAUDE.md                            Modify — 폼 스택 표기 정�
 **Covers:** 없음 — Task 2가 이 함수들을 컴포넌트 수준에서 AC로 검증한다.
 
 **Interfaces:**
-- Produces: `EditableStep`(`uid: string` + 서버 스텝 필드), `appendStep`, `insertStepAfter`, `removeStep`, `moveStep`, `pouredWaterTotal`, `toRequestSteps`, `fromRecipe`
+- Produces: `EditableStep`(`uid: string` + 서버 스텝 필드), `StepType`, `appendStep`, `insertStepAfter`, `removeStep`, `moveStep`, `pouredWaterTotal`, `isPouringStep`, `MAX_STEPS` — 그리고 `formState.ts`의 `RecipeFormState`, `emptyFormState`, `fromRecipe`, `toRequestBody`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+> **구현 후 정정:** 요청 변환 함수의 이름은 `toRequestSteps`가 아니라 **`toRequestBody`**다(스칼라 필드까지 함께 만든다). Task 4·5가 이 이름을 쓴다.
+
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 // stepSequence.test.ts
@@ -193,12 +195,12 @@ describe("moveStep", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test -- stepSequence`
 Expected: FAIL — `Failed to resolve import "./stepSequence"` (파일이 없다)
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```ts
 // stepSequence.ts
@@ -265,12 +267,12 @@ export function moveStep(steps: EditableStep[], index: number, delta: -1 | 1): E
 
 `appendStep`(스텝이 없으면 `BLOOM`·시작 0, 있으면 `POUR`·앞 종료), `pouredWaterTotal`(`BLOOM`·`POUR`의 `waterG` 합), `formState.ts`의 `fromRecipe`(서버 응답 → `EditableStep[]`, `uid` 부여)와 `toRequestSteps`(`uid` 제거)도 같은 방식으로 만든다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test -- stepSequence formState`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -291,7 +293,7 @@ cd .. && git add . && git commit -m "feat(web): 스텝 시퀀스 밀기·당기�
 - Consumes: `EditableStep`, `appendStep`, `insertStepAfter`, `removeStep`, `moveStep`, `pouredWaterTotal`, `MAX_STEPS` (Task 1), `formatDuration`·`formatGrams` (`lib/format.ts`)
 - Produces: `<RecipeStepEditor steps waterG onChange />` — 상태는 부모가 들고 이 컴포넌트는 `onChange(next)`만 부른다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 // RecipeStepEditor.test.tsx (일부)
@@ -327,21 +329,21 @@ it("AC-WEBEDIT-22 · 합계가 모자라면 부족량을 보여준다", () => {
 
 `Harness`는 `useState`로 스텝을 들고 `RecipeStepEditor`에 넘기는 이 파일 안의 테스트 전용 래퍼다. AC-WEBEDIT-12·13·15~21·23도 같은 형태로 각각 하나씩 쓴다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test -- RecipeStepEditor`
 Expected: FAIL — `Failed to resolve import "./RecipeStepEditor"`
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 스텝 행 하나가 `<li>`이고 `key`는 `step.uid`다. 버튼의 접근명은 스펙의 표를 그대로 쓴다(`스텝 ${i + 1} 위로` 등). 합계 줄은 `pouredWaterTotal(steps)`와 `waterG`를 `formatGrams`로 찍고, 차이가 0이 아닐 때만 `부족합니다`/`초과합니다`를 덧붙인다. 시작·소요 입력은 `type="number"`이고 옆에 `({formatDuration(value)})`를 둔다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test -- RecipeStepEditor`
 Expected: PASS, 13 tests
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -769,8 +771,8 @@ git add . && git commit -m "docs(web-recipe-write): 폼 스택 정정 + 스펙 �
 
 **검증되지 않은 가정:**
 
-1. **`crypto.randomUUID()`가 jsdom과 workerd 양쪽에서 쓸 수 있다.** workerd에는 있고 Node 20+에도 있지만 **jsdom 환경에서 노출되는지는 확인하지 않았다.** Task 1 Step 2에서 바로 드러난다 — 안 되면 모듈 스코프 증가 카운터로 바꾼다(테스트가 `uid` 값 자체를 단언하지 않으므로 영향이 없다).
-2. **`user.type`으로 `type="number"` 입력에 값을 넣었을 때 `toHaveValue(15)`가 숫자로 온다.** 기존 테스트에는 숫자 입력이 없어 선례가 없다. 어긋나면 단언을 문자열로 맞춘다.
+1. ~~**`crypto.randomUUID()`가 jsdom과 workerd 양쪽에서 쓸 수 있다.**~~ **✅ 확인됨 — jsdom에도 있다**(probe 테스트로 `typeof globalThis.crypto.randomUUID === "function"`을 확인했다). **그럼에도 구현은 모듈 스코프 카운터를 쓴다** — uid는 리스트 `key`로만 쓰이고 서버에 보내지 않으므로, 값이 재현 가능한 쪽이 실패한 테스트를 다시 돌릴 때 유리하다. Task 1 Step 3의 코드 예시(`crypto.randomUUID()` 기본 인자)는 실제 구현과 다르다.
+2. **`user.type`으로 `type="number"` 입력에 값을 넣었을 때 `toHaveValue(15)`가 숫자로 온다.** **부분 확인** — props로 준 값에 대해 `toHaveValue(0)`·`toHaveValue(20)` 같은 **숫자 단언이 통과한다**(Task 2). `user.type`으로 타이핑해 넣는 경로는 Task 4에서 처음 쓴다.
 3. **빈 값을 키째 제외하는 요청 본문이 백엔드에서 통과한다.** `AC-RECIPE-01`이 세 필드만으로 201을 받는다고 못박고 있어 근거는 있지만, `visibility`를 함께 보내는 형태는 확인되지 않았다.
 4. **`useMe`가 목록 화면에서도 이미 동작한다.** 상세에서는 쓰이고 있으나 목록에서는 처음 부른다. `ownerUserId` 필터가 `me`를 기다려야 하므로 로딩 순서를 봐야 한다.
 5. **스텝 행을 `getByRole("listitem", { name: /스텝 3/ })`로 잡을 수 있다.** `<li>`에 접근명을 주려면 `aria-label`이 필요하다. 안 되면 스텝 행 안의 오류 텍스트를 `within(...)`으로 찾는 형태로 바꾼다.

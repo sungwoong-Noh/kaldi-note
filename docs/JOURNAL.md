@@ -7,6 +7,58 @@
 
 ---
 
+## 2026-08-30 · 수동 확인 10/10 — 배포 슬라이스를 닫았다
+
+**브랜치:** `docs/web-deploy-done` · **PR:** #70
+**상태:** 완료 — 스펙 `WEBDEPLOY` `구현완료`. 커버리지 스펙 13건·AC 414개
+
+### 한 일
+- 남은 수동 확인 4개를 끝냈다: 폰에서 상세·포크, 쿠키 `HttpOnly`·`Secure` 실물, 롤백 검증, 로컬 개발 동작
+- 스펙 `status`를 `구현완료`로 바꿨다 — **이제 커버리지 스크립트가 AC 6개를 실제로 검사하고 통과한다**(초안일 땐 건너뛰었다)
+
+### 발견한 것
+- **롤백 검증 전부 PASS.** 판정 4개(종료 코드 1·롤백 메시지·직전 태그 복귀·상태 파일 무오염) + 실서비스 확인. **`헬스체크 통과 (시도 1/12)`** 로, 지난 세션의 오프바이원이 재발하지 않았다. `12/12`가 나오면 그때가 재발이다
+- **롤백 중 운영을 12초 간격으로 폴링했는데 내내 200이었다.** 하지만 스크립트 출력은 `서비스가 정상이다 (시도 4/12)` — 실제로는 끊긴 구간이 있었고 **내 폴링이 그걸 비껴갔다.** 폴링으로 "다운타임이 없었다"고 결론내면 안 된다
+- **프론트는 백엔드 교체 중에도 200을 유지했다.** Cloudflare Workers와 OCI VM이 별개 인프라라 그렇다. 응답 헤더에 `x-opennext: 1`·`cf-ray`가 붙는다(api에는 없다 — 회색 구름이라서)
+- **로컬 개발이 배포 후에도 그대로 동작한다.** `pnpm dev`의 `redirect_uri`가 `http://localhost:3000/auth/callback`으로 나오고 로컬 백엔드가 localhost 출처를 200으로 허용한다. 운영 빌드 값이 새어들지 않았다
+- **운영 BFF에 잘못된 code를 보내면 401 + `OAUTH_TOKEN_EXCHANGE_FAILED`.** `Set-Cookie`는 성공 응답에만 실리므로 쿠키 속성은 curl로 확인할 수 없다 — 브라우저 개발자도구가 필요하다
+
+### 다음 세션에게
+- **이 슬라이스는 닫혔다.** `docs/plans/2026-08-21-plan-web-deploy.md`에 미체크가 하나도 없다. 다음 작업은 새 스펙에서 시작한다
+- **남은 미확인 가정 하나:** CPU 10ms/호출이 SSR에 충분한지. Cloudflare 대시보드에서 실측할 것. 무료 플랜의 유일한 실질 제약이다
+- **`pnpm test:worker`를 검증 절차에 포함할 것.** `frontend/CLAUDE.md` 「검증」에 있다. 기존 59개는 Node+jsdom이고 이 6개만 workerd를 본다
+- APIWAF는 **사람이 미루기로 결정했다**(2026-08-29). 먼저 제안하지 말 것
+
+---
+
+## 2026-08-29 · 실제 배포 — kaldi-note.today가 인터넷에 떴다
+
+**브랜치:** `fix/web-deploy-custom-domain`(#69) → `docs/web-deploy-done` · **PR:** #68·#69 머지됨
+**상태:** 배포 완료. 수동 확인 10개 중 6개 끝, 4개 남음. 스펙 `status`는 **`초안` 유지**
+
+### 한 일
+- Cloudflare Worker 배포 + `kaldi-note.today` 커스텀 도메인 연결, GitHub Secret 3개 등록, VM `.env`에 CORS 추가 후 재기동
+- **CI 자동 배포가 실증됐다** — 배포 로그에 `kaldi-note.today (custom domain)`과 `스모크 체크 통과 (시도 1/6)`
+
+### 발견한 것
+- **★ `wrangler.jsonc`에 `routes`가 없으면 커스텀 도메인이 안 붙는다.** 첫 배포는 `workers.dev` 주소로만 떴다. `custom_domain: true`를 추가해야 CI 배포도 같은 주소를 유지한다. PR #68에 없던 내용이라 #69로 따로 냈다
+- **★ `infra/.env.example`에 `KALDI_CORS_ALLOWED_ORIGINS`가 아예 빠져 있었다.** 그래서 운영 백엔드가 기본값 `localhost:3000`을 쓰고 있었고 **운영 출처 프리플라이트가 403**이었다. VM `.env`에 넣고 `--force-recreate`하니 200으로 바뀌었다. 예시 파일에도 추가했다
+- **배포 job이 두 번 실패한 원인은 전부 `CLOUDFLARE_API_TOKEN` 부재였다.** 에러 메시지가 "necessary to set a CLOUDFLARE_API_TOKEN environment variable"이면 권한 문제가 아니라 **Secret이 비어 있다는 뜻**이다(권한 부족이면 401/403). 토큰 권한을 의심하며 시간을 쓰지 말 것
+- **`gh secret set NAME <값>`은 안 된다.** 값은 `--body`나 stdin으로 준다. 인자로 넘기면 `accepts at most 1 arg(s), received 2`
+- **Worker를 대시보드에서 미리 만들 필요가 없었다.** `wrangler deploy`가 `name` 값으로 자동 생성한다 — 계획의 가정 4번(이름 불일치 위험)이 이렇게 해소됐다
+- **배포 직후 404가 한 번 찍혔다가 곧 정상이 됐다.** 전파 지연이다. 스모크 체크에 6회 재시도를 둔 판단이 맞았다
+- **`compose`는 `-f docker-compose.prod.yml`이 필수다.** 기본 파일명이 없어서 `no such service: app`이 난다. `deploy.sh:16`이 쓰는 형태를 따를 것
+- Workers 무료 플랜은 `workers.dev` 서브도메인과 프리뷰 URL이 꺼진 채 배포된다(경고로 알려준다). 프리뷰는 스펙의 비목표이므로 의도대로다
+
+### 다음 세션에게
+- **남은 수동 확인 4개**(스펙 「수동 확인」): ①폰에서 **상세·포크**까지 — 로그인·목록은 8/29에 확인했다 ②`kaldi_refresh` 쿠키의 `HttpOnly`·`Secure` 실물 확인 ③`verify-rollback.sh` 재실행 ④로컬 개발(`pnpm dev` + `bootRun`) 정상 동작
+- **이 4개가 끝나면** 스펙 `status`를 `구현완료`로 바꾼다. 그때까지 커버리지 스크립트는 AC 6개를 건너뛴다(테스트에는 이미 다 있다)
+- **운영 백엔드는 이제 `localhost:3000` 출처를 403으로 막는다.** 스펙이 정한 대로다. 로컬 프론트를 운영 API에 붙일 수 없으니, 로컬 개발은 `bootRun`으로 로컬 백엔드를 띄워서 한다
+- **남은 미확인 가정 하나:** CPU 10ms/호출이 SSR에 충분한지. Cloudflare 대시보드에서 실측할 것
+- APIWAF는 **사람이 미루기로 결정했다**(2026-08-29). 먼저 제안하지 말 것
+
+---
+
 ## 2026-08-23 · Task 1~4 — 배포 파이프라인 구현 (아직 인터넷에 떠 있지 않다)
 
 **브랜치:** `feat/web-deploy` · **PR:** #68

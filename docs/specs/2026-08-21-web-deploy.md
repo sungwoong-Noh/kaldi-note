@@ -1,7 +1,7 @@
 ---
 id: WEBDEPLOY
 title: 프론트엔드 배포 — Cloudflare Workers
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-08-21-plan-web-deploy.md
 ---
 
@@ -156,16 +156,17 @@ VM `.env`의 두 값을 바꾸고 백엔드를 재기동해야 한다. **둘 다
 
 실제 Cloudflare 계정·도메인·카카오 콘솔·VM SSH가 있어야만 가능한 것들이다. 에이전트는 이 중 어느 것에도 접근 권한이 없으므로 사람이 수행하고 결과를 알려준다.
 
-- [ ] Cloudflare에 Worker를 만들고 `kaldi-note.today`를 커스텀 도메인으로 연결한다. apex 레코드가 생성된다(현재 `dig A kaldi-note.today`는 빈 응답이다)
-- [ ] 카카오 개발자 콘솔에 `https://kaldi-note.today/auth/callback`을 Redirect URI로 **추가** 등록한다. `http://localhost:3000/auth/callback`은 남겨둔다 — 지우면 로컬 개발이 깨진다
-- [ ] GitHub Secret에 Cloudflare API 토큰과 `NEXT_PUBLIC_KAKAO_CLIENT_ID`를 등록한다
-- [ ] VM `.env`의 `KALDI_CORS_ALLOWED_ORIGINS`·`KAKAO_REDIRECT_URI`를 바꾸고 백엔드를 재기동한다
-- [ ] `main` 머지 후 `frontend.yml`의 `deploy` job이 실제로 돌고 스모크 체크가 통과한다
-- [ ] `https://kaldi-note.today`가 유효한 HTTPS 인증서로 응답한다
-- [ ] **폰 브라우저에서** 카카오 실계정으로 로그인 → 레시피 목록 → 상세 → 포크가 동작한다. 데스크톱에서만 확인하지 않는다
-- [ ] 로그인 후 개발자 도구에서 `kaldi_refresh` 쿠키에 `HttpOnly`와 `Secure`가 둘 다 붙어 있다
-- [ ] 백엔드 배포·롤백이 여전히 정상이다 — `ssh -i ~/.ssh/kaldi-note-deploy ubuntu@158.179.172.168 'bash -s' < infra/scripts/verify-rollback.sh`
-- [ ] 배포 후에도 로컬 개발(`pnpm dev` + `bootRun`)이 그대로 동작한다. 카카오 콘솔에서 localhost URI를 지우지 않았는지 확인하는 것과 같다
+- [x] Cloudflare에 Worker를 만들고 `kaldi-note.today`를 커스텀 도메인으로 연결한다. apex 레코드가 생성된다(현재 `dig A kaldi-note.today`는 빈 응답이다)
+- [x] 카카오 개발자 콘솔에 `https://kaldi-note.today/auth/callback`을 Redirect URI로 **추가** 등록한다. `http://localhost:3000/auth/callback`은 남겨둔다 — 지우면 로컬 개발이 깨진다
+- [x] GitHub Secret에 Cloudflare API 토큰과 `NEXT_PUBLIC_KAKAO_CLIENT_ID`를 등록한다
+- [x] VM `.env`의 `KALDI_CORS_ALLOWED_ORIGINS`·`KAKAO_REDIRECT_URI`를 바꾸고 백엔드를 재기동한다
+- [x] `main` 머지 후 `frontend.yml`의 `deploy` job이 실제로 돌고 스모크 체크가 통과한다
+- [x] `https://kaldi-note.today`가 유효한 HTTPS 인증서로 응답한다
+- [x] **폰 브라우저에서** 카카오 실계정으로 로그인 → 레시피 목록 → 상세 → 포크가 동작한다. 데스크톱에서만 확인하지 않는다
+  - **2026-08-29 로그인·목록 확인 → 2026-08-30 상세·포크까지 확인 완료.** 로그인이 된다는 것은 카카오 콘솔 등록·redirect_uri 3자 일치·CORS·세션 쿠키가 모두 실제로 작동한다는 뜻이다
+- [x] 로그인 후 개발자 도구에서 `kaldi_refresh` 쿠키에 `HttpOnly`와 `Secure`가 둘 다 붙어 있다
+- [x] 백엔드 배포·롤백이 여전히 정상이다 — `ssh -i ~/.ssh/kaldi-note-deploy ubuntu@158.179.172.168 'bash -s' < infra/scripts/verify-rollback.sh`
+- [x] 배포 후에도 로컬 개발(`pnpm dev` + `bootRun`)이 그대로 동작한다. 카카오 콘솔에서 localhost URI를 지우지 않았는지 확인하는 것과 같다
 
 ## 열어둔 결정
 

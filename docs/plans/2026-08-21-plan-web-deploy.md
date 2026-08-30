@@ -583,10 +583,11 @@ git add . && git commit -m "docs: 프론트 배포 대상을 Cloudflare Workers�
 - [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (기존 59개 유지)
 - [x] `cd frontend && pnpm test:worker` 통과 (6개)
 - [x] `./scripts/check-spec-coverage.sh` 통과
-- [ ] 스펙 `docs/specs/2026-08-21-web-deploy.md`의 `status`를 `구현완료`로 변경 — **아래 두 항목이 끝나야 바꾼다**
-- [ ] 스펙의 「수동 확인」 10개 항목을 사람이 수행하고 결과를 확인 — 특히 **폰 브라우저에서 카카오 실계정 로그인 → 레시피 목록 → 상세 → 포크**가 동작하는 것
-  - **2026-08-29 진행: 10개 중 6개 완료.** 배포·도메인·Secret·CORS·CI 스모크 체크·HTTPS는 실제로 확인했다. 남은 4개는 스펙 문서 참조
-- [ ] 배포 후 `infra/scripts/verify-rollback.sh`로 백엔드 배포·롤백이 여전히 정상인지 확인
+- [x] 스펙 `docs/specs/2026-08-21-web-deploy.md`의 `status`를 `구현완료`로 변경 — 2026-08-30. 커버리지 스크립트가 이제 AC 6개를 실제로 검사하고 통과한다(스펙 13건·AC 414개)
+- [x] 스펙의 「수동 확인」 10개 항목을 사람이 수행하고 결과를 확인 — 특히 **폰 브라우저에서 카카오 실계정 로그인 → 레시피 목록 → 상세 → 포크**가 동작하는 것
+  - **2026-08-29에 6개, 2026-08-30에 나머지 4개 완료.** 폰에서 상세·포크까지 동작을 확인했고, `kaldi_refresh` 쿠키의 `HttpOnly`·`Secure`도 브라우저 개발자도구로 실물 확인했다
+- [x] 배포 후 `infra/scripts/verify-rollback.sh`로 백엔드 배포·롤백이 여전히 정상인지 확인
+  - **2026-08-30 전부 PASS.** 판정 4개(종료 코드 1·롤백 메시지·직전 태그 복귀·상태 파일 무오염)와 실서비스 확인까지. **`헬스체크 통과 (시도 1/12)`** — 지난 세션의 오프바이원이 재발하지 않았다
 
 ---
 

@@ -215,7 +215,7 @@ cd .. && git add . && git commit -m "feat(web): 브루잉 로그 스키마·API�
 **Files:** Create `features/brewlog/components/UserGrinderDialog.tsx` + 테스트
 **Covers:** AC-WEBBREW-02, 04
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBBREW-02 · 모델을 골라 등록하면 그 본문으로 요청한다", async () => {
@@ -239,10 +239,10 @@ it("AC-WEBBREW-02 · 모델을 골라 등록하면 그 본문으로 요청한다
 });
 ```
 
-- [ ] **Step 2: 실패 확인** — Run: `pnpm test -- UserGrinderDialog` / Expected: FAIL(모듈 없음)
-- [ ] **Step 3: 최소 구현** — `role="dialog"`, 모델 `select`, 별명 `input`, `등록`·`취소`. 성공하면 `onCreated(created)`를 부른다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 2 tests
-- [ ] **Step 5: 커밋** — `feat(web): 그라인더 등록 모달 (AC-WEBBREW 2개)`
+- [x] **Step 2: 실패 확인** — Run: `pnpm test -- UserGrinderDialog` / Expected: FAIL(모듈 없음)
+- [x] **Step 3: 최소 구현** — `role="dialog"`, 모델 `select`, 별명 `input`, `등록`·`취소`. 성공하면 `onCreated(created)`를 부른다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 2 tests
+- [x] **Step 5: 커밋** — `feat(web): 그라인더 등록 모달 (AC-WEBBREW 2개)`
 
 ---
 

@@ -30,6 +30,7 @@ plan: docs/plans/2026-08-31-plan-web-brew-log.md
 8. **즉흥 추출(레시피 없는 기록).** `recipeId`는 계속 필수다.
 9. **원두 재고 목록·수정·삭제 화면.** 이번에는 **등록**과 **로그 작성 시 선택**만 다룬다.
 10. **로그의 공개 범위.** 백엔드가 `PRIVATE`으로 고정하므로 요청에 담지 않는다.
+11. **블렌드 원두 등록(`BLEND`).** 서버가 `origins` 2개 이상을 요구해 입력칸이 가변 개수가 된다. 이번에는 `SINGLE_ORIGIN`만 만들고, 블렌드는 원두 재고 화면을 제대로 만들 때 연다. (2026-08-31 구현 세션에서 결정 — 아래 「원두 등록 모달」 참조)
 
 ## 왜
 
@@ -106,11 +107,15 @@ plan: docs/plans/2026-08-31-plan-web-brew-log.md
 | 라벨 | 대상 | 필수 |
 |---|---|---|
 | 로스터 | 기존 선택 또는 `로스터 이름` 입력 | O |
-| 제품 | 기존 선택 또는 `제품 이름`·`구성`·`배전도` | O |
+| 제품 | 기존 선택 또는 `제품 이름`·`배전도`·`원산지 국가` | O |
 | 중량 | `weightG` | O |
 | 로스팅일 | `roastedAt` | O |
 
-`구성`은 `BeanMix`(`SINGLE_ORIGIN` 등), `배전도`는 `RoastLevel`(`LIGHT`·`MEDIUM_LIGHT`·`MEDIUM`·`MEDIUM_DARK`)을 그대로 쓴다. **품종·가공법(`origins`)은 이번에 받지 않는다** — 서버가 생략을 허용한다.
+`배전도`는 `RoastLevel`(`LIGHT`·`MEDIUM_LIGHT`·`MEDIUM`·`MEDIUM_DARK`)을 그대로 쓴다.
+
+**`origins`는 서버가 반드시 요구한다.** 2026-08-31 구현 세션에서 실제 백엔드로 확인했다 — `BeanCatalogService.buildOrigins()`가 `SINGLE_ORIGIN`이면 정확히 1개, `BLEND`면 2개 이상을 요구하고, 키를 빼거나 빈 배열을 보내면 `400 BEAN_MIX_ORIGIN_MISMATCH`가 난다. 스펙 작성 시점의 "서버가 생략을 허용한다"는 전제는 틀렸다.
+
+그래서 모달은 **`원산지 국가` 한 칸을 필수로 받고** `beanMix`는 `SINGLE_ORIGIN`으로 고정해 보낸다(구성 선택란을 두지 않는다). 요청 본문은 `{ roasterId, name, beanMix: "SINGLE_ORIGIN", roastLevel, origins: [{ country }] }`다. `varietyId`·`processId`는 선택이라 담지 않는다.
 
 ## 요청 흐름
 
@@ -194,8 +199,8 @@ plan: docs/plans/2026-08-31-plan-web-brew-log.md
 #### AC-WEBBREW-05 · 전부 새로 만들면 요청이 세 번 순서대로 나간다
 
 - **Given** 원두 등록 모달에서 로스터·제품을 모두 "새로 만들기"로 골랐다
-- **When** 로스터 이름 `프릿츠`, 제품 이름 `예가체프`, 구성 `SINGLE_ORIGIN`, 배전도 `LIGHT`, 중량 `200`, 로스팅일 `2026-08-28`로 `등록`을 누른다
-- **Then** 호출 순서가 `POST /roasters` → `POST /bean-products` → `POST /bean-batches`이고, 마지막 본문이 `{ "beanProductId": <생성된 제품 id>, "weightG": 200, "roastedAt": "2026-08-28" }`이다
+- **When** 로스터 이름 `프릿츠`, 제품 이름 `예가체프`, 배전도 `LIGHT`, 원산지 국가 `에티오피아`, 중량 `200`, 로스팅일 `2026-08-28`로 `등록`을 누른다
+- **Then** 호출 순서가 `POST /roasters` → `POST /bean-products` → `POST /bean-batches`이고, `POST /bean-products` 본문이 `{ "roasterId": <생성된 로스터 id>, "name": "예가체프", "beanMix": "SINGLE_ORIGIN", "roastLevel": "LIGHT", "origins": [{ "country": "에티오피아" }] }`, 마지막 본문이 `{ "beanProductId": <생성된 제품 id>, "weightG": 200, "roastedAt": "2026-08-28" }`이다
 - **검증** 컴포넌트 테스트 `BeanBatchDialog.test.tsx`
 
 #### AC-WEBBREW-06 · 기존 로스터를 고르면 로스터 요청은 나가지 않는다

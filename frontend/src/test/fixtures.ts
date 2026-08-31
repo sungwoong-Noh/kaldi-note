@@ -214,3 +214,216 @@ export const grindOutOfRangeError = {
   message: "설정값 60는 이 그라인더의 상한 50.00를 넘습니다.",
   fieldErrors: [],
 };
+
+/* ─────────────────────────────────────────────────────────────
+ * 브루잉 로그 슬라이스. 아래는 전부 **2026-08-31에 실행 중인 백엔드에서 뜬 실제 응답**이다.
+ * 로컬 DB에 데이터가 없어 로스터·제품·재고·그라인더·로그를 직접 만들어 떴다.
+ * ───────────────────────────────────────────────────────────── */
+
+/**
+ * 분쇄도를 가진 레시피. **시드 레시피에는 `grinderModelId`·`grindSettingValue`가 없어서** 이 픽스처를 만들려고
+ * 로컬에 레시피를 하나 생성해 `GET`으로 다시 읽었다. `POST` 응답은 보낸 값을 그대로 되비쳐 `doseG: 20`으로 오지만,
+ * `GET`은 `20.0`으로 온다 — 화면이 읽는 것은 `GET` 쪽이다.
+ */
+export const grindedRecipe: Recipe = {
+  id: 16,
+  ownerUserId: 11,
+  sourceType: "USER",
+  title: "분쇄도 있는 레시피",
+  brewMethod: "POUR_OVER",
+  visibility: "PRIVATE",
+  doseG: 20.0,
+  waterG: 300.0,
+  ratio: 15.0,
+  waterTempC: 92.0,
+  totalTimeSeconds: 210,
+  grinderModelId: 1,
+  grindSettingValue: 22.0,
+  grindSettingUnit: "CLICK",
+  grindMicronEstimated: 660,
+  steps: [
+    {
+      stepOrder: 1,
+      stepType: "BLOOM",
+      startAtSeconds: 0,
+      durationSeconds: 10,
+      waterG: 50.0,
+      cumulativeWaterG: 50.0,
+    },
+    {
+      stepOrder: 2,
+      stepType: "POUR",
+      startAtSeconds: 45,
+      durationSeconds: 10,
+      waterG: 250.0,
+      cumulativeWaterG: 300.0,
+    },
+  ],
+  createdAt: "2026-08-31T11:10:08.751344Z",
+  updatedAt: "2026-08-31T11:10:08.751344Z",
+};
+
+/**
+ * 내 그라인더 하나. 응답에 **모델 이름과 브랜드가 함께 실려 온다** — 그라인더 선택란을 그리려고
+ * 마스터 목록을 따로 부를 필요가 없다.
+ */
+export const myComandante = {
+  id: 2,
+  grinderModelId: 1,
+  brand: "Comandante",
+  grinderModelName: "C40 MK4",
+  micronsPerClick: 30.0,
+  nickname: "집",
+  calibrationOffsetClicks: 0,
+  isDefault: false,
+};
+
+export const fritzRoaster = {
+  id: 3,
+  name: "프릿츠",
+  country: "KR",
+  isSystem: false,
+  createdByUserId: 11,
+  createdAt: "2026-08-31T11:04:36.091945Z",
+};
+
+/** `origins`는 서버가 항상 채워 준다. `ratioPercent`는 보내지 않아도 100.0으로 계산돼 온다. */
+export const yirgacheffeProduct = {
+  id: 3,
+  roasterId: 3,
+  name: "예가체프",
+  beanMix: "SINGLE_ORIGIN",
+  roastLevel: "MEDIUM_LIGHT",
+  decaf: false,
+  verified: false,
+  origins: [{ id: 4, country: "에티오피아", ratioPercent: 100.0 }],
+  createdAt: "2026-08-31T11:05:30.223889Z",
+};
+
+/** `daysOffRoast`·`degassingStatus`는 서버가 조회 시점에 계산해서 준다. */
+export const yirgacheffeBatch = {
+  id: 3,
+  beanProductId: 3,
+  weightG: 200.0,
+  remainingG: 200.0,
+  roastedAt: "2026-08-28",
+  frozen: false,
+  finished: false,
+  daysOffRoast: 3,
+  degassingStatus: "IDEAL",
+  createdAt: "2026-08-31T11:05:37.424505Z",
+  updatedAt: "2026-08-31T11:05:37.424505Z",
+};
+
+/** TDS를 넣은 로그. 추출 분석 4필드가 함께 온다. */
+export const brewLogWithTds = {
+  id: 2,
+  userId: 11,
+  recipeId: 12,
+  beanBatchId: 3,
+  brewedAt: "2026-08-31T09:00:00Z",
+  visibility: "PRIVATE",
+  actualDoseG: 20.0,
+  actualWaterG: 300.0,
+  actualWaterTempC: 92.0,
+  actualTotalTimeSeconds: 210,
+  userGrinderId: 2,
+  actualGrindSettingValue: 22.0,
+  actualGrindMicronEstimated: 660,
+  beverageWeightG: 260.0,
+  tdsPercent: 1.35,
+  daysOffRoast: 3,
+  degassingStatus: "IDEAL",
+  brewRatio: 15.0,
+  extractionYieldPercent: 17.6,
+  strengthZone: "IDEAL",
+  extractionZone: "UNDER",
+  diagnosis:
+    "추출이 부족합니다. 분쇄를 곱게 하거나 물 온도를 올리거나 추출 시간을 늘려보세요.",
+  rating: 4.0,
+  acidity: 4,
+  sweetness: 3,
+  body: 3,
+  bitterness: 2,
+  aftertaste: 4,
+  overallNote: "산미가 좋다",
+  createdAt: "2026-08-31T11:06:11.765270Z",
+  updatedAt: "2026-08-31T11:06:11.765270Z",
+};
+
+/**
+ * TDS 없이 남긴 로그. `tdsPercent`·`extractionYieldPercent`·`strengthZone`·`extractionZone` 키가 **통째로 없다.**
+ *
+ * **`diagnosis`는 그래도 온다** — "TDS가 없어 계산할 수 없다"는 안내 문구다. 그래서 "추출 분석 영역을 그릴지"의
+ * 판단 기준은 `diagnosis`의 존재가 아니라 `tdsPercent`다(AC-WEBBREW-42).
+ */
+export const brewLogWithoutTds = {
+  id: 3,
+  userId: 11,
+  recipeId: 12,
+  beanBatchId: 3,
+  brewedAt: "2026-08-30T09:00:00Z",
+  visibility: "PRIVATE",
+  actualDoseG: 20.0,
+  actualWaterG: 300.0,
+  actualWaterTempC: 92.0,
+  userGrinderId: 2,
+  actualGrindSettingValue: 22.0,
+  actualGrindMicronEstimated: 660,
+  daysOffRoast: 2,
+  degassingStatus: "TOO_FRESH",
+  brewRatio: 15.0,
+  diagnosis:
+    "TDS 측정값이 없어 추출 수율을 계산할 수 없습니다. 비율과 관능 평가로 판단하세요.",
+  rating: 3.0,
+  createdAt: "2026-08-31T11:06:11.811910Z",
+  updatedAt: "2026-08-31T11:06:11.811910Z",
+};
+
+/**
+ * 목록 응답. **항목은 상세에서 `overallNote` 하나만 뺀 것이다**(`BrewLogSummaryResponse`) —
+ * 그래서 레시피 제목이 없고, 목록 화면은 `recipeId`로 레시피를 따로 읽어야 한다.
+ */
+export const brewLogPage = {
+  content: [
+    {
+      id: 2,
+      userId: 11,
+      recipeId: 12,
+      beanBatchId: 3,
+      brewedAt: "2026-08-31T09:00:00Z",
+      visibility: "PRIVATE",
+      actualDoseG: 20.0,
+      actualWaterG: 300.0,
+      actualWaterTempC: 92.0,
+      actualTotalTimeSeconds: 210,
+      userGrinderId: 2,
+      actualGrindSettingValue: 22.0,
+      actualGrindMicronEstimated: 660,
+      beverageWeightG: 260.0,
+      tdsPercent: 1.35,
+      daysOffRoast: 3,
+      degassingStatus: "IDEAL",
+      brewRatio: 15.0,
+      extractionYieldPercent: 17.6,
+      strengthZone: "IDEAL",
+      extractionZone: "UNDER",
+      diagnosis:
+        "추출이 부족합니다. 분쇄를 곱게 하거나 물 온도를 올리거나 추출 시간을 늘려보세요.",
+      rating: 4.0,
+      acidity: 4,
+      sweetness: 3,
+      body: 3,
+      bitterness: 2,
+      aftertaste: 4,
+      createdAt: "2026-08-31T11:06:11.765270Z",
+      updatedAt: "2026-08-31T11:06:11.765270Z",
+    },
+    brewLogWithoutTds,
+  ],
+  page: 0,
+  size: 20,
+  totalElements: 2,
+  totalPages: 1,
+  hasNext: false,
+};

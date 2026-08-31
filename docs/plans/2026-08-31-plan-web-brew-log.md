@@ -427,7 +427,7 @@ it("AC-WEBBREW-29 · 펼치지 않으면 5축 키를 보내지 않는다", async
 **Files:** Create `app/brews/[id]/page.tsx`, `BrewDetail.tsx`, `ExtractionSummary.tsx` + 테스트
 **Covers:** AC-WEBBREW-40, 41, 42, 43, 44, 45
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBBREW-42 · TDS가 없으면 추출 분석 영역이 아예 없다", async () => {
@@ -440,10 +440,10 @@ it("AC-WEBBREW-42 · TDS가 없으면 추출 분석 영역이 아예 없다", as
 });
 ```
 
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
-- [ ] **Step 3: 최소 구현** — 상세 페이지는 async 서버 컴포넌트가 `params`를 풀고 클라이언트 컴포넌트가 그린다. 삭제 모달은 `DeleteRecipeDialog`와 같은 형태로 만들되 브루로그용으로 따로 둔다(문구가 다르다).
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 6 tests
-- [ ] **Step 5: 커밋** — `feat(web): 로그 상세와 삭제 (AC-WEBBREW 6개)`
+- [x] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
+- [x] **Step 3: 최소 구현** — 상세 페이지는 async 서버 컴포넌트가 `params`를 풀고 클라이언트 컴포넌트가 그린다. 삭제 모달은 `DeleteRecipeDialog`와 같은 형태로 만들되 브루로그용으로 따로 둔다(문구가 다르다).
+- [x] **Step 4: 통과 확인** — Expected: PASS, 6 tests
+- [x] **Step 5: 커밋** — `feat(web): 로그 상세와 삭제 (AC-WEBBREW 6개)`
 
 ---
 

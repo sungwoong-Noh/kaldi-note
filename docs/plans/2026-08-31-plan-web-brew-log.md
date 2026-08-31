@@ -137,7 +137,11 @@ frontend/src/
 **Interfaces:**
 - Produces: `BrewLogFormState`, `initialFormState(recipe, grinders)`, `toRequestBody(state)`, `createBrewLog`, `fetchBrewLog`, `fetchBrewLogPage`, `deleteBrewLog`, `useUserGrinders`, `useBeanBatches`, `useRoasters`, `useBeanProducts`
 
-- [ ] **Step 1: 픽스처를 실제 백엔드에서 뜬다**
+> **실행 시 조정(2026-08-31):** 이 태스크에서 실제로 만든 것은 **픽스처·`formState`·`userGrinderSchema`·`fieldErrors` 확장**까지다. `api.ts`·나머지 `schema.ts`는 **그것을 요구하는 AC 테스트가 빨개진 뒤** Task 2·3·5·7에서 만든다 — 지금 만들면 실패하는 테스트 없이 프로덕션 코드를 쓰는 셈이라 TDD 규칙에 어긋난다. Produces의 이름과 시그니처는 그대로 지킨다.
+>
+> **`vitest.config.mts`에 `env: { TZ: "UTC" }`를 넣었다.** 스펙의 AC-13·AC-18이 시스템 시각 `09:00Z`에 대해 입력칸 `09:00`·요청 `09:00:00.000Z`를 요구하는데, 고정하지 않으면 로컬(Asia/Seoul)에서 9시간 어긋나고 CI(UTC)와 결과가 갈린다. **가정 2는 이로써 해소됐다** — `toHaveValue`가 아니라 TZ가 문제였다.
+
+- [x] **Step 1: 픽스처를 실제 백엔드에서 뜬다**
 
 ```bash
 docker compose up -d
@@ -150,7 +154,7 @@ curl -s -H "Authorization: Bearer $TOKEN" localhost:8080/api/v1/brew-logs | jq '
 
 **없으면 만들어서 떠야 한다** — 그라인더·재고·로그가 로컬 DB에 없을 수 있다. 만든 데이터는 확인이 끝나면 지운다.
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 ```ts
 // formState.test.ts (일부)
@@ -185,16 +189,16 @@ it("빈 값과 펼치지 않은 5축은 본문에서 빠진다", () => {
 });
 ```
 
-- [ ] **Step 3: 테스트 실행 — 실패 확인**
+- [x] **Step 3: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test -- brewlog/formState`
 Expected: FAIL — `Failed to resolve import "./formState"`
 
-- [ ] **Step 4: 최소 구현**
+- [x] **Step 4: 최소 구현**
 
 `toRequestBody`는 쓰기 슬라이스의 `omitEmpty`와 같은 방식이다. `initialFormState`는 그라인더 배열에서 `grinderModelId`가 일치하는 것 중 `id`가 최소인 것을 고른다. `lib/fieldErrors.ts`의 `KNOWN_FIELDS`에 `brewedAt`·`actualDoseG`·`actualWaterG`·`actualWaterTempC`·`actualTotalTimeSeconds`·`actualDrawdownSeconds`·`actualGrindSettingValue`·`beverageWeightG`·`tdsPercent`·`rating`·`overallNote`·`weightG`·`roastedAt`·`name`을 더한다.
 
-- [ ] **Step 5: 통과 확인 후 커밋**
+- [x] **Step 5: 통과 확인 후 커밋**
 
 Run: `cd frontend && pnpm test -- brewlog lib/fieldErrors`
 Expected: PASS
@@ -211,7 +215,7 @@ cd .. && git add . && git commit -m "feat(web): 브루잉 로그 스키마·API�
 **Files:** Create `features/brewlog/components/UserGrinderDialog.tsx` + 테스트
 **Covers:** AC-WEBBREW-02, 04
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBBREW-02 · 모델을 골라 등록하면 그 본문으로 요청한다", async () => {
@@ -235,10 +239,10 @@ it("AC-WEBBREW-02 · 모델을 골라 등록하면 그 본문으로 요청한다
 });
 ```
 
-- [ ] **Step 2: 실패 확인** — Run: `pnpm test -- UserGrinderDialog` / Expected: FAIL(모듈 없음)
-- [ ] **Step 3: 최소 구현** — `role="dialog"`, 모델 `select`, 별명 `input`, `등록`·`취소`. 성공하면 `onCreated(created)`를 부른다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 2 tests
-- [ ] **Step 5: 커밋** — `feat(web): 그라인더 등록 모달 (AC-WEBBREW 2개)`
+- [x] **Step 2: 실패 확인** — Run: `pnpm test -- UserGrinderDialog` / Expected: FAIL(모듈 없음)
+- [x] **Step 3: 최소 구현** — `role="dialog"`, 모델 `select`, 별명 `input`, `등록`·`취소`. 성공하면 `onCreated(created)`를 부른다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 2 tests
+- [x] **Step 5: 커밋** — `feat(web): 그라인더 등록 모달 (AC-WEBBREW 2개)`
 
 ---
 
@@ -249,7 +253,7 @@ it("AC-WEBBREW-02 · 모델을 골라 등록하면 그 본문으로 요청한다
 
 **Interfaces:** Consumes `initialFormState`(Task 1), `UserGrinderDialog`(Task 2)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBBREW-13 · 내린 시각의 기본값은 화면이 열린 시각이다", async () => {
@@ -278,10 +282,12 @@ it("AC-WEBBREW-16 · 같은 모델이 둘이면 먼저 등록한 것을 고른�
 
 `vi.setSystemTime`을 쓰면 `afterEach`에서 `vi.useRealTimers()`로 되돌린다 — 안 하면 뒤 테스트의 시간이 멈춘 채로 남는다.
 
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
-- [ ] **Step 3: 최소 구현** — 페이지는 async 서버 컴포넌트로 `searchParams`를 풀어 `recipeId`를 넘기고, 클라이언트 컴포넌트가 레시피·그라인더·재고를 부른다. **`use(params)`를 쓰지 않는다**(Suspense 경계가 없어 빈 화면이 된다 — 2026-08-30에 겪었다).
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 9 tests
-- [ ] **Step 5: 커밋** — `feat(web): 로그 작성 화면 초기값 (AC-WEBBREW 9개)`
+> **실행 결과(2026-08-31):** `vi.setSystemTime`만으로는 부족했다. **`vi.useFakeTimers({ shouldAdvanceTime: true })`를 함께 써야 한다** — 타이머를 완전히 멈추면 MSW 응답과 `findBy*`의 폴링이 진행되지 않아 화면이 영원히 로딩 상태에 머문다. **가정 1·2 해소:** `datetime-local`의 `toHaveValue`는 초 없이 `"2026-08-31T09:00"`로 오고, TZ를 UTC로 고정한 뒤 AC-13이 그대로 통과한다. 스펙 수정은 필요 없었다.
+
+- [x] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
+- [x] **Step 3: 최소 구현** — 페이지는 async 서버 컴포넌트로 `searchParams`를 풀어 `recipeId`를 넘기고, 클라이언트 컴포넌트가 레시피·그라인더·재고를 부른다. **`use(params)`를 쓰지 않는다**(Suspense 경계가 없어 빈 화면이 된다 — 2026-08-30에 겪었다).
+- [x] **Step 4: 통과 확인** — Expected: PASS, 9 tests
+- [x] **Step 5: 커밋** — `feat(web): 로그 작성 화면 초기값 (AC-WEBBREW 9개)`
 
 ---
 
@@ -480,7 +486,8 @@ Expected: 전부 PASS. 커버리지는 스펙 15건·AC 498개(452 + 46).
 
 1. **`vi.setSystemTime`이 이 프로젝트 테스트에서 처음 쓰인다.** 기존 59→124개 테스트 중 시간을 고정한 것이 없다. `afterEach`에서 되돌리지 않으면 뒤 테스트가 멈춘 시간을 물려받는다. Task 3에서 드러난다.
 2. **`datetime-local` 입력의 `toHaveValue`가 `"2026-08-31T09:00"` 문자열로 온다.** 초 단위가 붙는지, 타임존이 어떻게 반영되는지 확인하지 않았다. 어긋나면 AC-WEBBREW-13의 기대값을 실제 형식에 맞춘다 — **스펙 수정이 필요하므로 사람에게 보고한다.**
-3. **목록에서 레시피 제목을 얻는 방법.** 브루로그 목록 응답에 제목이 없어 `recipeId`마다 `GET /recipes/{id}`를 부른다. 한 화면에 20개면 최대 20번이고, 대부분 같은 레시피라 캐시가 듣는다는 전제다. 실제로 몇 번 나가는지 Task 7에서 확인한다.
-4. **`GET /bean-batches`·`/bean-products`·`/roasters`가 페이지 봉투인지 배열인지.** 재고는 `PageResponse`로 보이나 로스터·제품은 확인하지 않았다. Task 1의 픽스처 뜨기에서 드러난다.
+3. **목록에서 레시피 제목을 얻는 방법.** 브루로그 목록 응답에 제목이 없어 `recipeId`마다 `GET /recipes/{id}`를 부른다. 한 화면에 20개면 최대 20번이고, 대부분 같은 레시피라 캐시가 듣는다는 전제다. 실제로 몇 번 나가는지 Task 7에서 확인한다. — **전제 확인(Task 1):** 목록 항목은 상세 응답에서 `overallNote` 하나만 뺀 구조이고(`BrewLogSummaryResponse`) 레시피 제목은 실제로 없다.
+4. ~~**`GET /bean-batches`·`/bean-products`·`/roasters`가 페이지 봉투인지 배열인지.**~~ **해소(Task 1):** 셋 다 **배열**이다. 페이지 봉투(`{content,page,size,totalElements,totalPages,hasNext}`)는 `/brew-logs`뿐이다.
 5. **원두 선택란의 표시(`프릿츠 예가체프 · 3일차`)를 만들려면 세 응답을 조합해야 한다.** 재고는 `beanProductId`만 주고 제품은 `roasterId`만 준다. 목록 셋을 다 부르는 비용이 실제로 문제인지 확인하지 않았다.
-6. **브루로그 생성 응답이 `201`인지 `200`인지.** 컨트롤러를 열어보지 않았다. Task 6에서 드러난다.
+6. ~~**브루로그 생성 응답이 `201`인지 `200`인지.**~~ **해소(Task 1):** `POST /brew-logs`는 **201**이다.
+7. **(Task 1에서 새로 드러남) `POST /bean-products`는 `origins`를 반드시 요구한다.** 스펙이 "서버가 생략을 허용한다"고 적어둔 것이 사실이 아니었다 — 키를 빼거나 빈 배열을 보내면 `400 BEAN_MIX_ORIGIN_MISMATCH`다. **사람 승인을 받아 스펙을 고쳤다**: 모달이 `원산지 국가`를 필수로 받고 `beanMix`는 `SINGLE_ORIGIN` 고정, `BLEND`는 비목표 11번으로 뺐다. AC-WEBBREW-05의 When·Then도 그에 맞게 정정했다.

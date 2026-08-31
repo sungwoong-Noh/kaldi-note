@@ -43,4 +43,23 @@ describe("mapFieldErrors", () => {
 
     expect(mapped).toEqual({ byField: {}, byStepIndex: {}, unmapped: [] });
   });
+
+  it("브루잉 로그와 선행 데이터의 필드도 입력칸에 붙는다", () => {
+    const mapped = mapFieldErrors([
+      { field: "brewedAt", message: "미래 시각은 기록할 수 없습니다" },
+      { field: "actualDoseG", message: "0보다 커야 합니다" },
+      { field: "tdsPercent", message: "0 이상이어야 합니다" },
+      { field: "rating", message: "5.0 이하여야 합니다" },
+      { field: "overallNote", message: "1000자 이하여야 합니다" },
+      { field: "weightG", message: "10.0 이상이어야 합니다" },
+      { field: "roastedAt", message: "미래 날짜일 수 없습니다" },
+      { field: "name", message: "100자 이하여야 합니다" },
+      { field: "country", message: "필수입니다" },
+    ]);
+
+    expect(mapped.unmapped).toEqual([]);
+    expect(mapped.byField.brewedAt).toBe("미래 시각은 기록할 수 없습니다");
+    expect(mapped.byField.name).toBe("100자 이하여야 합니다");
+    expect(mapped.byField.country).toBe("필수입니다");
+  });
 });

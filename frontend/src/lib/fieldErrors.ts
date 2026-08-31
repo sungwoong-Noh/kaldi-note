@@ -14,6 +14,32 @@ const KNOWN_FIELDS = new Set([
   "grinderModelId",
   "grindSettingUnit",
   "grindSettingValue",
+  // 브루잉 로그
+  "brewedAt",
+  "beanBatchId",
+  "userGrinderId",
+  "actualGrindSettingValue",
+  "actualDoseG",
+  "actualWaterG",
+  "actualWaterTempC",
+  "actualTotalTimeSeconds",
+  "actualDrawdownSeconds",
+  "beverageWeightG",
+  "tdsPercent",
+  "rating",
+  "overallNote",
+  "acidity",
+  "sweetness",
+  "body",
+  "bitterness",
+  "aftertaste",
+  // 원두 등록 모달의 3단 생성. `name`은 로스터·제품이 같은 이름을 쓰지만,
+  // 두 요청이 순차라 한 번에 한쪽의 오류만 온다.
+  "name",
+  "country",
+  "roastLevel",
+  "weightG",
+  "roastedAt",
 ]);
 
 /** `steps[2].waterG`처럼 배열 인덱스를 가진 필드. */

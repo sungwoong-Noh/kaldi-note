@@ -6,6 +6,7 @@ import {
   brewerListSchema,
   grindConversionSchema,
   grinderModelListSchema,
+  userGrinderListSchema,
 } from "./schema";
 
 /**
@@ -48,6 +49,22 @@ export function useGrinders(onSessionLost?: () => void) {
         onSessionLost,
       }),
     ...MASTER_DATA_OPTIONS,
+  });
+}
+
+/**
+ * 내가 등록한 그라인더 목록.
+ *
+ * <p>마스터 데이터와 달리 <b>`staleTime`을 두지 않는다</b> — 모달로 새로 등록하면 곧바로 다시 읽어야 선택란에 나타난다.
+ */
+export function useUserGrinders(onSessionLost?: () => void) {
+  return useQuery({
+    queryKey: ["gear", "user-grinders"],
+    queryFn: () =>
+      authedRequest(backendUrl("/api/v1/gear/user-grinders"), {
+        schema: userGrinderListSchema,
+        onSessionLost,
+      }),
   });
 }
 

@@ -362,7 +362,7 @@ it("AC-WEBBREW-25 · 원두를 모달에서 등록해도 작성 중인 값이 �
 **Files:** Modify `BrewLogForm.tsx`, Create `RatingInput.tsx`
 **Covers:** AC-WEBBREW-18, 19, 20, 21, 22, 27, 28, 29, 30, 31
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBBREW-29 · 펼치지 않으면 5축 키를 보내지 않는다", async () => {
@@ -385,10 +385,12 @@ it("AC-WEBBREW-29 · 펼치지 않으면 5축 키를 보내지 않는다", async
 });
 ```
 
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(`기록하기` 버튼 없음)
-- [ ] **Step 3: 최소 구현** — `RatingInput`은 별 5개 버튼(`aria-label="별점 N"`)이고 정수만 올린다. 5축은 `맛 자세히`로 펼치며, 펼치지 않으면 상태가 `null`이라 본문에서 빠진다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 10 tests
-- [ ] **Step 5: 커밋** — `feat(web): 로그 저장과 평가 입력 (AC-WEBBREW 10개)`
+- [x] **Step 2: 실패 확인** — Expected: FAIL(`기록하기` 버튼 없음)
+- [x] **Step 3: 최소 구현** — `RatingInput`은 별 5개 버튼(`aria-label="별점 N"`)이고 정수만 올린다. 5축은 `맛 자세히`로 펼치며, 펼치지 않으면 상태가 `null`이라 본문에서 빠진다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 10 tests
+
+> **실행 시 조정(2026-08-31):** 저장 응답 스텁을 계획 예시의 `{ id: 42 }`가 아니라 **실제 응답 픽스처**(`{ ...brewLogWithTds, id: 42 }`)로 썼다. `id`만 돌려주면 `brewLogSchema`가 거부해서 화면이 성공을 성공으로 보지 못한다 — 지어낸 응답으로는 그 사실이 드러나지 않는다.
+- [x] **Step 5: 커밋** — `feat(web): 로그 저장과 평가 입력 (AC-WEBBREW 10개)`
 
 ---
 

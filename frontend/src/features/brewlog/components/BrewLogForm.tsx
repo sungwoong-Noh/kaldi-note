@@ -1,6 +1,7 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
@@ -11,9 +12,26 @@ import { useBeanBatches } from "@/features/inventory/api";
 import type { BeanBatch } from "@/features/inventory/schema";
 import { fetchRecipe } from "@/features/recipe/api";
 import type { Recipe } from "@/features/recipe/schema";
-import { initialFormState, type BrewLogFormState } from "../formState";
+import { ApiError } from "@/lib/api-client";
+import { mapFieldErrors } from "@/lib/fieldErrors";
+import { createBrewLog } from "../api";
+import {
+  initialFormState,
+  toRequestBody,
+  type BrewLogFormState,
+} from "../formState";
 import { BeanBatchDialog } from "./BeanBatchDialog";
+import { RatingInput } from "./RatingInput";
 import { UserGrinderDialog } from "./UserGrinderDialog";
+
+/** 5축 관능 평가. 접혀 있을 때는 그리지 않으므로 요청 본문에도 담기지 않는다. */
+const SENSORY_AXES = [
+  { key: "acidity", label: "산미" },
+  { key: "sweetness", label: "단맛" },
+  { key: "body", label: "바디" },
+  { key: "bitterness", label: "쓴맛" },
+  { key: "aftertaste", label: "여운" },
+] as const;
 
 /**
  * 로그 작성 화면.
@@ -84,6 +102,20 @@ function Fields({
   );
   const [addingGrinder, setAddingGrinder] = useState(false);
   const [addingBean, setAddingBean] = useState(false);
+  const router = useRouter();
+
+  const save = useMutation({
+    mutationFn: () => createBrewLog(toRequestBody(state), onSessionLost),
+    onSuccess: (created) => {
+      void queryClient.invalidateQueries({ queryKey: ["brew-logs"] });
+      router.push(`/brews/${created.id}`);
+    },
+  });
+
+  const fieldErrors =
+    save.error instanceof ApiError
+      ? mapFieldErrors(save.error.fieldErrors)
+      : null;
 
   const set = <K extends keyof BrewLogFormState>(
     key: K,
@@ -99,8 +131,16 @@ function Fields({
           aria-label="내린 시각"
           value={state.brewedAt}
           onChange={(e) => set("brewedAt", e.target.value)}
+          aria-describedby={
+            fieldErrors?.byField.brewedAt ? "brew-brewed-at-error" : undefined
+          }
           className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
         />
+        {fieldErrors?.byField.brewedAt && (
+          <span id="brew-brewed-at-error" className="text-xs text-red-600">
+            {fieldErrors.byField.brewedAt}
+          </span>
+        )}
       </label>
 
       <fieldset className="flex flex-col gap-2">
@@ -209,16 +249,78 @@ function Fields({
         />
       </fieldset>
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="text-neutral-500">메모</span>
-        <textarea
-          aria-label="메모"
-          value={state.overallNote}
-          onChange={(e) => set("overallNote", e.target.value)}
-          rows={3}
-          className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-base font-semibold">평가</legend>
+
+        <RatingInput
+          value={state.rating}
+          onChange={(v) => set("rating", v)}
         />
-      </label>
+
+        {!state.sensoryExpanded && (
+          <button
+            type="button"
+            onClick={() => set("sensoryExpanded", true)}
+            className="self-start rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
+          >
+            맛 자세히
+          </button>
+        )}
+
+        {state.sensoryExpanded &&
+          SENSORY_AXES.map(({ key, label }) => (
+            <label key={key} className="flex items-center gap-2 text-sm">
+              <span className="w-20 text-neutral-500">{label}</span>
+              <select
+                aria-label={label}
+                value={state[key] ?? ""}
+                onChange={(e) =>
+                  set(key, e.target.value === "" ? null : Number(e.target.value))
+                }
+                className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+              >
+                <option value="">선택 안 함</option>
+                {[1, 2, 3, 4, 5].map((score) => (
+                  <option key={score} value={score}>
+                    {score}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
+
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-neutral-500">메모</span>
+          <textarea
+            aria-label="메모"
+            value={state.overallNote}
+            onChange={(e) => set("overallNote", e.target.value)}
+            rows={3}
+            aria-describedby={
+              fieldErrors?.byField.overallNote ? "brew-note-error" : undefined
+            }
+            className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+          />
+          {fieldErrors?.byField.overallNote && (
+            <span id="brew-note-error" className="text-xs text-red-600">
+              {fieldErrors.byField.overallNote}
+            </span>
+          )}
+        </label>
+      </fieldset>
+
+      {save.error && (
+        <p className="text-sm text-red-600">{save.error.message}</p>
+      )}
+
+      <button
+        type="button"
+        disabled={save.isPending}
+        onClick={() => save.mutate()}
+        className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
+      >
+        기록하기
+      </button>
 
       {addingGrinder && (
         <UserGrinderDialog

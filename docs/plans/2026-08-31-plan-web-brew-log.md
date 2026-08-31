@@ -253,7 +253,7 @@ it("AC-WEBBREW-02 · 모델을 골라 등록하면 그 본문으로 요청한다
 
 **Interfaces:** Consumes `initialFormState`(Task 1), `UserGrinderDialog`(Task 2)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBBREW-13 · 내린 시각의 기본값은 화면이 열린 시각이다", async () => {
@@ -282,10 +282,12 @@ it("AC-WEBBREW-16 · 같은 모델이 둘이면 먼저 등록한 것을 고른�
 
 `vi.setSystemTime`을 쓰면 `afterEach`에서 `vi.useRealTimers()`로 되돌린다 — 안 하면 뒤 테스트의 시간이 멈춘 채로 남는다.
 
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
-- [ ] **Step 3: 최소 구현** — 페이지는 async 서버 컴포넌트로 `searchParams`를 풀어 `recipeId`를 넘기고, 클라이언트 컴포넌트가 레시피·그라인더·재고를 부른다. **`use(params)`를 쓰지 않는다**(Suspense 경계가 없어 빈 화면이 된다 — 2026-08-30에 겪었다).
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 9 tests
-- [ ] **Step 5: 커밋** — `feat(web): 로그 작성 화면 초기값 (AC-WEBBREW 9개)`
+> **실행 결과(2026-08-31):** `vi.setSystemTime`만으로는 부족했다. **`vi.useFakeTimers({ shouldAdvanceTime: true })`를 함께 써야 한다** — 타이머를 완전히 멈추면 MSW 응답과 `findBy*`의 폴링이 진행되지 않아 화면이 영원히 로딩 상태에 머문다. **가정 1·2 해소:** `datetime-local`의 `toHaveValue`는 초 없이 `"2026-08-31T09:00"`로 오고, TZ를 UTC로 고정한 뒤 AC-13이 그대로 통과한다. 스펙 수정은 필요 없었다.
+
+- [x] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
+- [x] **Step 3: 최소 구현** — 페이지는 async 서버 컴포넌트로 `searchParams`를 풀어 `recipeId`를 넘기고, 클라이언트 컴포넌트가 레시피·그라인더·재고를 부른다. **`use(params)`를 쓰지 않는다**(Suspense 경계가 없어 빈 화면이 된다 — 2026-08-30에 겪었다).
+- [x] **Step 4: 통과 확인** — Expected: PASS, 9 tests
+- [x] **Step 5: 커밋** — `feat(web): 로그 작성 화면 초기값 (AC-WEBBREW 9개)`
 
 ---
 

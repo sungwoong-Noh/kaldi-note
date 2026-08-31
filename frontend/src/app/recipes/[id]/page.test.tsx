@@ -290,4 +290,12 @@ describe("RecipeDetailPage — 편집과 삭제", () => {
       screen.queryByRole("button", { name: "삭제합니다" }),
     ).not.toBeInTheDocument();
   });
+
+  it("AC-WEBBREW-46 · 레시피 상세에서 기록을 시작할 수 있다", async () => {
+    await renderDetail();
+
+    expect(
+      await screen.findByRole("link", { name: "이 레시피로 내렸다" }),
+    ).toHaveAttribute("href", "/brews/new?recipeId=2");
+  });
 });

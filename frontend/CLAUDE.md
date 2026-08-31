@@ -8,7 +8,11 @@ Next.js PWA. **주 사용 환경은 "부엌에서 폰으로"** 다. 데스크톱
 >
 > **스펙 없이 코드를 쓰지 않는다.** 기능 개발은 `docs/specs/`의 스펙과 `docs/plans/`의 계획이 승인된 뒤에 시작한다. 테스트에는 인수 조건 ID를 `it('AC-GRIND-08 · ...')` 형태로 반드시 남긴다.
 
-> **현재 상태: 읽기·쓰기 슬라이스 구현 완료, 인터넷에 떠 있다.** 로그인·목록·상세·포크(`../docs/specs/2026-08-21-web-recipe-read.md`)에 더해 **레시피 생성·편집·삭제와 푸어 스텝 에디터**가 동작한다(`../docs/specs/2026-08-30-web-recipe-write.md`).
+> **현재 상태: 레시피와 브루잉 로그가 모두 동작한다. 인터넷에 떠 있다.** 로그인·목록·상세·포크(`../docs/specs/2026-08-21-web-recipe-read.md`), 레시피 생성·편집·삭제와 푸어 스텝 에디터(`../docs/specs/2026-08-30-web-recipe-write.md`), 그리고 **브루잉 로그 작성·목록·상세·삭제**가 있다(`../docs/specs/2026-08-31-web-brew-log.md`).
+>
+> **홈(`/`)은 최근 기록 3개다.** 예전에는 `/recipes`로 리다이렉트만 했다 — 브루잉 로그 슬라이스가 그 자리를 채우면서 배포 스펙의 `AC-WEBDEPLOY-06`도 함께 고쳤다(2026-09-01).
+>
+> **로그를 남기려면 선행 데이터가 필요하다.** `POST /brew-logs`가 `recipeId`·`beanBatchId`·`userGrinderId`를 셋 다 요구하므로, 작성 화면이 **내 그라인더 등록**과 **원두 재고 등록(로스터 → 제품 → 재고 3단)** 을 모달로 품고 있다. `POST /bean-products`는 `origins`를 반드시 요구한다(`SINGLE_ORIGIN`이면 정확히 1개).
 >
 > **`kaldi-note.today`에 배포돼 있다**(2026-08-29). Cloudflare Workers + OpenNext이고 `main`에 머지되면 GitHub Actions가 자동 배포한다(`../docs/specs/2026-08-21-web-deploy.md`). 백엔드는 `api.kaldi-note.today`(OCI VM)로 별개 인프라다.
 >

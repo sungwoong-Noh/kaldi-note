@@ -399,11 +399,13 @@ it("AC-WEBBREW-29 · 펼치지 않으면 5축 키를 보내지 않는다", async
 **Files:** Create `app/brews/page.tsx` + 테스트
 **Covers:** AC-WEBBREW-32, 33, 34, 35, 36
 
-- [ ] **Step 1: 실패하는 테스트 작성** — `useInfiniteQuery`로 `page=0&size=20`을 부르고 `hasNext`로 "더 보기"를 판단한다(레시피 목록과 같은 형태).
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
-- [ ] **Step 3: 최소 구현** — 항목에 레시피 제목을 보이려면 `recipeId`로 제목을 얻어야 한다. **목록 응답에는 제목이 없다** — 화면에 나온 `recipeId`들만 모아 각각 `GET /recipes/{id}`를 부르고 `staleTime`을 길게 둔다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 5 tests
-- [ ] **Step 5: 커밋** — `feat(web): 브루잉 로그 목록 (AC-WEBBREW 5개)`
+- [x] **Step 1: 실패하는 테스트 작성** — `useInfiniteQuery`로 `page=0&size=20`을 부르고 `hasNext`로 "더 보기"를 판단한다(레시피 목록과 같은 형태).
+- [x] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
+- [x] **Step 3: 최소 구현** — 항목에 레시피 제목을 보이려면 `recipeId`로 제목을 얻어야 한다. **목록 응답에는 제목이 없다** — 화면에 나온 `recipeId`들만 모아 각각 `GET /recipes/{id}`를 부르고 `staleTime`을 길게 둔다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 5 tests
+
+> **실행 결과(2026-08-31):** 가정 3 확인 — `recipeId`를 `Set`으로 묶어 `useQueries`로 부른다. **같은 레시피를 여러 번 내린 것이 이 서비스의 전제라 20개 항목이 대개 한두 요청으로 줄고**, `staleTime` 5분이면 다음 페이지를 불러와도 이미 읽은 레시피는 다시 나가지 않는다.
+- [x] **Step 5: 커밋** — `feat(web): 브루잉 로그 목록 (AC-WEBBREW 5개)`
 
 ---
 
@@ -412,11 +414,11 @@ it("AC-WEBBREW-29 · 펼치지 않으면 5축 키를 보내지 않는다", async
 **Files:** Modify `app/page.tsx`, Create `app/page.test.tsx`
 **Covers:** AC-WEBBREW-37, 38, 39
 
-- [ ] **Step 1: 실패하는 테스트 작성** — `size=3`으로 부르는지, `전체 보기` 링크, 빈 상태 안내를 각각 확인한다.
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(홈이 아직 빈 페이지다)
-- [ ] **Step 3: 최소 구현** — 목록 항목 컴포넌트를 Task 7과 공유한다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 3 tests
-- [ ] **Step 5: 커밋** — `feat(web): 홈을 최근 브루잉 로그로 (AC-WEBBREW 3개)`
+- [x] **Step 1: 실패하는 테스트 작성** — `size=3`으로 부르는지, `전체 보기` 링크, 빈 상태 안내를 각각 확인한다.
+- [x] **Step 2: 실패 확인** — Expected: FAIL(홈이 아직 빈 페이지다)
+- [x] **Step 3: 최소 구현** — 목록 항목 컴포넌트를 Task 7과 공유한다. **제목 조회 훅(`useRecipeTitles`)도 함께 뽑아 공유했다** — Task 7이 페이지 안에 인라인으로 갖고 있던 것을 옮겼다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 3 tests
+- [x] **Step 5: 커밋** — `feat(web): 홈을 최근 브루잉 로그로 (AC-WEBBREW 3개)`
 
 ---
 
@@ -425,7 +427,7 @@ it("AC-WEBBREW-29 · 펼치지 않으면 5축 키를 보내지 않는다", async
 **Files:** Create `app/brews/[id]/page.tsx`, `BrewDetail.tsx`, `ExtractionSummary.tsx` + 테스트
 **Covers:** AC-WEBBREW-40, 41, 42, 43, 44, 45
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBBREW-42 · TDS가 없으면 추출 분석 영역이 아예 없다", async () => {
@@ -438,10 +440,10 @@ it("AC-WEBBREW-42 · TDS가 없으면 추출 분석 영역이 아예 없다", as
 });
 ```
 
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
-- [ ] **Step 3: 최소 구현** — 상세 페이지는 async 서버 컴포넌트가 `params`를 풀고 클라이언트 컴포넌트가 그린다. 삭제 모달은 `DeleteRecipeDialog`와 같은 형태로 만들되 브루로그용으로 따로 둔다(문구가 다르다).
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 6 tests
-- [ ] **Step 5: 커밋** — `feat(web): 로그 상세와 삭제 (AC-WEBBREW 6개)`
+- [x] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
+- [x] **Step 3: 최소 구현** — 상세 페이지는 async 서버 컴포넌트가 `params`를 풀고 클라이언트 컴포넌트가 그린다. 삭제 모달은 `DeleteRecipeDialog`와 같은 형태로 만들되 브루로그용으로 따로 둔다(문구가 다르다).
+- [x] **Step 4: 통과 확인** — Expected: PASS, 6 tests
+- [x] **Step 5: 커밋** — `feat(web): 로그 상세와 삭제 (AC-WEBBREW 6개)`
 
 ---
 
@@ -450,10 +452,10 @@ it("AC-WEBBREW-42 · TDS가 없으면 추출 분석 영역이 아예 없다", as
 **Files:** Modify `features/recipe/components/RecipeDetail.tsx`, `app/recipes/[id]/page.test.tsx`, `frontend/CLAUDE.md`, 스펙 `status`
 **Covers:** AC-WEBBREW-46
 
-- [ ] **Step 1: 실패하는 테스트 작성** — `이 레시피로 내렸다` 링크의 `href`가 `/brews/new?recipeId=1`인지 확인한다.
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(링크 없음)
-- [ ] **Step 3: 최소 구현 + 문서** — 링크를 추가하고, `frontend/CLAUDE.md`의 현재 상태 문단에 이번 슬라이스를 반영한다.
-- [ ] **Step 4: 전체 검증**
+- [x] **Step 1: 실패하는 테스트 작성** — `이 레시피로 내렸다` 링크의 `href`가 `/brews/new?recipeId=1`인지 확인한다.
+- [x] **Step 2: 실패 확인** — Expected: FAIL(링크 없음)
+- [x] **Step 3: 최소 구현 + 문서** — 링크를 추가하고, `frontend/CLAUDE.md`의 현재 상태 문단에 이번 슬라이스를 반영한다.
+- [x] **Step 4: 전체 검증**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm test:worker
@@ -464,13 +466,17 @@ Expected: 전부 PASS. 커버리지는 스펙 15건·AC 498개(452 + 46).
 
 - [ ] **Step 5: 스펙 `status`를 `구현완료`로 바꾸고 커밋** — 수동 확인 4개를 끝낸 뒤에 바꾼다.
 
+> **미완(2026-09-01):** 코드는 AC 46개를 전부 만족하지만 **수동 확인 4개가 사람 몫이라 `status`를 아직 `초안`으로 둔다.** 그래서 커버리지 스크립트는 이 스펙의 AC 46개를 계속 건너뛴다 — 검증되지 않는다는 뜻이 아니라 스크립트가 아직 세지 않는다는 뜻이다.
+>
+> **이번 슬라이스가 배포 스펙의 AC 하나를 깼고, 사람 승인을 받아 고쳤다.** 홈이 `/recipes`로 리다이렉트하지 않게 되면서 `AC-WEBDEPLOY-06`이 실패했다. 그 AC의 의도("워커가 루트에서 응답하는가")는 유지하고 조건만 `200 + text/html`로 바꿨다.
+
 ---
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `./scripts/check-spec-coverage.sh` 통과
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `./scripts/check-spec-coverage.sh` 통과
 - [ ] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 4개 완료
 

@@ -98,12 +98,16 @@ plan: docs/plans/2026-08-21-plan-web-deploy.md
 
 > `refreshCookieOptions.secure`가 `process.env.NODE_ENV === "production"`으로 결정된다(`frontend/src/features/auth/cookie.ts:18`). OpenNext 빌드가 이 값을 어떻게 다루는지는 확인된 바 없다. 빠지면 HTTPS 사이트에서 refresh token이 평문 채널로도 전송될 수 있다.
 
-#### AC-WEBDEPLOY-06 · 루트가 레시피 목록으로 리다이렉트한다
+#### AC-WEBDEPLOY-06 · 루트가 앱 화면을 반환한다
 
 - **Given** AC-WEBDEPLOY-02와 같은 상태
 - **When** 리다이렉트를 자동으로 따라가지 않는 설정으로 `GET /`를 요청한다
-- **Then** 3xx 상태와 `Location` 헤더 `/recipes`를 반환한다
+- **Then** `200`과 `Content-Type: text/html`을 반환한다
 - **검증** 통합 테스트 `WorkerSmokeTest`
+
+> **2026-09-01에 고쳤다(사람 승인).** 원래 문구는 "3xx와 `Location: /recipes`"였다. 홈이 비어 있어 목록으로 넘기던 시절의 조건인데, 브루잉 로그 슬라이스가 홈을 **최근 기록 3개** 화면으로 채우면서(`docs/specs/2026-08-31-web-brew-log.md`의 `AC-WEBBREW-37~39`) 두 AC가 양립할 수 없게 됐다.
+>
+> 이 AC의 의도는 "리다이렉트가 도는가"가 아니라 **"워커에 올라간 앱이 루트에서 실제로 응답하는가"** 였다. 그 의도는 그대로 두고 조건만 현재 홈에 맞췄다. 홈이 무엇을 보여주는지는 브루로그 스펙이 정한다.
 
 ### 경계값
 

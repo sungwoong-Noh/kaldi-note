@@ -474,9 +474,9 @@ Expected: 전부 PASS. 커버리지는 스펙 15건·AC 498개(452 + 46).
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `./scripts/check-spec-coverage.sh` 통과
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `./scripts/check-spec-coverage.sh` 통과
 - [ ] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 4개 완료
 

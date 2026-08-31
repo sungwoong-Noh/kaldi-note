@@ -414,11 +414,11 @@ it("AC-WEBBREW-29 · 펼치지 않으면 5축 키를 보내지 않는다", async
 **Files:** Modify `app/page.tsx`, Create `app/page.test.tsx`
 **Covers:** AC-WEBBREW-37, 38, 39
 
-- [ ] **Step 1: 실패하는 테스트 작성** — `size=3`으로 부르는지, `전체 보기` 링크, 빈 상태 안내를 각각 확인한다.
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(홈이 아직 빈 페이지다)
-- [ ] **Step 3: 최소 구현** — 목록 항목 컴포넌트를 Task 7과 공유한다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 3 tests
-- [ ] **Step 5: 커밋** — `feat(web): 홈을 최근 브루잉 로그로 (AC-WEBBREW 3개)`
+- [x] **Step 1: 실패하는 테스트 작성** — `size=3`으로 부르는지, `전체 보기` 링크, 빈 상태 안내를 각각 확인한다.
+- [x] **Step 2: 실패 확인** — Expected: FAIL(홈이 아직 빈 페이지다)
+- [x] **Step 3: 최소 구현** — 목록 항목 컴포넌트를 Task 7과 공유한다. **제목 조회 훅(`useRecipeTitles`)도 함께 뽑아 공유했다** — Task 7이 페이지 안에 인라인으로 갖고 있던 것을 옮겼다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 3 tests
+- [x] **Step 5: 커밋** — `feat(web): 홈을 최근 브루잉 로그로 (AC-WEBBREW 3개)`
 
 ---
 

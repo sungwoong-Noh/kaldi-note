@@ -1,12 +1,12 @@
 "use client";
 
-import { useInfiniteQuery, useQueries } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { ErrorState } from "@/components/ErrorState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { BREW_LOG_PAGE_SIZE, fetchBrewLogPage } from "@/features/brewlog/api";
 import { BrewLogCard } from "@/features/brewlog/components/BrewLogCard";
-import { fetchRecipe } from "@/features/recipe/api";
+import { useRecipeTitles } from "@/features/brewlog/useRecipeTitles";
 
 export default function BrewsPage() {
   const { ready, onSessionLost } = useRequireSession();
@@ -30,28 +30,7 @@ export default function BrewsPage() {
   });
 
   const logs = data?.pages.flatMap((page) => page.content) ?? [];
-
-  /**
-   * 목록 응답에 레시피 제목이 없어 `recipeId`마다 따로 읽는다.
-   *
-   * <p>같은 레시피를 여러 번 내린 것이 이 서비스의 전제라 **중복 id를 제거하면 대개 한두 번으로 줄고**,
-   * `staleTime`을 길게 둬서 페이지를 더 불러와도 이미 읽은 레시피는 다시 나가지 않는다.
-   */
-  const recipeIds = [...new Set(logs.map((log) => log.recipeId))];
-  const recipeQueries = useQueries({
-    queries: recipeIds.map((id) => ({
-      queryKey: ["recipe", id],
-      queryFn: () => fetchRecipe(id, onSessionLost),
-      staleTime: 5 * 60 * 1000,
-      enabled: ready,
-    })),
-  });
-
-  const titles = new Map<number, string>();
-  recipeIds.forEach((id, index) => {
-    const title = recipeQueries[index]?.data?.title;
-    if (title !== undefined) titles.set(id, title);
-  });
+  const titles = useRecipeTitles(logs, ready, onSessionLost);
 
   if (!ready || isPending) {
     return <Shell>{null}</Shell>;

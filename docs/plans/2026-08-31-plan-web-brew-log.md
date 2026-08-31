@@ -399,11 +399,13 @@ it("AC-WEBBREW-29 · 펼치지 않으면 5축 키를 보내지 않는다", async
 **Files:** Create `app/brews/page.tsx` + 테스트
 **Covers:** AC-WEBBREW-32, 33, 34, 35, 36
 
-- [ ] **Step 1: 실패하는 테스트 작성** — `useInfiniteQuery`로 `page=0&size=20`을 부르고 `hasNext`로 "더 보기"를 판단한다(레시피 목록과 같은 형태).
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
-- [ ] **Step 3: 최소 구현** — 항목에 레시피 제목을 보이려면 `recipeId`로 제목을 얻어야 한다. **목록 응답에는 제목이 없다** — 화면에 나온 `recipeId`들만 모아 각각 `GET /recipes/{id}`를 부르고 `staleTime`을 길게 둔다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 5 tests
-- [ ] **Step 5: 커밋** — `feat(web): 브루잉 로그 목록 (AC-WEBBREW 5개)`
+- [x] **Step 1: 실패하는 테스트 작성** — `useInfiniteQuery`로 `page=0&size=20`을 부르고 `hasNext`로 "더 보기"를 판단한다(레시피 목록과 같은 형태).
+- [x] **Step 2: 실패 확인** — Expected: FAIL(페이지 모듈 없음)
+- [x] **Step 3: 최소 구현** — 항목에 레시피 제목을 보이려면 `recipeId`로 제목을 얻어야 한다. **목록 응답에는 제목이 없다** — 화면에 나온 `recipeId`들만 모아 각각 `GET /recipes/{id}`를 부르고 `staleTime`을 길게 둔다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 5 tests
+
+> **실행 결과(2026-08-31):** 가정 3 확인 — `recipeId`를 `Set`으로 묶어 `useQueries`로 부른다. **같은 레시피를 여러 번 내린 것이 이 서비스의 전제라 20개 항목이 대개 한두 요청으로 줄고**, `staleTime` 5분이면 다음 페이지를 불러와도 이미 읽은 레시피는 다시 나가지 않는다.
+- [x] **Step 5: 커밋** — `feat(web): 브루잉 로그 목록 (AC-WEBBREW 5개)`
 
 ---
 

@@ -4,11 +4,15 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
+import { useBeanProducts, useRoasters } from "@/features/catalog/api";
 import { useUserGrinders } from "@/features/gear/queries";
 import type { UserGrinder } from "@/features/gear/schema";
+import { useBeanBatches } from "@/features/inventory/api";
+import type { BeanBatch } from "@/features/inventory/schema";
 import { fetchRecipe } from "@/features/recipe/api";
 import type { Recipe } from "@/features/recipe/schema";
 import { initialFormState, type BrewLogFormState } from "../formState";
+import { BeanBatchDialog } from "./BeanBatchDialog";
 import { UserGrinderDialog } from "./UserGrinderDialog";
 
 /**
@@ -68,12 +72,18 @@ function Fields({
   onSessionLost: () => void;
 }) {
   const queryClient = useQueryClient();
+  // 원두 선택란 하나를 그리려고 세 목록을 다 부른다 — 재고는 `beanProductId`만 주고
+  // 제품은 `roasterId`만 주기 때문이다. 셋 다 사용자당 몇 건 수준이라 감당할 만하다.
+  const batches = useBeanBatches(onSessionLost);
+  const products = useBeanProducts(onSessionLost);
+  const roasters = useRoasters(onSessionLost);
   // 초기값은 마운트 시점에 한 번만 계산한다. 이후 그라인더 목록이 갱신돼도
   // 사용자가 고쳐둔 값을 덮어쓰지 않는다.
   const [state, setState] = useState<BrewLogFormState>(() =>
     initialFormState(recipe, grinders),
   );
   const [addingGrinder, setAddingGrinder] = useState(false);
+  const [addingBean, setAddingBean] = useState(false);
 
   const set = <K extends keyof BrewLogFormState>(
     key: K,
@@ -92,6 +102,44 @@ function Fields({
           className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
         />
       </label>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-base font-semibold">원두</legend>
+        {(batches.data ?? []).length === 0 && !batches.isPending && (
+          <p className="text-sm text-neutral-500">등록된 원두가 없습니다</p>
+        )}
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-1 text-sm">
+            <span className="text-neutral-500">원두</span>
+            <select
+              aria-label="원두"
+              value={state.beanBatchId ?? ""}
+              onChange={(e) =>
+                set(
+                  "beanBatchId",
+                  e.target.value === "" ? null : Number(e.target.value),
+                )
+              }
+              className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+            >
+              <option value="">선택 안 함</option>
+              {(batches.data ?? []).map((batch) => (
+                <option key={batch.id} value={batch.id}>
+                  {batchLabel(batch, products.data ?? [], roasters.data ?? [])}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button
+            type="button"
+            onClick={() => setAddingBean(true)}
+            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
+          >
+            + 원두 등록
+          </button>
+        </div>
+      </fieldset>
 
       <fieldset className="flex flex-col gap-2">
         <legend className="text-base font-semibold">그라인더</legend>
@@ -161,6 +209,17 @@ function Fields({
         />
       </fieldset>
 
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="text-neutral-500">메모</span>
+        <textarea
+          aria-label="메모"
+          value={state.overallNote}
+          onChange={(e) => set("overallNote", e.target.value)}
+          rows={3}
+          className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+        />
+      </label>
+
       {addingGrinder && (
         <UserGrinderDialog
           onCreated={(created) => {
@@ -175,8 +234,44 @@ function Fields({
           onSessionLost={onSessionLost}
         />
       )}
+
+      {addingBean && (
+        <BeanBatchDialog
+          onCreated={(created) => {
+            // 재고 목록만 무효화하면 선택란에 나타나지만, 라벨은 제품·로스터가 있어야 완성된다.
+            void queryClient.invalidateQueries({ queryKey: ["inventory"] });
+            void queryClient.invalidateQueries({ queryKey: ["catalog"] });
+            set("beanBatchId", created.id);
+            setAddingBean(false);
+          }}
+          onCancel={() => setAddingBean(false)}
+          onSessionLost={onSessionLost}
+        />
+      )}
     </div>
   );
+}
+
+/**
+ * `프릿츠 예가체프 · 3일차`.
+ *
+ * <p>재고 응답은 `beanProductId`만, 제품 응답은 `roasterId`만 준다. 이름을 보여주려면 세 목록을 조합해야 한다.
+ * 아직 도착하지 않은 목록이 있으면 있는 것만으로 만든다 — 빈 선택지보다는 낫다.
+ */
+function batchLabel(
+  batch: BeanBatch,
+  products: { id: number; name: string; roasterId: number }[],
+  roasters: { id: number; name: string }[],
+): string {
+  const product = products.find((p) => p.id === batch.beanProductId);
+  const roaster = roasters.find((r) => r.id === product?.roasterId);
+  const name = [roaster?.name, product?.name].filter(Boolean).join(" ");
+  const age =
+    batch.daysOffRoast === undefined ? null : `${batch.daysOffRoast}일차`;
+
+  return [name === "" ? `재고 ${batch.id}` : name, age]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 /** 별명을 넣지 않았으면 모델 이름으로 부른다 — 선택란이 빈 항목처럼 보이면 고를 수 없다. */

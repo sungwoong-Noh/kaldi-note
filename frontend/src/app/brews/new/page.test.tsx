@@ -3,7 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearSession, setAccessToken } from "@/lib/session";
-import { comandanteC40, grindedRecipe, myComandante } from "@/test/fixtures";
+import {
+  comandanteC40,
+  fritzRoaster,
+  grindedRecipe,
+  myComandante,
+  yirgacheffeBatch,
+  yirgacheffeProduct,
+} from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
 import BrewNewPage from "./page";
@@ -27,6 +34,13 @@ function baseHandlers() {
       HttpResponse.json([{ ...myComandante, id: 5 }]),
     ),
     http.get(`${BASE}/gear/grinders`, () => HttpResponse.json([comandanteC40])),
+    http.get(`${BASE}/bean-batches`, () =>
+      HttpResponse.json([yirgacheffeBatch]),
+    ),
+    http.get(`${BASE}/bean-products`, () =>
+      HttpResponse.json([yirgacheffeProduct]),
+    ),
+    http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
   ];
 }
 
@@ -34,6 +48,17 @@ function userGrindersReturn(...grinders: object[]) {
   return http.get(`${BASE}/gear/user-grinders`, () =>
     HttpResponse.json(grinders),
   );
+}
+
+/** 원두 등록 모달의 3단 생성을 끝까지 채운다. 세부 검증은 BeanBatchDialog.test.tsx가 한다. */
+async function fillBeanDialog(user: ReturnType<typeof userEvent.setup>) {
+  await user.type(await screen.findByLabelText("로스터 이름"), "프릿츠");
+  await user.type(screen.getByLabelText("제품 이름"), "예가체프");
+  await user.selectOptions(screen.getByLabelText("배전도"), "LIGHT");
+  await user.type(screen.getByLabelText("원산지 국가"), "에티오피아");
+  await user.type(screen.getByLabelText("중량"), "200");
+  await user.type(screen.getByLabelText("로스팅일"), "2026-08-28");
+  await user.click(screen.getByRole("button", { name: "등록" }));
 }
 
 function renderNewPage() {
@@ -159,5 +184,109 @@ describe("BrewNewPage", () => {
     await user.click(screen.getByRole("button", { name: "등록" }));
 
     expect(await screen.findByLabelText("그라인더")).toHaveValue("5");
+  });
+
+  it("AC-WEBBREW-10 · 원두 선택란은 로스터·제품·경과일을 함께 보여준다", async () => {
+    await renderNewPage();
+
+    expect(
+      await screen.findByRole("option", { name: "프릿츠 예가체프 · 3일차" }),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-WEBBREW-23 · 원두가 없으면 등록 버튼이 보인다", async () => {
+    server.use(http.get(`${BASE}/bean-batches`, () => HttpResponse.json([])));
+
+    await renderNewPage();
+
+    expect(await screen.findByText("등록된 원두가 없습니다")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "+ 원두 등록" }),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-WEBBREW-09 · 등록에 성공하면 그 재고가 선택된 상태가 된다", async () => {
+    const user = userEvent.setup();
+    const registered = { ...yirgacheffeBatch, id: 9, beanProductId: 3 };
+    let hasBatch = false;
+    server.use(
+      http.get(`${BASE}/bean-batches`, () =>
+        HttpResponse.json(hasBatch ? [registered] : []),
+      ),
+      http.post(`${BASE}/roasters`, () =>
+        HttpResponse.json(fritzRoaster, { status: 201 }),
+      ),
+      http.post(`${BASE}/bean-products`, () =>
+        HttpResponse.json(yirgacheffeProduct, { status: 201 }),
+      ),
+      http.post(`${BASE}/bean-batches`, () => {
+        hasBatch = true;
+        return HttpResponse.json(registered, { status: 201 });
+      }),
+    );
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("button", { name: "+ 원두 등록" }));
+    await fillBeanDialog(user);
+
+    expect(await screen.findByLabelText("원두")).toHaveValue("9");
+  });
+
+  it("AC-WEBBREW-24 · 그라인더를 모달에서 등록해도 작성 중인 값이 남는다", async () => {
+    const user = userEvent.setup();
+    const registered = { ...myComandante, id: 5 };
+    let hasGrinder = false;
+    server.use(
+      http.get(`${BASE}/gear/user-grinders`, () =>
+        HttpResponse.json(hasGrinder ? [registered] : []),
+      ),
+      http.post(`${BASE}/gear/user-grinders`, () => {
+        hasGrinder = true;
+        return HttpResponse.json(registered, { status: 201 });
+      }),
+    );
+
+    await renderNewPage();
+    const dose = await screen.findByLabelText("원두량");
+    await user.clear(dose);
+    await user.type(dose, "21");
+
+    await user.click(screen.getByRole("button", { name: "+ 그라인더 등록" }));
+    await screen.findByRole("option", { name: "Comandante C40 MK4" });
+    await user.selectOptions(screen.getByLabelText("모델"), "1");
+    await user.click(screen.getByRole("button", { name: "등록" }));
+
+    await screen.findByLabelText("그라인더");
+    expect(screen.getByLabelText("원두량")).toHaveValue(21);
+  });
+
+  it("AC-WEBBREW-25 · 원두를 모달에서 등록해도 작성 중인 값이 남는다", async () => {
+    const user = userEvent.setup();
+    const registered = { ...yirgacheffeBatch, id: 9, beanProductId: 3 };
+    let hasBatch = false;
+    server.use(
+      http.get(`${BASE}/bean-batches`, () =>
+        HttpResponse.json(hasBatch ? [registered] : []),
+      ),
+      http.post(`${BASE}/roasters`, () =>
+        HttpResponse.json(fritzRoaster, { status: 201 }),
+      ),
+      http.post(`${BASE}/bean-products`, () =>
+        HttpResponse.json(yirgacheffeProduct, { status: 201 }),
+      ),
+      http.post(`${BASE}/bean-batches`, () => {
+        hasBatch = true;
+        return HttpResponse.json(registered, { status: 201 });
+      }),
+    );
+
+    await renderNewPage();
+    await user.type(await screen.findByLabelText("메모"), "단맛이 좋았다");
+
+    await user.click(screen.getByRole("button", { name: "+ 원두 등록" }));
+    await fillBeanDialog(user);
+
+    await screen.findByLabelText("원두");
+    expect(screen.getByLabelText("메모")).toHaveValue("단맛이 좋았다");
   });
 });

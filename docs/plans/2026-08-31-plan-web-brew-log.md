@@ -452,10 +452,10 @@ it("AC-WEBBREW-42 · TDS가 없으면 추출 분석 영역이 아예 없다", as
 **Files:** Modify `features/recipe/components/RecipeDetail.tsx`, `app/recipes/[id]/page.test.tsx`, `frontend/CLAUDE.md`, 스펙 `status`
 **Covers:** AC-WEBBREW-46
 
-- [ ] **Step 1: 실패하는 테스트 작성** — `이 레시피로 내렸다` 링크의 `href`가 `/brews/new?recipeId=1`인지 확인한다.
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(링크 없음)
-- [ ] **Step 3: 최소 구현 + 문서** — 링크를 추가하고, `frontend/CLAUDE.md`의 현재 상태 문단에 이번 슬라이스를 반영한다.
-- [ ] **Step 4: 전체 검증**
+- [x] **Step 1: 실패하는 테스트 작성** — `이 레시피로 내렸다` 링크의 `href`가 `/brews/new?recipeId=1`인지 확인한다.
+- [x] **Step 2: 실패 확인** — Expected: FAIL(링크 없음)
+- [x] **Step 3: 최소 구현 + 문서** — 링크를 추가하고, `frontend/CLAUDE.md`의 현재 상태 문단에 이번 슬라이스를 반영한다.
+- [x] **Step 4: 전체 검증**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm test:worker
@@ -465,6 +465,10 @@ cd .. && ./scripts/check-spec-coverage.sh
 Expected: 전부 PASS. 커버리지는 스펙 15건·AC 498개(452 + 46).
 
 - [ ] **Step 5: 스펙 `status`를 `구현완료`로 바꾸고 커밋** — 수동 확인 4개를 끝낸 뒤에 바꾼다.
+
+> **미완(2026-09-01):** 코드는 AC 46개를 전부 만족하지만 **수동 확인 4개가 사람 몫이라 `status`를 아직 `초안`으로 둔다.** 그래서 커버리지 스크립트는 이 스펙의 AC 46개를 계속 건너뛴다 — 검증되지 않는다는 뜻이 아니라 스크립트가 아직 세지 않는다는 뜻이다.
+>
+> **이번 슬라이스가 배포 스펙의 AC 하나를 깼고, 사람 승인을 받아 고쳤다.** 홈이 `/recipes`로 리다이렉트하지 않게 되면서 `AC-WEBDEPLOY-06`이 실패했다. 그 AC의 의도("워커가 루트에서 응답하는가")는 유지하고 조건만 `200 + text/html`로 바꿨다.
 
 ---
 

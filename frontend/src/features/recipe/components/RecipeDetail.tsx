@@ -187,8 +187,19 @@ export function RecipeDetail({ id }: { id: number }) {
         <RecipeStepList steps={recipe.steps} />
       </section>
 
+      {/*
+        내 레시피든 남의 것이든 내려 마실 수 있다 — 기록은 레시피 소유와 무관하다.
+        그래서 편집·포크 버튼 위에, 소유 여부를 따지지 않고 둔다.
+      */}
+      <Link
+        href={`/brews/new?recipeId=${id}`}
+        className="mt-6 block rounded-md bg-neutral-900 py-3 text-center text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+      >
+        이 레시피로 내렸다
+      </Link>
+
       {isMine && (
-        <div className="mt-6 flex gap-2">
+        <div className="mt-3 flex gap-2">
           <Link
             href={`/recipes/${id}/edit`}
             className="flex-1 rounded-md border border-neutral-300 py-3 text-center text-sm font-medium dark:border-neutral-700"

@@ -46,11 +46,10 @@ describe("WorkerSmokeTest", () => {
     expect(response.headers.get("set-cookie") ?? "").toContain("Secure");
   });
 
-  it("AC-WEBDEPLOY-06 · /가 /recipes로 리다이렉트한다", async () => {
+  it("AC-WEBDEPLOY-06 · /가 앱 화면을 반환한다", async () => {
     const response = await fetch(`${WORKER_URL}/`, { redirect: "manual" });
 
-    expect(response.status).toBeGreaterThanOrEqual(300);
-    expect(response.status).toBeLessThan(400);
-    expect(response.headers.get("location")).toContain("/recipes");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/html");
   });
 });

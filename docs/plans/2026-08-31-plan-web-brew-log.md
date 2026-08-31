@@ -296,7 +296,7 @@ it("AC-WEBBREW-16 · 같은 모델이 둘이면 먼저 등록한 것을 고른�
 **Files:** Create `features/brewlog/components/BeanBatchDialog.tsx` + 테스트
 **Covers:** AC-WEBBREW-05, 06, 07, 08, 26
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBBREW-07 · 제품에서 실패하면 로스터는 선택 상태로 남고 다시 만들지 않는다", async () => {
@@ -324,10 +324,10 @@ it("AC-WEBBREW-07 · 제품에서 실패하면 로스터는 선택 상태로 남
 });
 ```
 
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(모듈 없음)
-- [ ] **Step 3: 최소 구현** — 순차 `await`로 세 요청을 부르되, 각 단계가 성공하면 **그 결과를 상태에 승격**한다(`createdRoasterId`). 다음 시도는 이미 있는 id를 쓴다. 오류는 `mapFieldErrors`로 각 입력칸에 붙인다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 5 tests
-- [ ] **Step 5: 커밋** — `feat(web): 원두 등록 모달 3단 생성 (AC-WEBBREW 5개)`
+- [x] **Step 2: 실패 확인** — Expected: FAIL(모듈 없음)
+- [x] **Step 3: 최소 구현** — 순차 `await`로 세 요청을 부르되, 각 단계가 성공하면 **그 결과를 상태에 승격**한다(`createdRoasterId`). 다음 시도는 이미 있는 id를 쓴다. 오류는 `mapFieldErrors`로 각 입력칸에 붙인다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 5 tests
+- [x] **Step 5: 커밋** — `feat(web): 원두 등록 모달 3단 생성 (AC-WEBBREW 5개)`
 
 ---
 

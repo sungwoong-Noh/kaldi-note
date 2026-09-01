@@ -7,6 +7,7 @@ import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { fetchRecipe } from "@/features/recipe/api";
+import { useMe } from "@/features/user/queries";
 import {
   formatDuration,
   formatGrams,
@@ -28,6 +29,7 @@ export function BrewDetail({ id }: { id: number }) {
     queryFn: () => fetchBrewLog(id, onSessionLost),
     enabled: ready,
   });
+  const me = useMe(onSessionLost);
 
   const recipeId = logQuery.data?.recipeId;
   const recipe = useQuery({
@@ -60,6 +62,7 @@ export function BrewDetail({ id }: { id: number }) {
   }
 
   const log = logQuery.data;
+  const isMine = me.data !== undefined && log.userId === me.data.id;
 
   return (
     <Shell>
@@ -115,13 +118,27 @@ export function BrewDetail({ id }: { id: number }) {
         </section>
       )}
 
-      <button
-        type="button"
-        onClick={() => setConfirmingDelete(true)}
-        className="self-start rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 dark:border-red-800"
-      >
-        삭제
-      </button>
+      {/*
+        `PATCH`·`DELETE`는 소유자만 받는다. 남의 로그에 버튼을 두면 눌렀을 때 403이 난다.
+        `me`가 아직 안 왔으면 남의 것으로 본다 — 파괴적 버튼은 늦게 나타나는 편이 안전하다.
+      */}
+      {isMine && (
+        <div className="flex items-center gap-2 self-start">
+          <Link
+            href={`/brews/${id}/edit`}
+            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
+          >
+            편집
+          </Link>
+          <button
+            type="button"
+            onClick={() => setConfirmingDelete(true)}
+            className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 dark:border-red-800"
+          >
+            삭제
+          </button>
+        </div>
+      )}
 
       {confirmingDelete && (
         <DeleteBrewLogDialog

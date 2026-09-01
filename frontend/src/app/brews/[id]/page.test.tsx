@@ -22,6 +22,21 @@ vi.mock("next/navigation", () => ({
 const BASE = "http://localhost:8080/api/v1";
 const DETAIL_URL = `${BASE}/brew-logs/42`;
 
+/** 실제 `GET /users/me` 응답에서 뜬 것. `brewLogWithTds.userId`와 같은 11이라 기본은 소유 상태다. */
+const me = {
+  id: 11,
+  nickname: "테스터",
+  role: "USER",
+  createdAt: "2026-08-21T00:00:00Z",
+};
+
+/** 이 로그를 누가 남겼는지 바꾼다. `undefined`면 소유자 그대로다. */
+function loggedBy(userId: number) {
+  return http.get(DETAIL_URL, () =>
+    HttpResponse.json({ ...brewLogWithTds, id: 42, recipeId: 1, userId }),
+  );
+}
+
 function renderDetail() {
   return BrewDetailPage({ params: Promise.resolve({ id: "42" }) }).then((ui) =>
     renderWithQuery(ui),
@@ -40,6 +55,7 @@ beforeEach(() => {
     http.get(`${BASE}/recipes/1`, () =>
       HttpResponse.json({ ...grindedRecipe, id: 1, title: "Kasuya 4:6" }),
     ),
+    http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
   );
 });
 
@@ -133,5 +149,37 @@ describe("BrewDetailPage", () => {
     expect(
       screen.queryByRole("button", { name: "삭제합니다" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("BrewDetailPage — 소유 판정", () => {
+  it("AC-WEBLOGEDIT-01 · 내 로그 상세에 편집 링크가 있다", async () => {
+    await renderDetail();
+
+    expect(await screen.findByRole("link", { name: "편집" })).toHaveAttribute(
+      "href",
+      "/brews/42/edit",
+    );
+  });
+
+  it("AC-WEBLOGEDIT-02 · 남의 로그에는 편집도 삭제도 없다", async () => {
+    server.use(loggedBy(99));
+
+    await renderDetail();
+
+    // 본문이 그려진 뒤에 부재를 본다 — 로딩 중이면 무엇이든 없다
+    await screen.findByText("실측값");
+    expect(screen.queryByRole("link", { name: "편집" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "삭제" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("AC-WEBLOGEDIT-03 · 내 로그에는 삭제가 그대로 있다", async () => {
+    await renderDetail();
+
+    expect(
+      await screen.findByRole("button", { name: "삭제" }),
+    ).toBeInTheDocument();
   });
 });

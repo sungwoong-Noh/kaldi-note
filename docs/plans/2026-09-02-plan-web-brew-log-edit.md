@@ -92,7 +92,7 @@ frontend/src/
 - Consumes: `useMe(onSessionLost)` (기존, `features/user/queries`) — `{ data?: { id: number } }`
 - Produces: 없음. 이후 태스크가 만드는 `/brews/[id]/edit`로 가는 링크만 남긴다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `page.test.tsx`의 `baseHandlers()`에 `GET /users/me`가 이미 있는지 확인하고, 없으면 더한다(레시피 상세 테스트가 쓰는 것과 같은 모양이다).
 
@@ -166,12 +166,12 @@ it("AC-WEBLOGEDIT-03 · 내 로그에는 삭제가 그대로 있다", async () =
 
 `renderDetail()`이 `id: "42"`를 쓰는지 확인하고, 다른 id를 쓰고 있으면 위 핸들러의 경로를 그 id에 맞춘다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/page.test.tsx'`
 Expected: FAIL — AC-01은 `편집` 링크가 없어서, AC-02는 `삭제` 버튼이 소유와 무관하게 보여서. AC-03은 이미 통과한다(회귀 방지용이다).
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `BrewDetail.tsx`:
 
@@ -213,12 +213,12 @@ import { useMe } from "@/features/user/queries";
 
 기존 버튼에 있던 `self-start`는 감싼 `div`로 옮기지 않아도 된다 — `Shell`이 `flex flex-col`이라 자식이 가로로 늘어나므로 `self-start`를 `div`에 붙인다.
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/page.test.tsx'`
 Expected: PASS. 기존 삭제 관련 테스트가 함께 통과해야 한다 — **그 테스트들이 쓰는 픽스처의 `userId`가 `GET /users/me`의 `id`와 같은지 확인한다.** 다르면 그 테스트들이 `삭제` 버튼을 못 찾아 깨진다. 이때 픽스처를 소유 상태로 맞추는 것이 옳다(2026-09-01에 `AC-WEBBREW-46`에서 같은 일을 했다).
 
-- [ ] **Step 5: 커밋** — `fix(web): 내 로그에서만 편집·삭제가 보인다 (AC-WEBLOGEDIT 3개)`
+- [x] **Step 5: 커밋** — `fix(web): 내 로그에서만 편집·삭제가 보인다 (AC-WEBLOGEDIT 3개)`
 
 ---
 

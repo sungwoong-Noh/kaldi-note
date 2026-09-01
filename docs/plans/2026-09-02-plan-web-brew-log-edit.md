@@ -92,7 +92,7 @@ frontend/src/
 - Consumes: `useMe(onSessionLost)` (기존, `features/user/queries`) — `{ data?: { id: number } }`
 - Produces: 없음. 이후 태스크가 만드는 `/brews/[id]/edit`로 가는 링크만 남긴다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `page.test.tsx`의 `baseHandlers()`에 `GET /users/me`가 이미 있는지 확인하고, 없으면 더한다(레시피 상세 테스트가 쓰는 것과 같은 모양이다).
 
@@ -166,12 +166,12 @@ it("AC-WEBLOGEDIT-03 · 내 로그에는 삭제가 그대로 있다", async () =
 
 `renderDetail()`이 `id: "42"`를 쓰는지 확인하고, 다른 id를 쓰고 있으면 위 핸들러의 경로를 그 id에 맞춘다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/page.test.tsx'`
 Expected: FAIL — AC-01은 `편집` 링크가 없어서, AC-02는 `삭제` 버튼이 소유와 무관하게 보여서. AC-03은 이미 통과한다(회귀 방지용이다).
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `BrewDetail.tsx`:
 
@@ -213,12 +213,12 @@ import { useMe } from "@/features/user/queries";
 
 기존 버튼에 있던 `self-start`는 감싼 `div`로 옮기지 않아도 된다 — `Shell`이 `flex flex-col`이라 자식이 가로로 늘어나므로 `self-start`를 `div`에 붙인다.
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/page.test.tsx'`
 Expected: PASS. 기존 삭제 관련 테스트가 함께 통과해야 한다 — **그 테스트들이 쓰는 픽스처의 `userId`가 `GET /users/me`의 `id`와 같은지 확인한다.** 다르면 그 테스트들이 `삭제` 버튼을 못 찾아 깨진다. 이때 픽스처를 소유 상태로 맞추는 것이 옳다(2026-09-01에 `AC-WEBBREW-46`에서 같은 일을 했다).
 
-- [ ] **Step 5: 커밋** — `fix(web): 내 로그에서만 편집·삭제가 보인다 (AC-WEBLOGEDIT 3개)`
+- [x] **Step 5: 커밋** — `fix(web): 내 로그에서만 편집·삭제가 보인다 (AC-WEBLOGEDIT 3개)`
 
 ---
 
@@ -251,7 +251,7 @@ Expected: PASS. 기존 삭제 관련 테스트가 함께 통과해야 한다 —
   **`state`의 타입이 `BrewLogFormState`인 점이 중요하다.** Task 3이 넘기는 `BrewLogEditState`는 그것을 확장한 타입이라 그대로 들어간다. `onChange`의 제네릭도 `BrewLogEditState`의 `set`을 받아준다.
 - Consumes: 기존 `NumberField`·`RatingInput`·`SENSORY_AXES`·`grinderLabel`
 
-- [ ] **Step 1: 옮길 범위를 확정한다**
+- [x] **Step 1: 옮길 범위를 확정한다**
 
 `BrewLogForm.tsx`의 `Fields` 안에서 **아래 네 덩어리만** 새 파일로 옮긴다. 나머지(원두 fieldset, 두 모달, 저장 버튼, 취소 버튼)는 작성 화면에 남긴다.
 
@@ -266,12 +266,12 @@ Expected: PASS. 기존 삭제 관련 테스트가 함께 통과해야 한다 —
 
 `NumberField`·`SENSORY_AXES`·`grinderLabel`도 새 파일로 옮긴다(`BrewLogForm`에서 더는 쓰지 않는다). `BrewLogFields.tsx`에서 `export`하지 않는다 — 한 파일에 하나의 컴포넌트만 export한다.
 
-- [ ] **Step 2: 리팩터 전 초록을 확인한다**
+- [x] **Step 2: 리팩터 전 초록을 확인한다**
 
 Run: `pnpm vitest run src/app/brews src/features/brewlog`
 Expected: PASS. **이 숫자를 적어둔다.** Step 4에서 같은 숫자가 나와야 한다.
 
-- [ ] **Step 3: 옮긴다**
+- [x] **Step 3: 옮긴다**
 
 `BrewLogFields.tsx`는 `"use client"`로 시작하고 위 네 덩어리를 그대로 담는다. 내부에서 `state`·`fieldErrors`를 읽고 `onChange(key, value)`로 쓴다 — `Fields`의 `set`을 그대로 넘기면 된다.
 
@@ -299,7 +299,7 @@ interface BrewLogFieldsProps {
 
 `BrewLogFields` 안에서 `내린 시각` 바로 뒤에 `{beanSlot}`을 렌더한다.
 
-- [ ] **Step 4: 통과 확인 — 숫자가 같아야 한다**
+- [x] **Step 4: 통과 확인 — 숫자가 같아야 한다**
 
 Run: `pnpm vitest run src/app/brews src/features/brewlog`
 Expected: PASS, Step 2와 **같은 개수**. 하나라도 줄었으면 옮기다 빠뜨린 것이다.
@@ -307,7 +307,7 @@ Expected: PASS, Step 2와 **같은 개수**. 하나라도 줄었으면 옮기다
 Run: `pnpm typecheck && pnpm lint`
 Expected: 통과
 
-- [ ] **Step 5: 커밋** — `refactor(web): 브루잉 로그 입력칸을 두 화면이 공유하도록 분리`
+- [x] **Step 5: 커밋** — `refactor(web): 브루잉 로그 입력칸을 두 화면이 공유하도록 분리`
 
 ---
 
@@ -317,7 +317,7 @@ Expected: 통과
 - Create: `frontend/src/app/brews/[id]/edit/page.tsx`, `frontend/src/app/brews/[id]/edit/page.test.tsx`
 - Create: `frontend/src/features/brewlog/components/BrewLogEditor.tsx`
 - Modify: `frontend/src/features/brewlog/schema.ts`, `frontend/src/features/brewlog/formState.ts`
-- Create: `frontend/src/features/brewlog/formState.test.ts`
+- Modify: `frontend/src/features/brewlog/formState.test.ts` **(이미 있는 파일이다 — 덮어쓰지 말고 describe를 덧붙인다)**
 - Modify: `frontend/src/components/layout/BottomNav.test.tsx`
 
 **Covers:** AC-WEBLOGEDIT-04, 05, 06, 17, 18
@@ -332,7 +332,7 @@ Expected: 통과
 - Produces: `<BrewLogEditor id={42} />`
 - Consumes: Task 2의 `<BrewLogFields />`, 기존 `fetchBrewLog`·`useUserGrinders`
 
-- [ ] **Step 1: 실제 응답에서 `visibility` 값을 확인한다**
+- [x] **Step 1: 실제 응답에서 `visibility` 값을 확인한다**
 
 ```bash
 docker compose up -d
@@ -342,7 +342,7 @@ curl -s -H "Authorization: Bearer $TOKEN" localhost:8080/api/v1/brew-logs/2 | jq
 
 `visibility`가 `"PRIVATE"`인지, `brewedAt`이 `2026-08-31T09:00:00Z` 같은 Instant 문자열인지 확인한다. **로컬 JWT는 `application-local.yml`의 고정 시크릿(HS256)으로 만들고 `sub`는 `11`이다.**
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 `formState.test.ts` — 순수 함수부터. **AC ID를 붙이지 않는다**(AC는 페이지 테스트가 갖는다):
 
@@ -487,12 +487,12 @@ describe("BrewEditPage", () => {
   });
 ```
 
-- [ ] **Step 3: 실패 확인**
+- [x] **Step 3: 실패 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog/formState.test.ts src/components/layout`
 Expected: FAIL — 페이지·`formStateFromLog`가 없어서. **AC-18은 통과한다** — 탭바가 `/edit`로 끝나는 경로를 이미 숨기기 때문이다. 회귀 방지용이므로 그대로 둔다.
 
-- [ ] **Step 4: 최소 구현**
+- [x] **Step 4: 최소 구현**
 
 `schema.ts` — `visibility`를 좁힌다:
 
@@ -696,12 +696,12 @@ export default async function BrewEditPage({
 }
 ```
 
-- [ ] **Step 5: 통과 확인**
+- [x] **Step 5: 통과 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog src/components/layout`
 Expected: PASS — 페이지 4개 + `formStateFromLog` 4개 + `BottomNav` 12개
 
-- [ ] **Step 6: 커밋** — `feat(web): 로그 편집 화면 뼈대와 초기값 (AC-WEBLOGEDIT 5개)`
+- [x] **Step 6: 커밋** — `feat(web): 로그 편집 화면 뼈대와 초기값 (AC-WEBLOGEDIT 5개)`
 
 ---
 
@@ -723,7 +723,7 @@ Expected: PASS — 페이지 4개 + `formStateFromLog` 4개 + `BottomNav` 12개
   ```
 - Produces: `patchBrewLog(id: number, body: BrewLogPatchBody, onSessionLost?: () => void): Promise<BrewLog>`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `formState.test.ts`에 더한다:
 
@@ -848,12 +848,12 @@ it("AC-WEBLOGEDIT-11 · 아무것도 고치지 않고 저장하면 요청이 나
 
 **`별점 4`가 `rating: 4`인지 `4.0`인지 확인한다.** `RatingInput`이 무엇을 넘기는지 그 파일에서 보고 기대값을 맞춘다 — JSON에서 `4.0`과 `4`는 같은 값이라 `toEqual({ rating: 4 })`로 쓴다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog/formState.test.ts`
 Expected: FAIL — `toPatchBody`·`patchBrewLog`·`저장`·`취소`가 없어서
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `formState.ts`:
 
@@ -982,12 +982,12 @@ export function patchBrewLog(
       </div>
 ```
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog/formState.test.ts`
 Expected: PASS — 페이지 9개 + 순수 함수 10개
 
-- [ ] **Step 5: 커밋** — `feat(web): 로그 편집 저장 — 바뀐 필드만 보낸다 (AC-WEBLOGEDIT 5개)`
+- [x] **Step 5: 커밋** — `feat(web): 로그 편집 저장 — 바뀐 필드만 보낸다 (AC-WEBLOGEDIT 5개)`
 
 ---
 
@@ -1004,7 +1004,7 @@ Expected: PASS — 페이지 9개 + 순수 함수 10개
 - Produces: `clearedFields(initial: BrewLogEditState, current: BrewLogEditState): string[]` — 값이 있었는데 비워진 필드 이름들
 - Produces: `BrewLogFields`의 `fieldErrors`가 받는 모양에 지우기 안내를 얹는다. **새 prop을 만들지 않고 기존 `fieldErrors.byField`에 합쳐 넘긴다** — 입력칸 쪽 코드를 건드리지 않아도 된다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `formState.test.ts`:
 
@@ -1097,12 +1097,12 @@ it("AC-WEBLOGEDIT-15 · 원래 비어 있던 칸은 비어 있어도 막지 않�
 });
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog/formState.test.ts`
 Expected: FAIL — `clearedFields`가 없고, 비워도 안내가 없고 `저장`이 활성이다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `formState.ts`:
 
@@ -1153,12 +1153,12 @@ export function clearedFields(
 
 `BrewLogFields.tsx`에서 **`TDS` 말고 다른 칸도 안내를 받을 수 있어야 한다.** 지금 `NumberField`에 `error`를 넘기는 곳이 `TDS` 하나뿐이므로, 실측값 7칸 전부에 `error={fieldErrors?.byField.<필드명>}`을 붙인다. 필드명은 `actualDoseG`·`actualWaterG`·`actualWaterTempC`·`actualTotalTimeSeconds`·`actualDrawdownSeconds`·`beverageWeightG`·`tdsPercent`다. `분쇄도 값`에도 `actualGrindSettingValue`로 붙인다.
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog`
 Expected: PASS — 페이지 13개 + 순수 함수 14개
 
-- [ ] **Step 5: 커밋** — `feat(web): 지우기 시도를 저장 전에 막는다 (AC-WEBLOGEDIT 4개)`
+- [x] **Step 5: 커밋** — `feat(web): 지우기 시도를 저장 전에 막는다 (AC-WEBLOGEDIT 4개)`
 
 ---
 
@@ -1173,7 +1173,7 @@ Expected: PASS — 페이지 13개 + 순수 함수 14개
 **Interfaces:**
 - Consumes: `mapFieldErrors(error.fieldErrors)` (기존, `lib/fieldErrors`), `ApiError` (기존, `lib/api-client`)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBLOGEDIT-16 · 서버 검증 실패는 그 입력칸에 붙는다", async () => {
@@ -1209,12 +1209,12 @@ it("AC-WEBLOGEDIT-16 · 서버 검증 실패는 그 입력칸에 붙는다", asy
 
 `fieldErrors` 응답의 키 이름이 `field`·`message`가 맞는지 `lib/fieldErrors.ts`에서 확인한다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit'`
 Expected: FAIL — 서버 오류가 화면에 붙지 않는다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 Task 5에서 만든 `fieldErrors`를 서버 오류와 합친다. **지우기 안내가 서버 오류를 덮지 않게 한다** — 지우기 안내가 떠 있으면 저장 자체가 막히므로 둘이 동시에 뜰 일은 없지만, 순서를 정해 둔다(서버 오류가 나중에 온 정보다):
 
@@ -1247,12 +1247,12 @@ Task 5에서 만든 `fieldErrors`를 서버 오류와 합친다. **지우기 안
       )}
 ```
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit'`
 Expected: PASS, 14개
 
-- [ ] **Step 5: 전체 검증**
+- [x] **Step 5: 전체 검증**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -1260,16 +1260,16 @@ pnpm test:worker
 (cd .. && ./scripts/check-spec-coverage.sh)
 ```
 
-- [ ] **Step 6: 커밋** — `feat(web): 로그 편집의 서버 검증 오류 표시 (AC-WEBLOGEDIT 1개)`
+- [x] **Step 6: 커밋** — `feat(web): 로그 편집의 서버 검증 오류 표시 (AC-WEBLOGEDIT 1개)`
 
 ---
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `./scripts/check-spec-coverage.sh` 통과
-- [ ] 백엔드는 건드리지 않았다 — `git diff --stat main...HEAD`에 `backend/`가 없다
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `./scripts/check-spec-coverage.sh` 통과
+- [x] 백엔드는 건드리지 않았다 — `git diff --stat main...HEAD`에 `backend/`가 없다
 - [ ] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 4개 완료
 

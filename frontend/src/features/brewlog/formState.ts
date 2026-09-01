@@ -6,6 +6,7 @@
 
 import type { Recipe } from "../recipe/schema";
 import type { UserGrinder } from "../gear/schema";
+import type { BrewLog } from "./schema";
 
 /** 그라인더 자동 선택에 실제로 필요한 두 필드. 인라인 객체로도 부를 수 있게 좁혀 둔다. */
 export type GrinderChoice = Pick<UserGrinder, "id" | "grinderModelId">;
@@ -95,6 +96,48 @@ export function initialFormState(
   };
 }
 
+/** 편집 화면의 상태. 작성 화면에 없는 `visibility`가 하나 더 있다. */
+export type BrewLogEditState = BrewLogFormState & {
+  visibility: BrewLog["visibility"];
+};
+
+/**
+ * 저장된 로그를 편집 폼 상태로 되돌린다.
+ *
+ * <p>없는 키는 `null`이 된다 — 백엔드가 `non_null`로 응답해 값이 없으면 키 자체가 없다.
+ */
+export function formStateFromLog(log: BrewLog): BrewLogEditState {
+  return {
+    recipeId: log.recipeId,
+    brewedAt: toDateTimeLocal(new Date(log.brewedAt)),
+    beanBatchId: log.beanBatchId ?? null,
+    userGrinderId: log.userGrinderId ?? null,
+    actualGrindSettingValue: log.actualGrindSettingValue ?? null,
+    actualDoseG: log.actualDoseG,
+    actualWaterG: log.actualWaterG,
+    actualWaterTempC: log.actualWaterTempC,
+    actualTotalTimeSeconds: log.actualTotalTimeSeconds ?? null,
+    actualDrawdownSeconds: log.actualDrawdownSeconds ?? null,
+    beverageWeightG: log.beverageWeightG ?? null,
+    tdsPercent: log.tdsPercent ?? null,
+    rating: log.rating ?? null,
+    overallNote: log.overallNote ?? "",
+    // 하나라도 값이 있으면 펼쳐서 연다. 접힌 채로 열면 넣어둔 평가가 보이지 않는다.
+    sensoryExpanded:
+      log.acidity !== undefined ||
+      log.sweetness !== undefined ||
+      log.body !== undefined ||
+      log.bitterness !== undefined ||
+      log.aftertaste !== undefined,
+    acidity: log.acidity ?? null,
+    sweetness: log.sweetness ?? null,
+    body: log.body ?? null,
+    bitterness: log.bitterness ?? null,
+    aftertaste: log.aftertaste ?? null,
+    visibility: log.visibility,
+  };
+}
+
 export type BrewLogRequestBody = {
   recipeId: number;
   beanBatchId?: number;
@@ -159,6 +202,78 @@ export function toRequestBody(state: BrewLogFormState): BrewLogRequestBody {
     ["overallNote", state.overallNote],
     ...sensory,
   ]);
+}
+
+export type BrewLogPatchBody = Partial<
+  Omit<BrewLogRequestBody, "recipeId" | "beanBatchId">
+> & { visibility?: BrewLogEditState["visibility"] };
+
+/** 요청에 실을 수 있는 필드. `recipeId`·`beanBatchId`·`sensoryExpanded`는 없다. */
+const PATCHABLE = [
+  "brewedAt",
+  "userGrinderId",
+  "actualGrindSettingValue",
+  "actualDoseG",
+  "actualWaterG",
+  "actualWaterTempC",
+  "actualTotalTimeSeconds",
+  "actualDrawdownSeconds",
+  "beverageWeightG",
+  "tdsPercent",
+  "rating",
+  "overallNote",
+  "acidity",
+  "sweetness",
+  "body",
+  "bitterness",
+  "aftertaste",
+  "visibility",
+] as const satisfies readonly (keyof BrewLogEditState)[];
+
+/**
+ * 바뀐 필드만 담는다.
+ *
+ * <p><b>폼 상태끼리 비교한다.</b> 요청 본문끼리 비교하면 `brewedAt`이 `Instant` → `datetime-local` →
+ * `Instant`를 왕복하며 초가 잘려, 건드리지도 않은 필드가 바뀐 것으로 보인다.
+ *
+ * <p><b>비워진 필드는 담지 않는다.</b> 백엔드가 `null`을 "변경 없음"으로 읽어 보내봐야 소용이 없다.
+ * 화면이 그 상태에서 저장 자체를 막는다({@link clearedFields}).
+ */
+export function toPatchBody(
+  initial: BrewLogEditState,
+  current: BrewLogEditState,
+): BrewLogPatchBody {
+  const body: Record<string, unknown> = {};
+
+  for (const key of PATCHABLE) {
+    const before = initial[key];
+    const after = current[key];
+    if (before === after) continue;
+    if (after === null || after === "") continue;
+
+    body[key] = key === "brewedAt" ? toInstant(String(after)) : after;
+  }
+
+  return body;
+}
+
+/**
+ * 값이 있었는데 비워진 필드.
+ *
+ * <p>백엔드가 `null`을 "변경 없음"으로 읽으므로 이 상태로 저장하면 아무 일도 일어나지 않는다.
+ * 조용히 무시하면 사용자는 지워졌다고 믿는다 — 화면이 저장 전에 막는다.
+ */
+export function clearedFields(
+  initial: BrewLogEditState,
+  current: BrewLogEditState,
+): string[] {
+  return PATCHABLE.filter((key) => {
+    const before = initial[key];
+    const after = current[key];
+    const hadValue = before !== null && before !== "";
+    const isEmpty = after === null || after === "";
+    return hadValue && isEmpty;
+  });
 }
 
 /**

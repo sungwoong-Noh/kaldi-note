@@ -48,6 +48,14 @@ describe("BottomNav", () => {
     expect(screen.getByRole("link", { name: "레시피" })).toHaveAttribute("aria-current", "page");
   });
 
+  it("AC-WEBLOGEDIT-18 · 로그 편집 화면에는 탭바가 없다", () => {
+    pathname = "/brews/42/edit";
+
+    render(<BottomNav />);
+
+    expect(screen.queryByRole("link", { name: "기록" })).not.toBeInTheDocument();
+  });
+
   it("레시피 편집 화면에는 탭바가 없다", () => {
     pathname = "/recipes/12/edit";
 

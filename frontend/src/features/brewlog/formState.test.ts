@@ -1,6 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { grindedRecipe } from "@/test/fixtures";
-import { initialFormState, toRequestBody } from "./formState";
+import { brewLogWithTds, grindedRecipe } from "@/test/fixtures";
+import {
+  clearedFields,
+  formStateFromLog,
+  initialFormState,
+  toPatchBody,
+  toRequestBody,
+} from "./formState";
+import { brewLogSchema } from "./schema";
+
+/** 픽스처에서 키를 지운 응답을 만든다. `non_null` 정책이라 없는 값은 키 자체가 없다. */
+function logWithout(...keys: string[]) {
+  const raw: Record<string, unknown> = { ...brewLogWithTds };
+  for (const key of keys) delete raw[key];
+  return brewLogSchema.parse(raw);
+}
 
 describe("initialFormState", () => {
   it("레시피 값으로 초기화하고 추출 시간은 비운다", () => {
@@ -120,5 +134,120 @@ describe("toRequestBody", () => {
     expect(toRequestBody({ ...filled, overallNote: "산미가 좋다" })).toMatchObject(
       { overallNote: "산미가 좋다" },
     );
+  });
+});
+
+describe("toPatchBody", () => {
+  const initial = formStateFromLog(brewLogSchema.parse(brewLogWithTds));
+
+  it("아무것도 안 바꾸면 빈 객체다", () => {
+    expect(toPatchBody(initial, initial)).toEqual({});
+  });
+
+  it("바꾼 것만 담는다", () => {
+    expect(toPatchBody(initial, { ...initial, rating: 4.5 })).toEqual({
+      rating: 4.5,
+    });
+  });
+
+  it("공개범위도 담는다", () => {
+    expect(toPatchBody(initial, { ...initial, visibility: "FRIENDS" })).toEqual({
+      visibility: "FRIENDS",
+    });
+  });
+
+  it("recipeId와 beanBatchId는 절대 담지 않는다", () => {
+    const changed = {
+      ...initial,
+      recipeId: 99,
+      beanBatchId: 99,
+      rating: 4.5,
+    };
+
+    expect(toPatchBody(initial, changed)).toEqual({ rating: 4.5 });
+  });
+
+  it("brewedAt을 건드리지 않으면 담기지 않는다", () => {
+    // 왕복(Instant → datetime-local → Instant)에서 초가 잘려도 거짓 변경이 생기면 안 된다
+    expect(toPatchBody(initial, { ...initial })).not.toHaveProperty("brewedAt");
+  });
+
+  it("brewedAt을 바꾸면 Instant 문자열로 담는다", () => {
+    const body = toPatchBody(initial, {
+      ...initial,
+      brewedAt: "2026-09-01T07:30",
+    });
+
+    expect(body.brewedAt).toBe(new Date("2026-09-01T07:30").toISOString());
+  });
+
+  it("비워진 값은 담지 않는다", () => {
+    // 백엔드가 null을 "변경 없음"으로 읽어 보내봐야 소용이 없다
+    expect(toPatchBody(initial, { ...initial, tdsPercent: null })).toEqual({});
+  });
+});
+
+describe("clearedFields", () => {
+  const initial = formStateFromLog(brewLogSchema.parse(brewLogWithTds));
+
+  it("값이 있던 칸을 비우면 잡는다", () => {
+    expect(clearedFields(initial, { ...initial, tdsPercent: null })).toEqual([
+      "tdsPercent",
+    ]);
+  });
+
+  it("원래 비어 있던 칸은 잡지 않는다", () => {
+    const withoutTds = { ...initial, tdsPercent: null };
+
+    expect(clearedFields(withoutTds, withoutTds)).toEqual([]);
+  });
+
+  it("메모를 빈 문자열로 만들어도 잡는다", () => {
+    const withNote = { ...initial, overallNote: "고소하다" };
+
+    expect(clearedFields(withNote, { ...withNote, overallNote: "" })).toEqual([
+      "overallNote",
+    ]);
+  });
+
+  it("값을 바꾸기만 한 것은 잡지 않는다", () => {
+    expect(clearedFields(initial, { ...initial, tdsPercent: 1.4 })).toEqual([]);
+  });
+});
+
+describe("formStateFromLog", () => {
+  it("Instant를 datetime-local 문자열로 바꾼다", () => {
+    const state = formStateFromLog(
+      brewLogSchema.parse({ ...brewLogWithTds, brewedAt: "2026-08-31T09:00:00Z" }),
+    );
+
+    // 로컬 시각이라 실행 환경의 오프셋을 탄다 — 형식만 본다
+    expect(state.brewedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+  });
+
+  it("5축이 하나라도 있으면 펼친 상태로 연다", () => {
+    const state = formStateFromLog(
+      brewLogSchema.parse({ ...brewLogWithTds, acidity: 4 }),
+    );
+
+    expect(state.sensoryExpanded).toBe(true);
+  });
+
+  it("5축이 하나도 없으면 접은 상태로 연다", () => {
+    const state = formStateFromLog(
+      logWithout("acidity", "sweetness", "body", "bitterness", "aftertaste"),
+    );
+
+    expect(state.sensoryExpanded).toBe(false);
+  });
+
+  it("없는 키는 null이 된다", () => {
+    expect(formStateFromLog(logWithout("tdsPercent")).tdsPercent).toBeNull();
+  });
+
+  it("공개범위를 그대로 들고 온다", () => {
+    expect(
+      formStateFromLog(brewLogSchema.parse(brewLogWithTds)).visibility,
+    ).toBe("PRIVATE");
   });
 });

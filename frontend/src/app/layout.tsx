@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import { BottomNav } from "@/components/layout/BottomNav";
 
 export const metadata: Metadata = {
   title: "kaldi note",
@@ -20,7 +21,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className="h-full antialiased" suppressHydrationWarning>
       <body className="flex min-h-full flex-col">
-        <Providers>{children}</Providers>
+        {/* 탭바는 여기 한 번만 둔다. 페이지마다 넣으면 새 화면을 만들 때마다 빠뜨린다. */}
+        <Providers>
+          {children}
+          <BottomNav />
+        </Providers>
       </body>
     </html>
   );

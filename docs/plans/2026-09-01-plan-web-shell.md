@@ -173,7 +173,7 @@ INSERT INTO grinder_models
 **Interfaces:**
 - Produces: `<BottomNav />` — 인자 없음. `usePathname()`으로 현재 경로를 읽어 스스로 숨는다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 // BottomNav.test.tsx
@@ -198,12 +198,12 @@ it("AC-WEBSHELL-07 · 작성 화면에는 탭바가 없다", () => {
 });
 ```
 
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(모듈 없음)
+- [x] **Step 2: 실패 확인** — Expected: FAIL(모듈 없음)
 
-- [ ] **Step 3: 최소 구현** — 숨길 경로는 **접두사 목록**으로 판정한다: `/login`, `/auth`, `/recipes/new`, `/brews/new`, 그리고 `/edit`로 끝나는 경로. 활성 판정은 홈만 완전 일치, 나머지는 접두사.
+- [x] **Step 3: 최소 구현** — 숨길 경로는 **접두사 목록**으로 판정한다: `/login`, `/auth`, `/recipes/new`, `/brews/new`, 그리고 `/edit`로 끝나는 경로. 활성 판정은 홈만 완전 일치, 나머지는 접두사.
 
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 7 tests
-- [ ] **Step 5: 커밋** — `feat(web): 하단 탭바 (AC-WEBSHELL 7개)`
+- [x] **Step 4: 통과 확인** — Expected: PASS, 7 tests
+- [x] **Step 5: 커밋** — `feat(web): 하단 탭바 (AC-WEBSHELL 7개)`
 
 ---
 

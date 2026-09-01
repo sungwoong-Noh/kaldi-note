@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { brewLogWithTds, grindedRecipe } from "@/test/fixtures";
 import {
+  clearedFields,
   formStateFromLog,
   initialFormState,
   toPatchBody,
@@ -183,6 +184,34 @@ describe("toPatchBody", () => {
   it("비워진 값은 담지 않는다", () => {
     // 백엔드가 null을 "변경 없음"으로 읽어 보내봐야 소용이 없다
     expect(toPatchBody(initial, { ...initial, tdsPercent: null })).toEqual({});
+  });
+});
+
+describe("clearedFields", () => {
+  const initial = formStateFromLog(brewLogSchema.parse(brewLogWithTds));
+
+  it("값이 있던 칸을 비우면 잡는다", () => {
+    expect(clearedFields(initial, { ...initial, tdsPercent: null })).toEqual([
+      "tdsPercent",
+    ]);
+  });
+
+  it("원래 비어 있던 칸은 잡지 않는다", () => {
+    const withoutTds = { ...initial, tdsPercent: null };
+
+    expect(clearedFields(withoutTds, withoutTds)).toEqual([]);
+  });
+
+  it("메모를 빈 문자열로 만들어도 잡는다", () => {
+    const withNote = { ...initial, overallNote: "고소하다" };
+
+    expect(clearedFields(withNote, { ...withNote, overallNote: "" })).toEqual([
+      "overallNote",
+    ]);
+  });
+
+  it("값을 바꾸기만 한 것은 잡지 않는다", () => {
+    expect(clearedFields(initial, { ...initial, tdsPercent: 1.4 })).toEqual([]);
   });
 });
 

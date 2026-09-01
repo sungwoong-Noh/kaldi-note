@@ -176,3 +176,105 @@ describe("BrewEditPage — 저장", () => {
     expect(captured.calls).toBe(0);
   });
 });
+
+const CLEAR_MESSAGE = "값을 지울 수 없습니다. 고치거나 기록을 삭제하세요";
+
+/** `aria-describedby`가 가리키는 요소를 찾는다. */
+async function describedElementOf(input: HTMLElement) {
+  const id = await waitFor(() => {
+    const value = input.getAttribute("aria-describedby");
+    expect(value).not.toBeNull();
+    return value as string;
+  });
+  return document.getElementById(id);
+}
+
+describe("BrewEditPage — 지우기 시도", () => {
+  it("AC-WEBLOGEDIT-12 · 값이 있던 칸을 비우면 그 칸에 안내가 붙는다", async () => {
+    const user = userEvent.setup();
+
+    await renderEditPage();
+    await user.clear(await screen.findByLabelText("TDS"));
+
+    expect(
+      await describedElementOf(screen.getByLabelText("TDS")),
+    ).toHaveTextContent(CLEAR_MESSAGE);
+  });
+
+  it("AC-WEBLOGEDIT-13 · 지우기 시도 중에는 저장이 비활성이다", async () => {
+    const user = userEvent.setup();
+
+    await renderEditPage();
+    await user.clear(await screen.findByLabelText("TDS"));
+
+    expect(screen.getByRole("button", { name: "저장" })).toBeDisabled();
+  });
+
+  it("AC-WEBLOGEDIT-14 · 값을 다시 넣으면 저장이 살아난다", async () => {
+    const user = userEvent.setup();
+    const captured = capturePatch();
+
+    await renderEditPage();
+    await user.clear(await screen.findByLabelText("TDS"));
+    await user.type(screen.getByLabelText("TDS"), "1.40");
+
+    const saveButton = screen.getByRole("button", { name: "저장" });
+    expect(saveButton).not.toBeDisabled();
+
+    await user.click(saveButton);
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    expect(captured.body).toEqual({ tdsPercent: 1.4 });
+  });
+
+  it("AC-WEBLOGEDIT-15 · 원래 비어 있던 칸은 비어 있어도 막지 않는다", async () => {
+    const user = userEvent.setup();
+    const captured = capturePatch();
+    const withoutTds: Record<string, unknown> = {
+      ...brewLogWithTds,
+      id: 42,
+      userId: 11,
+      rating: 3.5,
+    };
+    delete withoutTds.tdsPercent;
+    server.use(http.get(DETAIL_URL, () => HttpResponse.json(withoutTds)));
+
+    await renderEditPage();
+    await screen.findByLabelText("TDS");
+    await user.click(screen.getByRole("button", { name: "별점 4" }));
+    await user.click(screen.getByRole("button", { name: "저장" }));
+
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    expect(captured.body).toEqual({ rating: 4 });
+    expect(screen.queryByText(CLEAR_MESSAGE)).not.toBeInTheDocument();
+  });
+});
+
+describe("BrewEditPage — 서버 검증", () => {
+  it("AC-WEBLOGEDIT-16 · 서버 검증 실패는 그 입력칸에 붙는다", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.patch(DETAIL_URL, () =>
+        HttpResponse.json(
+          {
+            code: "VALIDATION_ERROR",
+            message: "요청이 올바르지 않습니다",
+            fieldErrors: [
+              { field: "tdsPercent", message: "100 미만이어야 합니다" },
+            ],
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+
+    await renderEditPage();
+    await user.clear(await screen.findByLabelText("TDS"));
+    await user.type(screen.getByLabelText("TDS"), "150");
+    await user.click(screen.getByRole("button", { name: "저장" }));
+
+    expect(
+      await describedElementOf(screen.getByLabelText("TDS")),
+    ).toHaveTextContent("100 미만이어야 합니다");
+    expect(push).not.toHaveBeenCalled();
+  });
+});

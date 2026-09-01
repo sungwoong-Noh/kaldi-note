@@ -3,12 +3,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ErrorState } from "@/components/ErrorState";
+import { ErrorState, errorMessageOf } from "@/components/ErrorState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useUserGrinders } from "@/features/gear/queries";
+import { ApiError } from "@/lib/api-client";
+import { mapFieldErrors } from "@/lib/fieldErrors";
 import type { UserGrinder } from "@/features/gear/schema";
 import { fetchBrewLog, patchBrewLog } from "../api";
 import {
+  clearedFields,
   formStateFromLog,
   toPatchBody,
   type BrewLogEditState,
@@ -16,6 +19,9 @@ import {
 } from "../formState";
 import type { BrewLog } from "../schema";
 import { BrewLogFields } from "./BrewLogFields";
+
+/** 스펙이 정한 문구다. 값을 바꾸거나 기록을 지우는 것 말고는 길이 없다. */
+const CLEAR_MESSAGE = "값을 지울 수 없습니다. 고치거나 기록을 삭제하세요";
 
 /** 레시피 폼과 같은 문구를 쓴다 — 같은 값이 두 화면에서 다른 이름으로 보이면 안 된다. */
 const VISIBILITY_LABELS: Record<BrewLogEditState["visibility"], string> = {
@@ -91,6 +97,26 @@ function Fields({
     },
   });
 
+  const cleared = clearedFields(initial, state);
+
+  /**
+   * 지우기 안내를 `BrewLogFields`가 이미 아는 모양으로 얹는다. 새 prop을 만들면 입력칸
+   * 쪽 코드를 전부 고쳐야 한다.
+   */
+  const serverErrors =
+    save.error instanceof ApiError ? mapFieldErrors(save.error.fieldErrors) : null;
+
+  // 서버 오류가 나중에 온 정보라 지우기 안내를 덮는다. 지우기 안내가 떠 있으면
+  // 저장 자체가 막히므로 둘이 같은 칸에서 겹칠 일은 없다.
+  const fieldErrors = {
+    byField: {
+      ...Object.fromEntries(cleared.map((key) => [key, CLEAR_MESSAGE])),
+      ...(serverErrors?.byField ?? {}),
+    },
+    byStepIndex: {},
+    unmapped: serverErrors?.unmapped ?? [],
+  };
+
   function submit() {
     // 보낼 것이 없으면 부르지 않는다. 사용자 입장에서는 취소와 같은 결과다.
     if (Object.keys(toPatchBody(initial, state)).length === 0) {
@@ -112,7 +138,7 @@ function Fields({
       <BrewLogFields
         state={state}
         grinders={grinders}
-        fieldErrors={null}
+        fieldErrors={fieldErrors}
         onChange={setField}
         beanSlot={
           // 레시피와 원두는 PATCH DTO에 없어 서버가 무시한다. 값만 보여준다.
@@ -152,10 +178,19 @@ function Fields({
         </select>
       </label>
 
+      {save.error !== null && (
+        <div role="alert" className="flex flex-col gap-1 text-sm text-red-600">
+          <p>{errorMessageOf(save.error)}</p>
+          {fieldErrors.unmapped.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </div>
+      )}
+
       <div className="flex items-center gap-2">
         <button
           type="button"
-          disabled={save.isPending}
+          disabled={save.isPending || cleared.length > 0}
           onClick={submit}
           className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
         >

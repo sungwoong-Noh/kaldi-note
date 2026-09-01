@@ -1004,7 +1004,7 @@ Expected: PASS — 페이지 9개 + 순수 함수 10개
 - Produces: `clearedFields(initial: BrewLogEditState, current: BrewLogEditState): string[]` — 값이 있었는데 비워진 필드 이름들
 - Produces: `BrewLogFields`의 `fieldErrors`가 받는 모양에 지우기 안내를 얹는다. **새 prop을 만들지 않고 기존 `fieldErrors.byField`에 합쳐 넘긴다** — 입력칸 쪽 코드를 건드리지 않아도 된다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `formState.test.ts`:
 
@@ -1097,12 +1097,12 @@ it("AC-WEBLOGEDIT-15 · 원래 비어 있던 칸은 비어 있어도 막지 않�
 });
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog/formState.test.ts`
 Expected: FAIL — `clearedFields`가 없고, 비워도 안내가 없고 `저장`이 활성이다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `formState.ts`:
 
@@ -1153,12 +1153,12 @@ export function clearedFields(
 
 `BrewLogFields.tsx`에서 **`TDS` 말고 다른 칸도 안내를 받을 수 있어야 한다.** 지금 `NumberField`에 `error`를 넘기는 곳이 `TDS` 하나뿐이므로, 실측값 7칸 전부에 `error={fieldErrors?.byField.<필드명>}`을 붙인다. 필드명은 `actualDoseG`·`actualWaterG`·`actualWaterTempC`·`actualTotalTimeSeconds`·`actualDrawdownSeconds`·`beverageWeightG`·`tdsPercent`다. `분쇄도 값`에도 `actualGrindSettingValue`로 붙인다.
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog`
 Expected: PASS — 페이지 13개 + 순수 함수 14개
 
-- [ ] **Step 5: 커밋** — `feat(web): 지우기 시도를 저장 전에 막는다 (AC-WEBLOGEDIT 4개)`
+- [x] **Step 5: 커밋** — `feat(web): 지우기 시도를 저장 전에 막는다 (AC-WEBLOGEDIT 4개)`
 
 ---
 
@@ -1173,7 +1173,7 @@ Expected: PASS — 페이지 13개 + 순수 함수 14개
 **Interfaces:**
 - Consumes: `mapFieldErrors(error.fieldErrors)` (기존, `lib/fieldErrors`), `ApiError` (기존, `lib/api-client`)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBLOGEDIT-16 · 서버 검증 실패는 그 입력칸에 붙는다", async () => {
@@ -1209,12 +1209,12 @@ it("AC-WEBLOGEDIT-16 · 서버 검증 실패는 그 입력칸에 붙는다", asy
 
 `fieldErrors` 응답의 키 이름이 `field`·`message`가 맞는지 `lib/fieldErrors.ts`에서 확인한다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit'`
 Expected: FAIL — 서버 오류가 화면에 붙지 않는다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 Task 5에서 만든 `fieldErrors`를 서버 오류와 합친다. **지우기 안내가 서버 오류를 덮지 않게 한다** — 지우기 안내가 떠 있으면 저장 자체가 막히므로 둘이 동시에 뜰 일은 없지만, 순서를 정해 둔다(서버 오류가 나중에 온 정보다):
 
@@ -1247,12 +1247,12 @@ Task 5에서 만든 `fieldErrors`를 서버 오류와 합친다. **지우기 안
       )}
 ```
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit'`
 Expected: PASS, 14개
 
-- [ ] **Step 5: 전체 검증**
+- [x] **Step 5: 전체 검증**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -1260,16 +1260,16 @@ pnpm test:worker
 (cd .. && ./scripts/check-spec-coverage.sh)
 ```
 
-- [ ] **Step 6: 커밋** — `feat(web): 로그 편집의 서버 검증 오류 표시 (AC-WEBLOGEDIT 1개)`
+- [x] **Step 6: 커밋** — `feat(web): 로그 편집의 서버 검증 오류 표시 (AC-WEBLOGEDIT 1개)`
 
 ---
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `./scripts/check-spec-coverage.sh` 통과
-- [ ] 백엔드는 건드리지 않았다 — `git diff --stat main...HEAD`에 `backend/`가 없다
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `./scripts/check-spec-coverage.sh` 통과
+- [x] 백엔드는 건드리지 않았다 — `git diff --stat main...HEAD`에 `backend/`가 없다
 - [ ] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 4개 완료
 

@@ -258,6 +258,25 @@ export function toPatchBody(
 }
 
 /**
+ * 값이 있었는데 비워진 필드.
+ *
+ * <p>백엔드가 `null`을 "변경 없음"으로 읽으므로 이 상태로 저장하면 아무 일도 일어나지 않는다.
+ * 조용히 무시하면 사용자는 지워졌다고 믿는다 — 화면이 저장 전에 막는다.
+ */
+export function clearedFields(
+  initial: BrewLogEditState,
+  current: BrewLogEditState,
+): string[] {
+  return PATCHABLE.filter((key) => {
+    const before = initial[key];
+    const after = current[key];
+    const hadValue = before !== null && before !== "";
+    const isEmpty = after === null || after === "";
+    return hadValue && isEmpty;
+  });
+}
+
+/**
  * `datetime-local` 값을 백엔드가 받는 `Instant` 문자열로 바꾼다.
  *
  * <p>비어 있으면 `null`을 돌려 키째 빠지게 한다 — `new Date("")`는 `Invalid Date`이고 `toISOString()`이 던진다.

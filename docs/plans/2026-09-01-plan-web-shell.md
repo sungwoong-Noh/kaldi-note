@@ -253,11 +253,11 @@ it("AC-WEBSHELL-11 · 로그아웃 요청이 실패해도 홈으로 간다", asy
 **Files:** Modify `features/recipe/components/RecipeDetail.tsx` + 페이지 테스트
 **Covers:** AC-WEBSHELL-16, 17
 
-- [ ] **Step 1: 실패하는 테스트 작성** — `CURATED` 레시피에서 `이 레시피로 내렸다` 링크가 없고 `포크한 뒤 기록할 수 있습니다`가 보이는지.
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(지금은 소유와 무관하게 링크가 있다)
-- [ ] **Step 3: 최소 구현** — 판정은 **기존 `isMine`을 그대로 쓴다**(`me.data !== undefined && recipe.ownerUserId === me.data.id`). 편집·삭제 버튼이 이미 그 값으로 갈린다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 2 tests
-- [ ] **Step 5: 커밋** — `fix(web): 내 레시피에서만 기록을 시작한다 (AC-WEBSHELL 2개)`
+- [x] **Step 1: 실패하는 테스트 작성** — `CURATED` 레시피에서 `이 레시피로 내렸다` 링크가 없고 `포크한 뒤 기록할 수 있습니다`가 보이는지.
+- [x] **Step 2: 실패 확인** — Expected: FAIL(지금은 소유와 무관하게 링크가 있다)
+- [x] **Step 3: 최소 구현** — 판정은 **기존 `isMine`을 그대로 쓴다**(`me.data !== undefined && recipe.ownerUserId === me.data.id`). 편집·삭제 버튼이 이미 그 값으로 갈린다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 2 tests
+- [x] **Step 5: 커밋** — `fix(web): 내 레시피에서만 기록을 시작한다 (AC-WEBSHELL 2개)`
 
 ---
 

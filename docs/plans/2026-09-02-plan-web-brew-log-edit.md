@@ -317,7 +317,7 @@ Expected: 통과
 - Create: `frontend/src/app/brews/[id]/edit/page.tsx`, `frontend/src/app/brews/[id]/edit/page.test.tsx`
 - Create: `frontend/src/features/brewlog/components/BrewLogEditor.tsx`
 - Modify: `frontend/src/features/brewlog/schema.ts`, `frontend/src/features/brewlog/formState.ts`
-- Create: `frontend/src/features/brewlog/formState.test.ts`
+- Modify: `frontend/src/features/brewlog/formState.test.ts` **(이미 있는 파일이다 — 덮어쓰지 말고 describe를 덧붙인다)**
 - Modify: `frontend/src/components/layout/BottomNav.test.tsx`
 
 **Covers:** AC-WEBLOGEDIT-04, 05, 06, 17, 18
@@ -332,7 +332,7 @@ Expected: 통과
 - Produces: `<BrewLogEditor id={42} />`
 - Consumes: Task 2의 `<BrewLogFields />`, 기존 `fetchBrewLog`·`useUserGrinders`
 
-- [ ] **Step 1: 실제 응답에서 `visibility` 값을 확인한다**
+- [x] **Step 1: 실제 응답에서 `visibility` 값을 확인한다**
 
 ```bash
 docker compose up -d
@@ -342,7 +342,7 @@ curl -s -H "Authorization: Bearer $TOKEN" localhost:8080/api/v1/brew-logs/2 | jq
 
 `visibility`가 `"PRIVATE"`인지, `brewedAt`이 `2026-08-31T09:00:00Z` 같은 Instant 문자열인지 확인한다. **로컬 JWT는 `application-local.yml`의 고정 시크릿(HS256)으로 만들고 `sub`는 `11`이다.**
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 `formState.test.ts` — 순수 함수부터. **AC ID를 붙이지 않는다**(AC는 페이지 테스트가 갖는다):
 
@@ -487,12 +487,12 @@ describe("BrewEditPage", () => {
   });
 ```
 
-- [ ] **Step 3: 실패 확인**
+- [x] **Step 3: 실패 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog/formState.test.ts src/components/layout`
 Expected: FAIL — 페이지·`formStateFromLog`가 없어서. **AC-18은 통과한다** — 탭바가 `/edit`로 끝나는 경로를 이미 숨기기 때문이다. 회귀 방지용이므로 그대로 둔다.
 
-- [ ] **Step 4: 최소 구현**
+- [x] **Step 4: 최소 구현**
 
 `schema.ts` — `visibility`를 좁힌다:
 
@@ -696,12 +696,12 @@ export default async function BrewEditPage({
 }
 ```
 
-- [ ] **Step 5: 통과 확인**
+- [x] **Step 5: 통과 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog src/components/layout`
 Expected: PASS — 페이지 4개 + `formStateFromLog` 4개 + `BottomNav` 12개
 
-- [ ] **Step 6: 커밋** — `feat(web): 로그 편집 화면 뼈대와 초기값 (AC-WEBLOGEDIT 5개)`
+- [x] **Step 6: 커밋** — `feat(web): 로그 편집 화면 뼈대와 초기값 (AC-WEBLOGEDIT 5개)`
 
 ---
 

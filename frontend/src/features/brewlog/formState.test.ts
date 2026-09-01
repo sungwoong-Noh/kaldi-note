@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { grindedRecipe } from "@/test/fixtures";
-import { initialFormState, toRequestBody } from "./formState";
+import { brewLogWithTds, grindedRecipe } from "@/test/fixtures";
+import {
+  formStateFromLog,
+  initialFormState,
+  toRequestBody,
+} from "./formState";
+import { brewLogSchema } from "./schema";
+
+/** 픽스처에서 키를 지운 응답을 만든다. `non_null` 정책이라 없는 값은 키 자체가 없다. */
+function logWithout(...keys: string[]) {
+  const raw: Record<string, unknown> = { ...brewLogWithTds };
+  for (const key of keys) delete raw[key];
+  return brewLogSchema.parse(raw);
+}
 
 describe("initialFormState", () => {
   it("레시피 값으로 초기화하고 추출 시간은 비운다", () => {
@@ -120,5 +132,42 @@ describe("toRequestBody", () => {
     expect(toRequestBody({ ...filled, overallNote: "산미가 좋다" })).toMatchObject(
       { overallNote: "산미가 좋다" },
     );
+  });
+});
+
+describe("formStateFromLog", () => {
+  it("Instant를 datetime-local 문자열로 바꾼다", () => {
+    const state = formStateFromLog(
+      brewLogSchema.parse({ ...brewLogWithTds, brewedAt: "2026-08-31T09:00:00Z" }),
+    );
+
+    // 로컬 시각이라 실행 환경의 오프셋을 탄다 — 형식만 본다
+    expect(state.brewedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+  });
+
+  it("5축이 하나라도 있으면 펼친 상태로 연다", () => {
+    const state = formStateFromLog(
+      brewLogSchema.parse({ ...brewLogWithTds, acidity: 4 }),
+    );
+
+    expect(state.sensoryExpanded).toBe(true);
+  });
+
+  it("5축이 하나도 없으면 접은 상태로 연다", () => {
+    const state = formStateFromLog(
+      logWithout("acidity", "sweetness", "body", "bitterness", "aftertaste"),
+    );
+
+    expect(state.sensoryExpanded).toBe(false);
+  });
+
+  it("없는 키는 null이 된다", () => {
+    expect(formStateFromLog(logWithout("tdsPercent")).tdsPercent).toBeNull();
+  });
+
+  it("공개범위를 그대로 들고 온다", () => {
+    expect(
+      formStateFromLog(brewLogSchema.parse(brewLogWithTds)).visibility,
+    ).toBe("PRIVATE");
   });
 });

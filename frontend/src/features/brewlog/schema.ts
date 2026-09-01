@@ -11,7 +11,8 @@ const brewLogShape = {
   recipeId: z.number(),
   beanBatchId: z.number().optional(),
   brewedAt: z.string(),
-  visibility: z.string(),
+  // 2026-09-02 실제 응답으로 확인했다 — 백엔드 `BrewLogVisibility`에 값이 셋뿐이다.
+  visibility: z.enum(["PRIVATE", "FRIENDS", "PUBLIC"]),
   actualDoseG: z.number(),
   actualWaterG: z.number(),
   actualWaterTempC: z.number(),

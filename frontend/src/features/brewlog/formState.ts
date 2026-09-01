@@ -6,6 +6,7 @@
 
 import type { Recipe } from "../recipe/schema";
 import type { UserGrinder } from "../gear/schema";
+import type { BrewLog } from "./schema";
 
 /** 그라인더 자동 선택에 실제로 필요한 두 필드. 인라인 객체로도 부를 수 있게 좁혀 둔다. */
 export type GrinderChoice = Pick<UserGrinder, "id" | "grinderModelId">;
@@ -92,6 +93,48 @@ export function initialFormState(
     body: null,
     bitterness: null,
     aftertaste: null,
+  };
+}
+
+/** 편집 화면의 상태. 작성 화면에 없는 `visibility`가 하나 더 있다. */
+export type BrewLogEditState = BrewLogFormState & {
+  visibility: BrewLog["visibility"];
+};
+
+/**
+ * 저장된 로그를 편집 폼 상태로 되돌린다.
+ *
+ * <p>없는 키는 `null`이 된다 — 백엔드가 `non_null`로 응답해 값이 없으면 키 자체가 없다.
+ */
+export function formStateFromLog(log: BrewLog): BrewLogEditState {
+  return {
+    recipeId: log.recipeId,
+    brewedAt: toDateTimeLocal(new Date(log.brewedAt)),
+    beanBatchId: log.beanBatchId ?? null,
+    userGrinderId: log.userGrinderId ?? null,
+    actualGrindSettingValue: log.actualGrindSettingValue ?? null,
+    actualDoseG: log.actualDoseG,
+    actualWaterG: log.actualWaterG,
+    actualWaterTempC: log.actualWaterTempC,
+    actualTotalTimeSeconds: log.actualTotalTimeSeconds ?? null,
+    actualDrawdownSeconds: log.actualDrawdownSeconds ?? null,
+    beverageWeightG: log.beverageWeightG ?? null,
+    tdsPercent: log.tdsPercent ?? null,
+    rating: log.rating ?? null,
+    overallNote: log.overallNote ?? "",
+    // 하나라도 값이 있으면 펼쳐서 연다. 접힌 채로 열면 넣어둔 평가가 보이지 않는다.
+    sensoryExpanded:
+      log.acidity !== undefined ||
+      log.sweetness !== undefined ||
+      log.body !== undefined ||
+      log.bitterness !== undefined ||
+      log.aftertaste !== undefined,
+    acidity: log.acidity ?? null,
+    sweetness: log.sweetness ?? null,
+    body: log.body ?? null,
+    bitterness: log.bitterness ?? null,
+    aftertaste: log.aftertaste ?? null,
+    visibility: log.visibility,
   };
 }
 

@@ -111,4 +111,16 @@ describe("BottomNav", () => {
 
     expect(screen.queryByRole("link", { name: "홈" })).not.toBeInTheDocument();
   });
+
+  it("AC-WEBSHELL-32 · 콘텐츠가 짧아도 탭바가 화면 하단에 놓인다", () => {
+    pathname = "/";
+
+    render(<BottomNav />);
+
+    // jsdom은 레이아웃을 계산하지 않는다. 좌표 대신 하단에 놓이게 하는 클래스를 본다.
+    const nav = screen.getByRole("navigation", { name: "주요 화면" });
+    for (const className of ["mt-auto", "sticky", "bottom-0"]) {
+      expect(nav).toHaveClass(className);
+    }
+  });
 });

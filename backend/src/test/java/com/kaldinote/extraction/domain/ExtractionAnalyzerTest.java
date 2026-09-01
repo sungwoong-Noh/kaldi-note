@@ -82,8 +82,12 @@ class ExtractionAnalyzerTest {
     @Test
     @DisplayName("AC-EXT-06 · 음료 중량이 없으면 수율을 계산하지 않는다")
     void 음료중량이_없으면_수율을_계산하지_않는다() {
-      assertThat(analyzer.analyze(measurement("15", "250", null, "1.25")).extractionYieldPercent())
-          .isNull();
+      ExtractionAnalysis result = analyzer.analyze(measurement("15", "250", null, "1.25"));
+
+      assertThat(result.extractionYieldPercent()).isNull();
+      // TDS는 있다. "TDS가 없다"고 하면 사용자가 고칠 곳을 못 찾는다.
+      assertThat(result.diagnosis())
+          .isEqualTo("음료 중량이 없어 추출 수율을 계산할 수 없습니다. 추출 후 잔의 무게를 재어 입력하세요.");
     }
   }
 

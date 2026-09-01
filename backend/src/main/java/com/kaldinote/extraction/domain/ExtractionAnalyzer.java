@@ -27,6 +27,8 @@ public class ExtractionAnalyzer {
   private static final int DIVISION_SCALE = 6;
 
   private static final String NO_TDS = "TDS 측정값이 없어 추출 수율을 계산할 수 없습니다. 비율과 관능 평가로 판단하세요.";
+  private static final String NO_BEVERAGE_WEIGHT =
+      "음료 중량이 없어 추출 수율을 계산할 수 없습니다. 추출 후 잔의 무게를 재어 입력하세요.";
   private static final String IDEAL = "이상적인 구간입니다. 이 레시피를 기준으로 삼으세요.";
   private static final String UNDER_EXTRACTED = "추출이 부족합니다. 분쇄를 곱게 하거나 물 온도를 올리거나 추출 시간을 늘려보세요.";
   private static final String OVER_EXTRACTED = "과다추출입니다. 분쇄를 굵게 하거나 물 온도를 낮추거나 추출 시간을 줄여보세요.";
@@ -40,7 +42,10 @@ public class ExtractionAnalyzer {
             .setScale(RATIO_SCALE, RoundingMode.HALF_UP);
 
     if (!m.yieldMeasurable()) {
-      return new ExtractionAnalysis(brewRatio, null, null, null, NO_TDS);
+      // 없는 것을 정확히 말한다. TDS가 있는데 "TDS가 없다"고 하면 사용자가 고칠 곳을 못 찾는다.
+      // 둘 다 없으면 TDS를 먼저 말한다 — 리프랙토미터가 없는 것이 기본 상황이다.
+      String reason = m.tdsPercent() == null ? NO_TDS : NO_BEVERAGE_WEIGHT;
+      return new ExtractionAnalysis(brewRatio, null, null, null, reason);
     }
 
     BigDecimal yield =

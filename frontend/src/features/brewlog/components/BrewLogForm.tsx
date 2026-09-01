@@ -247,6 +247,23 @@ function Fields({
           value={state.actualTotalTimeSeconds}
           onChange={(v) => set("actualTotalTimeSeconds", v)}
         />
+        <NumberField
+          label="드로다운 시간"
+          value={state.actualDrawdownSeconds}
+          onChange={(v) => set("actualDrawdownSeconds", v)}
+        />
+        <NumberField
+          label="음료 중량"
+          value={state.beverageWeightG}
+          onChange={(v) => set("beverageWeightG", v)}
+        />
+        {/* TDS는 리프랙토미터가 있을 때만 채운다. 없어도 나머지는 전부 저장된다. */}
+        <NumberField
+          label="TDS"
+          value={state.tdsPercent}
+          onChange={(v) => set("tdsPercent", v)}
+          error={fieldErrors?.byField.tdsPercent}
+        />
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
@@ -395,11 +412,15 @@ function NumberField({
   label,
   value,
   onChange,
+  error,
 }: {
   label: string;
   value: number | null;
   onChange: (value: number | null) => void;
+  error?: string;
 }) {
+  const errorId = `brew-${encodeURIComponent(label)}-error`;
+
   return (
     <label className="flex items-center gap-2 text-sm">
       <span className="w-20 text-neutral-500">{label}</span>
@@ -410,8 +431,14 @@ function NumberField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
+        aria-describedby={error ? errorId : undefined}
         className="w-32 rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
       />
+      {error && (
+        <span id={errorId} className="text-xs text-red-600">
+          {error}
+        </span>
+      )}
     </label>
   );
 }

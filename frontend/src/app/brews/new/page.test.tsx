@@ -499,6 +499,50 @@ describe("BrewNewPage — 저장과 평가", () => {
   });
 });
 
+describe("BrewNewPage — 드로다운·음료 중량·TDS", () => {
+  it("AC-WEBSHELL-18 · 세 입력칸이 빈 채로 있다", async () => {
+    await renderNewPage();
+
+    expect(await screen.findByLabelText("드로다운 시간")).toHaveValue(null);
+    expect(screen.getByLabelText("음료 중량")).toHaveValue(null);
+    expect(screen.getByLabelText("TDS")).toHaveValue(null);
+  });
+
+  it("AC-WEBSHELL-19 · 채운 값이 저장 본문에 담긴다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    await user.type(await screen.findByLabelText("드로다운 시간"), "35");
+    await user.type(screen.getByLabelText("음료 중량"), "260");
+    await user.type(screen.getByLabelText("TDS"), "1.35");
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    expect(captured.body?.actualDrawdownSeconds).toBe(35);
+    expect(captured.body?.beverageWeightG).toBe(260);
+    expect(captured.body?.tdsPercent).toBe(1.35);
+  });
+
+  it("AC-WEBSHELL-20 · TDS 오류는 그 입력칸에 붙는다", async () => {
+    const user = userEvent.setup();
+    captureCreate(badRequest("tdsPercent", "100 미만이어야 합니다"));
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("button", { name: "기록하기" }));
+
+    const input = await screen.findByLabelText("TDS");
+    const describedBy = await waitFor(() => {
+      const id = input.getAttribute("aria-describedby");
+      expect(id).not.toBeNull();
+      return id as string;
+    });
+    expect(document.getElementById(describedBy)).toHaveTextContent(
+      "100 미만이어야 합니다",
+    );
+  });
+});
+
 describe("BrewNewPage — 취소", () => {
   it("AC-WEBSHELL-15 · 취소하면 출발한 레시피로 간다", async () => {
     const user = userEvent.setup();

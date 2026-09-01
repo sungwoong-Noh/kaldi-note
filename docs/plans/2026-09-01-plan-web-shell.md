@@ -268,11 +268,11 @@ it("AC-WEBSHELL-11 · 로그아웃 요청이 실패해도 홈으로 간다", asy
 
 **Interfaces:** Consumes `BrewLogFormState`(이미 세 필드를 갖고 있다), `toRequestBody`(이미 세 필드를 담는다)
 
-- [ ] **Step 1: 실패하는 테스트 작성** — 세 입력칸이 존재하고, 채우면 본문에 실리고, `tdsPercent` 오류가 그 칸에 붙는지.
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(입력칸 없음)
-- [ ] **Step 3: 최소 구현** — **상태와 변환 함수는 이미 다 있다.** `NumberField` 세 줄과 `tdsPercent`용 `aria-describedby`만 더하면 된다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 3 tests
-- [ ] **Step 5: 커밋** — `fix(web): 드로다운·음료 중량·TDS 입력칸 (AC-WEBSHELL 3개)`
+- [x] **Step 1: 실패하는 테스트 작성** — 세 입력칸이 존재하고, 채우면 본문에 실리고, `tdsPercent` 오류가 그 칸에 붙는지.
+- [x] **Step 2: 실패 확인** — Expected: FAIL(입력칸 없음)
+- [x] **Step 3: 최소 구현** — **상태와 변환 함수는 이미 다 있다.** `NumberField` 세 줄과 `tdsPercent`용 `aria-describedby`만 더하면 된다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 3 tests
+- [x] **Step 5: 커밋** — `fix(web): 드로다운·음료 중량·TDS 입력칸 (AC-WEBSHELL 3개)`
 
 ---
 

@@ -164,6 +164,31 @@ export function summaries(count: number, startId = 100): RecipeSummary[] {
  * 두 가지가 지어낸 픽스처였다면 틀렸을 부분이다 —
  * `micronsPerClick`은 없으면 **키 자체가 사라지고**(J-Max), 환산 가능 여부는 `convertible` 불리언으로 온다.
  */
+/** `GET /gear/grinders`의 실제 응답에서 뜬 것. id는 시드 순서상 11이다. */
+export const holzklotzE80 = {
+  id: 11,
+  brand: "Holzklotz",
+  name: "E80",
+  adjustmentType: "CLICK",
+  micronsPerClick: 22.5,
+  minSetting: 0.0,
+  maxSetting: 80.0,
+  burrType: "CONICAL",
+  convertible: true,
+  isSystem: true,
+};
+
+/** C40 22클릭 → E80. 로컬 백엔드의 실제 응답이다(660 / 22.5 = 29.33 → 29.3). */
+export const c40ToE80Conversion = {
+  sourceSetting: 22,
+  micron: 660,
+  targetSetting: 29.3,
+  targetOutOfRange: false,
+  estimated: true,
+  warning:
+    "버 형상과 입도 분포가 달라 정확한 등가 변환은 불가능합니다. 시작점으로만 사용하세요.",
+};
+
 export const comandanteC40 = {
   id: 1,
   brand: "Comandante",

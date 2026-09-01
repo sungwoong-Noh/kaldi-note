@@ -298,7 +298,7 @@ it("AC-WEBSHELL-11 · 로그아웃 요청이 실패해도 홈으로 간다", asy
 - Consumes: `useGrinders`(기존), Task 1의 E80 시드
 - Produces: `convertGrind(body, onSessionLost)` — `{ sourceGrinderModelId, sourceSetting, targetGrinderModelId }`를 받아 `GrindConversion`을 돌려준다
 
-- [ ] **Step 1: 픽스처를 실제 백엔드에서 뜬다**
+- [x] **Step 1: 픽스처를 실제 백엔드에서 뜬다**
 
 ```bash
 docker compose up -d
@@ -311,7 +311,7 @@ curl -s -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
 
 **E80의 id는 시드 순서에 따라 정해진다 — 하드코딩하지 말고 응답에서 확인한다.**
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBSHELL-25 · 요청 본문이 고른 값 그대로다", async () => {
@@ -337,19 +337,19 @@ it("AC-WEBSHELL-25 · 요청 본문이 고른 값 그대로다", async () => {
 });
 ```
 
-- [ ] **Step 3: 실패 확인** — Expected: FAIL(모듈 없음)
-- [ ] **Step 4: 최소 구현** — `useMutation`으로 부른다(`useGrindPreview`의 자동 조회와 달리 버튼을 눌러야 나간다). **경고 문구는 서버가 준 `warning`을 그대로 렌더한다** — 프론트가 다시 쓰지 않는다.
-- [ ] **Step 5: 통과 확인** — Expected: PASS, 6 tests
-- [ ] **Step 6: 커밋** — `feat(web): 분쇄도 환산기 화면 (AC-WEBSHELL 6개)`
+- [x] **Step 3: 실패 확인** — Expected: FAIL(모듈 없음)
+- [x] **Step 4: 최소 구현** — `useMutation`으로 부른다(`useGrindPreview`의 자동 조회와 달리 버튼을 눌러야 나간다). **경고 문구는 서버가 준 `warning`을 그대로 렌더한다** — 프론트가 다시 쓰지 않는다.
+- [x] **Step 5: 통과 확인** — Expected: PASS, 6 tests
+- [x] **Step 6: 커밋** — `feat(web): 분쇄도 환산기 화면 (AC-WEBSHELL 6개)`
 
 ---
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `./scripts/check-spec-coverage.sh` 통과
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `./scripts/check-spec-coverage.sh` 통과
 - [ ] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 4개 완료
 

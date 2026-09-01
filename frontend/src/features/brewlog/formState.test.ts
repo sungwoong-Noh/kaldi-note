@@ -3,6 +3,7 @@ import { brewLogWithTds, grindedRecipe } from "@/test/fixtures";
 import {
   formStateFromLog,
   initialFormState,
+  toPatchBody,
   toRequestBody,
 } from "./formState";
 import { brewLogSchema } from "./schema";
@@ -132,6 +133,56 @@ describe("toRequestBody", () => {
     expect(toRequestBody({ ...filled, overallNote: "산미가 좋다" })).toMatchObject(
       { overallNote: "산미가 좋다" },
     );
+  });
+});
+
+describe("toPatchBody", () => {
+  const initial = formStateFromLog(brewLogSchema.parse(brewLogWithTds));
+
+  it("아무것도 안 바꾸면 빈 객체다", () => {
+    expect(toPatchBody(initial, initial)).toEqual({});
+  });
+
+  it("바꾼 것만 담는다", () => {
+    expect(toPatchBody(initial, { ...initial, rating: 4.5 })).toEqual({
+      rating: 4.5,
+    });
+  });
+
+  it("공개범위도 담는다", () => {
+    expect(toPatchBody(initial, { ...initial, visibility: "FRIENDS" })).toEqual({
+      visibility: "FRIENDS",
+    });
+  });
+
+  it("recipeId와 beanBatchId는 절대 담지 않는다", () => {
+    const changed = {
+      ...initial,
+      recipeId: 99,
+      beanBatchId: 99,
+      rating: 4.5,
+    };
+
+    expect(toPatchBody(initial, changed)).toEqual({ rating: 4.5 });
+  });
+
+  it("brewedAt을 건드리지 않으면 담기지 않는다", () => {
+    // 왕복(Instant → datetime-local → Instant)에서 초가 잘려도 거짓 변경이 생기면 안 된다
+    expect(toPatchBody(initial, { ...initial })).not.toHaveProperty("brewedAt");
+  });
+
+  it("brewedAt을 바꾸면 Instant 문자열로 담는다", () => {
+    const body = toPatchBody(initial, {
+      ...initial,
+      brewedAt: "2026-09-01T07:30",
+    });
+
+    expect(body.brewedAt).toBe(new Date("2026-09-01T07:30").toISOString());
+  });
+
+  it("비워진 값은 담지 않는다", () => {
+    // 백엔드가 null을 "변경 없음"으로 읽어 보내봐야 소용이 없다
+    expect(toPatchBody(initial, { ...initial, tdsPercent: null })).toEqual({});
   });
 });
 

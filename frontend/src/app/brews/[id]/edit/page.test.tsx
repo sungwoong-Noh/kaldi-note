@@ -1,4 +1,5 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clearSession, setAccessToken } from "@/lib/session";
@@ -26,6 +27,22 @@ function baseHandlers() {
       HttpResponse.json([{ ...myComandante, id: 5 }]),
     ),
   ];
+}
+
+/** PATCH 본문을 잡는다. */
+function capturePatch() {
+  const captured: { body: Record<string, unknown> | null; calls: number } = {
+    body: null,
+    calls: 0,
+  };
+  server.use(
+    http.patch(DETAIL_URL, async ({ request }) => {
+      captured.calls += 1;
+      captured.body = (await request.json()) as Record<string, unknown>;
+      return HttpResponse.json({ ...brewLogWithTds, id: 42, userId: 11 });
+    }),
+  );
+  return captured;
 }
 
 /** 페이지는 async 서버 컴포넌트다 — 먼저 실행해 params를 푼 뒤 그 결과를 렌더한다. */
@@ -93,5 +110,69 @@ describe("BrewEditPage", () => {
       await screen.findByRole("button", { name: "다시 시도" }),
     ).toBeInTheDocument();
     expect(screen.queryByLabelText("원두량")).not.toBeInTheDocument();
+  });
+});
+
+describe("BrewEditPage — 저장", () => {
+  it("AC-WEBLOGEDIT-07 · 바뀐 필드만 본문에 담긴다", async () => {
+    const user = userEvent.setup();
+    const captured = capturePatch();
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({ ...brewLogWithTds, id: 42, userId: 11, rating: 3.5 }),
+      ),
+    );
+
+    await renderEditPage();
+    await user.click(await screen.findByRole("button", { name: "별점 4" }));
+    await user.click(screen.getByRole("button", { name: "저장" }));
+
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    expect(captured.body).toEqual({ rating: 4 });
+  });
+
+  it("AC-WEBLOGEDIT-08 · 공개범위를 바꾸면 그것만 담긴다", async () => {
+    const user = userEvent.setup();
+    const captured = capturePatch();
+
+    await renderEditPage();
+    await user.selectOptions(await screen.findByLabelText("공개 범위"), "FRIENDS");
+    await user.click(screen.getByRole("button", { name: "저장" }));
+
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    expect(captured.body).toEqual({ visibility: "FRIENDS" });
+  });
+
+  it("AC-WEBLOGEDIT-09 · 저장에 성공하면 그 로그 상세로 간다", async () => {
+    const user = userEvent.setup();
+    capturePatch();
+
+    await renderEditPage();
+    await user.selectOptions(await screen.findByLabelText("공개 범위"), "FRIENDS");
+    await user.click(screen.getByRole("button", { name: "저장" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/brews/42"));
+  });
+
+  it("AC-WEBLOGEDIT-10 · 취소하면 그 로그 상세로 간다", async () => {
+    const user = userEvent.setup();
+    const captured = capturePatch();
+
+    await renderEditPage();
+    await user.click(await screen.findByRole("button", { name: "취소" }));
+
+    expect(push).toHaveBeenCalledWith("/brews/42");
+    expect(captured.calls).toBe(0);
+  });
+
+  it("AC-WEBLOGEDIT-11 · 아무것도 고치지 않고 저장하면 요청이 나가지 않는다", async () => {
+    const user = userEvent.setup();
+    const captured = capturePatch();
+
+    await renderEditPage();
+    await user.click(await screen.findByRole("button", { name: "저장" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/brews/42"));
+    expect(captured.calls).toBe(0);
   });
 });

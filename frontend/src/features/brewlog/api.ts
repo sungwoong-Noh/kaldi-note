@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { backendUrl } from "@/lib/api-client";
 import { authedRequest } from "@/lib/authed-fetch";
-import type { BrewLogRequestBody } from "./formState";
+import type { BrewLogPatchBody, BrewLogRequestBody } from "./formState";
 import {
   brewLogPageSchema,
   brewLogSchema,
@@ -45,6 +45,21 @@ export function fetchBrewLogPage(
   });
   return authedRequest(backendUrl(`/api/v1/brew-logs?${query.toString()}`), {
     schema: brewLogPageSchema,
+    onSessionLost,
+  });
+}
+
+/** 부분 수정. 보내지 않은 필드는 바뀌지 않는다. */
+export function patchBrewLog(
+  id: number,
+  body: BrewLogPatchBody,
+  onSessionLost?: () => void,
+): Promise<BrewLog> {
+  return authedRequest(backendUrl(`/api/v1/brew-logs/${id}`), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    schema: brewLogSchema,
     onSessionLost,
   });
 }

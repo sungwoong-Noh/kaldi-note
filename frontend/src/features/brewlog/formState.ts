@@ -204,6 +204,59 @@ export function toRequestBody(state: BrewLogFormState): BrewLogRequestBody {
   ]);
 }
 
+export type BrewLogPatchBody = Partial<
+  Omit<BrewLogRequestBody, "recipeId" | "beanBatchId">
+> & { visibility?: BrewLogEditState["visibility"] };
+
+/** 요청에 실을 수 있는 필드. `recipeId`·`beanBatchId`·`sensoryExpanded`는 없다. */
+const PATCHABLE = [
+  "brewedAt",
+  "userGrinderId",
+  "actualGrindSettingValue",
+  "actualDoseG",
+  "actualWaterG",
+  "actualWaterTempC",
+  "actualTotalTimeSeconds",
+  "actualDrawdownSeconds",
+  "beverageWeightG",
+  "tdsPercent",
+  "rating",
+  "overallNote",
+  "acidity",
+  "sweetness",
+  "body",
+  "bitterness",
+  "aftertaste",
+  "visibility",
+] as const satisfies readonly (keyof BrewLogEditState)[];
+
+/**
+ * 바뀐 필드만 담는다.
+ *
+ * <p><b>폼 상태끼리 비교한다.</b> 요청 본문끼리 비교하면 `brewedAt`이 `Instant` → `datetime-local` →
+ * `Instant`를 왕복하며 초가 잘려, 건드리지도 않은 필드가 바뀐 것으로 보인다.
+ *
+ * <p><b>비워진 필드는 담지 않는다.</b> 백엔드가 `null`을 "변경 없음"으로 읽어 보내봐야 소용이 없다.
+ * 화면이 그 상태에서 저장 자체를 막는다({@link clearedFields}).
+ */
+export function toPatchBody(
+  initial: BrewLogEditState,
+  current: BrewLogEditState,
+): BrewLogPatchBody {
+  const body: Record<string, unknown> = {};
+
+  for (const key of PATCHABLE) {
+    const before = initial[key];
+    const after = current[key];
+    if (before === after) continue;
+    if (after === null || after === "") continue;
+
+    body[key] = key === "brewedAt" ? toInstant(String(after)) : after;
+  }
+
+  return body;
+}
+
 /**
  * `datetime-local` 값을 백엔드가 받는 `Instant` 문자열로 바꾼다.
  *

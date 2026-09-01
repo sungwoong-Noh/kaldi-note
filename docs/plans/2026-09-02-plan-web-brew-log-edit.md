@@ -723,7 +723,7 @@ Expected: PASS — 페이지 4개 + `formStateFromLog` 4개 + `BottomNav` 12개
   ```
 - Produces: `patchBrewLog(id: number, body: BrewLogPatchBody, onSessionLost?: () => void): Promise<BrewLog>`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `formState.test.ts`에 더한다:
 
@@ -848,12 +848,12 @@ it("AC-WEBLOGEDIT-11 · 아무것도 고치지 않고 저장하면 요청이 나
 
 **`별점 4`가 `rating: 4`인지 `4.0`인지 확인한다.** `RatingInput`이 무엇을 넘기는지 그 파일에서 보고 기대값을 맞춘다 — JSON에서 `4.0`과 `4`는 같은 값이라 `toEqual({ rating: 4 })`로 쓴다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog/formState.test.ts`
 Expected: FAIL — `toPatchBody`·`patchBrewLog`·`저장`·`취소`가 없어서
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `formState.ts`:
 
@@ -982,12 +982,12 @@ export function patchBrewLog(
       </div>
 ```
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `pnpm vitest run 'src/app/brews/[id]/edit' src/features/brewlog/formState.test.ts`
 Expected: PASS — 페이지 9개 + 순수 함수 10개
 
-- [ ] **Step 5: 커밋** — `feat(web): 로그 편집 저장 — 바뀐 필드만 보낸다 (AC-WEBLOGEDIT 5개)`
+- [x] **Step 5: 커밋** — `feat(web): 로그 편집 저장 — 바뀐 필드만 보낸다 (AC-WEBLOGEDIT 5개)`
 
 ---
 

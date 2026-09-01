@@ -1,14 +1,16 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useUserGrinders } from "@/features/gear/queries";
 import type { UserGrinder } from "@/features/gear/schema";
-import { fetchBrewLog } from "../api";
+import { fetchBrewLog, patchBrewLog } from "../api";
 import {
   formStateFromLog,
+  toPatchBody,
   type BrewLogEditState,
   type BrewLogFormState,
 } from "../formState";
@@ -54,16 +56,49 @@ export function BrewLogEditor({ id }: { id: number }) {
 
   return (
     <Shell>
-      <Fields log={log.data} grinders={grinders.data} />
+      <Fields
+        log={log.data}
+        grinders={grinders.data}
+        onSessionLost={onSessionLost}
+      />
     </Shell>
   );
 }
 
-function Fields({ log, grinders }: { log: BrewLog; grinders: UserGrinder[] }) {
+function Fields({
+  log,
+  grinders,
+  onSessionLost,
+}: {
+  log: BrewLog;
+  grinders: UserGrinder[];
+  onSessionLost: () => void;
+}) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
   // 초기값은 마운트 시점에 한 번만 만든다. 캐시가 갱신돼도 입력 중인 값을 덮지 않는다.
-  const [state, setState] = useState<BrewLogEditState>(() =>
-    formStateFromLog(log),
-  );
+  const [initial] = useState<BrewLogEditState>(() => formStateFromLog(log));
+  const [state, setState] = useState<BrewLogEditState>(initial);
+
+  const save = useMutation({
+    mutationFn: () =>
+      patchBrewLog(log.id, toPatchBody(initial, state), onSessionLost),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["brew-logs"] });
+      void queryClient.invalidateQueries({ queryKey: ["brew-log", log.id] });
+      router.push(`/brews/${log.id}`);
+    },
+  });
+
+  function submit() {
+    // 보낼 것이 없으면 부르지 않는다. 사용자 입장에서는 취소와 같은 결과다.
+    if (Object.keys(toPatchBody(initial, state)).length === 0) {
+      router.push(`/brews/${log.id}`);
+      return;
+    }
+    save.mutate();
+  }
 
   // `BrewLogFields`는 공유 필드만 아는 좁은 시그니처를 요구한다. `visibility`는
   // 이 화면에만 있으므로 아래 select가 따로 쓴다.
@@ -116,6 +151,24 @@ function Fields({ log, grinders }: { log: BrewLog; grinders: UserGrinder[] }) {
           ))}
         </select>
       </label>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={save.isPending}
+          onClick={submit}
+          className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
+        >
+          저장
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push(`/brews/${log.id}`)}
+          className="rounded-md border border-neutral-300 px-4 py-2 text-sm dark:border-neutral-700"
+        >
+          취소
+        </button>
+      </div>
     </div>
   );
 }

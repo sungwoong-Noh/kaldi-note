@@ -40,10 +40,12 @@ export function BottomNav() {
     return null;
   }
 
+  // `mt-auto`가 남은 공간을 위로 밀어 콘텐츠가 짧아도 탭바를 하단에 놓는다(body가 `flex min-h-full flex-col`).
+  // `sticky bottom-0`은 콘텐츠가 길어 스크롤이 생겼을 때를 위해 남긴다.
   return (
     <nav
       aria-label="주요 화면"
-      className="sticky bottom-0 z-10 grid grid-cols-4 border-t border-black/10 bg-[var(--background)] dark:border-white/15"
+      className="mt-auto sticky bottom-0 z-10 grid grid-cols-4 border-t border-black/10 bg-[var(--background)] dark:border-white/15"
     >
       {TABS.map((tab) => {
         const active = isActive(tab.href, pathname);

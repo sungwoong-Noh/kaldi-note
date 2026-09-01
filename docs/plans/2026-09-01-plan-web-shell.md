@@ -44,12 +44,13 @@
 | AC-WEBSHELL-24 | 환산 결과 표시 | Task 8 | 페이지 테스트 |
 | AC-WEBSHELL-25 | 요청 본문 | Task 8 | 페이지 테스트 |
 | AC-WEBSHELL-26 | 최소 단계도 요청은 나간다 | Task 8 | 페이지 테스트 |
-| AC-WEBSHELL-27 | E80 25클릭 = 930µm | Task 1 | 단위 테스트 |
+| AC-WEBSHELL-27 | E80 30스텝 = 675µm | Task 1 | 단위 테스트 |
 | AC-WEBSHELL-28 | 422 문구 노출 | Task 8 | 페이지 테스트 |
 | AC-WEBSHELL-29 | 400 문구 노출 | Task 8 | 페이지 테스트 |
 | AC-WEBSHELL-30 | E80이 목록에 있다 | Task 1 | 통합 테스트 |
+| AC-WEBSHELL-31 | E80 25스텝 = 563µm (반올림) | Task 1 | 단위 테스트 |
 
-**스펙의 AC 30개 중 30개가 매핑됐다.**
+**스펙의 AC 31개 중 31개가 매핑됐다.**
 
 ---
 
@@ -115,7 +116,7 @@ frontend/src/
 - Create: `backend/src/main/resources/db/migration/V11__seed_holzklotz_e80.sql`
 - Test: `GrindConverterTest.java`, `GrinderControllerTest.java`
 
-**Covers:** AC-WEBSHELL-27, 30
+**Covers:** AC-WEBSHELL-27, 30, 31
 
 **Interfaces:**
 - Produces: `grinder_models`에 `Holzklotz E80` 한 행 — 프론트 Task 8이 픽스처로 쓴다
@@ -124,23 +125,30 @@ frontend/src/
 
 ```java
 @Test
-@DisplayName("AC-WEBSHELL-27 · E80 25클릭은 930마이크론이다")
-void E80_25클릭은_930마이크론이다() {
-    GrindSpec e80 = new GrindSpec(
-        new BigDecimal("30.60"), new BigDecimal("-5.40"),
-        BigDecimal.ZERO, new BigDecimal("80"));
+@DisplayName("AC-WEBSHELL-27 · E80 30스텝은 675마이크론이다")
+void E80_30스텝은_675마이크론이다() {
+    BigDecimal micron = converter.toMicron(e80Spec(), new BigDecimal("30"));
 
-    BigDecimal micron = converter.toMicron(e80, new BigDecimal("25"));
+    assertThat(micron).isEqualByComparingTo("675");
+}
 
-    assertThat(micron).isEqualByComparingTo("930");
+@Test
+@DisplayName("AC-WEBSHELL-31 · 반올림이 필요한 스텝도 표와 맞는다")
+void E80_25스텝은_563마이크론이다() {
+    // 25 × 22.50 = 562.5 → HALF_UP
+    BigDecimal micron = converter.toMicron(e80Spec(), new BigDecimal("25"));
+
+    assertThat(micron).isEqualByComparingTo("563");
 }
 ```
 
-`GrinderControllerTest`에는 목록 응답에 E80이 있고 `micronsPerClick`이 `30.60`인지 보는 테스트를 더한다.
+`e80Spec()`은 `micronsPerClick=22.50`, `zeroPointOffsetClicks=0`, `min=0`, `max=80`인 `GrindSpec`을 만드는 헬퍼다.
 
-- [ ] **Step 2: 실패 확인** — Run: `./gradlew test --tests '*GrindConverterTest'` / Expected: FAIL(930이 아님) 또는 목록에 E80 없음
+`GrinderControllerTest`에는 목록 응답에 E80이 있고 `micronsPerClick`이 `22.50`, `maxSetting`이 `80`인지 보는 테스트를 더한다(AC-WEBSHELL-30).
 
-**GrindSpec의 생성자 시그니처를 먼저 확인한다.** 위 코드는 `(micronsPerClick, zeroPointOffset, min, max)` 순서를 가정했다 — 실제와 다르면 맞춘다.
+- [ ] **Step 2: 실패 확인** — Run: `./gradlew test --tests '*GrindConverterTest'` / Expected: FAIL — 목록에 E80이 없어 시드가 필요하다
+
+**`GrindSpec`의 생성자 시그니처를 먼저 확인하고 `e80Spec()`을 거기 맞춘다.**
 
 - [ ] **Step 3: 최소 구현**
 
@@ -149,11 +157,11 @@ void E80_25클릭은_930마이크론이다() {
 INSERT INTO grinder_models
     (brand, name, adjustment_type, microns_per_click, zero_point_offset_clicks,
      min_setting, max_setting, burr_type, is_system) VALUES
-    ('Holzklotz', 'E80', 'CLICK', 30.60, -5.40, 0, 80, NULL, true);
+    ('Holzklotz', 'E80', 'CLICK', 22.50, 0, 0, 80, 'CONICAL', true);
 ```
 
 - [ ] **Step 4: 통과 확인** — Run: `./gradlew clean check` / Expected: PASS
-- [ ] **Step 5: 커밋** — `feat(gear): Holzklotz E80 그라인더 시드 (AC-WEBSHELL 2개)`
+- [ ] **Step 5: 커밋** — `feat(gear): Holzklotz E80 그라인더 시드 (AC-WEBSHELL 3개)`
 
 ---
 
@@ -349,7 +357,7 @@ it("AC-WEBSHELL-25 · 요청 본문이 고른 값 그대로다", async () => {
 
 ## 자체 검토 결과
 
-**AC 커버리지:** 스펙의 AC 30개 중 30개가 태스크에 매핑됨
+**AC 커버리지:** 스펙의 AC 31개 중 31개가 태스크에 매핑됨
 
 **자리표시자 검사:** `TODO`, `TBD`, "나중에", "비슷하게" 없음
 
@@ -357,8 +365,8 @@ it("AC-WEBSHELL-25 · 요청 본문이 고른 값 그대로다", async () => {
 
 **검증되지 않은 가정:**
 
-1. **`GrindSpec`의 생성자 시그니처.** Task 1의 테스트 코드는 `(micronsPerClick, zeroPointOffset, min, max)` 순서를 가정했다. 실제와 다르면 맞춘다 — Task 1 Step 2에서 즉시 드러난다.
-2. **`zero_point_offset_clicks`에 음수가 들어가는지.** 스키마에 `CHECK` 제약이 없어 보이지만(`chk_microns_positive`만 있다) 확인하지 않았다. 거부되면 계수를 양수 오프셋으로 다시 풀어야 한다 — Task 1 Step 4에서 드러난다.
+1. **`GrindSpec`의 생성자 시그니처.** Task 1의 테스트가 쓰는 `e80Spec()` 헬퍼를 만들 때 실제 시그니처에 맞춘다 — Task 1 Step 2에서 즉시 드러난다.
+2. ~~**`zero_point_offset_clicks`에 음수가 들어가는지.**~~ **해소:** 제조사 대응표(「변경 후」)가 원점을 지나는 정비례라 오프셋이 `0`이다. 음수를 넣을 일이 없어졌다.
 3. **E80의 그라인더 모델 id.** 시드 순서상 `11`일 것으로 보이나 확정하지 않았다. Task 8 Step 1의 픽스처 뜨기에서 확인한다.
 4. **`app/layout.tsx`에 클라이언트 컴포넌트를 넣어도 되는지.** 루트 레이아웃은 서버 컴포넌트인데 `BottomNav`는 `usePathname`을 쓰므로 `"use client"`가 붙는다. 서버 레이아웃이 클라이언트 자식을 갖는 것은 정상이지만 이 프로젝트에서 처음이다 — Task 2에서 드러난다.
 5. **로그아웃 후 `/`로 갔을 때의 리다이렉트 연쇄.** `/`는 인증이 필요해 `useRequireSession`이 `/login?next=%2F`로 다시 보낸다. 테스트에서 `push("/")`까지만 검증하므로 그 뒤 동작은 확인하지 않는다. 실물에서 깜빡임이 심하면 목적지를 재고한다.

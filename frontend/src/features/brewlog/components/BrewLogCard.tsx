@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatDuration, formatRatio, formatTemperature } from "@/lib/format";
 import type { BrewLogSummary } from "../schema";
 
 /**
@@ -29,20 +30,46 @@ export function BrewLogCard({
           )}
         </div>
 
-        <dl className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-600 dark:text-neutral-400">
-          <div className="flex items-center gap-1">
-            <dt className="sr-only">내린 날</dt>
-            <dd>{formatBrewedDate(log.brewedAt)}</dd>
-          </div>
-          {log.extractionYieldPercent !== undefined && (
-            <div className="flex items-center gap-1">
-              <dt className="sr-only">추출 수율</dt>
-              <dd>{log.extractionYieldPercent} %</dd>
+        <dl className="mt-2 flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-neutral-600 dark:text-neutral-400">
+          {summaryEntries(log).map((entry, index) => (
+            <div key={entry.label} className="flex items-center gap-1">
+              {index > 0 && <span aria-hidden>·</span>}
+              <dt className="sr-only">{entry.label}</dt>
+              <dd>{entry.value}</dd>
             </div>
-          )}
+          ))}
         </dl>
       </Link>
     </li>
+  );
+}
+
+/**
+ * 카드 둘째 줄. 값이 없는 항목은 자리째 뺀다 — 빈칸이 줄지어 있으면 측정하지 않은 것이
+ * 결함처럼 보인다. 표시 함수는 레시피 카드가 쓰는 것을 그대로 쓴다.
+ */
+function summaryEntries(log: BrewLogSummary): { label: string; value: string }[] {
+  const entries = [
+    { label: "내린 날", value: formatBrewedDate(log.brewedAt) },
+    { label: "브루 비율", value: log.brewRatio && formatRatio(log.brewRatio) },
+    { label: "물 온도", value: formatTemperature(log.actualWaterTempC) },
+    {
+      label: "추출 시간",
+      value:
+        log.actualTotalTimeSeconds !== undefined &&
+        formatDuration(log.actualTotalTimeSeconds),
+    },
+    {
+      label: "추출 수율",
+      value:
+        log.extractionYieldPercent !== undefined &&
+        `${log.extractionYieldPercent} %`,
+    },
+  ];
+
+  return entries.filter(
+    (entry): entry is { label: string; value: string } =>
+      typeof entry.value === "string",
   );
 }
 

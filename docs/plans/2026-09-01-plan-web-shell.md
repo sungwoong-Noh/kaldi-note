@@ -281,11 +281,11 @@ it("AC-WEBSHELL-11 · 로그아웃 요청이 실패해도 홈으로 간다", asy
 **Files:** Modify `features/brewlog/components/BrewLogCard.tsx` + 페이지 테스트
 **Covers:** AC-WEBSHELL-21, 22
 
-- [ ] **Step 1: 실패하는 테스트 작성** — 카드에 `1:15.0`·`92°C`·`3:30`이 있고, `actualTotalTimeSeconds`가 없는 항목엔 시간 표기가 없는지.
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(지금은 날짜와 수율만)
-- [ ] **Step 3: 최소 구현** — `formatRatio`·`formatTemperature`·`formatDuration`을 그대로 쓴다. 값이 `undefined`인 항목은 배열에서 빼고 ` · `로 잇는다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 2 tests
-- [ ] **Step 5: 커밋** — `feat(web): 로그 카드에 추출 파라미터 (AC-WEBSHELL 2개)`
+- [x] **Step 1: 실패하는 테스트 작성** — 카드에 `1:15.0`·`92°C`·`3:30`이 있고, `actualTotalTimeSeconds`가 없는 항목엔 시간 표기가 없는지.
+- [x] **Step 2: 실패 확인** — Expected: FAIL(지금은 날짜와 수율만)
+- [x] **Step 3: 최소 구현** — `formatRatio`·`formatTemperature`·`formatDuration`을 그대로 쓴다. 값이 `undefined`인 항목은 배열에서 빼고 ` · `로 잇는다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 2 tests
+- [x] **Step 5: 커밋** — `feat(web): 로그 카드에 추출 파라미터 (AC-WEBSHELL 2개)`
 
 ---
 

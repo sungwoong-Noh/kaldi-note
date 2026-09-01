@@ -57,7 +57,7 @@
 ## Global Constraints
 
 - **Task 1(백엔드)을 먼저 끝낸다.** Task 8의 환산기가 E80을 픽스처로 쓴다.
-- **적용된 Flyway 파일을 수정하지 않는다.** 새 `V11`을 추가한다(`backend/CLAUDE.md`).
+- **적용된 Flyway 파일을 수정하지 않는다.** 새 `V12`를 추가한다(`backend/CLAUDE.md`). **`V11`은 `db/seed/V11__seed_curated_recipes.sql`이 이미 쓰고 있다** — flyway locations가 `db/migration`과 `db/seed` 둘 다라 버전이 겹치면 앱이 뜨지 않는다(2026-09-01에 실제로 겪었다).
 - **`any` 금지, `as` 단언 금지.** 응답 타입은 Zod 스키마에서 `z.infer`로 뽑는다.
 - **API는 MSW로 모킹한다.** 픽스처는 실행 중인 백엔드에서 뜬다 — 이번에 새로 필요한 것은 **E80을 포함한 그라인더 목록**과 **C40→E80 환산 응답** 둘이다.
 - **탭바는 `app/layout.tsx`에 한 번만 놓는다.** 페이지마다 넣으면 새 화면에서 빠뜨린다.
@@ -71,11 +71,11 @@
 
 ```
 backend/src/main/resources/db/migration/
-└── V11__seed_holzklotz_e80.sql              Create
+└── V12__seed_holzklotz_e80.sql              Create
 
 backend/src/test/java/com/kaldinote/
-├── grind/domain/GrindConverterTest.java      Modify — AC 27
-└── gear/presentation/GrinderControllerTest.java  Modify — AC 30
+├── gear/infrastructure/GearSeedTest.java     Modify — AC 27·31
+└── gear/presentation/GearControllerTest.java     Modify — AC 30
 
 frontend/src/
 ├── app/
@@ -113,8 +113,8 @@ frontend/src/
 ## Task 1: 그라인더 시드 — Holzklotz E80
 
 **Files:**
-- Create: `backend/src/main/resources/db/migration/V11__seed_holzklotz_e80.sql`
-- Test: `GrindConverterTest.java`, `GrinderControllerTest.java`
+- Create: `backend/src/main/resources/db/migration/V12__seed_holzklotz_e80.sql`
+- Test: `GearSeedTest.java`(AC 27·31), `GearControllerTest.java`(AC 30)
 
 **Covers:** AC-WEBSHELL-27, 30, 31
 
@@ -142,9 +142,9 @@ void E80_25스텝은_563마이크론이다() {
 }
 ```
 
-`e80Spec()`은 `micronsPerClick=22.50`, `zeroPointOffsetClicks=0`, `min=0`, `max=80`인 `GrindSpec`을 만드는 헬퍼다.
+> **2026-09-01 구현 시 변경.** 위 예시처럼 손으로 만든 `GrindSpec`을 쓰면 시드 값이 틀려도 테스트가 통과한다 — AC의 Given이 "시드에 있다"이므로 성립하지 않는다. 실제로는 `GearSeedTest`에서 시드된 행을 읽어 `e80.toGrindSpec()`으로 환산한다.
 
-`GrinderControllerTest`에는 목록 응답에 E80이 있고 `micronsPerClick`이 `22.50`, `maxSetting`이 `80`인지 보는 테스트를 더한다(AC-WEBSHELL-30).
+`GearControllerTest`에는 목록 응답에 E80이 있고 `micronsPerClick`이 `22.50`, `maxSetting`이 `80`인지 보는 테스트를 더한다(AC-WEBSHELL-30).
 
 - [x] **Step 2: 실패 확인** — Run: `./gradlew test --tests '*GrindConverterTest'` / Expected: FAIL — 목록에 E80이 없어 시드가 필요하다
 
@@ -153,7 +153,7 @@ void E80_25스텝은_563마이크론이다() {
 - [x] **Step 3: 최소 구현**
 
 ```sql
--- V11__seed_holzklotz_e80.sql
+-- V12__seed_holzklotz_e80.sql
 INSERT INTO grinder_models
     (brand, name, adjustment_type, microns_per_click, zero_point_offset_clicks,
      min_setting, max_setting, burr_type, is_system) VALUES

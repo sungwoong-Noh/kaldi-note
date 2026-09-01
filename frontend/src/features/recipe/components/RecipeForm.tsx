@@ -27,6 +27,8 @@ type Props = {
   submitting: boolean;
   error: unknown;
   onSubmit: (body: RecipeRequestBody) => void;
+  /** 취소 목적지는 부모가 정한다. 폼이 라우팅을 알면 재사용이 막힌다. */
+  onCancel: () => void;
   onSessionLost?: () => void;
 };
 
@@ -40,6 +42,7 @@ export function RecipeForm({
   submitting,
   error,
   onSubmit,
+  onCancel,
   onSessionLost,
 }: Props) {
   const [state, setState] = useState(initial);
@@ -194,13 +197,22 @@ export function RecipeForm({
         onChange={(steps) => patch({ steps })}
       />
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="self-start rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
-      >
-        저장
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="self-start rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+        >
+          저장
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="self-start rounded-md border border-neutral-300 px-4 py-2 text-sm dark:border-neutral-700"
+        >
+          취소
+        </button>
+      </div>
     </form>
   );
 }

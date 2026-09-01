@@ -101,4 +101,20 @@ describe("RecipeEditPage", () => {
       await screen.findByText("레시피를 찾을 수 없습니다"),
     ).toBeInTheDocument();
   });
+
+  it("AC-WEBSHELL-14 · 취소하면 그 레시피 상세로 간다", async () => {
+    const user = userEvent.setup();
+    // AC의 리터럴이 12다. 목적지가 편집 중인 id를 따라가는지 보려면 기본 harness의 2와
+    // 달라야 한다 — 2로 두면 하드코딩된 경로도 통과해 버린다.
+    server.use(
+      http.get(`${BASE}/recipes/12`, () => HttpResponse.json({ ...mine, id: 12 })),
+    );
+
+    await RecipeEditPage({ params: Promise.resolve({ id: "12" }) }).then((ui) =>
+      renderWithQuery(ui),
+    );
+    await user.click(await screen.findByRole("button", { name: "취소" }));
+
+    expect(push).toHaveBeenCalledWith("/recipes/12");
+  });
 });

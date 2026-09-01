@@ -313,14 +313,23 @@ function Fields({
         <p className="text-sm text-red-600">{save.error.message}</p>
       )}
 
-      <button
-        type="button"
-        disabled={save.isPending}
-        onClick={() => save.mutate()}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
-      >
-        기록하기
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={save.isPending}
+          onClick={() => save.mutate()}
+          className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
+        >
+          기록하기
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push(`/recipes/${recipe.id}`)}
+          className="rounded-md border border-neutral-300 px-4 py-2 text-sm dark:border-neutral-700"
+        >
+          취소
+        </button>
+      </div>
 
       {addingGrinder && (
         <UserGrinderDialog

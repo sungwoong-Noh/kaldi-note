@@ -31,6 +31,7 @@ export default function RecipeNewPage() {
         submitting={create.isPending}
         error={create.error}
         onSubmit={(body) => create.mutate(body)}
+        onCancel={() => router.push("/recipes")}
         onSessionLost={onSessionLost}
       />
     </Shell>

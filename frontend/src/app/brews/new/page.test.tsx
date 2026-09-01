@@ -498,3 +498,14 @@ describe("BrewNewPage — 저장과 평가", () => {
     );
   });
 });
+
+describe("BrewNewPage — 취소", () => {
+  it("AC-WEBSHELL-15 · 취소하면 출발한 레시피로 간다", async () => {
+    const user = userEvent.setup();
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("button", { name: "취소" }));
+
+    expect(push).toHaveBeenCalledWith("/recipes/1");
+  });
+});

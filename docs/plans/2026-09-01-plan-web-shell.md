@@ -240,11 +240,11 @@ it("AC-WEBSHELL-11 · 로그아웃 요청이 실패해도 홈으로 간다", asy
 **Files:** Modify `RecipeForm.tsx`, `RecipeEditor.tsx`, `BrewLogForm.tsx` + 각 페이지 테스트
 **Covers:** AC-WEBSHELL-13, 14, 15
 
-- [ ] **Step 1: 실패하는 테스트 작성** — 세 화면에서 `취소`를 누르면 각각 `/recipes`·`/recipes/12`·`/recipes/1`로 `push`되는지.
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(`취소` 버튼 없음)
-- [ ] **Step 3: 최소 구현** — 목적지는 **부모가 prop으로 준다**. 폼이 라우팅을 알면 재사용이 막힌다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 3 tests
-- [ ] **Step 5: 커밋** — `feat(web): 작성 화면의 취소 버튼 (AC-WEBSHELL 3개)`
+- [x] **Step 1: 실패하는 테스트 작성** — 세 화면에서 `취소`를 누르면 각각 `/recipes`·`/recipes/12`·`/recipes/1`로 `push`되는지.
+- [x] **Step 2: 실패 확인** — Expected: FAIL(`취소` 버튼 없음)
+- [x] **Step 3: 최소 구현** — 목적지는 **부모가 prop으로 준다**. 폼이 라우팅을 알면 재사용이 막힌다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 3 tests
+- [x] **Step 5: 커밋** — `feat(web): 작성 화면의 취소 버튼 (AC-WEBSHELL 3개)`
 
 ---
 

@@ -214,7 +214,7 @@ it("AC-WEBSHELL-07 · 작성 화면에는 탭바가 없다", () => {
 
 **Interfaces:** Consumes `useMe`(기존)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-WEBSHELL-11 · 로그아웃 요청이 실패해도 홈으로 간다", async () => {
@@ -228,10 +228,10 @@ it("AC-WEBSHELL-11 · 로그아웃 요청이 실패해도 홈으로 간다", asy
 });
 ```
 
-- [ ] **Step 2: 실패 확인** — Expected: FAIL(모듈 없음)
-- [ ] **Step 3: 최소 구현** — `/api/auth/logout`은 **Next 라우트 핸들러**라 상대 경로로 부른다(백엔드가 아니다). 실패해도 `clearSession()` 후 이동한다.
-- [ ] **Step 4: 통과 확인** — Expected: PASS, 5 tests
-- [ ] **Step 5: 커밋** — `feat(web): 더보기 화면과 로그아웃 (AC-WEBSHELL 5개)`
+- [x] **Step 2: 실패 확인** — Expected: FAIL(모듈 없음)
+- [x] **Step 3: 최소 구현** — `/api/auth/logout`은 **Next 라우트 핸들러**라 상대 경로로 부른다(백엔드가 아니다). 실패해도 `clearSession()` 후 이동한다.
+- [x] **Step 4: 통과 확인** — Expected: PASS, 5 tests
+- [x] **Step 5: 커밋** — `feat(web): 더보기 화면과 로그아웃 (AC-WEBSHELL 5개)`
 
 ---
 

@@ -1,7 +1,9 @@
 package com.kaldinote.gear.presentation;
 
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -58,6 +60,20 @@ class GearControllerTest extends AbstractIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(10)))
         .andExpect(jsonPath("$[?(@.name == 'C40 MK4')].convertible").value(hasItem(true)));
+  }
+
+  @Test
+  @DisplayName("AC-WEBSHELL-30 · E80이 그라인더 목록에 있다")
+  void 그라인더_목록에_E80이_있다() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/gear/grinders").header(HttpHeaders.AUTHORIZATION, token()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.brand == 'Holzklotz' && @.name == 'E80')]", hasSize(1)))
+        .andExpect(
+            jsonPath("$[?(@.name == 'E80')].micronsPerClick").value(hasItem(closeTo(22.50, 0.001))))
+        .andExpect(
+            jsonPath("$[?(@.name == 'E80')].maxSetting").value(hasItem(closeTo(80.0, 0.001))))
+        .andExpect(jsonPath("$[?(@.name == 'E80')].convertible").value(hasItem(true)));
   }
 
   /** 요청 본문을 만든다. 세 필드 모두 필수다. */

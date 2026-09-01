@@ -247,6 +247,23 @@ function Fields({
           value={state.actualTotalTimeSeconds}
           onChange={(v) => set("actualTotalTimeSeconds", v)}
         />
+        <NumberField
+          label="드로다운 시간"
+          value={state.actualDrawdownSeconds}
+          onChange={(v) => set("actualDrawdownSeconds", v)}
+        />
+        <NumberField
+          label="음료 중량"
+          value={state.beverageWeightG}
+          onChange={(v) => set("beverageWeightG", v)}
+        />
+        {/* TDS는 리프랙토미터가 있을 때만 채운다. 없어도 나머지는 전부 저장된다. */}
+        <NumberField
+          label="TDS"
+          value={state.tdsPercent}
+          onChange={(v) => set("tdsPercent", v)}
+          error={fieldErrors?.byField.tdsPercent}
+        />
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
@@ -313,14 +330,23 @@ function Fields({
         <p className="text-sm text-red-600">{save.error.message}</p>
       )}
 
-      <button
-        type="button"
-        disabled={save.isPending}
-        onClick={() => save.mutate()}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
-      >
-        기록하기
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={save.isPending}
+          onClick={() => save.mutate()}
+          className="rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
+        >
+          기록하기
+        </button>
+        <button
+          type="button"
+          onClick={() => router.push(`/recipes/${recipe.id}`)}
+          className="rounded-md border border-neutral-300 px-4 py-2 text-sm dark:border-neutral-700"
+        >
+          취소
+        </button>
+      </div>
 
       {addingGrinder && (
         <UserGrinderDialog
@@ -386,11 +412,15 @@ function NumberField({
   label,
   value,
   onChange,
+  error,
 }: {
   label: string;
   value: number | null;
   onChange: (value: number | null) => void;
+  error?: string;
 }) {
+  const errorId = `brew-${encodeURIComponent(label)}-error`;
+
   return (
     <label className="flex items-center gap-2 text-sm">
       <span className="w-20 text-neutral-500">{label}</span>
@@ -401,8 +431,14 @@ function NumberField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
+        aria-describedby={error ? errorId : undefined}
         className="w-32 rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
       />
+      {error && (
+        <span id={errorId} className="text-xs text-red-600">
+          {error}
+        </span>
+      )}
     </label>
   );
 }

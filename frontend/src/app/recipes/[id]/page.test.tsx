@@ -48,6 +48,9 @@ function baseHandlers() {
   ];
 }
 
+/** 내가 소유한 레시피. `GET /users/me`의 id가 7이다. */
+const mineRecipe = { ...hoffmann, ownerUserId: 7, sourceType: "USER" as const };
+
 function renderDetail() {
   return RecipeDetailPage({ params: Promise.resolve({ id: "2" }) }).then((ui) =>
     renderWithQuery(ui),
@@ -292,10 +295,36 @@ describe("RecipeDetailPage — 편집과 삭제", () => {
   });
 
   it("AC-WEBBREW-46 · 레시피 상세에서 기록을 시작할 수 있다", async () => {
+    // 기록은 내 레시피에서만 시작할 수 있다(AC-WEBSHELL-16·17). 기본 픽스처는
+    // CURATED라 소유 레시피로 바꿔야 이 진입점이 나타난다.
+    server.use(http.get(`${BASE}/recipes/2`, () => HttpResponse.json(mineRecipe)));
+
     await renderDetail();
 
     expect(
       await screen.findByRole("link", { name: "이 레시피로 내렸다" }),
     ).toHaveAttribute("href", "/brews/new?recipeId=2");
+  });
+
+  it("AC-WEBSHELL-16 · 내 레시피에는 기록 버튼이 있다", async () => {
+    server.use(http.get(`${BASE}/recipes/2`, () => HttpResponse.json(mineRecipe)));
+
+    await renderDetail();
+
+    expect(
+      await screen.findByRole("link", { name: "이 레시피로 내렸다" }),
+    ).toHaveAttribute("href", "/brews/new?recipeId=2");
+  });
+
+  it("AC-WEBSHELL-17 · 남의 레시피에는 안내만 있다", async () => {
+    // 기본 픽스처가 CURATED이고 ownerUserId 키가 없다.
+    await renderDetail();
+
+    expect(
+      await screen.findByText("포크한 뒤 기록할 수 있습니다"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "이 레시피로 내렸다" }),
+    ).not.toBeInTheDocument();
   });
 });

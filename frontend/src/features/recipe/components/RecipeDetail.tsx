@@ -188,15 +188,21 @@ export function RecipeDetail({ id }: { id: number }) {
       </section>
 
       {/*
-        내 레시피든 남의 것이든 내려 마실 수 있다 — 기록은 레시피 소유와 무관하다.
-        그래서 편집·포크 버튼 위에, 소유 여부를 따지지 않고 둔다.
+        `POST /brew-logs`는 본인 소유 레시피만 받는다(BrewLogService.requireOwnedRecipe).
+        남의 레시피에 진입점을 두면 눌렀을 때 403이 난다 — 포크라는 정답으로 안내한다.
       */}
-      <Link
-        href={`/brews/new?recipeId=${id}`}
-        className="mt-6 block rounded-md bg-neutral-900 py-3 text-center text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
-      >
-        이 레시피로 내렸다
-      </Link>
+      {isMine ? (
+        <Link
+          href={`/brews/new?recipeId=${id}`}
+          className="mt-6 block rounded-md bg-neutral-900 py-3 text-center text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+        >
+          이 레시피로 내렸다
+        </Link>
+      ) : (
+        <p className="mt-6 text-center text-sm text-neutral-500">
+          포크한 뒤 기록할 수 있습니다
+        </p>
+      )}
 
       {isMine && (
         <div className="mt-3 flex gap-2">

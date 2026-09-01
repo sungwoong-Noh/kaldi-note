@@ -262,4 +262,13 @@ describe("RecipeNewPage", () => {
 
     expect(event.defaultPrevented).toBe(false);
   });
+
+  it("AC-WEBSHELL-13 · 취소하면 목록으로 간다", async () => {
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipeNewPage />);
+    await user.click(await screen.findByRole("button", { name: "취소" }));
+
+    expect(push).toHaveBeenCalledWith("/recipes");
+  });
 });

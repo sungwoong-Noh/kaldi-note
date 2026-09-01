@@ -7,6 +7,7 @@ import com.kaldinote.gear.domain.GrinderModel;
 import com.kaldinote.grind.domain.GrindConversion;
 import com.kaldinote.grind.domain.GrindConverter;
 import java.math.BigDecimal;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,6 +61,25 @@ class GearSeedTest extends AbstractIntegrationTest {
 
     assertThat(stepless.getMicronsPerClick()).isNull();
     assertThat(stepless.toGrindSpec().convertible()).isFalse();
+  }
+
+  @Test
+  @DisplayName("AC-WEBSHELL-27 · E80 30스텝은 675마이크론이다")
+  void 시드된_E80의_30스텝은_675마이크론이다() {
+    GrinderModel e80 = grinderRepository.findByBrandAndName("Holzklotz", "E80").orElseThrow();
+
+    assertThat(converter.toMicron(e80.toGrindSpec(), new BigDecimal("30")))
+        .isEqualByComparingTo("675");
+  }
+
+  @Test
+  @DisplayName("AC-WEBSHELL-31 · 반올림이 필요한 스텝도 제조사 표와 맞는다")
+  void 시드된_E80의_25스텝은_563마이크론이다() {
+    GrinderModel e80 = grinderRepository.findByBrandAndName("Holzklotz", "E80").orElseThrow();
+
+    // 25 × 22.50 = 562.5 → 스케일 0 HALF_UP → 563
+    assertThat(converter.toMicron(e80.toGrindSpec(), new BigDecimal("25")))
+        .isEqualByComparingTo("563");
   }
 
   @Test

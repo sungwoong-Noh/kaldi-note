@@ -118,4 +118,45 @@ describe("BrewsPage", () => {
     await screen.findByText("Kasuya 4:6");
     expect(screen.queryByText(/%/)).not.toBeInTheDocument();
   });
+
+  it("AC-WEBSHELL-21 · 카드에 비율·온도·시간이 보인다", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(
+          pageOf([
+            {
+              ...brewLogWithTds,
+              recipeId: 12,
+              brewRatio: 15.0,
+              actualWaterTempC: 92.0,
+              actualTotalTimeSeconds: 210,
+            },
+          ]),
+        ),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("1:15.0")).toBeInTheDocument();
+    expect(screen.getByText("92°C")).toBeInTheDocument();
+    expect(screen.getByText("3:30")).toBeInTheDocument();
+  });
+
+  it("AC-WEBSHELL-22 · 추출 시간이 없으면 그 자리가 없다", async () => {
+    const withoutTime: Record<string, unknown> = {
+      ...brewLogWithTds,
+      recipeId: 12,
+      brewRatio: 15.0,
+    };
+    delete withoutTime.actualTotalTimeSeconds;
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([withoutTime]))),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("1:15.0")).toBeInTheDocument();
+    expect(screen.queryByText(/^\d+:\d{2}$/)).not.toBeInTheDocument();
+  });
 });

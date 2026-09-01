@@ -59,6 +59,7 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
         submitting={update.isPending}
         error={update.error}
         onSubmit={(body) => update.mutate(body)}
+        onCancel={() => router.push(`/recipes/${recipeId}`)}
         onSessionLost={onSessionLost}
       />
     </Shell>

@@ -121,7 +121,7 @@ frontend/src/
 **Interfaces:**
 - Produces: `grinder_models`에 `Holzklotz E80` 한 행 — 프론트 Task 8이 픽스처로 쓴다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
 @Test
@@ -146,11 +146,11 @@ void E80_25스텝은_563마이크론이다() {
 
 `GrinderControllerTest`에는 목록 응답에 E80이 있고 `micronsPerClick`이 `22.50`, `maxSetting`이 `80`인지 보는 테스트를 더한다(AC-WEBSHELL-30).
 
-- [ ] **Step 2: 실패 확인** — Run: `./gradlew test --tests '*GrindConverterTest'` / Expected: FAIL — 목록에 E80이 없어 시드가 필요하다
+- [x] **Step 2: 실패 확인** — Run: `./gradlew test --tests '*GrindConverterTest'` / Expected: FAIL — 목록에 E80이 없어 시드가 필요하다
 
 **`GrindSpec`의 생성자 시그니처를 먼저 확인하고 `e80Spec()`을 거기 맞춘다.**
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```sql
 -- V11__seed_holzklotz_e80.sql
@@ -160,8 +160,8 @@ INSERT INTO grinder_models
     ('Holzklotz', 'E80', 'CLICK', 22.50, 0, 0, 80, 'CONICAL', true);
 ```
 
-- [ ] **Step 4: 통과 확인** — Run: `./gradlew clean check` / Expected: PASS
-- [ ] **Step 5: 커밋** — `feat(gear): Holzklotz E80 그라인더 시드 (AC-WEBSHELL 3개)`
+- [x] **Step 4: 통과 확인** — Run: `./gradlew clean check` / Expected: PASS
+- [x] **Step 5: 커밋** — `feat(gear): Holzklotz E80 그라인더 시드 (AC-WEBSHELL 3개)`
 
 ---
 

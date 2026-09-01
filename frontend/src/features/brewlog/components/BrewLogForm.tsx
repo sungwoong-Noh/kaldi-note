@@ -21,17 +21,8 @@ import {
   type BrewLogFormState,
 } from "../formState";
 import { BeanBatchDialog } from "./BeanBatchDialog";
-import { RatingInput } from "./RatingInput";
+import { BrewLogFields } from "./BrewLogFields";
 import { UserGrinderDialog } from "./UserGrinderDialog";
-
-/** 5축 관능 평가. 접혀 있을 때는 그리지 않으므로 요청 본문에도 담기지 않는다. */
-const SENSORY_AXES = [
-  { key: "acidity", label: "산미" },
-  { key: "sweetness", label: "단맛" },
-  { key: "body", label: "바디" },
-  { key: "bitterness", label: "쓴맛" },
-  { key: "aftertaste", label: "여운" },
-] as const;
 
 /**
  * 로그 작성 화면.
@@ -122,209 +113,57 @@ function Fields({
     value: BrewLogFormState[K],
   ) => setState((prev) => ({ ...prev, [key]: value }));
 
-  return (
-    <div className="flex flex-col gap-5">
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="text-neutral-500">내린 시각</span>
-        <input
-          type="datetime-local"
-          aria-label="내린 시각"
-          value={state.brewedAt}
-          onChange={(e) => set("brewedAt", e.target.value)}
-          aria-describedby={
-            fieldErrors?.byField.brewedAt ? "brew-brewed-at-error" : undefined
-          }
-          className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
-        />
-        {fieldErrors?.byField.brewedAt && (
-          <span id="brew-brewed-at-error" className="text-xs text-red-600">
-            {fieldErrors.byField.brewedAt}
-          </span>
-        )}
-      </label>
-
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-base font-semibold">원두</legend>
-        {(batches.data ?? []).length === 0 && !batches.isPending && (
-          <p className="text-sm text-neutral-500">등록된 원두가 없습니다</p>
-        )}
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-1 text-sm">
-            <span className="text-neutral-500">원두</span>
-            <select
-              aria-label="원두"
-              value={state.beanBatchId ?? ""}
-              onChange={(e) =>
-                set(
-                  "beanBatchId",
-                  e.target.value === "" ? null : Number(e.target.value),
-                )
-              }
-              className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
-            >
-              <option value="">선택 안 함</option>
-              {(batches.data ?? []).map((batch) => (
-                <option key={batch.id} value={batch.id}>
-                  {batchLabel(batch, products.data ?? [], roasters.data ?? [])}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <button
-            type="button"
-            onClick={() => setAddingBean(true)}
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
-          >
-            + 원두 등록
-          </button>
-        </div>
-      </fieldset>
-
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-base font-semibold">그라인더</legend>
-        {grinders.length === 0 && (
-          <p className="text-sm text-neutral-500">등록된 그라인더가 없습니다</p>
-        )}
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-1 text-sm">
-            <span className="text-neutral-500">그라인더</span>
-            <select
-              aria-label="그라인더"
-              value={state.userGrinderId ?? ""}
-              onChange={(e) =>
-                set(
-                  "userGrinderId",
-                  e.target.value === "" ? null : Number(e.target.value),
-                )
-              }
-              className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
-            >
-              <option value="">선택 안 함</option>
-              {grinders.map((grinder) => (
-                <option key={grinder.id} value={grinder.id}>
-                  {grinderLabel(grinder)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <button
-            type="button"
-            onClick={() => setAddingGrinder(true)}
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
-          >
-            + 그라인더 등록
-          </button>
-        </div>
-
-        <NumberField
-          label="분쇄도 값"
-          value={state.actualGrindSettingValue}
-          onChange={(v) => set("actualGrindSettingValue", v)}
-        />
-      </fieldset>
-
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-base font-semibold">실측값</legend>
-        <NumberField
-          label="원두량"
-          value={state.actualDoseG}
-          onChange={(v) => set("actualDoseG", v)}
-        />
-        <NumberField
-          label="물량"
-          value={state.actualWaterG}
-          onChange={(v) => set("actualWaterG", v)}
-        />
-        <NumberField
-          label="물 온도"
-          value={state.actualWaterTempC}
-          onChange={(v) => set("actualWaterTempC", v)}
-        />
-        <NumberField
-          label="추출 시간"
-          value={state.actualTotalTimeSeconds}
-          onChange={(v) => set("actualTotalTimeSeconds", v)}
-        />
-        <NumberField
-          label="드로다운 시간"
-          value={state.actualDrawdownSeconds}
-          onChange={(v) => set("actualDrawdownSeconds", v)}
-        />
-        <NumberField
-          label="음료 중량"
-          value={state.beverageWeightG}
-          onChange={(v) => set("beverageWeightG", v)}
-        />
-        {/* TDS는 리프랙토미터가 있을 때만 채운다. 없어도 나머지는 전부 저장된다. */}
-        <NumberField
-          label="TDS"
-          value={state.tdsPercent}
-          onChange={(v) => set("tdsPercent", v)}
-          error={fieldErrors?.byField.tdsPercent}
-        />
-      </fieldset>
-
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-base font-semibold">평가</legend>
-
-        <RatingInput
-          value={state.rating}
-          onChange={(v) => set("rating", v)}
-        />
-
-        {!state.sensoryExpanded && (
-          <button
-            type="button"
-            onClick={() => set("sensoryExpanded", true)}
-            className="self-start rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
-          >
-            맛 자세히
-          </button>
-        )}
-
-        {state.sensoryExpanded &&
-          SENSORY_AXES.map(({ key, label }) => (
-            <label key={key} className="flex items-center gap-2 text-sm">
-              <span className="w-20 text-neutral-500">{label}</span>
-              <select
-                aria-label={label}
-                value={state[key] ?? ""}
-                onChange={(e) =>
-                  set(key, e.target.value === "" ? null : Number(e.target.value))
-                }
-                className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
-              >
-                <option value="">선택 안 함</option>
-                {[1, 2, 3, 4, 5].map((score) => (
-                  <option key={score} value={score}>
-                    {score}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ))}
-
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="text-neutral-500">메모</span>
-          <textarea
-            aria-label="메모"
-            value={state.overallNote}
-            onChange={(e) => set("overallNote", e.target.value)}
-            rows={3}
-            aria-describedby={
-              fieldErrors?.byField.overallNote ? "brew-note-error" : undefined
+  // `내린 시각`과 `그라인더` 사이에 들어간다. 편집 화면은 여기에 잠긴 원두 표시를 넣는다.
+  const beanSlot = (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="text-base font-semibold">원두</legend>
+      {(batches.data ?? []).length === 0 && !batches.isPending && (
+        <p className="text-sm text-neutral-500">등록된 원두가 없습니다</p>
+      )}
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-1 text-sm">
+          <span className="text-neutral-500">원두</span>
+          <select
+            aria-label="원두"
+            value={state.beanBatchId ?? ""}
+            onChange={(e) =>
+              set(
+                "beanBatchId",
+                e.target.value === "" ? null : Number(e.target.value),
+              )
             }
             className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
-          />
-          {fieldErrors?.byField.overallNote && (
-            <span id="brew-note-error" className="text-xs text-red-600">
-              {fieldErrors.byField.overallNote}
-            </span>
-          )}
+          >
+            <option value="">선택 안 함</option>
+            {(batches.data ?? []).map((batch) => (
+              <option key={batch.id} value={batch.id}>
+                {batchLabel(batch, products.data ?? [], roasters.data ?? [])}
+              </option>
+            ))}
+          </select>
         </label>
-      </fieldset>
+
+        <button
+          type="button"
+          onClick={() => setAddingBean(true)}
+          className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
+        >
+          + 원두 등록
+        </button>
+      </div>
+    </fieldset>
+  );
+
+  return (
+    <div className="flex flex-col gap-5">
+      <BrewLogFields
+        state={state}
+        grinders={grinders}
+        fieldErrors={fieldErrors}
+        onChange={set}
+        onAddGrinder={() => setAddingGrinder(true)}
+        beanSlot={beanSlot}
+      />
 
       {save.error && (
         <p className="text-sm text-red-600">{save.error.message}</p>
@@ -400,47 +239,6 @@ function batchLabel(
   return [name === "" ? `재고 ${batch.id}` : name, age]
     .filter(Boolean)
     .join(" · ");
-}
-
-/** 별명을 넣지 않았으면 모델 이름으로 부른다 — 선택란이 빈 항목처럼 보이면 고를 수 없다. */
-function grinderLabel(grinder: UserGrinder): string {
-  const model = `${grinder.brand} ${grinder.grinderModelName}`;
-  return grinder.nickname ? `${grinder.nickname} (${model})` : model;
-}
-
-function NumberField({
-  label,
-  value,
-  onChange,
-  error,
-}: {
-  label: string;
-  value: number | null;
-  onChange: (value: number | null) => void;
-  error?: string;
-}) {
-  const errorId = `brew-${encodeURIComponent(label)}-error`;
-
-  return (
-    <label className="flex items-center gap-2 text-sm">
-      <span className="w-20 text-neutral-500">{label}</span>
-      <input
-        type="number"
-        aria-label={label}
-        value={value ?? ""}
-        onChange={(e) =>
-          onChange(e.target.value === "" ? null : Number(e.target.value))
-        }
-        aria-describedby={error ? errorId : undefined}
-        className="w-32 rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
-      />
-      {error && (
-        <span id={errorId} className="text-xs text-red-600">
-          {error}
-        </span>
-      )}
-    </label>
-  );
 }
 
 function Shell({ children }: { children: React.ReactNode }) {

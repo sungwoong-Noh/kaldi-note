@@ -251,7 +251,7 @@ Expected: PASS. 기존 삭제 관련 테스트가 함께 통과해야 한다 —
   **`state`의 타입이 `BrewLogFormState`인 점이 중요하다.** Task 3이 넘기는 `BrewLogEditState`는 그것을 확장한 타입이라 그대로 들어간다. `onChange`의 제네릭도 `BrewLogEditState`의 `set`을 받아준다.
 - Consumes: 기존 `NumberField`·`RatingInput`·`SENSORY_AXES`·`grinderLabel`
 
-- [ ] **Step 1: 옮길 범위를 확정한다**
+- [x] **Step 1: 옮길 범위를 확정한다**
 
 `BrewLogForm.tsx`의 `Fields` 안에서 **아래 네 덩어리만** 새 파일로 옮긴다. 나머지(원두 fieldset, 두 모달, 저장 버튼, 취소 버튼)는 작성 화면에 남긴다.
 
@@ -266,12 +266,12 @@ Expected: PASS. 기존 삭제 관련 테스트가 함께 통과해야 한다 —
 
 `NumberField`·`SENSORY_AXES`·`grinderLabel`도 새 파일로 옮긴다(`BrewLogForm`에서 더는 쓰지 않는다). `BrewLogFields.tsx`에서 `export`하지 않는다 — 한 파일에 하나의 컴포넌트만 export한다.
 
-- [ ] **Step 2: 리팩터 전 초록을 확인한다**
+- [x] **Step 2: 리팩터 전 초록을 확인한다**
 
 Run: `pnpm vitest run src/app/brews src/features/brewlog`
 Expected: PASS. **이 숫자를 적어둔다.** Step 4에서 같은 숫자가 나와야 한다.
 
-- [ ] **Step 3: 옮긴다**
+- [x] **Step 3: 옮긴다**
 
 `BrewLogFields.tsx`는 `"use client"`로 시작하고 위 네 덩어리를 그대로 담는다. 내부에서 `state`·`fieldErrors`를 읽고 `onChange(key, value)`로 쓴다 — `Fields`의 `set`을 그대로 넘기면 된다.
 
@@ -299,7 +299,7 @@ interface BrewLogFieldsProps {
 
 `BrewLogFields` 안에서 `내린 시각` 바로 뒤에 `{beanSlot}`을 렌더한다.
 
-- [ ] **Step 4: 통과 확인 — 숫자가 같아야 한다**
+- [x] **Step 4: 통과 확인 — 숫자가 같아야 한다**
 
 Run: `pnpm vitest run src/app/brews src/features/brewlog`
 Expected: PASS, Step 2와 **같은 개수**. 하나라도 줄었으면 옮기다 빠뜨린 것이다.
@@ -307,7 +307,7 @@ Expected: PASS, Step 2와 **같은 개수**. 하나라도 줄었으면 옮기다
 Run: `pnpm typecheck && pnpm lint`
 Expected: 통과
 
-- [ ] **Step 5: 커밋** — `refactor(web): 브루잉 로그 입력칸을 두 화면이 공유하도록 분리`
+- [x] **Step 5: 커밋** — `refactor(web): 브루잉 로그 입력칸을 두 화면이 공유하도록 분리`
 
 ---
 

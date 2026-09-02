@@ -22,7 +22,10 @@ const TABS: Tab[] = [
 const HIDDEN_PREFIXES = ["/login", "/auth", "/recipes/new", "/brews/new"];
 
 function isHidden(pathname: string): boolean {
-  return HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix)) || pathname.endsWith("/edit");
+  return (
+    HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+    pathname.endsWith("/edit")
+  );
 }
 
 /** 홈은 완전 일치일 때만 켜진다. 접두어로 보면 모든 경로에서 켜진다. */

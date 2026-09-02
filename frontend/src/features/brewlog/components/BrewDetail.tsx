@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
-import { fetchRecipe } from "@/features/recipe/api";
 import { useMe } from "@/features/user/queries";
 import {
   formatDuration,
@@ -15,6 +14,7 @@ import {
   formatTemperature,
 } from "@/lib/format";
 import { deleteBrewLog, fetchBrewLog } from "../api";
+import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
 import { DeleteBrewLogDialog } from "./DeleteBrewLogDialog";
 import { ExtractionSummary } from "./ExtractionSummary";
 
@@ -32,11 +32,8 @@ export function BrewDetail({ id }: { id: number }) {
   const me = useMe(onSessionLost);
 
   const recipeId = logQuery.data?.recipeId;
-  const recipe = useQuery({
-    queryKey: ["recipe", recipeId],
-    queryFn: () => fetchRecipe(recipeId as number, onSessionLost),
-    enabled: ready && recipeId !== undefined,
-  });
+  const recipe = useRecipeLabel(recipeId, ready, onSessionLost);
+  const bean = useBeanLabel(logQuery.data?.beanBatchId, ready, onSessionLost);
 
   const remove = useMutation({
     mutationFn: () => deleteBrewLog(id, onSessionLost),
@@ -68,14 +65,30 @@ export function BrewDetail({ id }: { id: number }) {
     <Shell>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-neutral-500">{log.brewedAt.slice(0, 10)}</p>
-          {recipeId !== undefined && (
-            <Link
-              href={`/recipes/${recipeId}`}
-              className="text-lg font-medium underline-offset-2 hover:underline"
-            >
-              {recipe.data?.title ?? `레시피 ${recipeId}`}
-            </Link>
+          <p className="text-sm text-neutral-500">
+            {log.brewedAt.slice(0, 10)}
+          </p>
+          {/*
+            제목을 읽었을 때만 링크다. 못 읽었다는 것은 그 레시피를 볼 권한이 없다는 뜻이라
+            링크를 누르면 403 화면으로 간다. 두 갈래가 같은 글자 크기·굵기를 갖게 해서
+            폴백일 때 레이아웃이 흔들리지 않게 한다.
+          */}
+          {recipeId !== undefined &&
+            (recipe.isReady ? (
+              <Link
+                href={`/recipes/${recipeId}`}
+                className="text-lg font-medium underline-offset-2 hover:underline"
+              >
+                {recipe.label}
+              </Link>
+            ) : (
+              <span className="text-lg font-medium">{recipe.label}</span>
+            ))}
+          {bean.label !== "" && (
+            <dl className="flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400">
+              <dt>원두</dt>
+              <dd>{bean.label}</dd>
+            </dl>
           )}
         </div>
         {log.rating !== undefined && (
@@ -88,7 +101,9 @@ export function BrewDetail({ id }: { id: number }) {
       <section className="flex flex-col gap-2">
         <h2 className="text-base font-semibold">실측값</h2>
         <dl className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-          <Measure label="원두" value={formatGrams(log.actualDoseG)} />
+          {/* `원두량`이다. 위에 원두 이름 줄이 생겨 `원두`로 두면 같은 라벨이 둘이 된다.
+              작성·편집 폼의 입력칸 이름도 `원두량`이라 이쪽이 일관된다. */}
+          <Measure label="원두량" value={formatGrams(log.actualDoseG)} />
           <Measure label="물" value={formatGrams(log.actualWaterG)} />
           <Measure
             label="온도"
@@ -104,7 +119,10 @@ export function BrewDetail({ id }: { id: number }) {
             <Measure label="비율" value={formatRatio(log.brewRatio)} />
           )}
           {log.actualGrindSettingValue !== undefined && (
-            <Measure label="분쇄도" value={String(log.actualGrindSettingValue)} />
+            <Measure
+              label="분쇄도"
+              value={String(log.actualGrindSettingValue)}
+            />
           )}
         </dl>
       </section>

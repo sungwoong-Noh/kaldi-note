@@ -39,7 +39,9 @@ export default function MorePage() {
     <Shell>
       <dl className="flex flex-col gap-3 border-b border-neutral-200 pb-5 dark:border-neutral-800">
         <Row label="닉네임" value={me.data.nickname} />
-        {me.data.email !== undefined && <Row label="이메일" value={me.data.email} />}
+        {me.data.email !== undefined && (
+          <Row label="이메일" value={me.data.email} />
+        )}
         <Row label="가입일" value={me.data.createdAt.slice(0, 10)} />
       </dl>
 

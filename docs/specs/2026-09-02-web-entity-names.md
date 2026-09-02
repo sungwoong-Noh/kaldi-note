@@ -1,7 +1,7 @@
 ---
 id: WEBNAME
 title: 브루잉 로그 화면의 레시피·원두를 이름으로 보여준다
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-09-02-plan-web-entity-names.md
 ---
 
@@ -91,9 +91,9 @@ plan: docs/plans/2026-09-02-plan-web-entity-names.md
 
 #### AC-WEBNAME-01 · 편집 화면이 레시피 제목을 보여준다
 
-- **Given** `/brews/2/edit`를 연다. 로그의 `recipeId`가 `12`이고 `GET /recipes/12`가 `title: "Kasuya 4:6"`을 준다
+- **Given** `/brews/2/edit`를 연다. 로그의 `recipeId`가 `12`이고 `GET /recipes/12`가 `title: "Tetsu Kasuya 4:6 Method"`을 준다
 - **When** 화면이 그려진다
-- **Then** `레시피` 항목의 값이 `Kasuya 4:6`이다. 화면에 `12`라는 텍스트가 그 자리에 없다
+- **Then** `레시피` 항목의 값이 `Tetsu Kasuya 4:6 Method`이다. 화면에 `12`라는 텍스트가 그 자리에 없다
 - **검증** 화면 테스트 `src/app/brews/[id]/edit/page.test.tsx`
 
 #### AC-WEBNAME-02 · 편집 화면이 원두를 `로스터 제품` 형식으로 보여준다
@@ -181,9 +181,9 @@ plan: docs/plans/2026-09-02-plan-web-entity-names.md
 
 #### AC-WEBNAME-30 · 제목을 읽었으면 상세의 제목이 레시피 링크다
 
-- **Given** `/brews/2`를 열고 `GET /recipes/12`가 `title: "Kasuya 4:6"`을 준다
+- **Given** `/brews/2`를 열고 `GET /recipes/12`가 `title: "Tetsu Kasuya 4:6 Method"`을 준다
 - **When** 화면이 그려진다
-- **Then** 텍스트 `Kasuya 4:6`을 가진 링크가 있고 그 `href`가 `/recipes/12`다
+- **Then** 텍스트 `Tetsu Kasuya 4:6 Method`을 가진 링크가 있고 그 `href`가 `/recipes/12`다
 - **검증** 화면 테스트 `src/app/brews/[id]/page.test.tsx`
 
 #### AC-WEBNAME-31 · 폴백 문구는 링크가 아니다
@@ -204,9 +204,9 @@ plan: docs/plans/2026-09-02-plan-web-entity-names.md
 
 #### AC-WEBNAME-41 · 한 레시피가 실패해도 나머지 카드는 제목을 보여준다
 
-- **Given** `/brews`를 연다. 로그 둘의 `recipeId`가 각각 `12`와 `17`이고, `GET /recipes/12`는 HTTP `403`으로 실패하며 `GET /recipes/17`은 `title: "Kasuya 4:6"`을 준다
+- **Given** `/brews`를 연다. 로그 둘의 `recipeId`가 각각 `12`와 `17`이고, `GET /recipes/12`는 HTTP `403`으로 실패하며 `GET /recipes/17`은 `title: "Tetsu Kasuya 4:6 Method"`을 준다
 - **When** 화면이 그려진다
-- **Then** 카드 하나는 `비공개 레시피`를, 다른 하나는 `Kasuya 4:6`을 보여준다
+- **Then** 카드 하나는 `비공개 레시피`를, 다른 하나는 `Tetsu Kasuya 4:6 Method`을 보여준다
 - **검증** 화면 테스트 `src/app/brews/page.test.tsx`
 
 #### AC-WEBNAME-42 · 같은 레시피를 쓴 로그가 여럿이어도 조회는 1회다

@@ -78,7 +78,9 @@ describe("MorePage", () => {
 
   it("AC-WEBSHELL-11 · 로그아웃 요청이 실패해도 홈으로 간다", async () => {
     const user = userEvent.setup();
-    server.use(http.post(LOGOUT_URL, () => new HttpResponse(null, { status: 500 })));
+    server.use(
+      http.post(LOGOUT_URL, () => new HttpResponse(null, { status: 500 })),
+    );
 
     renderWithQuery(<MorePage />);
     await user.click(await screen.findByRole("button", { name: "로그아웃" }));
@@ -89,9 +91,8 @@ describe("MorePage", () => {
   it("AC-WEBSHELL-12 · 환산기로 가는 링크가 있다", async () => {
     renderWithQuery(<MorePage />);
 
-    expect(await screen.findByRole("link", { name: "분쇄도 환산기" })).toHaveAttribute(
-      "href",
-      "/gear/grind-converter",
-    );
+    expect(
+      await screen.findByRole("link", { name: "분쇄도 환산기" }),
+    ).toHaveAttribute("href", "/gear/grind-converter");
   });
 });

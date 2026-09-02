@@ -173,7 +173,10 @@ export function RecipeForm({
         <SelectField
           label="필터"
           value={state.filterId}
-          options={(filters.data ?? []).map((f) => ({ id: f.id, name: f.name }))}
+          options={(filters.data ?? []).map((f) => ({
+            id: f.id,
+            name: f.name,
+          }))}
           onChange={(filterId) => patch({ filterId })}
         />
       </div>

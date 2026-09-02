@@ -6,7 +6,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { BREW_LOG_PAGE_SIZE, fetchBrewLogPage } from "@/features/brewlog/api";
 import { BrewLogCard } from "@/features/brewlog/components/BrewLogCard";
-import { useRecipeTitles } from "@/features/brewlog/useRecipeTitles";
+import { useRecipeLabels } from "@/features/brewlog/useRecipeLabels";
 
 export default function BrewsPage() {
   const { ready, onSessionLost } = useRequireSession();
@@ -30,7 +30,7 @@ export default function BrewsPage() {
   });
 
   const logs = data?.pages.flatMap((page) => page.content) ?? [];
-  const titles = useRecipeTitles(logs, ready, onSessionLost);
+  const labels = useRecipeLabels(logs, ready, onSessionLost);
 
   if (!ready || isPending) {
     return <Shell>{null}</Shell>;
@@ -61,7 +61,7 @@ export default function BrewsPage() {
           <BrewLogCard
             key={log.id}
             log={log}
-            recipeTitle={titles.get(log.recipeId)}
+            recipeLabel={labels.get(log.recipeId) ?? ""}
           />
         ))}
       </ul>

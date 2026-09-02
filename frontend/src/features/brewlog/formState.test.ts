@@ -131,9 +131,9 @@ describe("toRequestBody", () => {
     expect(toRequestBody({ ...filled, overallNote: "" })).not.toHaveProperty(
       "overallNote",
     );
-    expect(toRequestBody({ ...filled, overallNote: "산미가 좋다" })).toMatchObject(
-      { overallNote: "산미가 좋다" },
-    );
+    expect(
+      toRequestBody({ ...filled, overallNote: "산미가 좋다" }),
+    ).toMatchObject({ overallNote: "산미가 좋다" });
   });
 });
 
@@ -151,9 +151,11 @@ describe("toPatchBody", () => {
   });
 
   it("공개범위도 담는다", () => {
-    expect(toPatchBody(initial, { ...initial, visibility: "FRIENDS" })).toEqual({
-      visibility: "FRIENDS",
-    });
+    expect(toPatchBody(initial, { ...initial, visibility: "FRIENDS" })).toEqual(
+      {
+        visibility: "FRIENDS",
+      },
+    );
   });
 
   it("recipeId와 beanBatchId는 절대 담지 않는다", () => {
@@ -218,7 +220,10 @@ describe("clearedFields", () => {
 describe("formStateFromLog", () => {
   it("Instant를 datetime-local 문자열로 바꾼다", () => {
     const state = formStateFromLog(
-      brewLogSchema.parse({ ...brewLogWithTds, brewedAt: "2026-08-31T09:00:00Z" }),
+      brewLogSchema.parse({
+        ...brewLogWithTds,
+        brewedAt: "2026-08-31T09:00:00Z",
+      }),
     );
 
     // 로컬 시각이라 실행 환경의 오프셋을 탄다 — 형식만 본다

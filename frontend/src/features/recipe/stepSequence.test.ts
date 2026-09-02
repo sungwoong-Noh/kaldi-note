@@ -8,9 +8,7 @@ import {
   type EditableStep,
 } from "./stepSequence";
 
-function step(
-  over: Partial<EditableStep> & { uid: string },
-): EditableStep {
+function step(over: Partial<EditableStep> & { uid: string }): EditableStep {
   return {
     stepType: "POUR",
     startAtSeconds: 0,
@@ -23,8 +21,7 @@ function step(
   };
 }
 
-const startsOf = (steps: EditableStep[]) =>
-  steps.map((s) => s.startAtSeconds);
+const startsOf = (steps: EditableStep[]) => steps.map((s) => s.startAtSeconds);
 
 describe("appendStep", () => {
   it("첫 스텝은 BLOOM으로 0초에 시작한다", () => {
@@ -39,7 +36,14 @@ describe("appendStep", () => {
   });
 
   it("두 번째 스텝은 POUR로 앞 스텝 종료 시각에 시작한다", () => {
-    const steps = [step({ uid: "a", stepType: "BLOOM", startAtSeconds: 0, durationSeconds: 10 })];
+    const steps = [
+      step({
+        uid: "a",
+        stepType: "BLOOM",
+        startAtSeconds: 0,
+        durationSeconds: 10,
+      }),
+    ];
 
     const next = appendStep(steps);
 
@@ -104,21 +108,49 @@ describe("removeStep", () => {
 describe("moveStep", () => {
   it("소요는 따라가고 시작 시각은 자리에 남는다", () => {
     const steps = [
-      step({ uid: "a", stepType: "BLOOM", startAtSeconds: 0, durationSeconds: 10 }),
-      step({ uid: "b", stepType: "WAIT", startAtSeconds: 20, durationSeconds: 10 }),
-      step({ uid: "c", stepType: "POUR", startAtSeconds: 45, durationSeconds: 20 }),
+      step({
+        uid: "a",
+        stepType: "BLOOM",
+        startAtSeconds: 0,
+        durationSeconds: 10,
+      }),
+      step({
+        uid: "b",
+        stepType: "WAIT",
+        startAtSeconds: 20,
+        durationSeconds: 10,
+      }),
+      step({
+        uid: "c",
+        stepType: "POUR",
+        startAtSeconds: 45,
+        durationSeconds: 20,
+      }),
     ];
 
     const next = moveStep(steps, 2, -1);
 
-    expect(next[1]).toMatchObject({ uid: "c", startAtSeconds: 20, durationSeconds: 20 });
-    expect(next[2]).toMatchObject({ uid: "b", startAtSeconds: 45, durationSeconds: 10 });
+    expect(next[1]).toMatchObject({
+      uid: "c",
+      startAtSeconds: 20,
+      durationSeconds: 20,
+    });
+    expect(next[2]).toMatchObject({
+      uid: "b",
+      startAtSeconds: 45,
+      durationSeconds: 10,
+    });
   });
 
   it("이동 결과 겹치면 뒤 스텝을 겹친 만큼 민다", () => {
     const steps = [
       step({ uid: "a", startAtSeconds: 0, durationSeconds: 10 }),
-      step({ uid: "b", stepType: "WAIT", startAtSeconds: 20, durationSeconds: 10 }),
+      step({
+        uid: "b",
+        stepType: "WAIT",
+        startAtSeconds: 20,
+        durationSeconds: 10,
+      }),
       step({ uid: "c", startAtSeconds: 25, durationSeconds: 20 }),
     ];
 

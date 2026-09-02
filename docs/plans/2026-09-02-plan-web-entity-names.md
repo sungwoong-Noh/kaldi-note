@@ -96,12 +96,12 @@ docs/specs/2026-09-02-web-entity-names.md   Modify — status
 
 **판정 순서 (`combineSources`):** 실패가 하나라도 있으면 **첫 실패의 `code`**. 실패가 없고 `isPending`이 하나라도 있으면 `loading`. 전부 성공이면 `ready`.
 
-- [ ] **Step 1: 리팩터 전 초록을 확인한다**
+- [x] **Step 1: 리팩터 전 초록을 확인한다**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **이 숫자를 적어둔다**(249개일 것). 이후 모든 Step에서 이 숫자와 대조한다.
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 `entityLabel.test.ts`에 AC 9개를 쓴다. `DisplayName` 자리에 AC ID를 넣는다:
 
@@ -121,21 +121,21 @@ it("AC-WEBNAME-24 · 로스터를 못 찾으면 제품명만 쓴다", () => {
 });
 ```
 
-- [ ] **Step 3: 실패 확인**
+- [x] **Step 3: 실패 확인**
 
 Run: `cd frontend && pnpm test entityLabel`
 Expected: FAIL — `entityLabel.ts`가 없다.
 
-- [ ] **Step 4: 최소 구현**
+- [x] **Step 4: 최소 구현**
 
 문구 표는 스펙의 「폴백 문구」 절과 **문자 하나까지 같아야 한다.** 옮겨 적을 때 스펙을 열어두고 대조한다.
 
-- [ ] **Step 5: 통과 확인**
+- [x] **Step 5: 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **249 + 9 = 258개**. 다르면 무엇이 늘거나 줄었는지 먼저 확인한다.
+Expected: PASS, **266개**. 계획은 258개(249+9)로 봤으나 AC 9개 외에 `combineSources`·`beanName`의 판정 규칙을 고정하는 테스트 8개를 더 썼다 — 「실패가 pending보다 이긴다」는 아래 미확인 가정 1번이라 함수 단위로 못박았다.
 
-- [ ] **Step 6: 커밋** — `feat(web): 이름 폴백 판정 함수 (AC-WEBNAME 9개)`
+- [x] **Step 6: 커밋** — `feat(web): 이름 폴백 판정 함수 (AC-WEBNAME 9개)`
 
 ---
 
@@ -143,42 +143,43 @@ Expected: PASS, **249 + 9 = 258개**. 다르면 무엇이 늘거나 줄었는지
 
 **Files:**
 - Modify: `frontend/src/features/inventory/api.ts`, `frontend/src/features/catalog/api.ts`
-- Create: `frontend/src/features/brewlog/useEntityLabels.ts`
+- Create: `frontend/src/features/brewlog/useEntityLabels.ts`, `frontend/src/features/brewlog/useEntityLabels.test.tsx`
 
 **Covers:** 없음 — 배선. **기존 테스트가 하나도 깨지지 않는 것이 이 태스크의 인수 조건이다.**
 
 **Interfaces:**
 - Produces: `fetchBeanBatch(id: number, onSessionLost?): Promise<BeanBatch>` — `GET /bean-batches/{id}`, `beanBatchSchema`
 - Produces: `fetchBeanProduct(id: number, onSessionLost?): Promise<BeanProduct>` — `GET /bean-products/{id}`, `beanProductSchema`
-- Produces: `useRecipeLabel(recipeId: number | undefined, enabled: boolean, onSessionLost?): string`
-- Produces: `useBeanLabel(beanBatchId: number | undefined, enabled: boolean, onSessionLost?): string`
+- Produces: `useRecipeLabel(recipeId, enabled, onSessionLost?): EntityLabel`
+- Produces: `useBeanLabel(beanBatchId, enabled, onSessionLost?): EntityLabel`
+- Produces: `interface EntityLabel { label: string; isReady: boolean }` — **Task 4에서 필요해져 반환 타입을 넓혔다.** 상세의 조건부 링크는 「이름을 실제로 읽었는가」를 알아야 하는데, 라벨 문자열로 되짚으면 폴백 문구와 제목을 구분할 수 없다.
 - Consumes: Task 1의 `entityLabel`·`beanName`·`combineSources`, 기존 `useRoasters`
 
 **왜 목록이 아니라 `/{id}`인가:** `GET /bean-batches`는 **내 재고만** 준다. 남의 로그의 배치는 목록에 없을 뿐이라 「권한이 없다」와 「삭제됐다」를 가를 수 없다. 폴백 네 갈래가 성립하려면 단건 조회여야 한다. 작성 화면의 `batchLabel`이 목록 3개를 쓰는 것과 다른 이유가 이것이다 — **그 함수를 재사용하지 않는다.**
 
 **`useBeanLabel`의 연쇄:** `fetchBeanBatch` → 성공하면 그 `beanProductId`로 `fetchBeanProduct` → `useRoasters`(이미 캐시될 가능성이 높다). 뒤 조회는 앞이 성공했을 때만 `enabled`가 된다. **`enabled: false`인 쿼리는 `isPending`이 `true`다** — 그대로 넘기면 실패한 상황이 `loading`으로 보인다. 앞이 실패했으면 그 실패가 첫 실패이므로 `combineSources`의 순서가 이것을 막아 준다. Step 3에서 실제로 확인한다.
 
-- [ ] **Step 1: 단건 조회 함수 둘을 더한다**
+- [x] **Step 1: 단건 조회 함수 둘을 더한다**
 
 기존 `fetchRecipe`와 같은 모양으로 쓴다. 스키마는 이미 있다(`beanBatchSchema`·`beanProductSchema`).
 
-- [ ] **Step 2: 훅 둘을 만든다**
+- [x] **Step 2: 훅 둘을 만든다**
 
 `queryKey`는 기존 관례를 따른다 — `["bean-batch", id]`, `["catalog", "bean-product", id]`. 로스터는 기존 `useRoasters`의 키를 그대로 쓴다.
 
-- [ ] **Step 3: `enabled: false`가 실패를 가리지 않는지 확인한다**
+- [x] **Step 3: `enabled: false`가 실패를 가리지 않는지 확인한다**
 
-임시 테스트를 하나 써서, **배치 조회가 403일 때** `useBeanLabel`이 `비공개 원두`를 돌려주는지 본다. `loading`(빈 문자열)이 나오면 `combineSources`에 넘기는 스냅샷 구성이 틀린 것이다. 확인 후 임시 테스트는 지우고, 이 조건은 Task 3의 화면 테스트가 대신 지킨다.
+임시 테스트를 하나 써서, **배치 조회가 403일 때** `useBeanLabel`이 `비공개 원두`를 돌려주는지 본다. `loading`(빈 문자열)이 나오면 `combineSources`에 넘기는 스냅샷 구성이 틀린 것이다. **확인 결과 지우지 않고 남겼다**(`useEntityLabels.test.tsx` 2개). 지우면 배선 순서를 지키는 테스트가 없어지고, 「원두가 403」을 덮는 화면 AC도 없다. 판정 순서를 뒤집어 함수·훅 테스트가 둘 다 빨간불을 내는 것까지 확인했다.
 
-- [ ] **Step 4: 기존 것이 그대로인지 확인한다**
+- [x] **Step 4: 기존 것이 그대로인지 확인한다**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **258개 그대로.**
+Expected: PASS, **268개** — 훅 테스트 2개가 늘었다.
 
 Run: `cd frontend && pnpm typecheck && pnpm lint`
 Expected: 통과
 
-- [ ] **Step 5: 커밋** — `feat(web): 레시피·원두 이름 조회 훅`
+- [x] **Step 5: 커밋** — `feat(web): 레시피·원두 이름 조회 훅`
 
 ---
 
@@ -193,29 +194,29 @@ Expected: 통과
 **Interfaces:**
 - Consumes: Task 2의 `useRecipeLabel`·`useBeanLabel`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `edit/page.test.tsx`는 **이미 있는 파일이다.** 열어서 기존 `describe`에 덧붙인다. 새 msw 핸들러가 셋 필요하다 — `/bean-batches/3`, `/bean-products/3`, `/roasters`.
 
 AC-40은 이름 조회가 403이어도 `PATCH`가 나가는지 본다. **`rating`만 바꾸고 본문이 `{"rating":5}` 하나인지까지 대조한다** — 이름 조회를 붙이면서 폼 상태에 값이 섞여 들어가는 사고를 여기서 잡는다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `cd frontend && pnpm test edit`
 Expected: FAIL — 화면이 아직 `12`·`3`을 그린다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `beanSlot`의 `<dd>{state.recipeId}</dd>`와 `<dd>{state.beanBatchId}</dd>`를 훅이 준 문자열로 바꾼다. 링크로 감싸지 않는다.
 
 주석의 「레시피와 원두는 PATCH DTO에 없어 서버가 무시한다. 값만 보여준다」는 여전히 맞다 — 문장을 지우지 말고 이름을 보여준다는 사실만 반영한다.
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **258 + 3 = 261개**
+Expected: PASS, **268 + 3 = 271개**
 
-- [ ] **Step 5: 커밋** — `feat(web): 편집 화면이 레시피·원두를 이름으로 보여준다 (AC-WEBNAME 3개)`
+- [x] **Step 5: 커밋** — `feat(web): 편집 화면이 레시피·원두를 이름으로 보여준다 (AC-WEBNAME 3개)`
 
 ---
 
@@ -227,29 +228,29 @@ Expected: PASS, **258 + 3 = 261개**
 
 **Covers:** AC-WEBNAME-03, 30, 31
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `[id]/page.test.tsx`도 **이미 있는 파일이다.** 덧붙인다.
 
 AC-31은 「텍스트가 있고 그 텍스트를 가진 링크는 없다」를 본다. `queryByRole("link", { name: "비공개 레시피" })`가 `null`인지 보는 방식으로 쓴다 — `getByText`만으로는 링크 여부를 판정하지 못한다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `cd frontend && pnpm test 'brews/\[id\]/page'`
 Expected: FAIL — 원두 줄이 없고, 폴백도 여전히 링크다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 제목: 이름을 읽었을 때만 `<Link>`, 아니면 같은 자리에 `<span>`. **두 갈래가 같은 글자 크기·굵기를 갖게 한다** — 폴백일 때만 작아 보이면 레이아웃이 흔들린다.
 
 원두: 실측값 위에 `원두` 라벨과 값을 `<dl>`로 한 줄 넣는다. 상세 화면의 기존 `dl` 구조를 따른다.
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **261 + 3 = 264개**
+Expected: PASS, **271 + 3 = 274개**
 
-- [ ] **Step 5: 커밋** — `feat(web): 상세 화면의 원두 줄과 조건부 링크 (AC-WEBNAME 3개)`
+- [x] **Step 5: 커밋** — `feat(web): 상세 화면의 원두 줄과 조건부 링크 (AC-WEBNAME 3개)`
 
 ---
 
@@ -269,30 +270,30 @@ Expected: PASS, **261 + 3 = 264개**
 
 **이름을 바꾸는 이유:** `recipeTitle`은 「제목」이라는 뜻이라 `비공개 레시피`가 들어가면 거짓말이 된다. **prop이 필수가 되므로** 넘기는 것을 빠뜨리면 타입 검사가 잡는다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `brews/page.test.tsx`에 AC 둘을 더한다. AC-42는 **호출 횟수를 세야 한다** — msw 핸들러에 카운터를 두고 `GET /recipes/12`가 정확히 1인지 본다. "출력을 찍는 것과 기대값에 대조하는 것은 다른 일"이므로 `toBe(1)`로 못박는다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `cd frontend && pnpm test brews/page`
 Expected: FAIL
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `useRecipeTitles`가 각 id마다 `combineSources` → `entityLabel("recipe", ...)`을 거쳐 라벨을 넣게 고친다. 함수 이름도 `useRecipeLabels`로 바꾼다 — 파일명까지 함께 바꾼다.
 
 `BrewLogCard`의 `{recipeTitle ?? \`레시피 ${log.recipeId}\`}`를 `{recipeLabel}`로 바꾼다. **`??` 폴백을 남겨두지 않는다** — 남기면 이번에 없앤 문구가 조용히 되살아난다.
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **264 + 2 = 266개**
+Expected: PASS, **274 + 2 = 276개**
 
 Run: `cd frontend && grep -rn "레시피 \${" src`
 Expected: 출력 없음(픽스처의 `레시피 ${startId + i}`는 목록 픽스처 생성기라 제외 — 그것만 남는지 눈으로 확인한다)
 
-- [ ] **Step 5: 커밋** — `feat(web): 목록·홈 카드가 라벨을 쓴다 (AC-WEBNAME 2개)`
+- [x] **Step 5: 커밋** — `feat(web): 목록·홈 카드가 라벨을 쓴다 (AC-WEBNAME 2개)`
 
 ---
 
@@ -306,12 +307,12 @@ Expected: 출력 없음(픽스처의 `레시피 ${startId + i}`는 목록 픽스
 
 **왜 필요한가:** 상세와 편집이 `GET /bean-batches/3`·`GET /bean-products/3`을 새로 부른다. 지금 스텁 표의 패턴은 `^/api/v1/bean-batches$`처럼 끝을 고정해 두어 **단건 경로가 걸리지 않는다.** 레이아웃 E2E의 「스텁되지 않은 요청이 없다」 조건이 곧바로 빨간불을 낸다.
 
-- [ ] **Step 1: 먼저 빨간불을 확인한다**
+- [x] **Step 1: 먼저 빨간불을 확인한다**
 
 Run: `cd frontend && pnpm e2e layout`
 Expected: **FAIL.** `/brews/2`와 `/brews/2/edit`에서 `unstubbed`에 두 URL이 잡혀야 한다. **여기서 통과하면 화면이 그 조회를 안 하고 있다는 뜻이므로 Task 3·4로 돌아간다.**
 
-- [ ] **Step 2: 스텁을 더한다**
+- [x] **Step 2: 스텁을 더한다**
 
 `HANDLERS`에 두 줄을 더한다. **단건이 목록보다 위에 와야 한다** — 순서를 바꾸면 `/bean-batches/3`이 목록 응답을 받는다.
 
@@ -320,29 +321,29 @@ Expected: **FAIL.** `/brews/2`와 `/brews/2/edit`에서 `unstubbed`에 두 URL�
 [/^\/api\/v1\/bean-products\/\d+$/, yirgacheffeProduct],
 ```
 
-- [ ] **Step 3: 통과 확인**
+- [x] **Step 3: 통과 확인**
 
 Run: `cd frontend && pnpm e2e`
 Expected: PASS, **39개 그대로.** 화면이 늘지 않았으므로 개수는 변하지 않는다.
 
-- [ ] **Step 4: 스펙 status 변경**
+- [x] **Step 4: 스펙 status 변경**
 
 Run: `./scripts/check-spec-coverage.sh`
 Expected: 통과, **AC 459 + 17 = 476개**. 이 스펙의 17개가 전부 발견돼야 한다.
 
-- [ ] **Step 5: 커밋** — `test(web): E2E 스텁에 단건 조회를 더한다`
+- [x] **Step 5: 커밋** — `test(web): E2E 스텁에 단건 조회를 더한다`
 
 ---
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (266개)
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `cd frontend && pnpm e2e` 통과 (39개)
-- [ ] `./scripts/check-spec-coverage.sh` 통과, AC 476개
-- [ ] `git diff --stat main...HEAD`에 `backend/`가 없다
-- [ ] `grep -rn "레시피 \${" frontend/src`에 화면 코드가 없다
-- [ ] CI 초록
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (276개)
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `cd frontend && pnpm e2e` 통과 (39개)
+- [x] `./scripts/check-spec-coverage.sh` 통과, AC 476개
+- [x] `git diff --stat main...HEAD`에 `backend/`가 없다
+- [x] `grep -rn "레시피 \${" frontend/src`에 화면 코드가 없다
+- [x] CI 초록
 
 ---
 
@@ -358,6 +359,6 @@ Expected: 통과, **AC 459 + 17 = 476개**. 이 스펙의 17개가 전부 발견
 
 1. **`enabled: false`인 쿼리의 `isPending`이 `true`라는 것.** TanStack Query v5의 동작이다. 연쇄 조회에서 앞이 실패했을 때 뒤 쿼리가 `pending`으로 남아 `loading`이 이기면 폴백이 안 나온다. `combineSources`가 실패를 먼저 보므로 막히지만, **Task 2 Step 3에서 실제로 확인한다.**
 2. **`GET /bean-products/{id}`가 남의 원두에도 200을 준다는 것.** 제품·로스터는 공용 카탈로그라 그럴 것으로 보이나 확인하지 않았다. 만약 이것도 403이면 AC-WEBNAME-22의 「배치는 성공, 제품은 실패」 시나리오가 실제로는 잘 안 생길 뿐 판정은 그대로다 — 스펙 변경은 필요 없다.
-3. **상세 화면의 원두 줄을 넣을 자리.** 실측값 `dl` 위에 넣기로 했으나 기존 마크업이 그것을 자연스럽게 받는지는 Task 4에서 드러난다.
+3. ~~**상세 화면의 원두 줄을 넣을 자리.**~~ **터졌다.** 실측값 `dl`에 이미 `원두` 라벨이 있었다 — 원두량(20.0g)이다. 이름 줄을 `원두`로 넣으면 같은 라벨이 둘이 되어 AC-WEBNAME-03의 `getByText("원두")`가 모호해진다. **실측값 쪽을 `원두량`으로 바꿨다** — 작성·편집 폼의 입력칸 이름이 이미 `원두량`이라 이쪽이 일관된다. 원두 줄은 실측값 섹션이 아니라 제목 바로 아래에 놓았다.
 4. **테스트 개수 266.** 기존 테스트를 고쳐야 하면(카드 prop 변경 때문에 `page.test.tsx`가 걸릴 수 있다) 숫자가 달라진다. **달라지면 그 자리에서 새 기대값을 적고 이유를 남긴다.**
 5. **`useRecipeTitles` 이름 변경의 파급.** 홈과 목록 둘이 부른다. 파일명을 바꾸면 import도 둘 다 고쳐야 한다 — 타입 검사가 잡는다.

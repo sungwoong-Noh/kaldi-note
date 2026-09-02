@@ -14,12 +14,7 @@ export const MAX_STEPS = 30;
 const DEFAULT_DURATION_SECONDS = 10;
 
 export type StepType =
-  | "BLOOM"
-  | "POUR"
-  | "WAIT"
-  | "SWIRL"
-  | "STIR"
-  | "DRAWDOWN";
+  "BLOOM" | "POUR" | "WAIT" | "SWIRL" | "STIR" | "DRAWDOWN";
 
 /**
  * 편집 중인 스텝. 서버 응답과 다른 점은 `uid` 하나다.
@@ -77,9 +72,7 @@ function shiftFrom(
 ): EditableStep[] {
   if (amount === 0) return steps;
   return steps.map((step, i) =>
-    i < from
-      ? step
-      : { ...step, startAtSeconds: step.startAtSeconds + amount },
+    i < from ? step : { ...step, startAtSeconds: step.startAtSeconds + amount },
   );
 }
 
@@ -96,9 +89,7 @@ export function appendStep(steps: EditableStep[]): EditableStep[] {
   const previous = steps.at(-1);
   return [
     ...steps,
-    previous
-      ? newStep("POUR", endOf(previous))
-      : newStep("BLOOM", 0),
+    previous ? newStep("POUR", endOf(previous)) : newStep("BLOOM", 0),
   ];
 }
 

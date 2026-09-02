@@ -86,7 +86,10 @@ export function useGrindPreview(
 ) {
   const { grinderModelId, unit, value } = params;
   const enabled =
-    grinderModelId !== null && unit !== null && unit !== "MICRON" && value !== null;
+    grinderModelId !== null &&
+    unit !== null &&
+    unit !== "MICRON" &&
+    value !== null;
 
   return useQuery({
     queryKey: ["gear", "grind-preview", grinderModelId, unit, value],

@@ -10,10 +10,11 @@ import type { BrewLogSummary } from "../schema";
  */
 export function BrewLogCard({
   log,
-  recipeTitle,
+  recipeLabel,
 }: {
   log: BrewLogSummary;
-  recipeTitle?: string;
+  /** 레시피 이름 또는 못 읽은 이유. 조회 중이면 빈 문자열이다. 필수라 빠뜨리면 타입 검사가 잡는다. */
+  recipeLabel: string;
 }) {
   return (
     <li>
@@ -22,7 +23,7 @@ export function BrewLogCard({
         className="block rounded-lg border border-neutral-200 p-4 active:bg-neutral-50 dark:border-neutral-800 dark:active:bg-neutral-900"
       >
         <div className="flex items-start justify-between gap-2">
-          <h2 className="font-medium">{recipeTitle ?? `레시피 ${log.recipeId}`}</h2>
+          <h2 className="font-medium">{recipeLabel}</h2>
           {log.rating !== undefined && (
             <span className="shrink-0 text-sm text-neutral-600 dark:text-neutral-400">
               <span aria-hidden>★</span> {formatRating(log.rating)}
@@ -48,7 +49,9 @@ export function BrewLogCard({
  * 카드 둘째 줄. 값이 없는 항목은 자리째 뺀다 — 빈칸이 줄지어 있으면 측정하지 않은 것이
  * 결함처럼 보인다. 표시 함수는 레시피 카드가 쓰는 것을 그대로 쓴다.
  */
-function summaryEntries(log: BrewLogSummary): { label: string; value: string }[] {
+function summaryEntries(
+  log: BrewLogSummary,
+): { label: string; value: string }[] {
   const entries = [
     { label: "내린 날", value: formatBrewedDate(log.brewedAt) },
     { label: "브루 비율", value: log.brewRatio && formatRatio(log.brewRatio) },

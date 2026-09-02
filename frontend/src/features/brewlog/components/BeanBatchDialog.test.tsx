@@ -3,7 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { setAccessToken } from "@/lib/session";
-import { fritzRoaster, yirgacheffeBatch, yirgacheffeProduct } from "@/test/fixtures";
+import {
+  fritzRoaster,
+  yirgacheffeBatch,
+  yirgacheffeProduct,
+} from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
 import { BeanBatchDialog } from "./BeanBatchDialog";
@@ -11,9 +15,11 @@ import { BeanBatchDialog } from "./BeanBatchDialog";
 const BASE = "http://localhost:8080/api/v1";
 
 /** 세 요청의 호출 순서와 본문을 함께 기록한다. 순서가 AC의 절반이다. */
-function recordCalls(overrides: {
-  product?: () => Response;
-} = {}) {
+function recordCalls(
+  overrides: {
+    product?: () => Response;
+  } = {},
+) {
   const order: string[] = [];
   const bodies: Record<string, unknown[]> = {
     roasters: [],
@@ -67,9 +73,7 @@ async function fillNewBean(
 }
 
 function renderDialog(onCreated = vi.fn()) {
-  renderWithQuery(
-    <BeanBatchDialog onCreated={onCreated} onCancel={vi.fn()} />,
-  );
+  renderWithQuery(<BeanBatchDialog onCreated={onCreated} onCancel={vi.fn()} />);
   return onCreated;
 }
 
@@ -109,7 +113,9 @@ describe("BeanBatchDialog", () => {
 
   it("AC-WEBBREW-06 · 기존 로스터를 고르면 로스터 요청은 나가지 않는다", async () => {
     const user = userEvent.setup();
-    server.use(http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])));
+    server.use(
+      http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
+    );
     const { order, bodies } = recordCalls();
     renderDialog();
 
@@ -143,7 +149,9 @@ describe("BeanBatchDialog", () => {
     await waitFor(() => expect(bodies["bean-products"]).toHaveLength(2));
     expect(order.filter((path) => path === "roasters")).toHaveLength(1);
     expect(
-      bodies["bean-products"].map((body) => (body as { roasterId: number }).roasterId),
+      bodies["bean-products"].map(
+        (body) => (body as { roasterId: number }).roasterId,
+      ),
     ).toEqual([3, 3]);
   });
 

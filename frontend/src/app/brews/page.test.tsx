@@ -2,7 +2,12 @@ import { screen, waitFor } from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clearSession, setAccessToken } from "@/lib/session";
-import { brewLogPage, brewLogWithTds, grindedRecipe } from "@/test/fixtures";
+import {
+  brewLogPage,
+  brewLogWithTds,
+  grindedRecipe,
+  kasuyaRecipe,
+} from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
 import BrewsPage from "./page";
@@ -158,5 +163,58 @@ describe("BrewsPage", () => {
 
     expect(await screen.findByText("1:15.0")).toBeInTheDocument();
     expect(screen.queryByText(/^\d+:\d{2}$/)).not.toBeInTheDocument();
+  });
+});
+
+describe("BrewsPage — 레시피 이름", () => {
+  it("AC-WEBNAME-41 · 한 레시피가 실패해도 나머지 카드는 제목을 보여준다", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(
+          pageOf([
+            { ...brewLogWithTds, id: 1, recipeId: 12 },
+            { ...brewLogWithTds, id: 2, recipeId: 17 },
+          ]),
+        ),
+      ),
+      http.get(`${BASE}/recipes/12`, () =>
+        HttpResponse.json(
+          { code: "FORBIDDEN", message: "권한이 없습니다." },
+          { status: 403 },
+        ),
+      ),
+      http.get(`${BASE}/recipes/17`, () => HttpResponse.json(kasuyaRecipe)),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("비공개 레시피")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Tetsu Kasuya 4:6 Method"),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-WEBNAME-42 · 같은 레시피를 쓴 로그가 여럿이어도 조회는 1회다", async () => {
+    let calls = 0;
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(
+          pageOf([
+            { ...brewLogWithTds, id: 1, recipeId: 12 },
+            { ...brewLogWithTds, id: 2, recipeId: 12 },
+            { ...brewLogWithTds, id: 3, recipeId: 12 },
+          ]),
+        ),
+      ),
+      http.get(`${BASE}/recipes/12`, () => {
+        calls += 1;
+        return HttpResponse.json(kasuyaRecipe);
+      }),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    await screen.findAllByText("Tetsu Kasuya 4:6 Method");
+    expect(calls).toBe(1);
   });
 });

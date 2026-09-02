@@ -27,7 +27,12 @@ function masterDataHandlers() {
     ),
     http.get(`${BASE}/gear/filters`, () =>
       HttpResponse.json([
-        { id: 2, name: "V60 표백 필터 02", material: "PAPER_BLEACHED", isSystem: true },
+        {
+          id: 2,
+          name: "V60 표백 필터 02",
+          material: "PAPER_BLEACHED",
+          isSystem: true,
+        },
       ]),
     ),
     http.get(`${BASE}/gear/grinders`, () => HttpResponse.json([comandanteC40])),
@@ -207,7 +212,9 @@ describe("RecipeNewPage", () => {
       badRequest({
         code: "INVALID_REQUEST",
         message: "입력값이 올바르지 않습니다.",
-        fieldErrors: [{ field: "unknownField", message: "알 수 없는 값입니다" }],
+        fieldErrors: [
+          { field: "unknownField", message: "알 수 없는 값입니다" },
+        ],
       }),
     );
 

@@ -71,7 +71,11 @@ describe("fromRecipe", () => {
 
     expect(steps).toHaveLength(2);
     expect(steps[0].uid).not.toBe(steps[1].uid);
-    expect(steps[0]).toMatchObject({ stepType: "BLOOM", startAtSeconds: 0, waterG: 60.0 });
+    expect(steps[0]).toMatchObject({
+      stepType: "BLOOM",
+      startAtSeconds: 0,
+      waterG: 60.0,
+    });
   });
 
   it("응답에 없는 키는 null이 된다", () => {
@@ -84,7 +88,12 @@ describe("fromRecipe", () => {
 
 describe("toRequestBody", () => {
   it("최소 입력이면 세 필드와 공개 범위, 빈 스텝만 담는다", () => {
-    const state = { ...emptyFormState(), title: "아침 레시피", doseG: 15, waterG: 250 };
+    const state = {
+      ...emptyFormState(),
+      title: "아침 레시피",
+      doseG: 15,
+      waterG: 250,
+    };
 
     expect(toRequestBody(state)).toEqual({
       title: "아침 레시피",
@@ -96,7 +105,12 @@ describe("toRequestBody", () => {
   });
 
   it("비어 있는 값은 키째 제외한다", () => {
-    const state = { ...emptyFormState(), title: "제목", doseG: 15, waterG: 250 };
+    const state = {
+      ...emptyFormState(),
+      title: "제목",
+      doseG: 15,
+      waterG: 250,
+    };
 
     const body = toRequestBody(state);
 

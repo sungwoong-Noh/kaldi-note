@@ -30,7 +30,12 @@ function baseHandlers() {
     ),
     http.get(`${BASE}/gear/filters`, () =>
       HttpResponse.json([
-        { id: 2, name: "V60 표백 필터 02", material: "PAPER_BLEACHED", isSystem: true },
+        {
+          id: 2,
+          name: "V60 표백 필터 02",
+          material: "PAPER_BLEACHED",
+          isSystem: true,
+        },
       ]),
     ),
     http.get(`${BASE}/gear/grinders`, () => HttpResponse.json([comandanteC40])),
@@ -59,9 +64,9 @@ describe("RecipeEditPage", () => {
     );
     expect(screen.getByLabelText("원두량")).toHaveValue(30);
     expect(screen.getByLabelText("물량")).toHaveValue(500);
-    expect(screen.getAllByRole("listitem", { name: /^스텝 \d+$/ })).toHaveLength(
-      hoffmann.steps.length,
-    );
+    expect(
+      screen.getAllByRole("listitem", { name: /^스텝 \d+$/ }),
+    ).toHaveLength(hoffmann.steps.length);
   });
 
   it("AC-WEBEDIT-10 · 편집 저장은 PUT으로 스텝 배열을 통째로 보낸다", async () => {
@@ -76,7 +81,9 @@ describe("RecipeEditPage", () => {
 
     await renderEditPage();
     await user.click(
-      await screen.findByRole("button", { name: `스텝 ${hoffmann.steps.length} 삭제` }),
+      await screen.findByRole("button", {
+        name: `스텝 ${hoffmann.steps.length} 삭제`,
+      }),
     );
     await user.click(screen.getByRole("button", { name: "저장" }));
 
@@ -89,7 +96,11 @@ describe("RecipeEditPage", () => {
     server.use(
       http.get(`${BASE}/recipes/2`, () =>
         HttpResponse.json(
-          { code: "NOT_FOUND", message: "레시피를 찾을 수 없습니다.", fieldErrors: [] },
+          {
+            code: "NOT_FOUND",
+            message: "레시피를 찾을 수 없습니다.",
+            fieldErrors: [],
+          },
           { status: 404 },
         ),
       ),
@@ -107,7 +118,9 @@ describe("RecipeEditPage", () => {
     // AC의 리터럴이 12다. 목적지가 편집 중인 id를 따라가는지 보려면 기본 harness의 2와
     // 달라야 한다 — 2로 두면 하드코딩된 경로도 통과해 버린다.
     server.use(
-      http.get(`${BASE}/recipes/12`, () => HttpResponse.json({ ...mine, id: 12 })),
+      http.get(`${BASE}/recipes/12`, () =>
+        HttpResponse.json({ ...mine, id: 12 }),
+      ),
     );
 
     await RecipeEditPage({ params: Promise.resolve({ id: "12" }) }).then((ui) =>

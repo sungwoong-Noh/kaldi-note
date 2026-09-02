@@ -38,7 +38,11 @@ export default function RecipesPage() {
   });
 
   if (!ready || isPending) {
-    return <Shell mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>{null}</Shell>;
+    return (
+      <Shell mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
+        {null}
+      </Shell>
+    );
   }
 
   if (error) {

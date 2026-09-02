@@ -183,7 +183,7 @@ Expected: 통과, **AC 476 + 7 = 483개**
 - [x] `./scripts/check-spec-coverage.sh` 통과, AC 483개
 - [x] `git diff --stat main...HEAD`에 `backend/`가 없다
 - [x] 스텝 절 안에 버튼·입력칸이 없다
-- [ ] CI 초록
+- [x] CI 초록 — PR #90, `타입 + 린트 + 테스트 + 빌드` 4m42s · `인수 조건 커버리지` 4s
 
 ---
 

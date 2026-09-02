@@ -84,7 +84,23 @@ for (const screen of TAB_BAR_SCREENS) {
     await page.goto(screen.path);
     const nav = page.getByRole(TAB_BAR.role, { name: TAB_BAR.name });
     await nav.waitFor();
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    // 탭바가 보인다고 본문이 다 그려진 것은 아니다. 레시피 상세는 이 시점에 문서가 아직
+    // 800px이라 스크롤이 0에 클램프되고, 그 뒤 993px로 자란다 — 맨 아래가 아닌 곳을 재게 된다.
+    await page.waitForLoadState("networkidle");
+    await page.evaluate(async () => {
+      window.scrollTo(0, document.documentElement.scrollHeight);
+      await new Promise((resolve) =>
+        requestAnimationFrame(() => resolve(null)),
+      );
+    });
+
+    // 「맨 아래까지 스크롤한다」가 이 조건의 전제다. 못 갔으면 잰 값에 의미가 없다.
+    const atBottom = await page.evaluate(
+      () =>
+        window.scrollY >=
+        document.documentElement.scrollHeight - window.innerHeight - 1,
+    );
+    expect(atBottom, "문서 맨 아래까지 스크롤되지 않았다").toBe(true);
 
     const main = await boxOf(page.locator("main").first(), "본문");
     const navBox = await boxOf(nav, "탭바");

@@ -108,7 +108,7 @@ Expected: FAIL — 아직 절이 없다.
 Run: `cd frontend && pnpm test`
 Expected: PASS, **276 + 4 = 280개**
 
-- [ ] **Step 6: 커밋** — `feat(web): 로그 상세에 푸어 스텝 (AC-WEBLOGSTEP 4개)`
+- [x] **Step 6: 커밋** — `feat(web): 로그 상세에 푸어 스텝 (AC-WEBLOGSTEP 4개)`
 
 ---
 
@@ -143,7 +143,7 @@ Expected: **셋 다 통과할 가능성이 크다.** 통과하면 그대로 두�
 Run: `cd frontend && pnpm test`
 Expected: PASS, **280 + 3 = 283개**
 
-- [ ] **Step 5: 커밋** — `test(web): 레시피를 못 읽을 때 스텝 절이 없다 (AC-WEBLOGSTEP 3개)`
+- [x] **Step 5: 커밋** — `test(web): 레시피를 못 읽을 때 스텝 절이 없다 (AC-WEBLOGSTEP 3개)`
 
 ---
 
@@ -154,35 +154,35 @@ Expected: PASS, **280 + 3 = 283개**
 
 **Covers:** 없음 — 마무리
 
-- [ ] **Step 1: 새 요청이 생기지 않았는지 본다**
+- [x] **Step 1: 새 요청이 생기지 않았는지 본다**
 
 Run: `cd frontend && pnpm e2e`
 Expected: PASS, **39개 그대로.** 「스텁되지 않은 요청이 없다」가 초록이면 새 API 호출이 없다는 뜻이다. 빨간불이면 스텝을 엉뚱한 데서 가져오고 있다.
 
 **레이아웃도 함께 본다.** 상세가 길어져 탭바·가로 스크롤 조건이 흔들릴 수 있다. E2E 스텁은 `/recipes/{id}`에 스텝 7개짜리 픽스처를 주므로 실제보다 긴 화면으로 검사된다.
 
-- [ ] **Step 2: 나머지 검증**
+- [x] **Step 2: 나머지 검증**
 
 Run: `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm test:worker`
 Expected: 전부 통과
 
-- [ ] **Step 3: 스펙 status 변경**
+- [x] **Step 3: 스펙 status 변경**
 
 Run: `./scripts/check-spec-coverage.sh`
 Expected: 통과, **AC 476 + 7 = 483개**
 
-- [ ] **Step 4: 커밋** — `docs(spec-web-brew-log-steps): status를 구현완료로`
+- [x] **Step 4: 커밋** — `docs(spec-web-brew-log-steps): status를 구현완료로`
 
 ---
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (283개)
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `cd frontend && pnpm e2e` 통과 (39개) — **새 요청이 없다는 증거다**
-- [ ] `./scripts/check-spec-coverage.sh` 통과, AC 483개
-- [ ] `git diff --stat main...HEAD`에 `backend/`가 없다
-- [ ] 스텝 절 안에 버튼·입력칸이 없다
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (283개)
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `cd frontend && pnpm e2e` 통과 (39개) — **새 요청이 없다는 증거다**
+- [x] `./scripts/check-spec-coverage.sh` 통과, AC 483개
+- [x] `git diff --stat main...HEAD`에 `backend/`가 없다
+- [x] 스텝 절 안에 버튼·입력칸이 없다
 - [ ] CI 초록
 
 ---
@@ -202,3 +202,13 @@ Expected: 통과, **AC 476 + 7 = 483개**
 3. **조회 중(AC-05)을 테스트로 만들 수 있는지.** msw로 한쪽 응답만 지연시키는 것이 이 저장소에서 처음이다. 잘 안 되면 그 조건만 다른 방식(쿼리를 `enabled: false`로 두는 등)으로 만들고 이유를 계획에 적는다.
 4. **레이아웃 E2E가 길어진 화면에서도 초록인지.** Task 3 Step 1에서 드러난다. 빨간불이면 그것은 이번 변경이 만든 진짜 결함이다.
 5. **테스트 개수 283.** 기존 테스트를 고쳐야 하면 달라진다. 달라지면 그 자리에서 새 기대값과 이유를 적는다.
+
+**실행 결과 — 다섯 가정의 판정**
+
+1. **확인됨.** `RecipeStepList`는 360px에서 그대로 읽힌다. E2E 스텁 화면(`/brews/2`)을 스크린샷으로 봤다 — 넘치는 곳도 잘리는 곳도 없다.
+2. **확인됨.** `text-base font-semibold`가 맞았다. `실측값`·`추출 분석`과 같은 크기로 나란히 읽히고, 스텝 목록이 제목보다 커 보이지 않는다.
+3. **확인됨.** msw의 `delay("infinite")`로 레시피 응답만 붙잡으면 된다. 로그 응답은 그대로 도착하므로 `실측값`이 보이는 시점에서 부재를 본다. 다른 방식이 필요 없었다.
+4. **확인됨.** `pnpm e2e` 39개 전부 초록. 길어진 화면에서도 탭바·가로 스크롤 조건이 흔들리지 않았다.
+5. **확인됨.** 283개. 기존 테스트를 고칠 일이 없었다.
+
+**계획이 틀린 곳 하나:** Task 2 Step 3의 돌연변이 검사(`isReady` → `steps.length > 0`)는 세 조건을 건드리지 못한다. 자세한 것은 그 자리에 적었다.

@@ -6,7 +6,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { fetchBrewLogPage } from "@/features/brewlog/api";
 import { BrewLogCard } from "@/features/brewlog/components/BrewLogCard";
-import { useRecipeTitles } from "@/features/brewlog/useRecipeTitles";
+import { useRecipeLabels } from "@/features/brewlog/useRecipeLabels";
 
 /** 홈에 세우는 최근 기록 수. 스크롤 없이 한눈에 들어오는 만큼만 둔다. */
 const RECENT_SIZE = 3;
@@ -21,7 +21,7 @@ export default function HomePage() {
   });
 
   const logs = recent.data?.content ?? [];
-  const titles = useRecipeTitles(logs, ready, onSessionLost);
+  const labels = useRecipeLabels(logs, ready, onSessionLost);
 
   if (!ready || recent.isPending) {
     return <Shell>{null}</Shell>;
@@ -61,7 +61,7 @@ export default function HomePage() {
           <BrewLogCard
             key={log.id}
             log={log}
-            recipeTitle={titles.get(log.recipeId)}
+            recipeLabel={labels.get(log.recipeId) ?? ""}
           />
         ))}
       </ul>

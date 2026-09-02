@@ -203,10 +203,9 @@ describe("RecipesPage — 쓰기 슬라이스", () => {
 
     renderWithQuery(<RecipesPage />);
 
-    expect(await screen.findByRole("link", { name: "새 레시피" })).toHaveAttribute(
-      "href",
-      "/recipes/new",
-    );
+    expect(
+      await screen.findByRole("link", { name: "새 레시피" }),
+    ).toHaveAttribute("href", "/recipes/new");
   });
 
   it("AC-WEBEDIT-05 · '내 레시피만'을 켜면 ownerUserId를 붙여 다시 부른다", async () => {
@@ -228,7 +227,9 @@ describe("RecipesPage — 쓰기 슬라이스", () => {
     );
 
     renderWithQuery(<RecipesPage />);
-    await user.click(await screen.findByRole("checkbox", { name: "내 레시피만" }));
+    await user.click(
+      await screen.findByRole("checkbox", { name: "내 레시피만" }),
+    );
 
     await waitFor(() =>
       expect(searches.at(-1)).toBe("?page=0&size=20&ownerUserId=7"),

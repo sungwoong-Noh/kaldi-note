@@ -106,10 +106,9 @@ describe("BrewDetailPage", () => {
   it("AC-WEBBREW-43 · 어떤 레시피로 내렸는지 링크된다", async () => {
     await renderDetail();
 
-    expect(await screen.findByRole("link", { name: "Kasuya 4:6" })).toHaveAttribute(
-      "href",
-      "/recipes/1",
-    );
+    expect(
+      await screen.findByRole("link", { name: "Kasuya 4:6" }),
+    ).toHaveAttribute("href", "/recipes/1");
   });
 
   it("AC-WEBBREW-44 · 삭제를 확인하면 요청 후 목록으로 간다", async () => {
@@ -169,7 +168,9 @@ describe("BrewDetailPage — 소유 판정", () => {
 
     // 본문이 그려진 뒤에 부재를 본다 — 로딩 중이면 무엇이든 없다
     await screen.findByText("실측값");
-    expect(screen.queryByRole("link", { name: "편집" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "편집" }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "삭제" }),
     ).not.toBeInTheDocument();

@@ -249,8 +249,12 @@ describe("RecipeDetailPage — 편집과 삭제", () => {
     await renderDetail();
     await screen.findByRole("button", { name: "내 레시피로 가져오기" });
 
-    expect(screen.queryByRole("link", { name: "편집" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "삭제" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "편집" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "삭제" }),
+    ).not.toBeInTheDocument();
   });
 
   it("AC-WEBEDIT-34 · 삭제를 확인하면 요청 후 목록으로 간다", async () => {
@@ -297,7 +301,9 @@ describe("RecipeDetailPage — 편집과 삭제", () => {
   it("AC-WEBBREW-46 · 레시피 상세에서 기록을 시작할 수 있다", async () => {
     // 기록은 내 레시피에서만 시작할 수 있다(AC-WEBSHELL-16·17). 기본 픽스처는
     // CURATED라 소유 레시피로 바꿔야 이 진입점이 나타난다.
-    server.use(http.get(`${BASE}/recipes/2`, () => HttpResponse.json(mineRecipe)));
+    server.use(
+      http.get(`${BASE}/recipes/2`, () => HttpResponse.json(mineRecipe)),
+    );
 
     await renderDetail();
 
@@ -307,7 +313,9 @@ describe("RecipeDetailPage — 편집과 삭제", () => {
   });
 
   it("AC-WEBSHELL-16 · 내 레시피에는 기록 버튼이 있다", async () => {
-    server.use(http.get(`${BASE}/recipes/2`, () => HttpResponse.json(mineRecipe)));
+    server.use(
+      http.get(`${BASE}/recipes/2`, () => HttpResponse.json(mineRecipe)),
+    );
 
     await renderDetail();
 

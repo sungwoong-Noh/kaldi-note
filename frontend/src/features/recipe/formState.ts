@@ -5,7 +5,11 @@
  * 변환을 얹으면 상태가 두 군데 생긴다. 검증도 서버가 하므로 클라이언트 검증 기능은 거의 쓸 일이 없다.
  */
 
-import { isPouringStep, type EditableStep, type StepType } from "./stepSequence";
+import {
+  isPouringStep,
+  type EditableStep,
+  type StepType,
+} from "./stepSequence";
 import type { Recipe } from "./schema";
 
 export type Visibility = "PRIVATE" | "FRIENDS" | "PUBLIC";

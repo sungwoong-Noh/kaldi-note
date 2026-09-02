@@ -58,7 +58,9 @@ export function GrindSettingField({
             aria-label="그라인더"
             value={grinderModelId ?? ""}
             onChange={(e) =>
-              onGrinderChange(e.target.value === "" ? null : Number(e.target.value))
+              onGrinderChange(
+                e.target.value === "" ? null : Number(e.target.value),
+              )
             }
             className="rounded border border-neutral-300 px-2 py-1"
           >
@@ -102,7 +104,9 @@ export function GrindSettingField({
             step="0.1"
             value={value ?? ""}
             onChange={(e) =>
-              onValueChange(e.target.value === "" ? null : Number(e.target.value))
+              onValueChange(
+                e.target.value === "" ? null : Number(e.target.value),
+              )
             }
             className="w-24 rounded border border-neutral-300 px-2 py-1"
           />

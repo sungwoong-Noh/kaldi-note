@@ -193,29 +193,29 @@ Expected: 통과
 **Interfaces:**
 - Consumes: Task 2의 `useRecipeLabel`·`useBeanLabel`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `edit/page.test.tsx`는 **이미 있는 파일이다.** 열어서 기존 `describe`에 덧붙인다. 새 msw 핸들러가 셋 필요하다 — `/bean-batches/3`, `/bean-products/3`, `/roasters`.
 
 AC-40은 이름 조회가 403이어도 `PATCH`가 나가는지 본다. **`rating`만 바꾸고 본문이 `{"rating":5}` 하나인지까지 대조한다** — 이름 조회를 붙이면서 폼 상태에 값이 섞여 들어가는 사고를 여기서 잡는다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `cd frontend && pnpm test edit`
 Expected: FAIL — 화면이 아직 `12`·`3`을 그린다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `beanSlot`의 `<dd>{state.recipeId}</dd>`와 `<dd>{state.beanBatchId}</dd>`를 훅이 준 문자열로 바꾼다. 링크로 감싸지 않는다.
 
 주석의 「레시피와 원두는 PATCH DTO에 없어 서버가 무시한다. 값만 보여준다」는 여전히 맞다 — 문장을 지우지 말고 이름을 보여준다는 사실만 반영한다.
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS, **268 + 3 = 271개**
 
-- [ ] **Step 5: 커밋** — `feat(web): 편집 화면이 레시피·원두를 이름으로 보여준다 (AC-WEBNAME 3개)`
+- [x] **Step 5: 커밋** — `feat(web): 편집 화면이 레시피·원두를 이름으로 보여준다 (AC-WEBNAME 3개)`
 
 ---
 
@@ -227,7 +227,7 @@ Expected: PASS, **268 + 3 = 271개**
 
 **Covers:** AC-WEBNAME-03, 30, 31
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `[id]/page.test.tsx`도 **이미 있는 파일이다.** 덧붙인다.
 

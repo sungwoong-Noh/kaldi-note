@@ -35,7 +35,9 @@ describe("mapFieldErrors", () => {
       { field: "steps[0].durationSeconds", message: "0 이상이어야 합니다" },
     ]);
 
-    expect(mapped.byStepIndex[0]).toBe("물량이 필요합니다\n0 이상이어야 합니다");
+    expect(mapped.byStepIndex[0]).toBe(
+      "물량이 필요합니다\n0 이상이어야 합니다",
+    );
   });
 
   it("빈 배열이면 전부 비어 있다", () => {

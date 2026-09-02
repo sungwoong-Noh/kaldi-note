@@ -246,6 +246,101 @@ export const grindOutOfRangeError = {
  * 한 벌의 스텁으로 덮어야 해서 공용 픽스처로 올렸다.
  * ───────────────────────────────────────────────────────────── */
 
+/**
+ * `GET /recipes/12`의 실제 응답. **브루잉 로그 픽스처들이 `recipeId: 12`를 가리킨다** —
+ * 그 로그의 레시피 이름을 검사하려면 이 레시피가 필요하다.
+ *
+ * <p>포크된 것이라 `parentRecipeId`·`forkRootId`가 있고 `visibility`가 `PRIVATE`이다.
+ * 남이 이 레시피를 읽으면 403이 된다는 것이 「비공개 레시피」 폴백의 실제 사례다.
+ */
+export const kasuyaRecipe: Recipe = {
+  id: 12,
+  ownerUserId: 11,
+  sourceType: "USER",
+  title: "Tetsu Kasuya 4:6 Method",
+  description:
+    "2016 World Brewers Cup 우승 방법론. 45초 간격으로 다섯 번 나눠 붓는다. 앞 40%가 단맛과 산미의 균형을, 뒤 60%가 농도를 결정한다.",
+  brewMethod: "POUR_OVER",
+  visibility: "PRIVATE",
+  parentRecipeId: 9,
+  forkRootId: 9,
+  doseG: 20.0,
+  waterG: 300.0,
+  ratio: 15.0,
+  waterTempC: 92.0,
+  totalTimeSeconds: 210,
+  brewerId: 2,
+  filterId: 2,
+  steps: [
+    {
+      stepOrder: 1,
+      stepType: "BLOOM",
+      startAtSeconds: 0,
+      durationSeconds: 10,
+      waterG: 50.0,
+      cumulativeWaterG: 50.0,
+      pourTechnique: "SPIRAL",
+      agitation: "NONE",
+      note: "1푸어. 이 물량이 단맛과 산미의 균형을 결정한다",
+    },
+    {
+      stepOrder: 2,
+      stepType: "POUR",
+      startAtSeconds: 45,
+      durationSeconds: 10,
+      waterG: 70.0,
+      cumulativeWaterG: 120.0,
+      pourTechnique: "SPIRAL",
+      agitation: "NONE",
+      note: "2푸어. 여기까지 120g으로 전체의 40%를 채운다",
+    },
+    {
+      stepOrder: 3,
+      stepType: "POUR",
+      startAtSeconds: 90,
+      durationSeconds: 10,
+      waterG: 60.0,
+      cumulativeWaterG: 180.0,
+      pourTechnique: "SPIRAL",
+      agitation: "NONE",
+      note: "3푸어. 여기부터 60%는 농도를 결정한다",
+    },
+    {
+      stepOrder: 4,
+      stepType: "POUR",
+      startAtSeconds: 135,
+      durationSeconds: 10,
+      waterG: 60.0,
+      cumulativeWaterG: 240.0,
+      pourTechnique: "SPIRAL",
+      agitation: "NONE",
+      note: "4푸어. 누적 240g",
+    },
+    {
+      stepOrder: 5,
+      stepType: "POUR",
+      startAtSeconds: 180,
+      durationSeconds: 10,
+      waterG: 60.0,
+      cumulativeWaterG: 300.0,
+      pourTechnique: "SPIRAL",
+      agitation: "NONE",
+      note: "5푸어. 누적 300g",
+    },
+    {
+      stepOrder: 6,
+      stepType: "DRAWDOWN",
+      startAtSeconds: 190,
+      durationSeconds: 20,
+      cumulativeWaterG: 300.0,
+      agitation: "NONE",
+      note: "3분 30초에 배출이 끝난다",
+    },
+  ],
+  createdAt: "2026-08-21T12:20:53.194803Z",
+  updatedAt: "2026-08-21T12:20:53.194803Z",
+};
+
 /** `GET /users/me`. **이메일 동의를 하지 않은 카카오 계정이라 `email` 키가 없다.** */
 export const me = {
   id: 11,

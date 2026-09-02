@@ -121,7 +121,9 @@ describe("BrewNewPage", () => {
   });
 
   it("AC-WEBBREW-15 · 같은 모델이 없으면 비어 있다", async () => {
-    server.use(userGrindersReturn({ ...myComandante, id: 6, grinderModelId: 2 }));
+    server.use(
+      userGrindersReturn({ ...myComandante, id: 6, grinderModelId: 2 }),
+    );
 
     await renderNewPage();
 
@@ -200,7 +202,9 @@ describe("BrewNewPage", () => {
 
     await renderNewPage();
 
-    expect(await screen.findByText("등록된 원두가 없습니다")).toBeInTheDocument();
+    expect(
+      await screen.findByText("등록된 원두가 없습니다"),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "+ 원두 등록" }),
     ).toBeInTheDocument();
@@ -227,7 +231,9 @@ describe("BrewNewPage", () => {
     );
 
     await renderNewPage();
-    await user.click(await screen.findByRole("button", { name: "+ 원두 등록" }));
+    await user.click(
+      await screen.findByRole("button", { name: "+ 원두 등록" }),
+    );
     await fillBeanDialog(user);
 
     expect(await screen.findByLabelText("원두")).toHaveValue("9");
@@ -367,7 +373,10 @@ describe("BrewNewPage — 저장과 평가", () => {
         captured.calls += 1;
         captured.body = (await request.json()) as Record<string, unknown>;
         await held;
-        return HttpResponse.json({ ...brewLogWithTds, id: 42 }, { status: 201 });
+        return HttpResponse.json(
+          { ...brewLogWithTds, id: 42 },
+          { status: 201 },
+        );
       }),
     );
 

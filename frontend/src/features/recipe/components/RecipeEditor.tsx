@@ -47,7 +47,10 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
     }
     return (
       <Shell>
-        <ErrorState error={recipe.error} onRetry={() => void recipe.refetch()} />
+        <ErrorState
+          error={recipe.error}
+          onRetry={() => void recipe.refetch()}
+        />
       </Shell>
     );
   }

@@ -125,7 +125,9 @@ describe("GrindSettingField", () => {
     await fillGrindSetting(user, { grinder: C40, unit: "CLICK", value: "60" });
 
     expect(
-      await screen.findByText("설정값 60는 이 그라인더의 상한 50.00를 넘습니다."),
+      await screen.findByText(
+        "설정값 60는 이 그라인더의 상한 50.00를 넘습니다.",
+      ),
     ).toBeInTheDocument();
   });
 

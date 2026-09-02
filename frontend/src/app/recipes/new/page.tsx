@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { createRecipe } from "@/features/recipe/api";
 import { RecipeForm } from "@/features/recipe/components/RecipeForm";
-import { emptyFormState, type RecipeRequestBody } from "@/features/recipe/formState";
+import {
+  emptyFormState,
+  type RecipeRequestBody,
+} from "@/features/recipe/formState";
 
 export default function RecipeNewPage() {
   const router = useRouter();

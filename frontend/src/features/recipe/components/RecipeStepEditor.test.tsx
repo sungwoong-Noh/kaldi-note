@@ -22,7 +22,11 @@ function step(over: Partial<EditableStep> = {}): EditableStep {
   };
 }
 
-function at(startAtSeconds: number, durationSeconds = 10, over: Partial<EditableStep> = {}) {
+function at(
+  startAtSeconds: number,
+  durationSeconds = 10,
+  over: Partial<EditableStep> = {},
+) {
   return step({ startAtSeconds, durationSeconds, ...over });
 }
 
@@ -168,7 +172,10 @@ describe("RecipeStepEditor", () => {
   it("AC-WEBEDIT-22 · 합계가 모자라면 부족량을 보여준다", () => {
     render(
       <Harness
-        initial={[at(0, 10, { stepType: "BLOOM", waterG: 60 }), at(45, 10, { waterG: 180 })]}
+        initial={[
+          at(0, 10, { stepType: "BLOOM", waterG: 60 }),
+          at(45, 10, { waterG: 180 }),
+        ]}
         waterG={300}
       />,
     );
@@ -180,7 +187,10 @@ describe("RecipeStepEditor", () => {
   it("AC-WEBEDIT-23 · 합계가 맞으면 부족·초과 문구가 없다", () => {
     render(
       <Harness
-        initial={[at(0, 10, { stepType: "BLOOM", waterG: 60 }), at(45, 10, { waterG: 240 })]}
+        initial={[
+          at(0, 10, { stepType: "BLOOM", waterG: 60 }),
+          at(45, 10, { waterG: 240 }),
+        ]}
         waterG={300}
       />,
     );

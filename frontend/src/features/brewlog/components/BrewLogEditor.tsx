@@ -18,6 +18,7 @@ import {
   type BrewLogFormState,
 } from "../formState";
 import type { BrewLog } from "../schema";
+import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
 import { BrewLogFields } from "./BrewLogFields";
 
 /** 스펙이 정한 문구다. 값을 바꾸거나 기록을 지우는 것 말고는 길이 없다. */
@@ -87,6 +88,11 @@ function Fields({
   const [initial] = useState<BrewLogEditState>(() => formStateFromLog(log));
   const [state, setState] = useState<BrewLogEditState>(initial);
 
+  // 이름은 로그가 가리키는 id로 따로 읽는다. 실패해도 저장을 막지 않는다 —
+  // 레시피·원두는 PATCH 본문에 들어가지 않아 저장과 아무 관계가 없다.
+  const recipeLabel = useRecipeLabel(log.recipeId, true, onSessionLost);
+  const beanLabel = useBeanLabel(log.beanBatchId, true, onSessionLost);
+
   const save = useMutation({
     mutationFn: () =>
       patchBrewLog(log.id, toPatchBody(initial, state), onSessionLost),
@@ -144,15 +150,16 @@ function Fields({
         onChange={setField}
         beanSlot={
           // 레시피와 원두는 PATCH DTO에 없어 서버가 무시한다. 값만 보여준다.
+          // id 숫자로 보여주면 무엇으로 내렸는지 화면만 봐서는 알 수 없어 이름을 따로 읽는다.
           <dl className="flex flex-wrap gap-x-4 text-sm">
             <div className="flex items-center gap-1">
               <dt className="text-neutral-500">레시피</dt>
-              <dd>{state.recipeId}</dd>
+              <dd>{recipeLabel}</dd>
             </div>
             {state.beanBatchId !== null && (
               <div className="flex items-center gap-1">
                 <dt className="text-neutral-500">원두</dt>
-                <dd>{state.beanBatchId}</dd>
+                <dd>{beanLabel}</dd>
               </div>
             )}
           </dl>

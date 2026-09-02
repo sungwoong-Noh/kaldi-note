@@ -16,7 +16,12 @@ const BASE = "http://localhost:8080/api/v1";
 const LIST_URL = `${BASE}/brew-logs`;
 
 function pageOf(content: object[]) {
-  return { ...brewLogPage, content, totalElements: content.length, hasNext: false };
+  return {
+    ...brewLogPage,
+    content,
+    totalElements: content.length,
+    hasNext: false,
+  };
 }
 
 beforeEach(() => {
@@ -54,10 +59,9 @@ describe("HomePage", () => {
 
     renderWithQuery(<HomePage />);
 
-    expect(await screen.findByRole("link", { name: "전체 보기" })).toHaveAttribute(
-      "href",
-      "/brews",
-    );
+    expect(
+      await screen.findByRole("link", { name: "전체 보기" }),
+    ).toHaveAttribute("href", "/brews");
   });
 
   it("AC-WEBBREW-39 · 기록이 없으면 홈이 레시피로 안내한다", async () => {

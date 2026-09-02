@@ -30,7 +30,10 @@ export default function HomePage() {
   if (recent.error) {
     return (
       <Shell>
-        <ErrorState error={recent.error} onRetry={() => void recent.refetch()} />
+        <ErrorState
+          error={recent.error}
+          onRetry={() => void recent.refetch()}
+        />
       </Shell>
     );
   }

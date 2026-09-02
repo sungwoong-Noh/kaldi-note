@@ -3,7 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clearSession, setAccessToken } from "@/lib/session";
-import { brewLogWithTds, myComandante } from "@/test/fixtures";
+import {
+  brewLogWithTds,
+  fritzRoaster,
+  kasuyaRecipe,
+  myComandante,
+  yirgacheffeBatch,
+  yirgacheffeProduct,
+} from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
 import BrewEditPage from "./page";
@@ -17,7 +24,12 @@ vi.mock("next/navigation", () => ({
 const BASE = "http://localhost:8080/api/v1";
 const DETAIL_URL = `${BASE}/brew-logs/42`;
 
-/** 이 화면이 항상 부르는 것들. 개별 테스트는 필요한 것만 덮어쓴다. */
+/**
+ * 이 화면이 항상 부르는 것들. 개별 테스트는 필요한 것만 덮어쓴다.
+ *
+ * <p>이름을 보여주려고 레시피와 원두 3단(배치 → 제품 → 로스터)을 함께 부른다.
+ * `onUnhandledRequest: "error"`라 여기 빠지면 이 파일의 모든 테스트가 깨진다.
+ */
 function baseHandlers() {
   return [
     http.get(DETAIL_URL, () =>
@@ -26,7 +38,22 @@ function baseHandlers() {
     http.get(`${BASE}/gear/user-grinders`, () =>
       HttpResponse.json([{ ...myComandante, id: 5 }]),
     ),
+    http.get(`${BASE}/recipes/12`, () => HttpResponse.json(kasuyaRecipe)),
+    http.get(`${BASE}/bean-batches/3`, () =>
+      HttpResponse.json(yirgacheffeBatch),
+    ),
+    http.get(`${BASE}/bean-products/3`, () =>
+      HttpResponse.json(yirgacheffeProduct),
+    ),
+    http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
   ];
+}
+
+/** `레시피`·`원두` 항목의 값 칸. `dt`와 같은 `div` 안에 `dd`가 있다. */
+function fieldValue(term: string): HTMLElement {
+  const row = screen.getByText(term).closest("div");
+  if (row === null) throw new Error(`${term} 항목을 찾지 못했다`);
+  return row;
 }
 
 /** PATCH 본문을 잡는다. */
@@ -119,7 +146,12 @@ describe("BrewEditPage — 저장", () => {
     const captured = capturePatch();
     server.use(
       http.get(DETAIL_URL, () =>
-        HttpResponse.json({ ...brewLogWithTds, id: 42, userId: 11, rating: 3.5 }),
+        HttpResponse.json({
+          ...brewLogWithTds,
+          id: 42,
+          userId: 11,
+          rating: 3.5,
+        }),
       ),
     );
 
@@ -136,7 +168,10 @@ describe("BrewEditPage — 저장", () => {
     const captured = capturePatch();
 
     await renderEditPage();
-    await user.selectOptions(await screen.findByLabelText("공개 범위"), "FRIENDS");
+    await user.selectOptions(
+      await screen.findByLabelText("공개 범위"),
+      "FRIENDS",
+    );
     await user.click(screen.getByRole("button", { name: "저장" }));
 
     await waitFor(() => expect(captured.body).not.toBeNull());
@@ -148,7 +183,10 @@ describe("BrewEditPage — 저장", () => {
     capturePatch();
 
     await renderEditPage();
-    await user.selectOptions(await screen.findByLabelText("공개 범위"), "FRIENDS");
+    await user.selectOptions(
+      await screen.findByLabelText("공개 범위"),
+      "FRIENDS",
+    );
     await user.click(screen.getByRole("button", { name: "저장" }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/brews/42"));
@@ -276,5 +314,47 @@ describe("BrewEditPage — 서버 검증", () => {
       await describedElementOf(screen.getByLabelText("TDS")),
     ).toHaveTextContent("100 미만이어야 합니다");
     expect(push).not.toHaveBeenCalled();
+  });
+});
+
+describe("BrewEditPage — 레시피·원두 이름", () => {
+  it("AC-WEBNAME-01 · 편집 화면이 레시피 제목을 보여준다", async () => {
+    await renderEditPage();
+
+    await waitFor(() =>
+      expect(fieldValue("레시피")).toHaveTextContent("Tetsu Kasuya 4:6 Method"),
+    );
+    expect(fieldValue("레시피")).not.toHaveTextContent("12");
+  });
+
+  it("AC-WEBNAME-02 · 편집 화면이 원두를 로스터 제품 형식으로 보여준다", async () => {
+    await renderEditPage();
+
+    await waitFor(() =>
+      expect(fieldValue("원두")).toHaveTextContent("프릿츠 예가체프"),
+    );
+  });
+
+  it("AC-WEBNAME-40 · 이름 조회가 실패해도 저장은 된다", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(`${BASE}/recipes/12`, () =>
+        HttpResponse.json(
+          { code: "FORBIDDEN", message: "권한이 없습니다." },
+          { status: 403 },
+        ),
+      ),
+    );
+    const captured = capturePatch();
+
+    await renderEditPage();
+    await waitFor(() =>
+      expect(fieldValue("레시피")).toHaveTextContent("비공개 레시피"),
+    );
+    await user.click(screen.getByRole("button", { name: "별점 5" }));
+    await user.click(screen.getByRole("button", { name: "저장" }));
+
+    await waitFor(() => expect(captured.calls).toBe(1));
+    expect(captured.body).toEqual({ rating: 5 });
   });
 });

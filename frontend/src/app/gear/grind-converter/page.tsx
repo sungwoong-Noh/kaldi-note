@@ -16,7 +16,10 @@ export default function GrindConverterPage() {
   if (grinders.error) {
     return (
       <Shell>
-        <ErrorState error={grinders.error} onRetry={() => void grinders.refetch()} />
+        <ErrorState
+          error={grinders.error}
+          onRetry={() => void grinders.refetch()}
+        />
       </Shell>
     );
   }

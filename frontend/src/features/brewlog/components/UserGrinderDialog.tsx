@@ -31,7 +31,9 @@ export function UserGrinderDialog({
     mutationFn: (id: number) =>
       createUserGrinder(
         // 별명은 비어 있으면 키째 뺀다. `""`를 보내면 "빈 이름"을 저장하는 셈이 된다.
-        nickname === "" ? { grinderModelId: id } : { grinderModelId: id, nickname },
+        nickname === ""
+          ? { grinderModelId: id }
+          : { grinderModelId: id, nickname },
         onSessionLost,
       ),
     // 인자를 그대로 넘기지 않는다 — onSuccess는 (data, variables, context)를 주므로
@@ -84,12 +86,17 @@ export function UserGrinderDialog({
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             aria-describedby={
-              fieldErrors?.byField.nickname ? "user-grinder-nickname-error" : undefined
+              fieldErrors?.byField.nickname
+                ? "user-grinder-nickname-error"
+                : undefined
             }
             className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
           />
           {fieldErrors?.byField.nickname && (
-            <span id="user-grinder-nickname-error" className="text-xs text-red-600">
+            <span
+              id="user-grinder-nickname-error"
+              className="text-xs text-red-600"
+            >
               {fieldErrors.byField.nickname}
             </span>
           )}

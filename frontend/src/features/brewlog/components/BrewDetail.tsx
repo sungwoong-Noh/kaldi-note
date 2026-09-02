@@ -68,7 +68,9 @@ export function BrewDetail({ id }: { id: number }) {
     <Shell>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-neutral-500">{log.brewedAt.slice(0, 10)}</p>
+          <p className="text-sm text-neutral-500">
+            {log.brewedAt.slice(0, 10)}
+          </p>
           {recipeId !== undefined && (
             <Link
               href={`/recipes/${recipeId}`}
@@ -104,7 +106,10 @@ export function BrewDetail({ id }: { id: number }) {
             <Measure label="비율" value={formatRatio(log.brewRatio)} />
           )}
           {log.actualGrindSettingValue !== undefined && (
-            <Measure label="분쇄도" value={String(log.actualGrindSettingValue)} />
+            <Measure
+              label="분쇄도"
+              value={String(log.actualGrindSettingValue)}
+            />
           )}
         </dl>
       </section>

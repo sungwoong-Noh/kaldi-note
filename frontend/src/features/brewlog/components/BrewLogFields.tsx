@@ -181,7 +181,10 @@ export function BrewLogFields({
                 aria-label={label}
                 value={state[key] ?? ""}
                 onChange={(e) =>
-                  set(key, e.target.value === "" ? null : Number(e.target.value))
+                  set(
+                    key,
+                    e.target.value === "" ? null : Number(e.target.value),
+                  )
                 }
                 className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
               >

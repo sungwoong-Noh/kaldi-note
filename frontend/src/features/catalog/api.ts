@@ -33,6 +33,17 @@ export function useBeanProducts(onSessionLost?: () => void) {
   });
 }
 
+/** 제품 한 건. 원두 이름을 만들려면 배치의 `beanProductId`로 이것을 읽어야 한다. */
+export function fetchBeanProduct(
+  id: number,
+  onSessionLost?: () => void,
+): Promise<BeanProduct> {
+  return authedRequest(backendUrl(`/api/v1/bean-products/${id}`), {
+    schema: beanProductSchema,
+    onSessionLost,
+  });
+}
+
 export function createRoaster(
   body: { name: string },
   onSessionLost?: () => void,
@@ -54,7 +65,12 @@ export function createRoaster(
  * 블렌드는 원산지를 2개 이상 받아야 해서 이번 슬라이스의 비목표다.
  */
 export function createBeanProduct(
-  body: { roasterId: number; name: string; roastLevel: RoastLevel; country: string },
+  body: {
+    roasterId: number;
+    name: string;
+    roastLevel: RoastLevel;
+    country: string;
+  },
   onSessionLost?: () => void,
 ): Promise<BeanProduct> {
   return authedRequest(backendUrl("/api/v1/bean-products"), {

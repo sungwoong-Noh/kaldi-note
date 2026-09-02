@@ -104,7 +104,9 @@ function Fields({
    * 쪽 코드를 전부 고쳐야 한다.
    */
   const serverErrors =
-    save.error instanceof ApiError ? mapFieldErrors(save.error.fieldErrors) : null;
+    save.error instanceof ApiError
+      ? mapFieldErrors(save.error.fieldErrors)
+      : null;
 
   // 서버 오류가 나중에 온 정보라 지우기 안내를 덮는다. 지우기 안내가 떠 있으면
   // 저장 자체가 막히므로 둘이 같은 칸에서 겹칠 일은 없다.

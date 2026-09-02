@@ -60,7 +60,10 @@ export function BeanBatchDialog({
       try {
         let resolvedRoasterId = roasterId;
         if (resolvedRoasterId === null) {
-          const roaster = await createRoaster({ name: roasterName }, onSessionLost);
+          const roaster = await createRoaster(
+            { name: roasterName },
+            onSessionLost,
+          );
           resolvedRoasterId = roaster.id;
           setRoasterId(roaster.id);
         }
@@ -224,7 +227,10 @@ export function BeanBatchDialog({
             className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
           />
           {mapped?.byField.roastedAt && (
-            <span id="bean-batch-roasted-error" className="text-xs text-red-600">
+            <span
+              id="bean-batch-roasted-error"
+              className="text-xs text-red-600"
+            >
               {mapped.byField.roastedAt}
             </span>
           )}

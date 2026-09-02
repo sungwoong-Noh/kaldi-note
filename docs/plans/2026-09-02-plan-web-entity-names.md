@@ -143,7 +143,7 @@ Expected: PASS, **266개**. 계획은 258개(249+9)로 봤으나 AC 9개 외에 
 
 **Files:**
 - Modify: `frontend/src/features/inventory/api.ts`, `frontend/src/features/catalog/api.ts`
-- Create: `frontend/src/features/brewlog/useEntityLabels.ts`
+- Create: `frontend/src/features/brewlog/useEntityLabels.ts`, `frontend/src/features/brewlog/useEntityLabels.test.tsx`
 
 **Covers:** 없음 — 배선. **기존 테스트가 하나도 깨지지 않는 것이 이 태스크의 인수 조건이다.**
 
@@ -158,27 +158,27 @@ Expected: PASS, **266개**. 계획은 258개(249+9)로 봤으나 AC 9개 외에 
 
 **`useBeanLabel`의 연쇄:** `fetchBeanBatch` → 성공하면 그 `beanProductId`로 `fetchBeanProduct` → `useRoasters`(이미 캐시될 가능성이 높다). 뒤 조회는 앞이 성공했을 때만 `enabled`가 된다. **`enabled: false`인 쿼리는 `isPending`이 `true`다** — 그대로 넘기면 실패한 상황이 `loading`으로 보인다. 앞이 실패했으면 그 실패가 첫 실패이므로 `combineSources`의 순서가 이것을 막아 준다. Step 3에서 실제로 확인한다.
 
-- [ ] **Step 1: 단건 조회 함수 둘을 더한다**
+- [x] **Step 1: 단건 조회 함수 둘을 더한다**
 
 기존 `fetchRecipe`와 같은 모양으로 쓴다. 스키마는 이미 있다(`beanBatchSchema`·`beanProductSchema`).
 
-- [ ] **Step 2: 훅 둘을 만든다**
+- [x] **Step 2: 훅 둘을 만든다**
 
 `queryKey`는 기존 관례를 따른다 — `["bean-batch", id]`, `["catalog", "bean-product", id]`. 로스터는 기존 `useRoasters`의 키를 그대로 쓴다.
 
-- [ ] **Step 3: `enabled: false`가 실패를 가리지 않는지 확인한다**
+- [x] **Step 3: `enabled: false`가 실패를 가리지 않는지 확인한다**
 
-임시 테스트를 하나 써서, **배치 조회가 403일 때** `useBeanLabel`이 `비공개 원두`를 돌려주는지 본다. `loading`(빈 문자열)이 나오면 `combineSources`에 넘기는 스냅샷 구성이 틀린 것이다. 확인 후 임시 테스트는 지우고, 이 조건은 Task 3의 화면 테스트가 대신 지킨다.
+임시 테스트를 하나 써서, **배치 조회가 403일 때** `useBeanLabel`이 `비공개 원두`를 돌려주는지 본다. `loading`(빈 문자열)이 나오면 `combineSources`에 넘기는 스냅샷 구성이 틀린 것이다. **확인 결과 지우지 않고 남겼다**(`useEntityLabels.test.tsx` 2개). 지우면 배선 순서를 지키는 테스트가 없어지고, 「원두가 403」을 덮는 화면 AC도 없다. 판정 순서를 뒤집어 함수·훅 테스트가 둘 다 빨간불을 내는 것까지 확인했다.
 
-- [ ] **Step 4: 기존 것이 그대로인지 확인한다**
+- [x] **Step 4: 기존 것이 그대로인지 확인한다**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **266개 그대로.**
+Expected: PASS, **268개** — 훅 테스트 2개가 늘었다.
 
 Run: `cd frontend && pnpm typecheck && pnpm lint`
 Expected: 통과
 
-- [ ] **Step 5: 커밋** — `feat(web): 레시피·원두 이름 조회 훅`
+- [x] **Step 5: 커밋** — `feat(web): 레시피·원두 이름 조회 훅`
 
 ---
 
@@ -213,7 +213,7 @@ Expected: FAIL — 화면이 아직 `12`·`3`을 그린다.
 - [ ] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **266 + 3 = 269개**
+Expected: PASS, **268 + 3 = 271개**
 
 - [ ] **Step 5: 커밋** — `feat(web): 편집 화면이 레시피·원두를 이름으로 보여준다 (AC-WEBNAME 3개)`
 
@@ -247,7 +247,7 @@ Expected: FAIL — 원두 줄이 없고, 폴백도 여전히 링크다.
 - [ ] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **269 + 3 = 272개**
+Expected: PASS, **271 + 3 = 274개**
 
 - [ ] **Step 5: 커밋** — `feat(web): 상세 화면의 원두 줄과 조건부 링크 (AC-WEBNAME 3개)`
 
@@ -287,7 +287,7 @@ Expected: FAIL
 - [ ] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **272 + 2 = 274개**
+Expected: PASS, **274 + 2 = 276개**
 
 Run: `cd frontend && grep -rn "레시피 \${" src`
 Expected: 출력 없음(픽스처의 `레시피 ${startId + i}`는 목록 픽스처 생성기라 제외 — 그것만 남는지 눈으로 확인한다)
@@ -336,7 +336,7 @@ Expected: 통과, **AC 459 + 17 = 476개**. 이 스펙의 17개가 전부 발견
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (274개)
+- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (276개)
 - [ ] `cd frontend && pnpm test:worker` 통과 (6개)
 - [ ] `cd frontend && pnpm e2e` 통과 (39개)
 - [ ] `./scripts/check-spec-coverage.sh` 통과, AC 476개

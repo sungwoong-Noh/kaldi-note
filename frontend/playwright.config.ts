@@ -33,7 +33,10 @@ export default defineConfig({
   ],
   webServer: {
     // 프로덕션 빌드에 붙는다. dev 서버는 번들이 달라 배포될 화면을 보장하지 못한다.
-    command: "pnpm build && pnpm start",
+    //
+    // CI에는 이 단계보다 앞에 `pnpm build` 단계가 이미 있다. 여기서 또 빌드하면 워크플로가
+    // 같은 일을 두 번 하므로 CI에서는 기동만 한다. 로컬에는 그런 선행 단계가 없어 빌드를 붙인다.
+    command: process.env.CI ? "pnpm start" : "pnpm build && pnpm start",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

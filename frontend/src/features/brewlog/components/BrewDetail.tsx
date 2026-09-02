@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
+import { RecipeStepList } from "@/features/recipe/components/RecipeStepList";
 import { useMe } from "@/features/user/queries";
 import {
   formatDuration,
@@ -126,6 +127,21 @@ export function BrewDetail({ id }: { id: number }) {
           )}
         </dl>
       </section>
+
+      {/*
+        푸어 스텝. **읽기 전용이다** — 푸어링을 바꾸는 것은 새 레시피를 만드는 일이라
+        여기에 편집 진입점을 두지 않는다(스펙의 「범위 밖」 첫 항목).
+
+        조건이 `steps.length`가 아니라 `isReady`인 것이 요점이다. 못 읽는 세 경우
+        (403·404·조회 중)가 한 갈래로 처리된다. 제목 자리에 이미 `비공개 레시피` 같은
+        문구가 떠 있어 이유가 드러나므로, 빈 절을 세워 같은 말을 두 번 하지 않는다.
+      */}
+      {recipe.isReady && (
+        <section className="flex flex-col gap-2">
+          <h2 className="text-base font-semibold">푸어 스텝</h2>
+          <RecipeStepList steps={recipe.steps} />
+        </section>
+      )}
 
       <ExtractionSummary log={log} />
 

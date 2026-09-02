@@ -1,7 +1,8 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { HttpResponse, http } from "msw";
+import { HttpResponse, delay, http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Recipe } from "@/features/recipe/schema";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
   brewLogWithoutTds,
@@ -244,5 +245,137 @@ describe("BrewDetailPage — 레시피·원두 이름", () => {
     expect(
       screen.queryByRole("link", { name: "비공개 레시피" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("BrewDetailPage — 푸어 스텝", () => {
+  /** 스펙의 화면 표에 맞춰 `recipeId: 12`인 로그를 쓴다. */
+  function logWithRecipe12() {
+    return http.get(DETAIL_URL, () =>
+      HttpResponse.json({ ...brewLogWithTds, id: 42, recipeId: 12 }),
+    );
+  }
+
+  /** 레시피 12를 스텝 6개짜리 Kasuya로 준다. `steps`만 갈아끼울 수 있다. */
+  function recipe12(steps: Recipe["steps"] = kasuyaRecipe.steps) {
+    return http.get(`${BASE}/recipes/12`, () =>
+      HttpResponse.json({ ...kasuyaRecipe, steps }),
+    );
+  }
+
+  /** 스텝 절. AC-07은 이 안쪽만 본다 — 화면 전체에는 편집·삭제 버튼이 있다. */
+  async function stepSection(): Promise<HTMLElement> {
+    const heading = await screen.findByText("푸어 스텝");
+    const section = heading.closest("section");
+    expect(section).not.toBeNull();
+    return section as HTMLElement;
+  }
+
+  it("AC-WEBLOGSTEP-01 · 레시피를 읽었으면 스텝이 순서대로 보인다", async () => {
+    server.use(logWithRecipe12(), recipe12());
+
+    await renderDetail();
+
+    const items = within(await stepSection()).getAllByRole("listitem");
+    expect(items).toHaveLength(6);
+    expect(within(items[0]).getByText("블룸")).toBeInTheDocument();
+    expect(items[0]).toHaveTextContent("50g");
+  });
+
+  it("AC-WEBLOGSTEP-02 · 스텝 절은 실측값 뒤, 추출 분석 앞에 온다", async () => {
+    server.use(logWithRecipe12(), recipe12());
+
+    await renderDetail();
+
+    const measured = await screen.findByText("실측값");
+    const steps = await screen.findByText("푸어 스텝");
+    const extraction = screen.getByText("추출 분석");
+    expect(
+      measured.compareDocumentPosition(steps) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      steps.compareDocumentPosition(extraction) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("AC-WEBLOGSTEP-06 · 스텝이 없는 레시피면 그 사실이 보인다", async () => {
+    server.use(logWithRecipe12(), recipe12([]));
+
+    await renderDetail();
+
+    expect(await screen.findByText("푸어 스텝")).toBeInTheDocument();
+    expect(screen.getByText("등록된 스텝이 없습니다")).toBeInTheDocument();
+  });
+
+  it("AC-WEBLOGSTEP-07 · 스텝 절은 읽기 전용이다", async () => {
+    server.use(logWithRecipe12(), recipe12());
+
+    await renderDetail();
+
+    const section = within(await stepSection());
+    expect(section.queryAllByRole("button")).toHaveLength(0);
+    expect(section.queryAllByRole("textbox")).toHaveLength(0);
+    expect(section.queryAllByRole("combobox")).toHaveLength(0);
+  });
+
+  /*
+    아래 셋은 회귀 방지다. 절을 감싼 조건이 `isReady`인 한 처음부터 통과한다 —
+    세 경우가 한 갈래로 처리되는 것이 이 설계의 요점이기 때문이다. 누군가 조건을
+    `steps.length > 0`으로 바꾸면 못 읽을 때도 빈 절이 그려지는데, 그것을 잡는 것은
+    이 세 조건뿐이다.
+  */
+
+  it("AC-WEBLOGSTEP-03 · 권한이 없으면 스텝 절이 없다", async () => {
+    server.use(
+      logWithRecipe12(),
+      http.get(`${BASE}/recipes/12`, () =>
+        HttpResponse.json(
+          { code: "FORBIDDEN", message: "권한이 없습니다." },
+          { status: 403 },
+        ),
+      ),
+    );
+
+    await renderDetail();
+
+    // 폴백 문구가 뜬 시점이 곧 「조회가 끝났다」다. 그 뒤에 부재를 본다
+    expect(await screen.findByText("비공개 레시피")).toBeInTheDocument();
+    expect(screen.queryByText("푸어 스텝")).not.toBeInTheDocument();
+  });
+
+  it("AC-WEBLOGSTEP-04 · 삭제된 레시피면 스텝 절이 없다", async () => {
+    server.use(
+      logWithRecipe12(),
+      http.get(`${BASE}/recipes/12`, () =>
+        HttpResponse.json(
+          { code: "NOT_FOUND", message: "레시피를 찾을 수 없습니다." },
+          { status: 404 },
+        ),
+      ),
+    );
+
+    await renderDetail();
+
+    expect(await screen.findByText("삭제된 레시피")).toBeInTheDocument();
+    expect(screen.queryByText("푸어 스텝")).not.toBeInTheDocument();
+  });
+
+  it("AC-WEBLOGSTEP-05 · 조회 중에는 스텝 절이 없다", async () => {
+    server.use(
+      logWithRecipe12(),
+      // 레시피 응답만 영영 도착하지 않게 한다. 로그 응답은 그대로 온다
+      http.get(`${BASE}/recipes/12`, async () => {
+        await delay("infinite");
+        return HttpResponse.json(kasuyaRecipe);
+      }),
+    );
+
+    await renderDetail();
+
+    // 로그가 도착한 시점의 화면이다 — 실측값은 있는데 스텝 절은 아직 없어야 한다
+    expect(await screen.findByText("실측값")).toBeInTheDocument();
+    expect(screen.queryByText("푸어 스텝")).not.toBeInTheDocument();
   });
 });

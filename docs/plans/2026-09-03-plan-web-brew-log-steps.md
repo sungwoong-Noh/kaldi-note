@@ -71,12 +71,12 @@ docs/specs/2026-09-03-web-brew-log-steps.md   Modify — status
   - `useBeanLabel`의 반환은 그대로 `EntityLabel`이다 — 두 훅의 타입이 갈리지만 필요한 쪽만 넓히는 편이 낫다
 - Consumes: `RecipeStepList` (`features/recipe/components/RecipeStepList.tsx`) — **그대로 쓴다**
 
-- [ ] **Step 1: 리팩터 전 초록을 확인한다**
+- [x] **Step 1: 리팩터 전 초록을 확인한다**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **이 숫자를 적어둔다**(276개일 것).
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 `src/app/brews/[id]/page.test.tsx`는 **이미 있는 파일이다.** 열어서 덧붙인다. `beforeEach`가 `GET /recipes/1`을 `grindedRecipe`(스텝 2개)로 스텁하고 있으니, 스펙이 정한 `recipeId: 12` + `kasuyaRecipe`(스텝 6개)로 덮어쓰는 헬퍼를 쓴다.
 
@@ -92,23 +92,23 @@ expect(
 
 AC-07은 **절 안쪽만** 본다. 화면 전체에는 `편집`·`삭제` 버튼이 있으므로 범위를 좁히지 않으면 언제나 실패한다. `푸어 스텝` 제목의 부모 `section`을 잡아 `within(...)`으로 센다.
 
-- [ ] **Step 3: 실패 확인**
+- [x] **Step 3: 실패 확인**
 
 Run: `cd frontend && pnpm exec vitest run "src/app/brews/[id]/page.test.tsx"`
 Expected: FAIL — 아직 절이 없다.
 
-- [ ] **Step 4: 최소 구현**
+- [x] **Step 4: 최소 구현**
 
 `useRecipeLabel`이 `steps`를 함께 돌려준다. `recipe.data?.steps ?? []`.
 
 `BrewDetail`의 실측값 `section` 바로 뒤에 절을 넣는다. **기존 절들과 같은 모양을 쓴다** — `<section className="flex flex-col gap-2">` + `<h2 className="text-base font-semibold">`. 레시피 상세는 `text-sm font-medium`을 쓰는데, 여기서는 **이 화면의 다른 제목들과 맞춘다**(`실측값`·`메모`와 같은 크기여야 나란히 읽힌다).
 
-- [ ] **Step 5: 통과 확인**
+- [x] **Step 5: 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS, **276 + 4 = 280개**
 
-- [ ] **Step 6: 커밋** — `feat(web): 로그 상세에 푸어 스텝 (AC-WEBLOGSTEP 4개)`
+- [x] **Step 6: 커밋** — `feat(web): 로그 상세에 푸어 스텝 (AC-WEBLOGSTEP 4개)`
 
 ---
 
@@ -123,25 +123,27 @@ Expected: PASS, **276 + 4 = 280개**
 
 그래도 조건을 쓰는 이유는 **회귀 방지**다. 누군가 `isReady` 대신 `steps.length > 0`으로 바꾸면 403일 때도 빈 절이 그려지는데, 그것을 잡는 것은 이 세 조건뿐이다.
 
-- [ ] **Step 1: 세 조건을 쓴다**
+- [x] **Step 1: 세 조건을 쓴다**
 
 403·404는 기존 파일의 msw 핸들러를 덮어쓰면 된다. **조회 중(AC-05)은 응답을 지연**시켜 만든다 — `await delay()`를 쓰거나 영영 안 끝나는 핸들러를 두고, 로그 응답이 도착한 시점의 화면을 본다.
 
-- [ ] **Step 2: 실행하고 결과를 그대로 본다**
+- [x] **Step 2: 실행하고 결과를 그대로 본다**
 
 Run: `cd frontend && pnpm exec vitest run "src/app/brews/[id]/page.test.tsx"`
 Expected: **셋 다 통과할 가능성이 크다.** 통과하면 그대로 두고, 하나라도 실패하면 그것이 진짜 결함이다.
 
-- [ ] **Step 3: 검사가 실제로 작동하는지 확인한다**
+- [x] **Step 3: 검사가 실제로 작동하는지 확인한다**
 
 절을 감싼 조건을 `isReady` → `steps.length > 0`으로 **잠시 바꿔** AC-03·04·05 중 몇 개가 빨간불을 내는지 본다. **하나도 안 나오면 세 조건이 아무것도 지키지 않는 것이므로 조건을 다시 쓴다.** 확인 후 되돌린다.
 
-- [ ] **Step 4: 통과 확인**
+> **실행 결과 — 이 돌연변이는 세 조건을 건드리지 못한다.** `steps.length > 0`으로 바꾸면 빨간불이 **AC-06 하나**뿐이었다. 못 읽으면 `steps`가 `[]`라 이 조건도 절을 똑같이 막기 때문이다. 세 조건이 실제로 잡는 회귀는 **읽었는지를 안 보는 조건**이다 — 제목 링크가 쓰는 `recipeId !== undefined`로 바꿔 재검사했더니 **AC-01·03·04·05 넷이 빨간불**을 냈다(403·404·조회 중에 빈 절이 그려진다). 조건은 다시 쓸 필요가 없었고, 검사할 돌연변이만 바꿨다.
+
+- [x] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS, **280 + 3 = 283개**
 
-- [ ] **Step 5: 커밋** — `test(web): 레시피를 못 읽을 때 스텝 절이 없다 (AC-WEBLOGSTEP 3개)`
+- [x] **Step 5: 커밋** — `test(web): 레시피를 못 읽을 때 스텝 절이 없다 (AC-WEBLOGSTEP 3개)`
 
 ---
 
@@ -152,36 +154,36 @@ Expected: PASS, **280 + 3 = 283개**
 
 **Covers:** 없음 — 마무리
 
-- [ ] **Step 1: 새 요청이 생기지 않았는지 본다**
+- [x] **Step 1: 새 요청이 생기지 않았는지 본다**
 
 Run: `cd frontend && pnpm e2e`
 Expected: PASS, **39개 그대로.** 「스텁되지 않은 요청이 없다」가 초록이면 새 API 호출이 없다는 뜻이다. 빨간불이면 스텝을 엉뚱한 데서 가져오고 있다.
 
 **레이아웃도 함께 본다.** 상세가 길어져 탭바·가로 스크롤 조건이 흔들릴 수 있다. E2E 스텁은 `/recipes/{id}`에 스텝 7개짜리 픽스처를 주므로 실제보다 긴 화면으로 검사된다.
 
-- [ ] **Step 2: 나머지 검증**
+- [x] **Step 2: 나머지 검증**
 
 Run: `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm test:worker`
 Expected: 전부 통과
 
-- [ ] **Step 3: 스펙 status 변경**
+- [x] **Step 3: 스펙 status 변경**
 
 Run: `./scripts/check-spec-coverage.sh`
 Expected: 통과, **AC 476 + 7 = 483개**
 
-- [ ] **Step 4: 커밋** — `docs(spec-web-brew-log-steps): status를 구현완료로`
+- [x] **Step 4: 커밋** — `docs(spec-web-brew-log-steps): status를 구현완료로`
 
 ---
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (283개)
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `cd frontend && pnpm e2e` 통과 (39개) — **새 요청이 없다는 증거다**
-- [ ] `./scripts/check-spec-coverage.sh` 통과, AC 483개
-- [ ] `git diff --stat main...HEAD`에 `backend/`가 없다
-- [ ] 스텝 절 안에 버튼·입력칸이 없다
-- [ ] CI 초록
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (283개)
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `cd frontend && pnpm e2e` 통과 (39개) — **새 요청이 없다는 증거다**
+- [x] `./scripts/check-spec-coverage.sh` 통과, AC 483개
+- [x] `git diff --stat main...HEAD`에 `backend/`가 없다
+- [x] 스텝 절 안에 버튼·입력칸이 없다
+- [x] CI 초록 — PR #90, `타입 + 린트 + 테스트 + 빌드` 4m42s · `인수 조건 커버리지` 4s
 
 ---
 
@@ -200,3 +202,13 @@ Expected: 통과, **AC 476 + 7 = 483개**
 3. **조회 중(AC-05)을 테스트로 만들 수 있는지.** msw로 한쪽 응답만 지연시키는 것이 이 저장소에서 처음이다. 잘 안 되면 그 조건만 다른 방식(쿼리를 `enabled: false`로 두는 등)으로 만들고 이유를 계획에 적는다.
 4. **레이아웃 E2E가 길어진 화면에서도 초록인지.** Task 3 Step 1에서 드러난다. 빨간불이면 그것은 이번 변경이 만든 진짜 결함이다.
 5. **테스트 개수 283.** 기존 테스트를 고쳐야 하면 달라진다. 달라지면 그 자리에서 새 기대값과 이유를 적는다.
+
+**실행 결과 — 다섯 가정의 판정**
+
+1. **확인됨.** `RecipeStepList`는 360px에서 그대로 읽힌다. E2E 스텁 화면(`/brews/2`)을 스크린샷으로 봤다 — 넘치는 곳도 잘리는 곳도 없다.
+2. **확인됨.** `text-base font-semibold`가 맞았다. `실측값`·`추출 분석`과 같은 크기로 나란히 읽히고, 스텝 목록이 제목보다 커 보이지 않는다.
+3. **확인됨.** msw의 `delay("infinite")`로 레시피 응답만 붙잡으면 된다. 로그 응답은 그대로 도착하므로 `실측값`이 보이는 시점에서 부재를 본다. 다른 방식이 필요 없었다.
+4. **확인됨.** `pnpm e2e` 39개 전부 초록. 길어진 화면에서도 탭바·가로 스크롤 조건이 흔들리지 않았다.
+5. **확인됨.** 283개. 기존 테스트를 고칠 일이 없었다.
+
+**계획이 틀린 곳 하나:** Task 2 Step 3의 돌연변이 검사(`isReady` → `steps.length > 0`)는 세 조건을 건드리지 못한다. 자세한 것은 그 자리에 적었다.

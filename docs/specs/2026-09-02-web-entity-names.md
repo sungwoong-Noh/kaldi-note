@@ -1,7 +1,7 @@
 ---
 id: WEBNAME
 title: 브루잉 로그 화면의 레시피·원두를 이름으로 보여준다
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-09-02-plan-web-entity-names.md
 ---
 

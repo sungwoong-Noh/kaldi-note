@@ -36,7 +36,11 @@ const HANDLERS: ReadonlyArray<readonly [RegExp, unknown]> = [
   [/^\/api\/v1\/gear\/filters$/, filters],
   [/^\/api\/v1\/gear\/user-grinders$/, [myComandante]],
   [/^\/api\/v1\/gear\/grinders$/, [comandanteC40, holzklotzE80, wilfaUniform]],
+  // 단건이 목록보다 위에 와야 한다. 순서를 바꾸면 `/bean-batches/3`이 목록 응답을 받는다.
+  // 상세·편집이 원두 이름을 만들려고 부른다(배치 → 제품 → 로스터).
+  [/^\/api\/v1\/bean-batches\/\d+$/, yirgacheffeBatch],
   [/^\/api\/v1\/bean-batches$/, [yirgacheffeBatch]],
+  [/^\/api\/v1\/bean-products\/\d+$/, yirgacheffeProduct],
   // 로그 작성 화면이 품고 있는 원두 재고 등록 모달(로스터 → 제품 → 재고 3단)이 부른다.
   [/^\/api\/v1\/bean-products$/, [yirgacheffeProduct]],
   [/^\/api\/v1\/roasters$/, [fritzRoaster]],

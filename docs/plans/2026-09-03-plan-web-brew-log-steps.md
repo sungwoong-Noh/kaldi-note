@@ -71,12 +71,12 @@ docs/specs/2026-09-03-web-brew-log-steps.md   Modify — status
   - `useBeanLabel`의 반환은 그대로 `EntityLabel`이다 — 두 훅의 타입이 갈리지만 필요한 쪽만 넓히는 편이 낫다
 - Consumes: `RecipeStepList` (`features/recipe/components/RecipeStepList.tsx`) — **그대로 쓴다**
 
-- [ ] **Step 1: 리팩터 전 초록을 확인한다**
+- [x] **Step 1: 리팩터 전 초록을 확인한다**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **이 숫자를 적어둔다**(276개일 것).
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 `src/app/brews/[id]/page.test.tsx`는 **이미 있는 파일이다.** 열어서 덧붙인다. `beforeEach`가 `GET /recipes/1`을 `grindedRecipe`(스텝 2개)로 스텁하고 있으니, 스펙이 정한 `recipeId: 12` + `kasuyaRecipe`(스텝 6개)로 덮어쓰는 헬퍼를 쓴다.
 
@@ -92,18 +92,18 @@ expect(
 
 AC-07은 **절 안쪽만** 본다. 화면 전체에는 `편집`·`삭제` 버튼이 있으므로 범위를 좁히지 않으면 언제나 실패한다. `푸어 스텝` 제목의 부모 `section`을 잡아 `within(...)`으로 센다.
 
-- [ ] **Step 3: 실패 확인**
+- [x] **Step 3: 실패 확인**
 
 Run: `cd frontend && pnpm exec vitest run "src/app/brews/[id]/page.test.tsx"`
 Expected: FAIL — 아직 절이 없다.
 
-- [ ] **Step 4: 최소 구현**
+- [x] **Step 4: 최소 구현**
 
 `useRecipeLabel`이 `steps`를 함께 돌려준다. `recipe.data?.steps ?? []`.
 
 `BrewDetail`의 실측값 `section` 바로 뒤에 절을 넣는다. **기존 절들과 같은 모양을 쓴다** — `<section className="flex flex-col gap-2">` + `<h2 className="text-base font-semibold">`. 레시피 상세는 `text-sm font-medium`을 쓰는데, 여기서는 **이 화면의 다른 제목들과 맞춘다**(`실측값`·`메모`와 같은 크기여야 나란히 읽힌다).
 
-- [ ] **Step 5: 통과 확인**
+- [x] **Step 5: 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS, **276 + 4 = 280개**

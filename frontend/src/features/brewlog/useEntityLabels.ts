@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchBeanProduct, useRoasters } from "@/features/catalog/api";
 import { fetchBeanBatch } from "@/features/inventory/api";
 import { fetchRecipe } from "@/features/recipe/api";
+import type { RecipeStep } from "@/features/recipe/schema";
 import { beanName, combineSources, entityLabel } from "./entityLabel";
 
 /** 화면이 쓰는 것 둘. `isReady`는 「이름을 실제로 읽었는가」로, 링크를 걸어도 되는지 판단에 쓴다. */
@@ -19,12 +20,15 @@ const NAME_STALE_MS = 5 * 60 * 1000;
  * 로그가 가리키는 레시피의 이름. 못 읽으면 그 이유를 담은 문구를 돌려준다.
  *
  * <p>못 읽는 것이 정상 동작이다 — 남의 로그는 보이되 그 레시피는 `PRIVATE`이라 403일 수 있다.
+ *
+ * <p><b>이름과 함께 푸어 스텝도 내보낸다.</b> 같은 응답 안에 이미 들어 있어 새 요청이 늘지 않는다.
+ * 못 읽었으면 빈 배열이지만, 그때는 `isReady`가 false라 화면이 스텝 절 자체를 그리지 않는다.
  */
 export function useRecipeLabel(
   recipeId: number | undefined,
   enabled: boolean,
   onSessionLost?: () => void,
-): EntityLabel {
+): EntityLabel & { readonly steps: RecipeStep[] } {
   const recipe = useQuery({
     queryKey: ["recipe", recipeId],
     queryFn: () => fetchRecipe(recipeId as number, onSessionLost),
@@ -36,6 +40,7 @@ export function useRecipeLabel(
   return {
     label: entityLabel("recipe", source),
     isReady: source.state === "ready",
+    steps: recipe.data?.steps ?? [],
   };
 }
 

@@ -19,11 +19,14 @@ export default defineConfig({
     // next dev가 생성하는 빌드 산출물은 테스트 대상이 아니다.
     // src/test/worker는 workerd를 띄우는 별도 스위트다 — vitest.worker.config.mts가 맡는다.
     // 여기 섞이면 OpenNext 빌드가 매번 돌아 이 스위트의 실행 시간이 분 단위가 된다.
+    // e2e/는 Playwright가 맡는다. vitest의 기본 include는 src/가 아니라 프로젝트 전체를
+    // 훑으므로, 빼두지 않으면 @playwright/test로 쓴 spec을 vitest가 집어 깨진다.
     exclude: [
       "node_modules/**",
       ".next/**",
       ".open-next/**",
       "src/test/worker/**",
+      "e2e/**",
     ],
   },
 });

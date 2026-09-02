@@ -142,7 +142,7 @@ pnpm lint:fix               # 자동 수정
 pnpm format                 # Prettier 적용
 pnpm typecheck              # tsc --noEmit
 
-pnpm e2e                    # Playwright (백엔드가 떠 있어야 함)
+pnpm e2e                    # Playwright 레이아웃 E2E (백엔드 불필요 — 요청을 전부 가로챈다)
 pnpm e2e:ui                 # Playwright UI 모드
 ```
 

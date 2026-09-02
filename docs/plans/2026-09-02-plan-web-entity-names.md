@@ -270,22 +270,22 @@ Expected: PASS, **271 + 3 = 274개**
 
 **이름을 바꾸는 이유:** `recipeTitle`은 「제목」이라는 뜻이라 `비공개 레시피`가 들어가면 거짓말이 된다. **prop이 필수가 되므로** 넘기는 것을 빠뜨리면 타입 검사가 잡는다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `brews/page.test.tsx`에 AC 둘을 더한다. AC-42는 **호출 횟수를 세야 한다** — msw 핸들러에 카운터를 두고 `GET /recipes/12`가 정확히 1인지 본다. "출력을 찍는 것과 기대값에 대조하는 것은 다른 일"이므로 `toBe(1)`로 못박는다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `cd frontend && pnpm test brews/page`
 Expected: FAIL
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `useRecipeTitles`가 각 id마다 `combineSources` → `entityLabel("recipe", ...)`을 거쳐 라벨을 넣게 고친다. 함수 이름도 `useRecipeLabels`로 바꾼다 — 파일명까지 함께 바꾼다.
 
 `BrewLogCard`의 `{recipeTitle ?? \`레시피 ${log.recipeId}\`}`를 `{recipeLabel}`로 바꾼다. **`??` 폴백을 남겨두지 않는다** — 남기면 이번에 없앤 문구가 조용히 되살아난다.
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS, **274 + 2 = 276개**
@@ -293,7 +293,7 @@ Expected: PASS, **274 + 2 = 276개**
 Run: `cd frontend && grep -rn "레시피 \${" src`
 Expected: 출력 없음(픽스처의 `레시피 ${startId + i}`는 목록 픽스처 생성기라 제외 — 그것만 남는지 눈으로 확인한다)
 
-- [ ] **Step 5: 커밋** — `feat(web): 목록·홈 카드가 라벨을 쓴다 (AC-WEBNAME 2개)`
+- [x] **Step 5: 커밋** — `feat(web): 목록·홈 카드가 라벨을 쓴다 (AC-WEBNAME 2개)`
 
 ---
 
@@ -307,12 +307,12 @@ Expected: 출력 없음(픽스처의 `레시피 ${startId + i}`는 목록 픽스
 
 **왜 필요한가:** 상세와 편집이 `GET /bean-batches/3`·`GET /bean-products/3`을 새로 부른다. 지금 스텁 표의 패턴은 `^/api/v1/bean-batches$`처럼 끝을 고정해 두어 **단건 경로가 걸리지 않는다.** 레이아웃 E2E의 「스텁되지 않은 요청이 없다」 조건이 곧바로 빨간불을 낸다.
 
-- [ ] **Step 1: 먼저 빨간불을 확인한다**
+- [x] **Step 1: 먼저 빨간불을 확인한다**
 
 Run: `cd frontend && pnpm e2e layout`
 Expected: **FAIL.** `/brews/2`와 `/brews/2/edit`에서 `unstubbed`에 두 URL이 잡혀야 한다. **여기서 통과하면 화면이 그 조회를 안 하고 있다는 뜻이므로 Task 3·4로 돌아간다.**
 
-- [ ] **Step 2: 스텁을 더한다**
+- [x] **Step 2: 스텁을 더한다**
 
 `HANDLERS`에 두 줄을 더한다. **단건이 목록보다 위에 와야 한다** — 순서를 바꾸면 `/bean-batches/3`이 목록 응답을 받는다.
 
@@ -321,29 +321,29 @@ Expected: **FAIL.** `/brews/2`와 `/brews/2/edit`에서 `unstubbed`에 두 URL�
 [/^\/api\/v1\/bean-products\/\d+$/, yirgacheffeProduct],
 ```
 
-- [ ] **Step 3: 통과 확인**
+- [x] **Step 3: 통과 확인**
 
 Run: `cd frontend && pnpm e2e`
 Expected: PASS, **39개 그대로.** 화면이 늘지 않았으므로 개수는 변하지 않는다.
 
-- [ ] **Step 4: 스펙 status 변경**
+- [x] **Step 4: 스펙 status 변경**
 
 Run: `./scripts/check-spec-coverage.sh`
 Expected: 통과, **AC 459 + 17 = 476개**. 이 스펙의 17개가 전부 발견돼야 한다.
 
-- [ ] **Step 5: 커밋** — `test(web): E2E 스텁에 단건 조회를 더한다`
+- [x] **Step 5: 커밋** — `test(web): E2E 스텁에 단건 조회를 더한다`
 
 ---
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (276개)
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `cd frontend && pnpm e2e` 통과 (39개)
-- [ ] `./scripts/check-spec-coverage.sh` 통과, AC 476개
-- [ ] `git diff --stat main...HEAD`에 `backend/`가 없다
-- [ ] `grep -rn "레시피 \${" frontend/src`에 화면 코드가 없다
-- [ ] CI 초록
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (276개)
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `cd frontend && pnpm e2e` 통과 (39개)
+- [x] `./scripts/check-spec-coverage.sh` 통과, AC 476개
+- [x] `git diff --stat main...HEAD`에 `backend/`가 없다
+- [x] `grep -rn "레시피 \${" frontend/src`에 화면 코드가 없다
+- [x] CI 초록
 
 ---
 

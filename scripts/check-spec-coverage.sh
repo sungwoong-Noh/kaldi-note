@@ -3,7 +3,7 @@
 # 스펙의 인수 조건(AC)이 실제 테스트에 존재하는지 검사한다.
 #
 #   docs/specs/*.md 에서 AC-XXX-NN 형태의 ID를 뽑아
-#   backend/src/test/ 와 frontend/src/ 에서 찾는다.
+#   backend/src/test/, frontend/src/, frontend/e2e/ 에서 찾는다.
 #
 # 스펙 frontmatter의 status에 따라 검사 강도가 다르다:
 #   초안 / 승인  → 건너뜀
@@ -22,7 +22,7 @@ AC_PATTERN='AC-[A-Z][A-Z0-9_]*-[0-9]+'
 
 # 테스트 코드가 있을 수 있는 경로 중 실제로 존재하는 것만 모은다
 SEARCH_PATHS=()
-for path in backend/src/test frontend/src; do
+for path in backend/src/test frontend/src frontend/e2e; do
   [ -d "$path" ] && SEARCH_PATHS+=("$path")
 done
 
@@ -107,7 +107,7 @@ done
 
 echo
 if [ ${#SEARCH_PATHS[@]} -eq 0 ]; then
-  echo "참고: 테스트 디렉터리가 아직 없습니다 (backend/src/test, frontend/src)."
+  echo "참고: 테스트 디렉터리가 아직 없습니다 (backend/src/test, frontend/src, frontend/e2e)."
 fi
 
 if [ "$failed" -ne 0 ]; then

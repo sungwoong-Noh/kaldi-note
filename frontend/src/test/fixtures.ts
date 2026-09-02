@@ -241,6 +241,132 @@ export const grindOutOfRangeError = {
 };
 
 /* ─────────────────────────────────────────────────────────────
+ * 레이아웃 E2E가 쓰는 것. **2026-09-02에 실행 중인 백엔드에서 뜬 실제 응답**이다.
+ * jsdom 테스트들은 각자 인라인 핸들러로 이 셋을 흉내내고 있었는데, E2E는 화면 11개를
+ * 한 벌의 스텁으로 덮어야 해서 공용 픽스처로 올렸다.
+ * ───────────────────────────────────────────────────────────── */
+
+/** `GET /users/me`. **이메일 동의를 하지 않은 카카오 계정이라 `email` 키가 없다.** */
+export const me = {
+  id: 11,
+  nickname: "노성웅",
+  profileImageUrl:
+    "http://k.kakaocdn.net/dn/bcuRHq/dJMcaiLau8t/NufxyVgrGl4NiE2xYYbjh1/img_640x640.jpg",
+  role: "USER",
+  createdAt: "2026-08-21T11:42:38.097936Z",
+};
+
+/** `GET /gear/brewers`. 페이지 봉투가 없는 **맨 배열**로 온다. 브랜드-이름 순으로 정렬돼 있다. */
+export const brewers = [
+  {
+    id: 8,
+    brand: "Chemex",
+    name: "Classic 6 Cup",
+    type: "CONE",
+    isSystem: true,
+  },
+  { id: 1, brand: "Hario", name: "V60 01", type: "CONE", isSystem: true },
+  { id: 2, brand: "Hario", name: "V60 02", type: "CONE", isSystem: true },
+  {
+    id: 3,
+    brand: "Kalita",
+    name: "Wave 155",
+    type: "FLAT_BOTTOM",
+    isSystem: true,
+  },
+  {
+    id: 4,
+    brand: "Kalita",
+    name: "Wave 185",
+    type: "FLAT_BOTTOM",
+    isSystem: true,
+  },
+  {
+    id: 9,
+    brand: "Melitta",
+    name: "Aroma Filter 1x2",
+    type: "WAVE",
+    isSystem: true,
+  },
+  {
+    id: 7,
+    brand: "Orea",
+    name: "Brewer V4",
+    type: "FLAT_BOTTOM",
+    isSystem: true,
+  },
+  { id: 6, brand: "Origami", name: "Dripper M", type: "CONE", isSystem: true },
+  { id: 5, brand: "Origami", name: "Dripper S", type: "CONE", isSystem: true },
+  {
+    id: 10,
+    brand: "Timemore",
+    name: "Crystal Eye",
+    type: "CONE",
+    isSystem: true,
+  },
+];
+
+/** `GET /gear/filters`. 필터에는 `brand`가 없다 — 이름 하나로 식별한다. */
+export const filters = [
+  {
+    id: 3,
+    name: "V60 무표백 필터 02",
+    material: "PAPER_NATURAL",
+    shape: "CONE",
+    isSystem: true,
+  },
+  {
+    id: 1,
+    name: "V60 표백 필터 01",
+    material: "PAPER_BLEACHED",
+    shape: "CONE",
+    isSystem: true,
+  },
+  {
+    id: 2,
+    name: "V60 표백 필터 02",
+    material: "PAPER_BLEACHED",
+    shape: "CONE",
+    isSystem: true,
+  },
+  {
+    id: 8,
+    name: "스테인리스 메탈 필터",
+    material: "METAL",
+    shape: "CONE",
+    isSystem: true,
+  },
+  {
+    id: 4,
+    name: "아바카 필터 V60 02",
+    material: "ABACA",
+    shape: "CONE",
+    isSystem: true,
+  },
+  {
+    id: 5,
+    name: "칼리타 웨이브 155 필터",
+    material: "PAPER_BLEACHED",
+    shape: "FLAT_BOTTOM",
+    isSystem: true,
+  },
+  {
+    id: 6,
+    name: "칼리타 웨이브 185 필터",
+    material: "PAPER_BLEACHED",
+    shape: "FLAT_BOTTOM",
+    isSystem: true,
+  },
+  {
+    id: 7,
+    name: "케멕스 본디드 필터",
+    material: "PAPER_BLEACHED",
+    shape: "CONE",
+    isSystem: true,
+  },
+];
+
+/* ─────────────────────────────────────────────────────────────
  * 브루잉 로그 슬라이스. 아래는 전부 **2026-08-31에 실행 중인 백엔드에서 뜬 실제 응답**이다.
  * 로컬 DB에 데이터가 없어 로스터·제품·재고·그라인더·로그를 직접 만들어 떴다.
  * ───────────────────────────────────────────────────────────── */

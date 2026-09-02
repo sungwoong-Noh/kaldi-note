@@ -61,9 +61,47 @@ jobs:
         working-directory: frontend
         run: pnpm build
 
-      # 위 테스트 59개는 Node + jsdom에서 돈다. 배포 대상은 workerd다.
+      # 브라우저 바이너리는 150MB쯤 된다. Playwright 버전이 그대로면 다시 받을 이유가 없다.
+      - name: Playwright 버전 확인
+        id: playwright
+        working-directory: frontend
+        run: echo "version=$(pnpm exec playwright --version | tr -d '\n')" >> "$GITHUB_OUTPUT"
+
+      - name: 브라우저 캐시
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      # 캐시가 맞아도 --with-deps가 까는 시스템 라이브러리는 남지 않는다. 그것만 따로 깐다.
+      - name: Playwright 브라우저 설치
+        working-directory: frontend
+        run: |
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            pnpm exec playwright install-deps chromium
+          else
+            pnpm exec playwright install --with-deps chromium
+          fi
+
+      # jsdom은 레이아웃을 계산하지 않는다. 이 단계만이 탭바 위치·가로 스크롤을 실제로 잰다.
+      # 앞의 「빌드」 단계 산출물에 붙는다 — playwright.config.ts가 CI에서는 다시 빌드하지 않는다.
+      - name: 레이아웃 E2E
+        working-directory: frontend
+        run: pnpm e2e
+
+      - name: 실패 시 스크린샷 업로드
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-실패-스크린샷
+          path: frontend/test-results/
+          retention-days: 7
+
+      # 위 테스트 249개는 Node + jsdom에서 돈다. 배포 대상은 workerd다.
       # 이 단계만이 "노드에선 되는데 Workers에선 안 되는" 부류를 잡는다.
-      # OpenNext 빌드를 포함하므로 다른 단계보다 느리다.
+      # OpenNext 빌드를 포함하므로 다른 단계보다 느리다. 그 빌드가 .next를 다시 쓰므로
+      # 「빌드」 산출물에 붙는 E2E보다 뒤에 둔다.
       - name: 워커 테스트
         working-directory: frontend
         run: pnpm test:worker

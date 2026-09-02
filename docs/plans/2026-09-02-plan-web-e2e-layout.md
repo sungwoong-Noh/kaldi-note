@@ -74,12 +74,12 @@ scripts/check-spec-coverage.sh       Modify — SEARCH_PATHS에 frontend/e2e 추
 - Produces: `pnpm e2e`, `pnpm e2e:ui` — `frontend/CLAUDE.md`에 이미 문서화된 이름을 그대로 쓴다
 - Produces: `playwright.config.ts`의 `webServer` 설정 — 뒤 태스크가 이것에 의존한다
 
-- [ ] **Step 1: 리팩터 전 초록을 확인한다**
+- [x] **Step 1: 리팩터 전 초록을 확인한다**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **이 숫자를 적어둔다**(249개일 것). Step 4에서 같은 숫자가 나와야 한다.
 
-- [ ] **Step 2: 설치와 설정**
+- [x] **Step 2: 설치와 설정**
 
 ```bash
 cd frontend && pnpm add -D @playwright/test && pnpm exec playwright install chromium
@@ -137,7 +137,7 @@ playwright-report/
 test-results/
 ```
 
-- [ ] **Step 3: 커버리지 스크립트가 e2e를 보게 한다**
+- [x] **Step 3: 커버리지 스크립트가 e2e를 보게 한다**
 
 `scripts/check-spec-coverage.sh`의 경로 목록에 한 줄 더한다:
 
@@ -147,7 +147,7 @@ for path in backend/src/test frontend/src frontend/e2e; do
 
 주석의 설명도 함께 고친다(`frontend/src/` → `frontend/src/`와 `frontend/e2e/`).
 
-- [ ] **Step 4: 기존 것이 그대로인지 확인한다**
+- [x] **Step 4: 기존 것이 그대로인지 확인한다**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS, Step 1과 **같은 개수**. vitest가 `e2e/`를 집으면 숫자가 늘거나 깨진다.
@@ -158,7 +158,7 @@ Expected: 통과. `playwright.config.ts`가 `tsconfig`에 걸려 타입 오류�
 Run: `(cd .. && ./scripts/check-spec-coverage.sh)`
 Expected: 통과, **AC 453개 그대로**. 이 스펙은 아직 `초안`이라 건너뛴다.
 
-- [ ] **Step 5: 커밋** — `chore(web): Playwright를 넣고 커버리지가 e2e도 훑게 한다`
+- [x] **Step 5: 커밋** — `chore(web): Playwright를 넣고 커버리지가 e2e도 훑게 한다`
 
 ---
 
@@ -175,7 +175,7 @@ Expected: 통과, **AC 453개 그대로**. 이 스펙은 아직 `초안`이라 �
 
 **왜 순수 함수로 뽑는가:** 실제 화면을 1px씩 어긋나게 만들 방법이 없어 경계값 조건을 화면으로 검사할 수 없다. 판정을 함수로 분리하면 그 함수를 직접 부를 수 있다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 import { expect, test } from "@playwright/test";
@@ -203,12 +203,12 @@ test.describe("판정 함수", () => {
 });
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `cd frontend && pnpm e2e tolerance`
 Expected: FAIL — `tolerance.ts`가 없다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```ts
 /** 좌표 비교의 기본 허용 오차. 브라우저가 서브픽셀로 계산해 766.5 같은 값이 나온다. */
@@ -237,12 +237,12 @@ export function notBelow(
 }
 ```
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm e2e tolerance`
 Expected: PASS, 3개
 
-- [ ] **Step 5: 커밋** — `test(web): 레이아웃 판정 함수와 경계값 (AC-WEBLAYOUT 2개)`
+- [x] **Step 5: 커밋** — `test(web): 레이아웃 판정 함수와 경계값 (AC-WEBLAYOUT 2개)`
 
 ---
 
@@ -259,7 +259,7 @@ Expected: PASS, 3개
 - Produces: `SCREENS: readonly Screen[]` — `{ path: string; hasTabBar: boolean }`
 - Consumes: `src/test/fixtures.ts`의 `hoffmann`·`kasuyaSummary`·`brewLogPage`·`brewLogWithTds`·`myComandante`·`yirgacheffeBatch`·`comandanteC40`·`holzklotzE80` 등
 
-- [ ] **Step 1: 어느 응답이 필요한지 실제로 확인한다**
+- [x] **Step 1: 어느 응답이 필요한지 실제로 확인한다**
 
 **픽스처를 지어내지 않는다.** 로컬 백엔드를 띄워 각 엔드포인트의 실제 응답을 뜬 뒤, `src/test/fixtures.ts`에 이미 있는 것과 대조한다.
 
@@ -274,7 +274,7 @@ docker compose up -d
 
 **모자란 것만** `fixtures.ts`에 더한다. 이미 있는 것은 그대로 쓴다.
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 `layout.spec.ts`에 이 태스크의 조건만 먼저 넣는다:
 
@@ -295,12 +295,12 @@ for (const screen of SCREENS) {
 }
 ```
 
-- [ ] **Step 3: 실패 확인**
+- [x] **Step 3: 실패 확인**
 
 Run: `cd frontend && pnpm e2e layout`
 Expected: FAIL — `screens.ts`·`stubs.ts`가 없다.
 
-- [ ] **Step 4: 최소 구현**
+- [x] **Step 4: 최소 구현**
 
 `screens.ts` — 스펙의 「대상 화면」 표를 그대로 옮긴다:
 
@@ -373,12 +373,12 @@ export async function installStubs(page: Page): Promise<{ unstubbed: string[] }>
 
 **정규식 순서가 중요하다.** `/recipes$`와 `/recipes/12$`를 구분하려면 앵커(`$`)를 정확히 쓰고, 쿼리스트링이 붙는 목록 경로는 `\/recipes(\?|$)` 형태로 맞춘다.
 
-- [ ] **Step 5: 통과 확인**
+- [x] **Step 5: 통과 확인**
 
 Run: `cd frontend && pnpm e2e layout`
 Expected: PASS, 11개. 실패하면 어느 URL이 스텁되지 않았는지 `unstubbed`에 그대로 나온다.
 
-- [ ] **Step 6: 커밋** — `test(web): E2E 스텁과 화면 목록 (AC-WEBLAYOUT 1개)`
+- [x] **Step 6: 커밋** — `test(web): E2E 스텁과 화면 목록 (AC-WEBLAYOUT 1개)`
 
 ---
 
@@ -392,7 +392,7 @@ Expected: PASS, 11개. 실패하면 어느 URL이 스텁되지 않았는지 `uns
 **Interfaces:**
 - Consumes: Task 2의 `withinTolerance`·`notBelow`, Task 3의 `SCREENS`·`TAB_BAR_SCREENS`·`installStubs`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 const VIEWPORT = { width: 360, height: 800 } as const;
@@ -442,23 +442,23 @@ for (const screen of TAB_BAR_SCREENS) {
 
 **`box!`를 쓰지 않는다** — 프로젝트가 `as` 단언을 금지하고 `!`도 같은 부류다. `if (box === null) throw new Error(...)`로 좁히거나 `expect(box).not.toBeNull()` 뒤에 지역 변수로 받아 좁힌다. Step 3에서 정리한다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `cd frontend && pnpm e2e layout`
 Expected: **AC-01과 AC-03은 통과할 가능성이 크다** — `mt-auto`가 이미 들어가 있다. AC-02는 어느 화면에서 터질지 모른다. **여기서 통과하는 것은 회귀 방지용이고, 실패하는 것이 있으면 그것이 이 태스크가 찾아낸 결함이다.**
 
 이 태스크는 TDD의 「빨강」이 보장되지 않는다. 대신 **`mt-auto`를 잠시 지워 AC-01이 11개 중 7개 빨간불을 내는지 확인한 뒤 되돌린다** — 검사가 실제로 작동하는지 그렇게 확인한다.
 
-- [ ] **Step 3: 구현 정리와 결함 대응**
+- [x] **Step 3: 구현 정리와 결함 대응**
 
 null 좁히기를 정리한다. AC-02가 실패하는 화면이 있으면 **그 자리에서 고치지 말고 기록한다** — 원인이 CSS인지 콘텐츠인지에 따라 다른 스펙의 일이 될 수 있다. 사람에게 보고하고 판단을 받는다.
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm e2e`
 Expected: PASS — 판정 3개 + 스텁 11개 + AC-01 7개 + AC-02 11개 + AC-03 7개 = **39개**
 
-- [ ] **Step 5: 커밋** — `test(web): 레이아웃 불변식 셋을 실제 브라우저로 고정 (AC-WEBLAYOUT 3개)`
+- [x] **Step 5: 커밋** — `test(web): 레이아웃 불변식 셋을 실제 브라우저로 고정 (AC-WEBLAYOUT 3개)`
 
 ---
 
@@ -470,7 +470,7 @@ Expected: PASS — 판정 3개 + 스텁 11개 + AC-01 7개 + AC-02 11개 + AC-03
 
 **Covers:** 없음 — 인프라
 
-- [ ] **Step 1: 워크플로에 단계를 더한다**
+- [x] **Step 1: 워크플로에 단계를 더한다**
 
 `check` 잡의 「워커 테스트」 뒤에 붙인다. **빌드는 이미 앞 단계에서 했으므로 `webServer.command`가 다시 빌드하지 않도록** `PLAYWRIGHT_SKIP_BUILD` 같은 분기를 두거나, `webServer.command`를 `pnpm start`로 두고 CI에서만 빌드를 앞에 두는 방식을 고른다. **둘 중 하나를 골라 config에 주석으로 이유를 남긴다.**
 
@@ -495,35 +495,35 @@ Expected: PASS — 판정 3개 + 스텁 11개 + AC-01 7개 + AC-02 11개 + AC-03
 
 **브라우저 설치를 캐시한다.** `actions/cache`로 `~/.cache/ms-playwright`를 잡으면 매 실행 150MB 다운로드를 아낀다. 캐시 키에 Playwright 버전을 넣는다.
 
-- [ ] **Step 2: CI에서 실제로 도는지 확인한다**
+- [x] **Step 2: CI에서 실제로 도는지 확인한다**
 
 푸시하고 Actions에서 「레이아웃 E2E」 단계가 초록인지 본다. **로컬 통과만으로 이 태스크를 끝내지 않는다** — CI 러너는 폰트가 달라 텍스트 폭이 달라지고, 그것이 가로 스크롤 판정을 바꿀 수 있다.
 
-- [ ] **Step 3: 실패 아티팩트를 확인한다**
+- [x] **Step 3: 실패 아티팩트를 확인한다**
 
 `mt-auto`를 지운 커밋을 일부러 밀어 **스크린샷이 아티팩트로 올라오는지** 본다. 확인 후 되돌린다. 스펙의 「수동 확인」이 이것이다.
 
-- [ ] **Step 4: 스펙 status 변경**
+- [x] **Step 4: 스펙 status 변경**
 
 `docs/specs/2026-09-02-web-e2e-layout.md`의 `status`를 `구현완료`로 바꾼다.
 
 Run: `./scripts/check-spec-coverage.sh`
 Expected: 통과. **AC 6개가 전부 발견돼야 한다** — 발견되지 않으면 Task 1 Step 3의 경로 추가가 빠진 것이다.
 
-- [ ] **Step 5: 커밋** — `ci(web): 레이아웃 E2E를 CI에 넣는다`
+- [x] **Step 5: 커밋** — `ci(web): 레이아웃 E2E를 CI에 넣는다`
 
 ---
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (249개 유지)
-- [ ] `cd frontend && pnpm test:worker` 통과 (6개)
-- [ ] `cd frontend && pnpm e2e` 통과 (39개)
-- [ ] `cd backend && ./gradlew clean check` 통과 (462개) — 백엔드는 건드리지 않으므로 그대로여야 한다
-- [ ] `./scripts/check-spec-coverage.sh` 통과, 이 스펙의 AC 6개가 발견됨
-- [ ] CI에서 「레이아웃 E2E」 단계가 초록
-- [ ] 일부러 깨뜨렸을 때 스크린샷 아티팩트가 올라옴
-- [ ] `git diff --stat main...HEAD`에 `backend/`가 없다
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (249개 유지)
+- [x] `cd frontend && pnpm test:worker` 통과 (6개)
+- [x] `cd frontend && pnpm e2e` 통과 (39개)
+- [x] `cd backend && ./gradlew clean check` 통과 (462개) — 백엔드는 건드리지 않으므로 그대로여야 한다
+- [x] `./scripts/check-spec-coverage.sh` 통과, 이 스펙의 AC 6개가 발견됨
+- [x] CI에서 「레이아웃 E2E」 단계가 초록
+- [x] 일부러 깨뜨렸을 때 스크린샷 아티팩트가 올라옴
+- [x] `git diff --stat main...HEAD`에 `backend/`가 없다
 
 ---
 

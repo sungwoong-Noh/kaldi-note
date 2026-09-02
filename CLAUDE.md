@@ -96,10 +96,12 @@ kaldi-note/
 │       ├── workflow.md       ★ 스펙 → 계획 → 코드. 코드 쓰기 전 필독
 │       ├── handover.md       ★ 세션 인계 프로토콜
 │       ├── git.md            커밋·브랜치·PR (공통)
+│       ├── verification.md   ★ 수동 확인 — 두 계정 확인, 결과를 어디에 적나
 │       ├── backend.md        Java / Spring Boot
 │       └── frontend.md       TypeScript / Next.js
 ├── scripts/
-│   └── check-spec-coverage.sh   AC ID가 테스트에 있는지 검사
+│   ├── check-spec-coverage.sh   AC ID가 테스트에 있는지 검사
+│   └── open-as.mjs              그 사용자로 로그인된 창을 연다 (로컬 확인용)
 ├── docker-compose.yml        로컬 개발용 PostgreSQL
 └── .github/workflows/        CI (백엔드/프론트/스펙 분리)
 ```
@@ -119,6 +121,7 @@ kaldi-note/
 | 구현 계획 작성 | `docs/conventions/workflow.md` → `docs/plans/TEMPLATE.md` |
 | 백엔드 코드 작성 | `backend/CLAUDE.md` → `docs/conventions/backend.md` |
 | 프론트 코드 작성 | `frontend/CLAUDE.md` → `docs/conventions/frontend.md` |
+| 스펙의 「수동 확인」을 밟을 때 | **`docs/conventions/verification.md`** |
 | "왜 이런 구조인가" 판단이 필요할 때 | `docs/design/2026-08-14-architecture.md` |
 
 ---

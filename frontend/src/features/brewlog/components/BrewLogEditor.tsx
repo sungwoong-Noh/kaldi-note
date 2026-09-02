@@ -90,8 +90,8 @@ function Fields({
 
   // 이름은 로그가 가리키는 id로 따로 읽는다. 실패해도 저장을 막지 않는다 —
   // 레시피·원두는 PATCH 본문에 들어가지 않아 저장과 아무 관계가 없다.
-  const recipeLabel = useRecipeLabel(log.recipeId, true, onSessionLost);
-  const beanLabel = useBeanLabel(log.beanBatchId, true, onSessionLost);
+  const recipe = useRecipeLabel(log.recipeId, true, onSessionLost);
+  const bean = useBeanLabel(log.beanBatchId, true, onSessionLost);
 
   const save = useMutation({
     mutationFn: () =>
@@ -154,12 +154,12 @@ function Fields({
           <dl className="flex flex-wrap gap-x-4 text-sm">
             <div className="flex items-center gap-1">
               <dt className="text-neutral-500">레시피</dt>
-              <dd>{recipeLabel}</dd>
+              <dd>{recipe.label}</dd>
             </div>
             {state.beanBatchId !== null && (
               <div className="flex items-center gap-1">
                 <dt className="text-neutral-500">원두</dt>
-                <dd>{beanLabel}</dd>
+                <dd>{bean.label}</dd>
               </div>
             )}
           </dl>

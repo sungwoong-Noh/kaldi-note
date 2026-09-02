@@ -14,7 +14,7 @@ import { useBeanLabel } from "./useEntityLabels";
 const BASE = "http://localhost:8080/api/v1";
 
 function BeanLabel({ batchId }: { batchId: number }) {
-  return <p data-testid="label">{useBeanLabel(batchId, true)}</p>;
+  return <p data-testid="label">{useBeanLabel(batchId, true).label}</p>;
 }
 
 beforeEach(() => {

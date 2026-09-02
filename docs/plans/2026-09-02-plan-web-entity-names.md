@@ -150,8 +150,9 @@ Expected: PASS, **266개**. 계획은 258개(249+9)로 봤으나 AC 9개 외에 
 **Interfaces:**
 - Produces: `fetchBeanBatch(id: number, onSessionLost?): Promise<BeanBatch>` — `GET /bean-batches/{id}`, `beanBatchSchema`
 - Produces: `fetchBeanProduct(id: number, onSessionLost?): Promise<BeanProduct>` — `GET /bean-products/{id}`, `beanProductSchema`
-- Produces: `useRecipeLabel(recipeId: number | undefined, enabled: boolean, onSessionLost?): string`
-- Produces: `useBeanLabel(beanBatchId: number | undefined, enabled: boolean, onSessionLost?): string`
+- Produces: `useRecipeLabel(recipeId, enabled, onSessionLost?): EntityLabel`
+- Produces: `useBeanLabel(beanBatchId, enabled, onSessionLost?): EntityLabel`
+- Produces: `interface EntityLabel { label: string; isReady: boolean }` — **Task 4에서 필요해져 반환 타입을 넓혔다.** 상세의 조건부 링크는 「이름을 실제로 읽었는가」를 알아야 하는데, 라벨 문자열로 되짚으면 폴백 문구와 제목을 구분할 수 없다.
 - Consumes: Task 1의 `entityLabel`·`beanName`·`combineSources`, 기존 `useRoasters`
 
 **왜 목록이 아니라 `/{id}`인가:** `GET /bean-batches`는 **내 재고만** 준다. 남의 로그의 배치는 목록에 없을 뿐이라 「권한이 없다」와 「삭제됐다」를 가를 수 없다. 폴백 네 갈래가 성립하려면 단건 조회여야 한다. 작성 화면의 `batchLabel`이 목록 3개를 쓰는 것과 다른 이유가 이것이다 — **그 함수를 재사용하지 않는다.**
@@ -233,23 +234,23 @@ Expected: PASS, **268 + 3 = 271개**
 
 AC-31은 「텍스트가 있고 그 텍스트를 가진 링크는 없다」를 본다. `queryByRole("link", { name: "비공개 레시피" })`가 `null`인지 보는 방식으로 쓴다 — `getByText`만으로는 링크 여부를 판정하지 못한다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 Run: `cd frontend && pnpm test 'brews/\[id\]/page'`
 Expected: FAIL — 원두 줄이 없고, 폴백도 여전히 링크다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 제목: 이름을 읽었을 때만 `<Link>`, 아니면 같은 자리에 `<span>`. **두 갈래가 같은 글자 크기·굵기를 갖게 한다** — 폴백일 때만 작아 보이면 레이아웃이 흔들린다.
 
 원두: 실측값 위에 `원두` 라벨과 값을 `<dl>`로 한 줄 넣는다. 상세 화면의 기존 `dl` 구조를 따른다.
 
-- [ ] **Step 4: 통과 확인**
+- [x] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS, **271 + 3 = 274개**
 
-- [ ] **Step 5: 커밋** — `feat(web): 상세 화면의 원두 줄과 조건부 링크 (AC-WEBNAME 3개)`
+- [x] **Step 5: 커밋** — `feat(web): 상세 화면의 원두 줄과 조건부 링크 (AC-WEBNAME 3개)`
 
 ---
 
@@ -358,6 +359,6 @@ Expected: 통과, **AC 459 + 17 = 476개**. 이 스펙의 17개가 전부 발견
 
 1. **`enabled: false`인 쿼리의 `isPending`이 `true`라는 것.** TanStack Query v5의 동작이다. 연쇄 조회에서 앞이 실패했을 때 뒤 쿼리가 `pending`으로 남아 `loading`이 이기면 폴백이 안 나온다. `combineSources`가 실패를 먼저 보므로 막히지만, **Task 2 Step 3에서 실제로 확인한다.**
 2. **`GET /bean-products/{id}`가 남의 원두에도 200을 준다는 것.** 제품·로스터는 공용 카탈로그라 그럴 것으로 보이나 확인하지 않았다. 만약 이것도 403이면 AC-WEBNAME-22의 「배치는 성공, 제품은 실패」 시나리오가 실제로는 잘 안 생길 뿐 판정은 그대로다 — 스펙 변경은 필요 없다.
-3. **상세 화면의 원두 줄을 넣을 자리.** 실측값 `dl` 위에 넣기로 했으나 기존 마크업이 그것을 자연스럽게 받는지는 Task 4에서 드러난다.
+3. ~~**상세 화면의 원두 줄을 넣을 자리.**~~ **터졌다.** 실측값 `dl`에 이미 `원두` 라벨이 있었다 — 원두량(20.0g)이다. 이름 줄을 `원두`로 넣으면 같은 라벨이 둘이 되어 AC-WEBNAME-03의 `getByText("원두")`가 모호해진다. **실측값 쪽을 `원두량`으로 바꿨다** — 작성·편집 폼의 입력칸 이름이 이미 `원두량`이라 이쪽이 일관된다. 원두 줄은 실측값 섹션이 아니라 제목 바로 아래에 놓았다.
 4. **테스트 개수 266.** 기존 테스트를 고쳐야 하면(카드 prop 변경 때문에 `page.test.tsx`가 걸릴 수 있다) 숫자가 달라진다. **달라지면 그 자리에서 새 기대값을 적고 이유를 남긴다.**
 5. **`useRecipeTitles` 이름 변경의 파급.** 홈과 목록 둘이 부른다. 파일명을 바꾸면 import도 둘 다 고쳐야 한다 — 타입 검사가 잡는다.

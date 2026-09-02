@@ -6,7 +6,11 @@ import { clearSession, setAccessToken } from "@/lib/session";
 import {
   brewLogWithoutTds,
   brewLogWithTds,
+  fritzRoaster,
   grindedRecipe,
+  kasuyaRecipe,
+  yirgacheffeBatch,
+  yirgacheffeProduct,
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
@@ -56,6 +60,15 @@ beforeEach(() => {
       HttpResponse.json({ ...grindedRecipe, id: 1, title: "Kasuya 4:6" }),
     ),
     http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
+    // 원두 이름은 배치 → 제품 → 로스터 3단으로 만든다.
+    // `onUnhandledRequest: "error"`라 여기 빠지면 이 파일의 모든 테스트가 깨진다.
+    http.get(`${BASE}/bean-batches/3`, () =>
+      HttpResponse.json(yirgacheffeBatch),
+    ),
+    http.get(`${BASE}/bean-products/3`, () =>
+      HttpResponse.json(yirgacheffeProduct),
+    ),
+    http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
   );
 });
 
@@ -182,5 +195,54 @@ describe("BrewDetailPage — 소유 판정", () => {
     expect(
       await screen.findByRole("button", { name: "삭제" }),
     ).toBeInTheDocument();
+  });
+});
+
+describe("BrewDetailPage — 레시피·원두 이름", () => {
+  /** 스펙의 화면 표에 맞춰 `recipeId: 12`인 로그를 쓴다. */
+  function logWithRecipe12() {
+    return http.get(DETAIL_URL, () =>
+      HttpResponse.json({ ...brewLogWithTds, id: 42, recipeId: 12 }),
+    );
+  }
+
+  it("AC-WEBNAME-03 · 상세 화면에 원두 줄이 있다", async () => {
+    await renderDetail();
+
+    expect(await screen.findByText("프릿츠 예가체프")).toBeInTheDocument();
+    expect(screen.getByText("원두")).toBeInTheDocument();
+  });
+
+  it("AC-WEBNAME-30 · 제목을 읽었으면 상세의 제목이 레시피 링크다", async () => {
+    server.use(
+      logWithRecipe12(),
+      http.get(`${BASE}/recipes/12`, () => HttpResponse.json(kasuyaRecipe)),
+    );
+
+    await renderDetail();
+
+    const link = await screen.findByRole("link", {
+      name: "Tetsu Kasuya 4:6 Method",
+    });
+    expect(link).toHaveAttribute("href", "/recipes/12");
+  });
+
+  it("AC-WEBNAME-31 · 폴백 문구는 링크가 아니다", async () => {
+    server.use(
+      logWithRecipe12(),
+      http.get(`${BASE}/recipes/12`, () =>
+        HttpResponse.json(
+          { code: "FORBIDDEN", message: "권한이 없습니다." },
+          { status: 403 },
+        ),
+      ),
+    );
+
+    await renderDetail();
+
+    expect(await screen.findByText("비공개 레시피")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "비공개 레시피" }),
+    ).not.toBeInTheDocument();
   });
 });

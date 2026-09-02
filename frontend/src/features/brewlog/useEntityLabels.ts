@@ -6,6 +6,12 @@ import { fetchBeanBatch } from "@/features/inventory/api";
 import { fetchRecipe } from "@/features/recipe/api";
 import { beanName, combineSources, entityLabel } from "./entityLabel";
 
+/** 화면이 쓰는 것 둘. `isReady`는 「이름을 실제로 읽었는가」로, 링크를 걸어도 되는지 판단에 쓴다. */
+export interface EntityLabel {
+  readonly label: string;
+  readonly isReady: boolean;
+}
+
 /** 이미 읽은 것을 다시 읽지 않을 시간. 이름은 한 화면을 보는 동안 거의 바뀌지 않는다. */
 const NAME_STALE_MS = 5 * 60 * 1000;
 
@@ -18,7 +24,7 @@ export function useRecipeLabel(
   recipeId: number | undefined,
   enabled: boolean,
   onSessionLost?: () => void,
-): string {
+): EntityLabel {
   const recipe = useQuery({
     queryKey: ["recipe", recipeId],
     queryFn: () => fetchRecipe(recipeId as number, onSessionLost),
@@ -26,7 +32,11 @@ export function useRecipeLabel(
     enabled: enabled && recipeId !== undefined,
   });
 
-  return entityLabel("recipe", combineSources([recipe], recipe.data?.title));
+  const source = combineSources([recipe], recipe.data?.title);
+  return {
+    label: entityLabel("recipe", source),
+    isReady: source.state === "ready",
+  };
 }
 
 /**
@@ -39,7 +49,7 @@ export function useBeanLabel(
   beanBatchId: number | undefined,
   enabled: boolean,
   onSessionLost?: () => void,
-): string {
+): EntityLabel {
   const batch = useQuery({
     queryKey: ["inventory", "bean-batch", beanBatchId],
     queryFn: () => fetchBeanBatch(beanBatchId as number, onSessionLost),
@@ -60,12 +70,13 @@ export function useBeanLabel(
     (candidate) => candidate.id === product.data?.roasterId,
   );
 
-  return entityLabel(
-    "bean",
-    // 순서가 곧 「첫 실패」의 순서다. 배치가 403이면 그것이 잡혀야 `비공개 원두`가 된다.
-    combineSources(
-      [batch, product, roasters],
-      product.data === undefined ? undefined : beanName(product.data, roaster),
-    ),
+  // 순서가 곧 「첫 실패」의 순서다. 배치가 403이면 그것이 잡혀야 `비공개 원두`가 된다.
+  const source = combineSources(
+    [batch, product, roasters],
+    product.data === undefined ? undefined : beanName(product.data, roaster),
   );
+  return {
+    label: entityLabel("bean", source),
+    isReady: source.state === "ready",
+  };
 }

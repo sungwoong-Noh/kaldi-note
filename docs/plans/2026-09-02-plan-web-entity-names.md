@@ -96,12 +96,12 @@ docs/specs/2026-09-02-web-entity-names.md   Modify — status
 
 **판정 순서 (`combineSources`):** 실패가 하나라도 있으면 **첫 실패의 `code`**. 실패가 없고 `isPending`이 하나라도 있으면 `loading`. 전부 성공이면 `ready`.
 
-- [ ] **Step 1: 리팩터 전 초록을 확인한다**
+- [x] **Step 1: 리팩터 전 초록을 확인한다**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **이 숫자를 적어둔다**(249개일 것). 이후 모든 Step에서 이 숫자와 대조한다.
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 `entityLabel.test.ts`에 AC 9개를 쓴다. `DisplayName` 자리에 AC ID를 넣는다:
 
@@ -121,21 +121,21 @@ it("AC-WEBNAME-24 · 로스터를 못 찾으면 제품명만 쓴다", () => {
 });
 ```
 
-- [ ] **Step 3: 실패 확인**
+- [x] **Step 3: 실패 확인**
 
 Run: `cd frontend && pnpm test entityLabel`
 Expected: FAIL — `entityLabel.ts`가 없다.
 
-- [ ] **Step 4: 최소 구현**
+- [x] **Step 4: 최소 구현**
 
 문구 표는 스펙의 「폴백 문구」 절과 **문자 하나까지 같아야 한다.** 옮겨 적을 때 스펙을 열어두고 대조한다.
 
-- [ ] **Step 5: 통과 확인**
+- [x] **Step 5: 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **249 + 9 = 258개**. 다르면 무엇이 늘거나 줄었는지 먼저 확인한다.
+Expected: PASS, **266개**. 계획은 258개(249+9)로 봤으나 AC 9개 외에 `combineSources`·`beanName`의 판정 규칙을 고정하는 테스트 8개를 더 썼다 — 「실패가 pending보다 이긴다」는 아래 미확인 가정 1번이라 함수 단위로 못박았다.
 
-- [ ] **Step 6: 커밋** — `feat(web): 이름 폴백 판정 함수 (AC-WEBNAME 9개)`
+- [x] **Step 6: 커밋** — `feat(web): 이름 폴백 판정 함수 (AC-WEBNAME 9개)`
 
 ---
 
@@ -173,7 +173,7 @@ Expected: PASS, **249 + 9 = 258개**. 다르면 무엇이 늘거나 줄었는지
 - [ ] **Step 4: 기존 것이 그대로인지 확인한다**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **258개 그대로.**
+Expected: PASS, **266개 그대로.**
 
 Run: `cd frontend && pnpm typecheck && pnpm lint`
 Expected: 통과
@@ -213,7 +213,7 @@ Expected: FAIL — 화면이 아직 `12`·`3`을 그린다.
 - [ ] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **258 + 3 = 261개**
+Expected: PASS, **266 + 3 = 269개**
 
 - [ ] **Step 5: 커밋** — `feat(web): 편집 화면이 레시피·원두를 이름으로 보여준다 (AC-WEBNAME 3개)`
 
@@ -247,7 +247,7 @@ Expected: FAIL — 원두 줄이 없고, 폴백도 여전히 링크다.
 - [ ] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **261 + 3 = 264개**
+Expected: PASS, **269 + 3 = 272개**
 
 - [ ] **Step 5: 커밋** — `feat(web): 상세 화면의 원두 줄과 조건부 링크 (AC-WEBNAME 3개)`
 
@@ -287,7 +287,7 @@ Expected: FAIL
 - [ ] **Step 4: 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS, **264 + 2 = 266개**
+Expected: PASS, **272 + 2 = 274개**
 
 Run: `cd frontend && grep -rn "레시피 \${" src`
 Expected: 출력 없음(픽스처의 `레시피 ${startId + i}`는 목록 픽스처 생성기라 제외 — 그것만 남는지 눈으로 확인한다)
@@ -336,7 +336,7 @@ Expected: 통과, **AC 459 + 17 = 476개**. 이 스펙의 17개가 전부 발견
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (266개)
+- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (274개)
 - [ ] `cd frontend && pnpm test:worker` 통과 (6개)
 - [ ] `cd frontend && pnpm e2e` 통과 (39개)
 - [ ] `./scripts/check-spec-coverage.sh` 통과, AC 476개

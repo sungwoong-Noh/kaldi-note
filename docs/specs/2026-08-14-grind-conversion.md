@@ -266,7 +266,13 @@ targetSetting  = micron ÷ target.micronsPerClick + target.zeroPointOffsetClicks
 
 ## 수동 확인
 
-- [ ] Swagger UI에서 `warning` 문구가 그대로 노출되는지 확인한다 (프론트가 이 문구를 반드시 보여줘야 한다)
+- [x] Swagger UI에서 `warning` 문구가 그대로 노출되는지 확인한다 (프론트가 이 문구를 반드시 보여줘야 한다)
+
+> **2026-09-03 확인.** 로컬 백엔드에 `POST /api/v1/gear/grind-conversions`를 실제로 호출해 응답 본문을 대조했다(C40 MK4 22클릭 → K-Plus).
+>
+> `warning`이 스펙 본문의 리터럴과 **한 글자도 다르지 않다** — `"버 형상과 입도 분포가 달라 정확한 등가 변환은 불가능합니다. 시작점으로만 사용하세요."` `estimated`는 `true`, `micron`은 `660`으로 `AC-GRIND-01`과 일치한다.
+>
+> **다만 OpenAPI 스키마에는 필드 설명이 하나도 없다.** `GrindConversionResponse`의 6개 필드 전부 `description`이 비어 있어, Swagger UI만 보는 사람은 `warning`이 무엇인지 알 수 없다. 응답 본문에는 문구가 실려 오므로 이 조건 자체는 충족하나, **「추정치임을 반드시 보여준다」가 스키마 문서에는 안 걸려 있다**는 뜻이다. 열어둔 결정에 남긴다.
 
 ## 열어둔 결정
 

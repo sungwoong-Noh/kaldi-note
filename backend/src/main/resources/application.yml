@@ -28,6 +28,12 @@ management:
   endpoint:
     health:
       show-details: never
+  info:
+    # 기본 build 기여자는 artifact·group·version까지 내보낸다. 공개 엔드포인트라
+    # BuildInfoContributor가 commit·time만 골라 낸다
+    # (docs/specs/2026-09-05-build-info.md).
+    build:
+      enabled: false
 
 kaldi:
   cors:

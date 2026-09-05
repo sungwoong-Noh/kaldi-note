@@ -25,3 +25,8 @@ jobs:
 
       - name: AC 커버리지 검사
         run: ./scripts/check-spec-coverage.sh
+
+      # 배포 스크립트의 헬스 대기 로직 — docs/specs/2026-09-05-build-info.md
+      # bash만 쓰므로 별도 설치가 없다.
+      - name: 배포 스크립트 테스트
+        run: ./infra/scripts/deploy.test.sh

@@ -7,6 +7,7 @@ import com.kaldinote.auth.infrastructure.TestLoginProperties;
 import com.kaldinote.auth.presentation.dto.LoginRequest;
 import com.kaldinote.auth.presentation.dto.LoginResponse;
 import com.kaldinote.auth.presentation.dto.RefreshRequest;
+import com.kaldinote.auth.presentation.dto.TestLoginRequest;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
 import jakarta.validation.Valid;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -28,6 +31,7 @@ public class AuthController {
 
   private final AuthService authService;
   private final TestLoginProperties testLoginProperties;
+  private final ObjectMapper objectMapper;
 
   @PostMapping("/login/{provider}")
   public LoginResponse login(
@@ -48,7 +52,22 @@ public class AuthController {
     if (!testLoginProperties.matches(secret)) {
       throw new BusinessException(ErrorCode.ENDPOINT_NOT_FOUND);
     }
-    throw new BusinessException(ErrorCode.ENDPOINT_NOT_FOUND); // Task 2에서 채운다
+
+    TestLoginRequest request = parseTestLoginBody(rawBody);
+    return LoginResponse.from(
+        authService.testLogin(request.userId(), request.handle(), request.nickname()));
+  }
+
+  /** 시크릿 검사 뒤에만 부른다. 파싱 실패도 여기서 400이 된다 — 경로 존재는 이미 드러난 뒤다. */
+  private TestLoginRequest parseTestLoginBody(String rawBody) {
+    if (rawBody == null || rawBody.isBlank()) {
+      throw new BusinessException(ErrorCode.INVALID_REQUEST, "요청 본문이 없다.");
+    }
+    try {
+      return objectMapper.readValue(rawBody, TestLoginRequest.class);
+    } catch (JacksonException e) {
+      throw new BusinessException(ErrorCode.INVALID_REQUEST, "요청 본문을 읽을 수 없다.");
+    }
   }
 
   @PostMapping("/refresh")

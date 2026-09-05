@@ -4,9 +4,12 @@ import com.kaldinote.extraction.domain.InvalidBrewMeasurementException;
 import com.kaldinote.grind.domain.GrindNotConvertibleException;
 import com.kaldinote.grind.domain.GrindSettingOutOfRangeException;
 import java.util.List;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -74,6 +77,22 @@ public class GlobalExceptionHandler {
     log.warn("매핑되지 않은 경로: {} {}", e.getHttpMethod(), e.getResourcePath());
     ErrorCode code = ErrorCode.ENDPOINT_NOT_FOUND;
     return toResponse(code, code.getDefaultMessage());
+  }
+
+  /** 경로는 있으나 그 메서드가 매핑되지 않았다. RFC 9110은 405에 Allow 헤더를 요구한다. */
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<ErrorResponse> handleMethodNotSupported(
+      HttpRequestMethodNotSupportedException e) {
+    log.warn("지원하지 않는 메서드: {} (허용: {})", e.getMethod(), e.getSupportedHttpMethods());
+    ErrorCode code = ErrorCode.METHOD_NOT_ALLOWED;
+    ResponseEntity.BodyBuilder builder = ResponseEntity.status(code.getStatus());
+    Set<HttpMethod> supported = e.getSupportedHttpMethods();
+    // null일 수 있다 — 스프링이 허용 목록을 모를 때다. 검사를 빼면 NPE가 나고
+    // 그것을 handleUnexpected가 잡아 다시 500이 된다.
+    if (supported != null && !supported.isEmpty()) {
+      builder.allow(supported.toArray(new HttpMethod[0]));
+    }
+    return builder.body(ErrorResponse.of(code, code.getDefaultMessage()));
   }
 
   @ExceptionHandler(Exception.class)

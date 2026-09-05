@@ -1,6 +1,12 @@
 package com.kaldinote.common.error;
 
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -50,5 +56,43 @@ class GlobalExceptionHandlerTest extends AbstractIntegrationTest {
         .perform(get("/nope").header(HttpHeaders.AUTHORIZATION, token()))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.code").value("ENDPOINT_NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-HTTPERR-05 · 매핑되지 않은 메서드는 405다")
+  void 매핑되지_않은_메서드는_405다() throws Exception {
+    mockMvc
+        .perform(patch("/api/v1/recipes/19").header(HttpHeaders.AUTHORIZATION, token()))
+        .andExpect(status().isMethodNotAllowed())
+        .andExpect(jsonPath("$.code").value("METHOD_NOT_ALLOWED"));
+  }
+
+  @Test
+  @DisplayName("AC-HTTPERR-06 · 405 본문의 문구")
+  void 메서드_405의_문구() throws Exception {
+    mockMvc
+        .perform(patch("/api/v1/recipes/19").header(HttpHeaders.AUTHORIZATION, token()))
+        .andExpect(jsonPath("$.message").value("이 주소에서 지원하지 않는 방식입니다."));
+  }
+
+  /**
+   * 순서를 고정하지 않는 이유: 스프링이 Set<HttpMethod>를 돌려주므로 순서까지 기대값에 넣으면 구현이 바뀔 때 이유 없이 빨개진다. POST를 따로 검사하지 않는
+   * 이유: DELETE가 POST를 부분 문자열로 포함하지 않아 PATCH 부재만으로 충분하다.
+   */
+  @Test
+  @DisplayName("AC-HTTPERR-07 · 405는 Allow 헤더를 갖는다")
+  void 메서드_405는_Allow_헤더를_갖는다() throws Exception {
+    mockMvc
+        .perform(patch("/api/v1/recipes/19").header(HttpHeaders.AUTHORIZATION, token()))
+        .andExpect(
+            header()
+                .stringValues(
+                    HttpHeaders.ALLOW,
+                    hasItem(
+                        allOf(
+                            containsString("GET"),
+                            containsString("PUT"),
+                            containsString("DELETE"),
+                            not(containsString("PATCH"))))));
   }
 }

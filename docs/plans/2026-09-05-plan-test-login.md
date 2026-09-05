@@ -299,10 +299,13 @@ Modify `AuthController.java`:
 Run: `cd backend && ./gradlew test --tests '*AuthControllerTest'`
 Expected: PASS. 기존 `AC-AUTH-*`도 전부 초록이어야 한다.
 
-- [ ] **Step 6: 돌연변이로 잠금을 확인한다**
+- [ ] **Step 6: 돌연변이로 잠금을 확인한다 — 이 태스크에서는 불가능하다**
 
-`TestLoginProperties.MIN_SECRET_LENGTH`를 `31`로 잠시 바꾼다.
-Expected: **AC-TESTLOGIN-08만** 빨갛다. 되돌린다.
+`TestLoginProperties.MIN_SECRET_LENGTH`를 `31`로 바꿔 **실제로 돌려봤고, 5개가 전부 그대로 초록이었다**(2026-09-05).
+
+**당연한 결과다.** 이 태스크의 핸들러는 **잠금을 통과해도 404를 던진다.** 길이 판정이 뒤집혀도 응답이 같아서 어떤 테스트도 구별하지 못한다. `AC-TESTLOGIN-08`이 Step 3에서 빨갰던 것은 길이 판정 때문이 아니라 **매핑이 없어 400이 났기 때문**이다.
+
+**그러므로 잠금의 돌연변이 검사는 Task 2에서 밟는다** — 거기서 `AC-TESTLOGIN-07`이 200을 단언하므로 404와 구별된다. Task 2 Step 7(role 돌연변이) 옆에서 함께 밟는다.
 
 - [ ] **Step 7: 커밋**
 

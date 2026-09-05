@@ -45,6 +45,10 @@ kaldi:
     access-token-ttl: PT30M
     refresh-token-ttl: P14D
     issuer: kaldi-note
+  # 테스트 로그인. 비워두면 기능이 꺼지고 경로가 없는 것처럼 행동한다.
+  # 32자 미만이면 켜지지 않는다. 이 값이 곧 모든 계정의 열쇠다.
+  test-login:
+    secret: ${KALDI_TEST_LOGIN_SECRET:}
   oauth:
     kakao:
       client-id: ${KAKAO_CLIENT_ID}

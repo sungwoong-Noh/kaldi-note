@@ -71,7 +71,7 @@ backend/src/
 │   │   └── presentation/AuthController.java               Modify — POST /login/test
 │   └── resources/application.yml                          Modify — kaldi.test-login.secret
 └── test/java/com/kaldinote/auth/presentation/
-    └── AuthControllerTest.java                            Modify — AC 17개
+    └── AuthControllerTest.java                            Create — AC 16개 (Modify로 적었으나 파일이 없었다)
 
 frontend/src/
 ├── app/
@@ -96,7 +96,7 @@ docs/specs/2026-09-05-test-login.md                        Modify — status
 - Modify: `backend/src/main/java/com/kaldinote/auth/domain/OAuthProvider.java`
 - Modify: `backend/src/main/java/com/kaldinote/auth/presentation/AuthController.java`
 - Modify: `backend/src/main/resources/application.yml`
-- Modify: `backend/src/test/java/com/kaldinote/auth/presentation/AuthControllerTest.java`
+- **Create**(계획은 Modify로 적었으나 파일이 없었다): `backend/src/test/java/com/kaldinote/auth/presentation/AuthControllerTest.java`
 
 **Covers:** AC-TESTLOGIN-07, 08, 09, 10, 11, 17
 
@@ -105,12 +105,12 @@ docs/specs/2026-09-05-test-login.md                        Modify — status
 - Produces: `TestLoginProperties.matches(String candidate): boolean` — 꺼져 있으면 언제나 false
 - Produces: `POST /api/v1/auth/login/test` — **이 태스크에서는 통과해도 404를 낸다.** Task 2가 채운다
 
-- [ ] **Step 1: 시작 전 초록을 확인한다**
+- [x] **Step 1: 시작 전 초록을 확인한다**
 
 Run: `docker compose up -d && cd backend && ./gradlew clean check`
 Expected: PASS. **숫자를 적어둔다**(482개일 것).
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 Modify `AuthControllerTest.java`. **시크릿을 테스트마다 바꿔야 하므로 `@SpringBootTest`의 프로퍼티를 갈아끼우는 중첩 클래스로 나눈다.** 기존 테스트는 건드리지 않는다.
 
@@ -202,12 +202,12 @@ Modify `AuthControllerTest.java`. **시크릿을 테스트마다 바꿔야 하�
 
 **AC-TESTLOGIN-07(32자면 켜진다)은 Task 2에서 200을 단언한다** — 지금은 켜져도 404라 구별되지 않는다. 이 태스크에서는 쓰지 않는다.
 
-- [ ] **Step 3: 테스트 실행 — 실패 확인**
+- [x] **Step 3: 테스트 실행 — 실패 확인**
 
 Run: `cd backend && ./gradlew test --tests '*AuthControllerTest'`
 Expected: FAIL — 4개. 매핑이 없어 `ENDPOINT_NOT_FOUND`가 나오긴 하지만, **AC-TESTLOGIN-17만 통과하고 나머지 셋도 우연히 통과할 수 있다.** 그러면 **빨간불을 못 본 것이므로** Step 4를 하고 다시 확인한다.
 
-- [ ] **Step 4: 프로퍼티와 매핑을 만든다**
+- [x] **Step 4: 프로퍼티와 매핑을 만든다**
 
 Create `TestLoginProperties.java`:
 
@@ -294,12 +294,12 @@ Modify `AuthController.java`:
 
 `private final TestLoginProperties testLoginProperties;`를 필드에 더한다.
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `cd backend && ./gradlew test --tests '*AuthControllerTest'`
 Expected: PASS. 기존 `AC-AUTH-*`도 전부 초록이어야 한다.
 
-- [ ] **Step 6: 돌연변이로 잠금을 확인한다 — 이 태스크에서는 불가능하다**
+- [x] **Step 6: 돌연변이로 잠금을 확인한다 — 이 태스크에서는 불가능하다**
 
 `TestLoginProperties.MIN_SECRET_LENGTH`를 `31`로 바꿔 **실제로 돌려봤고, 5개가 전부 그대로 초록이었다**(2026-09-05).
 
@@ -307,7 +307,7 @@ Expected: PASS. 기존 `AC-AUTH-*`도 전부 초록이어야 한다.
 
 **그러므로 잠금의 돌연변이 검사는 Task 2에서 밟는다** — 거기서 `AC-TESTLOGIN-07`이 200을 단언하므로 404와 구별된다. Task 2 Step 7(role 돌연변이) 옆에서 함께 밟는다.
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 cd backend && ./gradlew spotlessApply && ./gradlew clean check
@@ -336,7 +336,7 @@ cd .. && git add backend && git commit -m "feat(backend): 테스트 로그인의
   - **access token의 role은 언제나 `UserRole.USER`다**
 - Consumes: Task 1의 `TestLoginProperties.matches`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 Modify `AuthControllerTest.java`의 `시크릿이_32자일_때` 중첩 클래스 안에 더한다.
 
@@ -513,18 +513,18 @@ Modify `AuthControllerTest.java`의 `시크릿이_32자일_때` 중첩 클래스
     }
 ```
 
-> **`tokenProvider.parseRole`이 없을 수 있다.** 먼저 `JwtTokenProvider`를 읽고, 없으면 **테스트 안에서 JWT payload를 직접 디코딩한다**(`Base64.getUrlDecoder()`로 두 번째 세그먼트). **프로덕션 코드에 테스트용 메서드를 만들지 않는다.**
+> **[확인됨 2026-09-05] `tokenProvider.parseRole`은 없다.** 테스트에서 이미 빈으로 있는 `JwtDecoder`를 주입해 `decode(token).getClaimAsString("role")`로 읽었다 — Base64 수동 디코딩보다 낫고 프로덕션에 메서드를 만들지 않는다. 원문: 먼저 `JwtTokenProvider`를 읽고, 없으면 **테스트 안에서 JWT payload를 직접 디코딩한다**(`Base64.getUrlDecoder()`로 두 번째 세그먼트). **프로덕션 코드에 테스트용 메서드를 만들지 않는다.**
 >
-> **`User.createAdmin`이 없을 수 있다.** `User.java:45`에 `role = UserRole.ADMIN`을 세팅하는 자리가 있으니 그 팩터리 이름을 그대로 쓴다.
+> **[확인됨 2026-09-05] `User.createAdmin`은 없다.** `User.create(...)` 뒤에 이미 있는 `promoteToAdmin()`을 부른 다음 저장한다.
 
 **AC-TESTLOGIN-16(기존 OAuth 회귀)은 새 테스트를 쓰지 않는다** — 기존 `AC-AUTH-*`가 전부 초록인지 확인하는 것이 그 조건이다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd backend && ./gradlew test --tests '*AuthControllerTest'`
 Expected: FAIL — 11개. Task 1이 남긴 `throw ENDPOINT_NOT_FOUND`가 그대로 걸린다.
 
-- [ ] **Step 3: 요청 DTO를 만든다**
+- [x] **Step 3: 요청 DTO를 만든다**
 
 Create `TestLoginRequest.java`:
 
@@ -538,7 +538,7 @@ package com.kaldinote.auth.presentation.dto;
 public record TestLoginRequest(Long userId, String handle, String nickname) {}
 ```
 
-- [ ] **Step 4: 서비스를 만든다**
+- [x] **Step 4: 서비스를 만든다**
 
 Modify `AuthService.java` — 클래스에 `@Slf4j`를 더하고 메서드를 넣는다.
 
@@ -605,7 +605,7 @@ Modify `AuthService.java` — 클래스에 `@Slf4j`를 더하고 메서드를 �
 
 > `issueTokens`와 거의 같지만 **합치지 않는다.** 역할 인자를 받는 하나로 만들면 OAuth 경로에서 실수로 `USER`를 넘길 수 있다. 두 개로 두는 편이 안전하다.
 
-- [ ] **Step 5: 컨트롤러의 `throw`를 채운다**
+- [x] **Step 5: 컨트롤러의 `throw`를 채운다**
 
 Modify `AuthController.java`:
 
@@ -630,7 +630,7 @@ Modify `AuthController.java`:
     }
     try {
       return objectMapper.readValue(rawBody, TestLoginRequest.class);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) { // Jackson 3다 — JsonProcessingException이 아니다
       throw new BusinessException(ErrorCode.INVALID_REQUEST, "요청 본문을 읽을 수 없다.");
     }
   }
@@ -638,17 +638,17 @@ Modify `AuthController.java`:
 
 `private final ObjectMapper objectMapper;`를 필드에 더한다.
 
-- [ ] **Step 6: 테스트 실행 — 통과 확인**
+- [x] **Step 6: 테스트 실행 — 통과 확인**
 
 Run: `cd backend && ./gradlew test --tests '*AuthControllerTest'`
 Expected: PASS. 기존 `AC-AUTH-*`가 전부 초록이어야 한다(AC-TESTLOGIN-16).
 
-- [ ] **Step 7: 돌연변이로 role 고정을 확인한다**
+- [x] **Step 7: 돌연변이로 role 고정을 확인한다**
 
 `issueTestTokens`의 `UserRole.USER`를 `user.getRole()`로 잠시 바꾼다.
 Expected: **AC-TESTLOGIN-04만** 빨갛다. AC-TESTLOGIN-05는 초록 그대로다 — 갱신 뒤 동작은 원래 그렇다. 되돌린다.
 
-- [ ] **Step 8: `.env.example`에 자리를 만든다**
+- [x] **Step 8: `.env.example`에 자리를 만든다**
 
 Modify `infra/.env.example` — 파일 끝에 더한다.
 
@@ -661,7 +661,7 @@ Modify `infra/.env.example` — 파일 끝에 더한다.
 KALDI_TEST_LOGIN_SECRET=
 ```
 
-- [ ] **Step 9: 커밋**
+- [x] **Step 9: 커밋**
 
 ```bash
 cd backend && ./gradlew spotlessApply && ./gradlew clean check
@@ -685,7 +685,7 @@ cd .. && git add backend infra && git commit -m "feat(backend): 테스트 로그
   - 실패하면 백엔드의 상태·본문을 그대로 넘기고 **쿠키를 심지 않는다**
 - Consumes: 기존 `REFRESH_COOKIE_NAME`·`refreshCookieOptions`·`loginResponseSchema`·`backendUrl`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 Create `frontend/src/app/api/auth/test-login/route.test.ts`. **`app/api/auth/login/route.test.ts`의 모양을 그대로 베껴 온다.**
 
@@ -752,12 +752,12 @@ it("AC-TESTLOGIN-21 · 404면 쿠키를 심지 않고 그대로 넘긴다", asyn
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test test-login`
 Expected: FAIL — 모듈을 찾지 못한다.
 
-- [ ] **Step 3: 라우트를 만든다**
+- [x] **Step 3: 라우트를 만든다**
 
 Create `frontend/src/app/api/auth/test-login/route.ts`:
 
@@ -835,12 +835,12 @@ export async function POST(request: Request) {
 
 > `const { secret, ...body }`가 핵심이다 — 시크릿이 백엔드 **본문**에 섞여 들어가지 않는다. AC-TESTLOGIN-19가 본문을 `{userId: 12}`로 정확히 대조한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test test-login`
 Expected: PASS, 3 tests.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && cd ..
@@ -863,7 +863,7 @@ git commit -m "feat(web): 테스트 로그인 BFF 라우트 (AC-TESTLOGIN 3개)"
 - Consumes: Task 3의 `POST /api/auth/test-login`
 - Consumes: `setAccessToken`(`lib/session.ts`) — 로그인 화면이 쓰는 것과 같은 방식을 따른다. **`AuthCallback.tsx`를 먼저 읽고 그대로 맞춘다.**
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 Create `frontend/src/app/login/test/page.test.tsx`:
 
@@ -951,12 +951,12 @@ describe("AC-TESTLOGIN-22 · 시크릿이 프론트에 박히지 않는다", () 
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test login/test no-public-secret`
 Expected: FAIL — 화면 3개는 모듈을 못 찾고, `no-public-secret`은 **초록일 수 있다**(아직 아무것도 안 만들었으므로). 그 경우 **`NEXT_PUBLIC_TEST_LOGIN_SECRET=x`를 `.env.example`에 잠시 넣어 빨간불을 확인한 뒤 지운다** — 검사가 실제로 도는지 본 적 없는 테스트는 없는 것과 같다.
 
-- [ ] **Step 3: 화면을 만든다**
+- [x] **Step 3: 화면을 만든다**
 
 Create `frontend/src/app/login/test/page.tsx`:
 
@@ -1073,18 +1073,18 @@ function Field({
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS. 283 + 3(Task 3) + 4(Task 4) = **290개**.
+Expected: PASS. 289 + 3(Task 3) + 4(Task 4) = **296개**.
 
-- [ ] **Step 5: 스펙 status를 올린다**
+- [ ] **Step 5: 스펙 status를 올린다** — **하지 않았다(2026-09-05). 차단형 3개가 남아 있어 의도적으로 `초안`으로 둔다.** 운영에 시크릿을 넣고 실제로 로그인해 본 뒤에 올린다.
 
 Modify `docs/specs/2026-09-05-test-login.md` — `status: 초안` → `status: 구현완료`, `plan:` 채우기.
 
 **수동 확인 5개 중 셋이 차단형(`★`)이다.** `docs/conventions/verification.md`는 「차단형이 하나라도 남아 있으면 올리지 않는다」이다. **운영에 시크릿을 넣고 실제로 로그인해 보기 전에는 `초안`으로 둔다.**
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e && cd ..
@@ -1097,11 +1097,11 @@ git commit -m "feat(web): 테스트 로그인 화면 (AC-TESTLOGIN 4개)"
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과 — 482 + 17 = **499개**
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 — **290개**
-- [ ] `./scripts/check-spec-coverage.sh` 통과
-- [ ] **`git log -p`에 잠금 없이 동작하는 커밋이 없다** — Task 1 커밋에서 이 경로는 언제나 404여야 한다
-- [ ] `grep -rn "NEXT_PUBLIC_.*SECRET" frontend/`가 **0건**
+- [x] `cd backend && ./gradlew clean check` 통과 — 482 + 16 = **498개** (AC-TESTLOGIN-16은 새 테스트를 쓰지 않으므로 17이 아니라 16이다)
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 — **296개** (계획을 쓴 뒤 polish가 머지돼 기준이 283→289로 올랐다)
+- [x] `./scripts/check-spec-coverage.sh` 통과
+- [x] **`git log -p`에 잠금 없이 동작하는 커밋이 없다** — Task 1 커밋에서 이 경로는 언제나 404여야 한다
+- [x] `grep -rn "NEXT_PUBLIC_.*SECRET" frontend/`가 **검사 테스트의 정규식 1건뿐** — 실제 정의는 0건이다
 - [ ] 스펙 「수동 확인」 5개 — **차단형 3개를 밟기 전에는 `status`를 올리지 않는다**
 
 ---
@@ -1117,9 +1117,16 @@ git commit -m "feat(web): 테스트 로그인 화면 (AC-TESTLOGIN 4개)"
 - `AuthService.testLogin(Long, String, String)`의 인자 순서가 Task 2 정의와 컨트롤러 호출부에서 같다.
 - BFF의 `{secret, ...body}` 분해가 백엔드 `TestLoginRequest(userId, handle, nickname)`와 정확히 맞는다.
 
-**검증되지 않은 가정:**
-- **`@Nested` + `@TestPropertySource`가 이 프로젝트의 통합 테스트 베이스(`AbstractIntegrationTest`)에서 컨텍스트를 새로 띄우는가.** 띄우지 않으면 시크릿이 갈리지 않아 Task 1의 세 중첩 클래스가 서로를 오염시킨다. **Task 1 Step 3에서 세 클래스가 서로 다른 결과를 내는지 먼저 본다** — 다 같으면 컨텍스트가 공유된 것이고, 그때는 `@DirtiesContext`나 프로퍼티 대신 빈 교체로 바꾼다.
-- **`JwtTokenProvider.parseRole`이 있는가.** 없으면 테스트에서 JWT payload를 직접 디코딩한다. **프로덕션 코드에 테스트용 메서드를 만들지 않는다.**
-- **`User.createAdmin` 팩터리의 정확한 이름.** `User.java:45`에 `role = UserRole.ADMIN`을 세팅하는 자리가 있다. 이름이 다르면 그것을 쓴다.
-- **`@RequestBody(required = false) String`이 Spring 7에서 그대로 동작하는가.** 문자열 메시지 컨버터가 등록돼 있어야 한다. Task 1 Step 5에서 404가 정상적으로 나오면 확인된 것이다.
-- **MSW가 Next 라우트 핸들러 테스트에서 상대경로(`/api/auth/test-login`)를 가로채는가.** Task 4의 화면 테스트가 그것에 기댄다. `app/api/auth/login/route.test.ts`가 이미 같은 일을 하고 있으므로 선례를 따른다.
+**검증되지 않은 가정 — 2026-09-05 구현 세션의 결과:**
+
+- **`@Nested` + `@TestPropertySource`가 `AbstractIntegrationTest`에서 컨텍스트를 새로 띄우는가.** ✅ **띄운다.** Task 1 Step 3 실행 로그에 **HikariPool-1·2·3** 세 개가 떴다 — 중첩 클래스마다 별도 컨텍스트다. `@DirtiesContext`도 빈 교체도 필요 없었다.
+- **`JwtTokenProvider.parseRole`이 있는가.** ❌ **없다.** Base64 수동 디코딩 대신 **이미 빈으로 등록된 `JwtDecoder`를 테스트에 주입**해 `decode(token).getClaimAsString("role")`로 읽었다. 프로덕션에 테스트용 메서드를 만들지 않았다.
+- **`User.createAdmin` 팩터리의 정확한 이름.** ❌ **그런 팩터리가 없다.** `User.create(...)` 뒤에 **`promoteToAdmin()`**을 부르고 저장한다.
+- **`@RequestBody(required = false) String`이 Spring 7에서 그대로 동작하는가.** ✅ **동작한다.** Task 1 Step 5에서 404가 정상적으로 나왔다.
+- **MSW가 Next 라우트 핸들러 테스트에서 상대경로를 가로채는가.** ✅ **가로챈다.** Task 4의 화면 테스트 3개가 `/api/auth/test-login`으로 통과했다. 다만 **BFF 테스트(Task 3)는 절대 URL(`http://localhost:8080/...`)로 써야 한다** — `app/api/auth/login/route.test.ts`의 선례와 같다.
+
+**구현하며 드러난 계획의 결함 3개 (본문을 고쳤다):**
+
+- **`AuthControllerTest.java`가 없었다.** 계획은 `Modify`로 적었지만 `auth/presentation` 테스트 디렉터리 자체가 없어 새로 만들었다. `AC-AUTH-*`라는 ID도 저장소에 존재하지 않는다 — Task 2의 「기존 AC-AUTH-*가 초록이어야 한다」(AC-TESTLOGIN-16)는 **`AuthServiceTest`를 포함한 백엔드 전체가 초록인 것**으로 대신 확인했다.
+- **Jackson 3이라 `JsonProcessingException`이 없다.** `tools.jackson.core.JacksonException`을 잡는다(`backend/CLAUDE.md`의 함정 2번).
+- **Task 1 Step 6(돌연변이)이 그 시점에 성립하지 않는다.** 잠금을 통과해도 404라 길이 판정이 뒤집혀도 응답이 같다. **Task 2에서 밟아 AC-TESTLOGIN-08만 빨개지는 것을 확인했다.**

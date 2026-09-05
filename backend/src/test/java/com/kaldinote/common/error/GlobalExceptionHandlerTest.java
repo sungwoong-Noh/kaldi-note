@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 
 /** 라우팅 오류의 응답 규약 — docs/specs/2026-09-05-http-error-contract.md */
@@ -94,5 +96,51 @@ class GlobalExceptionHandlerTest extends AbstractIntegrationTest {
                             containsString("PUT"),
                             containsString("DELETE"),
                             not(containsString("PATCH"))))));
+  }
+
+  @Test
+  @DisplayName("AC-HTTPERR-08 · JSON이 아닌 본문은 415다")
+  void JSON이_아닌_본문은_415다() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/recipes")
+                .header(HttpHeaders.AUTHORIZATION, token())
+                .contentType(MediaType.TEXT_PLAIN)
+                .content("아침 레시피"))
+        .andExpect(status().isUnsupportedMediaType())
+        .andExpect(jsonPath("$.code").value("UNSUPPORTED_MEDIA_TYPE"));
+  }
+
+  @Test
+  @DisplayName("AC-HTTPERR-09 · 415 본문의 문구")
+  void 미디어타입_415의_문구() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/recipes")
+                .header(HttpHeaders.AUTHORIZATION, token())
+                .contentType(MediaType.TEXT_PLAIN)
+                .content("아침 레시피"))
+        .andExpect(jsonPath("$.message").value("지원하지 않는 형식입니다."));
+  }
+
+  @Test
+  @DisplayName("AC-HTTPERR-10 · 숫자 파라미터에 문자열이 오면 400이다")
+  void 숫자_파라미터에_문자열이_오면_400이다() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/recipes").param("size", "abc").header(HttpHeaders.AUTHORIZATION, token()))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-HTTPERR-11 · 어떤 파라미터가 틀렸는지 fieldErrors로 알린다")
+  void 틀린_파라미터를_fieldErrors로_알린다() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/recipes").param("size", "abc").header(HttpHeaders.AUTHORIZATION, token()))
+        .andExpect(jsonPath("$.fieldErrors.length()").value(1))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("size"))
+        .andExpect(jsonPath("$.fieldErrors[0].message").value("숫자여야 합니다."));
   }
 }

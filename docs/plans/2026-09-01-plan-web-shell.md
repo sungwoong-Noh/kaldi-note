@@ -350,7 +350,7 @@ it("AC-WEBSHELL-25 · 요청 본문이 고른 값 그대로다", async () => {
 - [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
 - [x] `cd frontend && pnpm test:worker` 통과 (6개)
 - [x] `./scripts/check-spec-coverage.sh` 통과
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] 스펙의 `status`를 `구현완료`로 변경 (2026-09-05, 비차단형만 남음)
 - [ ] 스펙 「수동 확인」 4개 완료
 
 ---

@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -32,5 +32,22 @@ describe("마감 결함", () => {
       readFileSync(path, "utf8").includes("<Shell>{null}</Shell>"),
     );
     expect(offenders).toEqual([]);
+  });
+
+  it("AC-POLISH-10 · Next 기본 SVG가 없다", () => {
+    // 배포는 Cloudflare Workers인데 vercel.svg가 남아 있었다.
+    const leftovers = [
+      "file.svg",
+      "globe.svg",
+      "next.svg",
+      "vercel.svg",
+      "window.svg",
+    ];
+    // 5개가 public/의 전부여서 지우면 디렉터리째 사라진다.
+    // PWA 스펙이 sw.js와 아이콘 PNG를 넣으면 다시 생긴다.
+    const present = (existsSync("public") ? readdirSync("public") : []).filter(
+      (name) => leftovers.includes(name),
+    );
+    expect(present).toEqual([]);
   });
 });

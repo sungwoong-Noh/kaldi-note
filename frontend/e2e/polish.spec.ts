@@ -65,3 +65,17 @@ test.describe("로딩 표시", () => {
     await expect(page.getByRole("status", { name: "불러오는 중" })).toBeVisible();
   });
 });
+
+test.describe("파비콘", () => {
+  test("AC-POLISH-11 · /icon.svg가 열린다", async ({ request }) => {
+    const response = await request.get("/icon.svg");
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("image/svg+xml");
+  });
+
+  test("AC-POLISH-12 · 문서가 파비콘을 가리킨다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/recipes");
+    await expect(page.locator('link[rel="icon"]')).toHaveCount(1);
+  });
+});

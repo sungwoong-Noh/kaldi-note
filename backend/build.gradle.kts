@@ -14,6 +14,17 @@ java {
 	}
 }
 
+springBoot {
+	buildInfo {
+		properties {
+			// CI가 -Pcommit=<40자 sha>로 넘긴다. 로컬 빌드에는 없으므로 unknown.
+			// 런타임 환경변수로 넘기지 않는 이유는 스펙에 있다 — 구 이미지를 새 sha 이름으로
+			// 띄워도 대조를 통과해버리기 때문이다.
+			additional.put("commit", project.findProperty("commit")?.toString() ?: "unknown")
+		}
+	}
+}
+
 repositories {
 	mavenCentral()
 }

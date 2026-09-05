@@ -85,7 +85,7 @@ scripts/
 - Produces: `BuildInfoContributor implements InfoContributor` — 생성자가 `BuildProperties`를 받는다.
   Task 2의 단위 테스트가 이 생성자를 직접 쓴다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 새 파일 `backend/src/test/java/com/kaldinote/common/config/InfoEndpointTest.java`:
 
@@ -140,7 +140,7 @@ class InfoEndpointTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*InfoEndpointTest'`
 Expected: FAIL 2개(AC-01·02 — `$.build.commit`/`$.build.time`이 없다), PASS 2개(AC-03·05).
@@ -148,7 +148,7 @@ Expected: FAIL 2개(AC-01·02 — `$.build.commit`/`$.build.time`이 없다), PA
 > **AC-03·05가 처음부터 통과하는 것이 정상이다.** 지금 응답이 `{}`라 없는 필드도 「없다」이고, `permitAll`도
 > 이미 걸려 있다. 둘은 회귀 방지 조건이다 — Step 4 뒤에도 통과해야 의미가 생긴다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `backend/build.gradle.kts` — `springBoot { }` 블록을 추가(없으면 새로):
 
@@ -213,7 +213,7 @@ public class BuildInfoContributor implements InfoContributor {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*InfoEndpointTest'`
 Expected: PASS, 4 tests
@@ -225,7 +225,7 @@ unzip -p build/libs/*.jar META-INF/build-info.properties
 ```
 Expected: `build.commit=unknown`과 `build.time=...`이 보인다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -245,7 +245,7 @@ cd .. && git add . && git commit -m "feat(backend): /actuator/info가 커밋 sha
 **Interfaces:**
 - Consumes: Task 1의 `BuildInfoContributor(BuildProperties)` 생성자
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
 package com.kaldinote.common.config;
@@ -281,7 +281,7 @@ class BuildInfoContributorTest {
 > `BuildProperties`는 `time`을 epoch 밀리초 문자열로 읽는다. 값이 없으면 `getTime()`이 null이라
 > `DateTimeFormatter`가 NPE를 낸다 — 그래서 테스트에도 넣는다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BuildInfoContributorTest'`
 Expected: FAIL — 컴파일은 되지만 값이 다르거나(구현이 `commit`을 안 읽으면) 통과.
@@ -289,7 +289,7 @@ Expected: FAIL — 컴파일은 되지만 값이 다르거나(구현이 `commit`
 `build.put("commit", buildProperties.get("commit"))`를 `build.put("commit", "unknown")`으로 잠시
 바꿔 빨간불을 확인하고 되돌린다 — 이 테스트가 무엇을 지키는지 증명해야 한다.
 
-- [ ] **Step 3: CI가 sha를 넘기게 한다**
+- [x] **Step 3: CI가 sha를 넘기게 한다**
 
 `.github/workflows/backend.yml`의 `bootJar` 단계:
 
@@ -300,7 +300,7 @@ Expected: FAIL — 컴파일은 되지만 값이 다르거나(구현이 `commit`
         run: ./gradlew bootJar --no-daemon -Pcommit=${{ github.sha }}
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BuildInfoContributorTest'`
 Expected: PASS, 1 test
@@ -314,7 +314,7 @@ unzip -p build/libs/*.jar META-INF/build-info.properties | grep commit
 Expected: `build.commit=0123456789abcdef0123456789abcdef01234567`
 확인 뒤 `./gradlew bootJar -q`로 되돌려 `unknown`으로 다시 굽는다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -335,7 +335,7 @@ cd .. && git add . && git commit -m "feat(ci): 빌드에 커밋 sha를 굽는다
 - Produces: `wait_healthy [기대sha]` — 인자가 있으면 commit까지 대조하고, 없으면 헬스만 본다.
   종료 코드 `0`이 통과다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 새 파일 `infra/scripts/deploy.test.sh` (실행 권한 필요):
 
@@ -406,7 +406,7 @@ wait_healthy > /dev/null; check "AC-BUILDINFO-10" 0 $?
 exit "$failed"
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `chmod +x infra/scripts/deploy.test.sh && ./infra/scripts/deploy.test.sh`
 Expected: **AC-07·09가 실패**(지금은 `UP`만 보므로 종료코드 0이 나온다). AC-06·08·10은 통과.
@@ -415,7 +415,7 @@ Expected: **AC-07·09가 실패**(지금은 `UP`만 보므로 종료코드 0이 
 > AC-06·10이 처음부터 통과하는 것은 정상이다 — 지금 로직도 `UP`이면 통과시킨다.
 > **이 태스크가 실제로 바꾸는 것은 AC-07·09다.**
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `infra/scripts/deploy.sh`를 「함수 정의 + 맨 끝 `main` 호출」로 나눈다. **롤백 로직은 그대로 옮기기만 한다.**
 
@@ -500,7 +500,7 @@ fi
 > **`set -e`와 `source`의 상호작용에 주의한다.** 테스트가 `set -uo pipefail`(`-e` 없이)로 시작하는 이유가
 > 이것이다 — `-e`가 켜진 채로 `wait_healthy`가 1을 돌려주면 테스트 셸이 즉시 죽는다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./infra/scripts/deploy.test.sh`
 Expected: `✓` 5개, 종료 코드 `0`. **5초 안에 끝난다**(`sleep`을 덮었으므로).
@@ -509,7 +509,7 @@ Expected: `✓` 5개, 종료 코드 `0`. **5초 안에 끝난다**(`sleep`을 �
 time ./infra/scripts/deploy.test.sh
 ```
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(infra): 배포가 실행 중인 버전을 대조한다"
@@ -526,7 +526,7 @@ git add . && git commit -m "feat(infra): 배포가 실행 중인 버전을 대�
 
 **Covers:** 없음 (배선 태스크)
 
-- [ ] **Step 1: 커버리지 스크립트가 셸 테스트를 본다**
+- [x] **Step 1: 커버리지 스크립트가 셸 테스트를 본다**
 
 `scripts/check-spec-coverage.sh`의 검색 경로에 `infra/scripts`를 추가한다:
 
@@ -536,13 +536,13 @@ for path in backend/src/test frontend/src frontend/e2e infra/scripts; do
 
 주석도 함께 고친다(파일 상단 「backend/src/test/, frontend/src/, frontend/e2e/ 에서 찾는다」).
 
-- [ ] **Step 2: 검사 — 지금은 건너뛴다**
+- [x] **Step 2: 검사 — 지금은 건너뛴다**
 
 Run: `./scripts/check-spec-coverage.sh`
 Expected: `- docs/specs/2026-09-05-build-info.md [초안] — AC 10개, 아직 구현 단계가 아니므로 건너뜀`
 **AC가 10개로 세어져야 한다.** 다른 숫자면 산문 속 AC 참조가 섞인 것이다(2026-09-03에 한 번 겪었다).
 
-- [ ] **Step 3: CI가 셸 테스트를 돌린다**
+- [x] **Step 3: CI가 셸 테스트를 돌린다**
 
 `.github/workflows/spec.yml`의 `coverage` job에 step 추가:
 
@@ -551,14 +551,14 @@ Expected: `- docs/specs/2026-09-05-build-info.md [초안] — AC 10개, 아직 �
         run: ./infra/scripts/deploy.test.sh
 ```
 
-- [ ] **Step 4: 스펙 `status`를 `구현완료`로**
+- [x] **Step 4: 스펙 `status`를 `구현완료`로**
 
 수동 확인이 0개이므로 바로 올린다.
 
 Run: `./scripts/check-spec-coverage.sh`
 Expected: `✓ docs/specs/2026-09-05-build-info.md [구현완료] — AC 10개 전부 테스트에 존재`
 
-- [ ] **Step 5: 전체 검증 + 커밋**
+- [x] **Step 5: 전체 검증 + 커밋**
 
 ```bash
 cd backend && ./gradlew clean check && cd ..
@@ -574,12 +574,12 @@ Expected: 백엔드 **482개**(477 + 5), 커버리지 AC **508개**(498 + 10), �
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `./infra/scripts/deploy.test.sh` 통과 (5초 이내)
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — `BUILDINFO` 10개가 **확인됨**
-- [ ] 스펙의 `status`를 `구현완료`로 변경
-- [ ] `git diff --stat main...HEAD`에 `frontend/`가 0줄
-- [ ] 수동 확인: 없음
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `./infra/scripts/deploy.test.sh` 통과 (5초 이내)
+- [x] `./scripts/check-spec-coverage.sh` 통과 — `BUILDINFO` 10개가 **확인됨**
+- [x] 스펙의 `status`를 `구현완료`로 변경
+- [x] `git diff --stat main...HEAD`에 `frontend/`가 0줄
+- [x] 수동 확인: 없음
 
 ---
 
@@ -600,18 +600,28 @@ Task 3의 셸 테스트가 Task 3에서 정의하는 `wait_healthy [기대sha]` 
 - 저장소가 **PUBLIC**이라 커밋 sha 노출은 비밀 유출이 아니다.
 - `SecurityConfig`가 `/actuator/info`를 이미 `permitAll`한다.
 
-**검증되지 않은 가정:**
+**검증되지 않은 가정 — 실행 결과 (2026-09-05): 6개 전부 확인됨**
 
-1. **Boot 4 Gradle 플러그인의 `buildInfo { properties { additional.put(...) } }` DSL이 이 형태다.**
-   Boot 3.x에서 `additional`이 `MapProperty`로 바뀌었는데 코틀린 DSL 표기를 확인하지 않았다.
-   Task 1 Step 3에서 깨지면 `./gradlew tasks --all | grep -i buildinfo`와 플러그인 소스로 확인한다.
-   **버전을 낮추는 방식으로 해결하지 않는다.**
-2. **`management.info.build.enabled: false`로 기본 기여자만 끌 수 있고 `BuildProperties` 빈은 남는다.**
-   빈까지 사라지면 `BuildInfoContributor` 주입이 실패해 컨텍스트가 안 뜬다. Task 1 Step 4에서 드러난다.
-3. **`buildInfo()`를 켜면 테스트 실행 시에도 `build-info.properties`가 클래스패스에 있다.**
-   `bootBuildInfo` 태스크가 `classes`에 묶인다는 전제다. 없으면 `BuildProperties` 빈이 없어 Task 1이 깨진다.
-4. **`DateTimeFormatter.ISO_INSTANT`의 출력이 AC-02의 정규식에 맞는다.** `2026-09-05T09:12:33Z` 또는
-   소수점이 붙은 형태다. 밀리초가 0이면 소수부가 사라지므로 정규식을 그렇게 썼다.
-5. **가짜 `curl` 함수가 `deploy.sh` 안의 `curl` 호출을 가로챈다.** bash 함수가 외부 명령보다 먼저 찾아지므로
-   된다고 보지만, `source` 순서(테스트가 함수를 **나중에** 정의)에서도 유효한지는 Task 3 Step 2에서 확인한다.
-6. **백엔드 테스트 총계가 482개가 된다** — 477 + 5(API 4 + 단위 1).
+1. `buildInfo { properties { additional.put(...) } }` DSL → **맞다.** 그대로 컴파일된다.
+2. `management.info.build.enabled: false`가 기여자만 끄고 `BuildProperties` 빈은 남긴다 → **맞다.**
+   컨텍스트가 정상적으로 뜨고 AC-03이 통과한다.
+3. `bootBuildInfo`가 테스트 클래스패스에도 파일을 놓는다 → **맞다.** 별도 배선 없이 됐다.
+4. `ISO_INSTANT` 출력이 AC-02의 정규식에 맞는다 → **맞다.** 실제 값은 `2026-09-05T09:05:29.955843Z`로
+   소수부가 6자리다.
+5. 가짜 `curl` 함수가 `deploy.sh`의 호출을 가로챈다 → **맞다.** 다만 아래 「계획이 놓친 것」 2번을 보라.
+6. 백엔드 테스트 총계 482개 → **맞다.** 477 → 482.
+
+**계획이 놓친 것 세 가지 (전부 Task 3)**
+
+1. **★ 빨간불을 보려면 `main` 분리가 먼저여야 한다.** 계획의 Step 2는 「AC-07·09가 실패」를 예상했지만,
+   분리 전 `deploy.sh`는 `source`하는 순간 최상단에서 `IMAGE_TAG`를 요구하며 죽는다 — AC별 결과가
+   아예 안 나온다. **분리만 먼저 하고(통과 조건은 `UP` 그대로) 돌리니 계획대로 AC-07·09만 빨갰다.**
+   리팩터는 동작 변경이 아니므로 TDD 순서를 어긴 것이 아니다.
+2. **★ `source`한 `deploy.sh`가 자기 `set -e`를 테스트 셸에 켠다.** 계획은 이 함정을 예고했지만 원인을
+   반대로 짚었다 — 「테스트가 `-e` 없이 시작한다」로는 부족하고, `source` **뒤에** `set +e`로 꺼야 한다.
+   안 그러면 AC-07이 1을 돌려주는 순간 테스트 셸이 죽어 나머지 셋이 실행조차 되지 않는다.
+   실제로 그 상태에서 「AC-06 통과」만 찍고 종료됐다.
+3. **가짜 `curl`이 파이프라인의 서브셸에서 돈다.** `deploy.sh`가 `curl ... | grep -q`로 부르므로
+   호출 횟수를 셸 변수에 누적할 수 없다(AC-08이 이것 때문에 실패했다). 카운터를 임시 파일로 옮겼다.
+
+셸 테스트는 **0.6초**에 끝난다(계획 기준 5초 이내).

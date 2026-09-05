@@ -1,7 +1,7 @@
 ---
 id: BUILDINFO
 title: 배포된 버전을 밖에서 확인한다
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-09-05-plan-build-info.md
 ---
 

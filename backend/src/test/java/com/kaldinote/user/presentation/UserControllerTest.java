@@ -68,4 +68,79 @@ class UserControllerTest extends AbstractIntegrationTest {
   void JWT_없이_내_프로필을_부르면_401이다() throws Exception {
     mockMvc.perform(get("/api/v1/users/me")).andExpect(status().isUnauthorized());
   }
+
+  // ---------- 공개 프로필 ----------
+
+  @Test
+  @DisplayName("AC-WEBFOLLOW-01 · 공개 프로필은 id·nickname·profileImageUrl을 반환한다")
+  void 공개_프로필은_세_필드를_반환한다() throws Exception {
+    User viewer = userRepository.save(User.create("me@example.com", "노성웅", null));
+    User target =
+        userRepository.save(
+            User.create("friend@example.com", "확인용친구", "https://example.com/f.png"));
+
+    mockMvc
+        .perform(
+            get("/api/v1/users/" + target.getId())
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(viewer)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(target.getId()))
+        .andExpect(jsonPath("$.nickname").value("확인용친구"))
+        .andExpect(jsonPath("$.profileImageUrl").value("https://example.com/f.png"));
+  }
+
+  @Test
+  @DisplayName("AC-WEBFOLLOW-02 · 공개 프로필은 email·role·createdAt을 담지 않는다")
+  void 공개_프로필은_민감한_필드를_담지_않는다() throws Exception {
+    User viewer = userRepository.save(User.create("me@example.com", "노성웅", null));
+    User target =
+        userRepository.save(
+            User.create("friend@example.com", "확인용친구", "https://example.com/f.png"));
+
+    String body =
+        mockMvc
+            .perform(
+                get("/api/v1/users/" + target.getId())
+                    .header(HttpHeaders.AUTHORIZATION, tokenOf(viewer)))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    assertThat(JsonPath.<Map<String, Object>>read(body, "$").keySet())
+        .containsExactlyInAnyOrder("id", "nickname", "profileImageUrl");
+  }
+
+  @Test
+  @DisplayName("AC-WEBFOLLOW-03 · 자기 자신의 공개 프로필도 200이다")
+  void 자기_자신의_공개_프로필도_200이다() throws Exception {
+    // 내 초대 링크가 제대로 됐는지 눌러 확인하는 것은 흔한 행동이다.
+    // FollowService.status는 자기 자신에 400을 내지만 이 엔드포인트는 막지 않는다.
+    User user = userRepository.save(User.create("me@example.com", "노성웅", null));
+
+    mockMvc
+        .perform(
+            get("/api/v1/users/" + user.getId()).header(HttpHeaders.AUTHORIZATION, tokenOf(user)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(user.getId()));
+  }
+
+  @Test
+  @DisplayName("AC-WEBFOLLOW-15 · 없는 사용자는 404와 NOT_FOUND다")
+  void 없는_사용자는_404다() throws Exception {
+    User viewer = userRepository.save(User.create("me@example.com", "노성웅", null));
+
+    mockMvc
+        .perform(get("/api/v1/users/999999").header(HttpHeaders.AUTHORIZATION, tokenOf(viewer)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-WEBFOLLOW-16 · 인증 없이 공개 프로필을 부르면 401이다")
+  void 인증_없이_공개_프로필을_부르면_401이다() throws Exception {
+    User target = userRepository.save(User.create("friend@example.com", "확인용친구", null));
+
+    mockMvc.perform(get("/api/v1/users/" + target.getId())).andExpect(status().isUnauthorized());
+  }
 }

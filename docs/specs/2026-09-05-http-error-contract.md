@@ -1,7 +1,7 @@
 ---
 id: HTTPERR
 title: 라우팅 오류의 HTTP 응답 규약
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-09-05-plan-http-error-contract.md
 ---
 

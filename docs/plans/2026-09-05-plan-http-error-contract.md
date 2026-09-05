@@ -79,7 +79,7 @@ backend/src/
 - Produces: `ErrorCode.ENDPOINT_NOT_FOUND` (404, `"요청하신 주소를 찾을 수 없습니다."`)
 - Produces: 테스트 클래스 `GlobalExceptionHandlerTest`와 그 안의 `token()` 헬퍼 — Task 2~5가 그대로 쓴다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 새 파일 `backend/src/test/java/com/kaldinote/common/error/GlobalExceptionHandlerTest.java`:
 
@@ -141,14 +141,14 @@ class GlobalExceptionHandlerTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*GlobalExceptionHandlerTest'`
 Expected: FAIL 3개. 세 테스트 모두 `Status expected:<404> but was:<500>`
 (AC-02는 `$.message`가 `"서버 오류가 발생했습니다."`로 나와 실패).
 **컴파일 실패가 아니라 이 사유로 실패해야 한다.** 컴파일이 깨지면 `ErrorCode` 상수를 먼저 넣은 것이다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `ErrorCode.java` — `NOT_FOUND` 바로 아래에 추가:
 
@@ -177,12 +177,12 @@ Expected: FAIL 3개. 세 테스트 모두 `Status expected:<404> but was:<500>`
 
 import 추가: `org.springframework.web.servlet.resource.NoResourceFoundException`
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*GlobalExceptionHandlerTest'`
 Expected: PASS, 3 tests
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -208,7 +208,7 @@ cd .. && git add . && git commit -m "feat(backend): 없는 경로는 404 ENDPOIN
 > `@DeleteMapping("/{id}")` 셋만 있다. `@PostMapping`은 `/{id}/fork`라 이 경로의 허용 목록에 들어가지 않는다.
 > **`Allow` 헤더의 기대값은 이 사실에서 나온다.** 컨트롤러에 `PATCH`가 추가되면 AC-07이 빨개지는 것이 맞다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `GlobalExceptionHandlerTest`에 추가 (import: `patch`, `header`):
 
@@ -250,12 +250,12 @@ cd .. && git add . && git commit -m "feat(backend): 없는 경로는 404 ENDPOIN
 > (`/{id}/fork`의 POST가 이 경로 목록에 새어 들어오면 `POST` 문자열이 생기지만, 그건 `PATCH` 검사가 잡지 못한다 —
 > Step 3 뒤에 실제 헤더 값을 한 번 눈으로 찍어 `GET,PUT,DELETE` 셋뿐인지 확인할 것.)
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*GlobalExceptionHandlerTest'`
 Expected: FAIL 3개 — `Status expected:<405> but was:<500>`, `Allow` 헤더 없음
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `ErrorCode.java`:
 
@@ -287,7 +287,7 @@ import 추가: `java.util.Set`, `org.springframework.http.HttpMethod`,
 > `supported`가 null일 수 있다 — 스프링이 허용 목록을 모를 때다. null 검사를 빼면
 > `NullPointerException`이 나고, 그건 `handleUnexpected`가 잡아 **다시 500이 된다.**
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*GlobalExceptionHandlerTest'`
 Expected: PASS, 6 tests
@@ -299,7 +299,7 @@ Expected: PASS, 6 tests
 ```
 Expected: `허용: [GET, PUT, DELETE]` — 셋뿐이어야 한다. `POST`가 섞여 있으면 AC-07의 기대값을 다시 쓴다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -321,7 +321,7 @@ cd .. && git add . && git commit -m "feat(backend): 매핑 없는 메서드는 4
 - Consumes: Task 1의 `token()` 헬퍼
 - Produces: `ErrorCode.UNSUPPORTED_MEDIA_TYPE` (415, `"지원하지 않는 형식입니다."`)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
   @Test
@@ -352,12 +352,12 @@ cd .. && git add . && git commit -m "feat(backend): 매핑 없는 메서드는 4
 
 import 추가: `post`, `org.springframework.http.MediaType`
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*GlobalExceptionHandlerTest'`
 Expected: FAIL 2개 — `Status expected:<415> but was:<500>`
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `ErrorCode.java`:
 
@@ -380,12 +380,12 @@ Expected: FAIL 2개 — `Status expected:<415> but was:<500>`
 
 import 추가: `org.springframework.web.HttpMediaTypeNotSupportedException`
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*GlobalExceptionHandlerTest'`
 Expected: PASS, 8 tests
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -406,7 +406,7 @@ cd .. && git add . && git commit -m "feat(backend): 미지원 미디어 타입�
 - Consumes: Task 1의 `token()` 헬퍼, 기존 `ErrorCode.INVALID_REQUEST`
 - Produces: 없음 (새 `ErrorCode` 상수 없이 기존 400 경로를 재사용한다)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
   @Test
@@ -428,12 +428,12 @@ cd .. && git add . && git commit -m "feat(backend): 미지원 미디어 타입�
   }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*GlobalExceptionHandlerTest'`
 Expected: FAIL 2개 — `Status expected:<400> but was:<500>`, `fieldErrors` 길이가 0
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `GlobalExceptionHandler.java`:
 
@@ -467,7 +467,7 @@ import 추가: `org.springframework.web.method.annotation.MethodArgumentTypeMism
 > 파라미터가 `Integer`인지 `int`인지에 따라 문구가 갈린다 — **Step 4에서 실제 응답을 찍어 확인한다.**
 > `int`로 판명되면 조건을 `required.isPrimitive() || Number.class.isAssignableFrom(required)`로 넓힌다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*GlobalExceptionHandlerTest'`
 Expected: PASS, 10 tests
@@ -480,7 +480,7 @@ Expected: PASS, 10 tests
 그리고 `fieldErrors[0].message`가 `"숫자여야 합니다."`인지 임시로 `andExpect`를 하나 걸어 확인한 뒤 지운다.
 스펙의 응답 예시가 이 문구이므로, 다르면 **스펙 쪽 예시를 고치는 것이 아니라 구현을 맞춘다.**
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -506,7 +506,7 @@ cd .. && git add . && git commit -m "feat(backend): 쿼리 파라미터 타입 �
 > 그래서 Step 3에서 **돌연변이를 실제로 심어** 각 테스트가 빨개지는지 확인한다. 하나도 안 빨개지면
 > 그 테스트는 아무것도 지키지 않는 것이므로 조건을 다시 쓴다.
 
-- [ ] **Step 1: `/boom` 엔드포인트 추가**
+- [x] **Step 1: `/boom` 엔드포인트 추가**
 
 `DummyController.java`에 추가:
 
@@ -524,7 +524,7 @@ cd .. && git add . && git commit -m "feat(backend): 쿼리 파라미터 타입 �
 `SecurityConfig`는 `/test-support/public`과 `/test-support/admin`만 따로 다루고 나머지는
 `anyRequest().authenticated()`이므로 `/boom`은 토큰이 필요하다. **`SecurityConfig`를 수정하지 않는다.**
 
-- [ ] **Step 2: 불변식 테스트 5개 작성**
+- [x] **Step 2: 불변식 테스트 5개 작성**
 
 ```java
   @Test
@@ -579,7 +579,7 @@ cd .. && git add . && git commit -m "feat(backend): 쿼리 파라미터 타입 �
 Run: `./gradlew test --tests '*GlobalExceptionHandlerTest'`
 Expected: PASS, 15 tests — **여기서 초록인 것이 정상이다.**
 
-- [ ] **Step 3: 돌연변이 검사 — 각 테스트가 실제로 무언가를 지키는지 확인**
+- [x] **Step 3: 돌연변이 검사 — 각 테스트가 실제로 무언가를 지키는지 확인**
 
 아래 넷을 **하나씩** 적용해 예상한 테스트가 빨개지는지 보고, 확인 후 **반드시 되돌린다.**
 
@@ -603,7 +603,7 @@ AC-13에는 돌연변이를 심지 않는다 — `SecurityConfig`를 건드려�
 대신 이 테스트는 **나중에 누군가 "없는 경로는 404가 맞지 않나"로 바꾸는 것**을 막는 것이 목적이므로,
 스펙의 AC-13이 그 판단 근거를 갖고 있다.
 
-- [ ] **Step 4: 전체 검증**
+- [x] **Step 4: 전체 검증**
 
 ```bash
 ./gradlew clean check
@@ -616,7 +616,7 @@ Expected: `clean check` 초록(백엔드 테스트 462 + 15 = **477개**), 커�
 > 477은 이 계획이 예상하는 값이다. 실제 수가 다르면 그 차이를 세어보고 `docs/JOURNAL.md`에 적는다 —
 > 「대충 늘었다」로 넘어가지 않는다.
 
-- [ ] **Step 5: 스펙 `status`를 `구현완료`로 바꾸고 커밋**
+- [x] **Step 5: 스펙 `status`를 `구현완료`로 바꾸고 커밋**
 
 수동 확인이 0개이므로 이 태스크가 끝나면 바로 올린다(`docs/conventions/verification.md`).
 
@@ -631,11 +631,11 @@ git add . && git commit -m "test(backend): 오류 응답의 불변식 고정 + �
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — `HTTPERR` 15개가 **건너뜀이 아니라 확인됨**으로 나온다
-- [ ] 스펙의 `status`를 `구현완료`로 변경
-- [ ] `git diff --stat main...HEAD`에 `frontend/`가 0줄
-- [ ] 수동 확인: 없음 (스펙에 항목이 0개다)
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과 — `HTTPERR` 15개가 **건너뜀이 아니라 확인됨**으로 나온다
+- [x] 스펙의 `status`를 `구현완료`로 변경
+- [x] `git diff --stat main...HEAD`에 `frontend/`가 0줄
+- [x] 수동 확인: 없음 (스펙에 항목이 0개다)
 
 ---
 
@@ -659,15 +659,34 @@ Spring 7.0.8 jar을 직접 열어 클래스 경로와 메서드 시그니처를 
 
 현재 동작 5가지도 로컬 백엔드에 유효한 토큰으로 실제 요청을 보내 측정했다(스펙의 「왜」 표).
 
-**검증되지 않은 가정:**
+**검증되지 않은 가정 — 실행 결과 (2026-09-05)**
 
-1. **`NoResourceFoundException`이 `@RestControllerAdvice`에 도달한다** — 도달한다고 판단하는 근거는
-   지금 이 요청이 `{"code":"INTERNAL_ERROR",...}` JSON을 돌려준다는 것이다. 그 본문을 만드는 곳은
-   `GlobalExceptionHandler.handleUnexpected` 하나뿐이다. Task 1 Step 4에서 확정된다.
-2. **`Allow` 헤더에 `GET,PUT,DELETE` 셋만 들어간다** — `/{id}/fork`의 POST가 섞이지 않을 것으로 본다.
-   Task 2 Step 4에서 로그로 확인한다.
-3. **`RecipeController`의 `size` 파라미터가 `Integer`다**(`int`가 아니다) — 문구가 갈린다.
-   Task 4 Step 3의 단서와 Step 4에서 확인한다.
-4. **`/test-support/boom`이 401이 아니라 500을 낸다** — `SecurityConfig`의 `anyRequest().authenticated()`에
-   걸리므로 토큰을 붙이면 통과할 것으로 본다. Task 5 Step 2에서 확정된다.
-5. **백엔드 테스트 총계가 477개가 된다** — 462 + 15. Task 5 Step 4에서 대조한다.
+1. **`NoResourceFoundException`이 `@RestControllerAdvice`에 도달한다** → **확인됨.** 핸들러 하나를 더하니
+   500이 404로 바뀌었다. 다른 설정 변경은 필요 없었다.
+2. **`Allow` 헤더에 `GET,PUT,DELETE` 셋만 들어간다** → **확인됨.** 로그가 `허용: [DELETE, PUT, GET]`이다.
+   `/{id}/fork`의 POST는 섞이지 않는다. **다만 순서가 사전순도 선언순도 아니다** — 기대값에 순서를 넣지 않은
+   판단이 맞았다.
+3. **`size` 파라미터가 `Integer`다** → **확인됨**(`RecipeController.list`). 그래도 구현은
+   `ClassUtils.resolvePrimitiveIfNecessary`를 거치게 뒀다. 다른 컨트롤러가 `int`로 선언하면 숫자 파라미터에
+   「형식이 올바르지 않습니다」가 나가기 때문이다.
+4. **`/test-support/boom`이 401이 아니라 500을 낸다** → **확인됨.** `SecurityConfig`를 건드리지 않았다.
+5. **백엔드 테스트 총계가 477개가 된다** → **확인됨.** 462 → 477.
+
+**돌연변이 검사 결과 (Task 5 Step 3)**
+
+| # | 심은 돌연변이 | 예상 | 실제 |
+|---|---|---|---|
+| 1 | `handleNoResource`의 code를 `NOT_FOUND`로 | AC-01, 03 빨강 / **AC-04는 초록** | AC-01, **02**, 03 빨강 / AC-04 초록 ✅ |
+| 2 | `handleUnreadable` 삭제 | AC-15 | AC-15 ✅ |
+| 3 | `handleBusiness` 삭제 | AC-04, 12 | AC-04, 12 ✅ |
+| 4 | `handleUnexpected`의 code를 `ENDPOINT_NOT_FOUND`로 | AC-14 | AC-14 ✅ |
+
+**넷 다 무언가를 지킨다.** 가장 중요한 결과는 돌연변이 1에서 **AC-04가 초록으로 남은 것**이다 —
+`ENDPOINT_NOT_FOUND`와 `NOT_FOUND`가 실제로 다른 경로를 탄다는 증명이고, 이 스펙이 둘을 나눈 이유가
+코드에 실현돼 있음을 보인다.
+
+돌연변이 1에서 **AC-02도 함께 빨개진 것은 이 표의 예상이 좁았던 것**이다. `code`를 바꾸면 `message`도
+그 상수의 `defaultMessage`를 따라가므로 당연한 결과다 — 구현의 문제가 아니라 계획이 표를 쓸 때
+`ErrorCode`가 둘을 함께 들고 있다는 점을 셈에 넣지 않았다.
+
+AC-13에는 돌연변이를 심지 않았다(계획대로). `SecurityConfig`를 건드려야 하는데 범위 밖이다.

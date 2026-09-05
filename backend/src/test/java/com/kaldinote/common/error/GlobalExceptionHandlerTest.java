@@ -143,4 +143,59 @@ class GlobalExceptionHandlerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.fieldErrors[0].field").value("size"))
         .andExpect(jsonPath("$.fieldErrors[0].message").value("숫자여야 합니다."));
   }
+
+  // ── 불변식 ─────────────────────────────────────────────────────────
+  // 아래 다섯은 이 변경 전에도 맞게 동작했다. GlobalExceptionHandler가 모든 API의
+  // 오류 응답을 지배하는 단일 파일이라, 여기를 고치면서 기존 경로가 조용히 바뀌는
+  // 것을 막으려고 못박는다. 각 조건이 실제로 무엇을 지키는지는 돌연변이를 심어
+  // 확인했다 — 결과는 docs/plans/2026-09-05-plan-http-error-contract.md에 있다.
+
+  @Test
+  @DisplayName("AC-HTTPERR-04 · 없는 리소스는 NOT_FOUND로 남는다")
+  void 없는_리소스는_NOT_FOUND로_남는다() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/recipes/999999").header(HttpHeaders.AUTHORIZATION, token()))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-HTTPERR-12 · 기존 페이지 파라미터 검증은 그대로다")
+  void 기존_페이지_파라미터_검증은_그대로다() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/recipes").param("page", "-1").header(HttpHeaders.AUTHORIZATION, token()))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+        .andExpect(jsonPath("$.message").value("page는 0 이상이어야 합니다: -1"));
+  }
+
+  @Test
+  @DisplayName("AC-HTTPERR-13 · 미인증 요청은 경로 존재 여부를 알려주지 않는다")
+  void 미인증_요청은_경로_존재_여부를_알려주지_않는다() throws Exception {
+    mockMvc.perform(get("/nope")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("AC-HTTPERR-14 · 핸들러가 없는 예외는 여전히 500이다")
+  void 핸들러가_없는_예외는_여전히_500이다() throws Exception {
+    mockMvc
+        .perform(get("/test-support/boom").header(HttpHeaders.AUTHORIZATION, token()))
+        .andExpect(status().isInternalServerError())
+        .andExpect(jsonPath("$.code").value("INTERNAL_ERROR"));
+  }
+
+  @Test
+  @DisplayName("AC-HTTPERR-15 · 깨진 JSON 본문은 그대로 400이다")
+  void 깨진_JSON_본문은_그대로_400이다() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/v1/recipes")
+                .header(HttpHeaders.AUTHORIZATION, token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+        .andExpect(jsonPath("$.message").value("요청 본문을 읽을 수 없습니다."));
+  }
 }

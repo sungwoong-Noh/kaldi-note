@@ -353,9 +353,28 @@ plan: docs/plans/2026-08-21-plan-web-recipe-read.md
 ## 수동 확인
 
 - [ ] `docker compose up -d` + `bootRun` + `pnpm dev` 상태에서 실제 카카오 계정으로 `/login` → 목록 → 상세 → 포크가 끝까지 동작한다
-- [ ] 브라우저 개발자도구 Network 탭에서 `GET /api/v1/recipes`에 CORS 오류가 없다
-- [ ] 375px 뷰포트에서 네 화면 모두 가로 스크롤이 생기지 않는다
-- [ ] Application 탭에서 `kaldi_refresh` 쿠키에 `HttpOnly` 체크가 켜져 있고, `localStorage`가 비어 있다
+- [x] 브라우저 개발자도구 Network 탭에서 `GET /api/v1/recipes`에 CORS 오류가 없다
+- [x] 375px 뷰포트에서 네 화면 모두 가로 스크롤이 생기지 않는다
+- [x] Application 탭에서 `kaldi_refresh` 쿠키에 `HttpOnly` 체크가 켜져 있고, `localStorage`가 비어 있다
+
+> **2026-09-05 확인.** 4개 중 **3개를 켰다.** 로컬(`bootRun` + `pnpm dev`)에 `scripts/open-as.mjs`와 같은
+> 방식으로 로그인한 실제 브라우저를 375px로 띄워 밟았다. 첫 항목은 실계정이 필요해 남긴다.
+>
+> **✅ CORS.** `GET http://localhost:8080/api/v1/recipes?page=0&size=20` → **200**,
+> `Access-Control-Allow-Origin: http://localhost:3000`. 상세(`/api/v1/recipes/9`)도 같다.
+> 실패한 요청 0건. **콘솔의 401 1건은 CORS가 아니다** — 콜드 스타트에서 accessToken이 없어
+> `GET /users/me`가 한 번 401을 받고, `POST /api/auth/refresh` 뒤 재시도해 200이 되는 설계된 복구
+> 경로다(`401 /users/me → 200 /auth/refresh → 200 /users/me → 200 /recipes` 순서를 그대로 봤다).
+>
+> **✅ 375px 가로 스크롤.** 네 화면 전부 `documentElement.scrollWidth == clientWidth == 375`.
+> `/login`·`/auth/callback`·`/recipes`·`/recipes/9`를 각각 캡처해 눈으로도 확인했다.
+>
+> **✅ 쿠키·스토리지.** `POST /api/auth/refresh`가 실제로 내려준 헤더는
+> `kaldi_refresh=…; Path=/; Max-Age=1209600; HttpOnly; SameSite=lax`이고, 같은 화면에서
+> `localStorage`·`sessionStorage` 모두 `{}`였다.
+>
+> **참고.** 개발 모드에서는 Next.js 개발 오버레이(좌하단 「N」 배지)가 탭바의 `홈`에 겹쳐 보인다.
+> 앱 요소가 아니라 `pnpm dev` 전용이므로 결함이 아니다 — 캡처를 볼 때 헷갈리지 않도록 적어 둔다.
 
 ## 열어둔 결정
 

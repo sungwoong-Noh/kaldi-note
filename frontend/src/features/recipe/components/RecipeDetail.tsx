@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { errorMessageOf, ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useBrewFilters, useBrewers } from "@/features/gear/queries";
 import { useMe } from "@/features/user/queries";
@@ -52,7 +53,11 @@ export function RecipeDetail({ id }: { id: number }) {
   });
 
   if (!ready || recipeQuery.isPending) {
-    return <Shell>{null}</Shell>;
+    return (
+      <Shell>
+        <LoadingState />
+      </Shell>
+    );
   }
 
   if (recipeQuery.error) {

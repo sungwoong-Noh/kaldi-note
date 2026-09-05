@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorState, errorMessageOf } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useUserGrinders } from "@/features/gear/queries";
 import { ApiError } from "@/lib/api-client";
@@ -58,7 +59,11 @@ export function BrewLogEditor({ id }: { id: number }) {
 
   // 두 쿼리를 섞으면 `isPending`만으로는 타입이 좁혀지지 않는다. 데이터 자체를 조건으로 쓴다.
   if (!ready || !log.data || !grinders.data) {
-    return <Shell>{null}</Shell>;
+    return (
+      <Shell>
+        <LoadingState />
+      </Shell>
+    );
   }
 
   return (

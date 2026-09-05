@@ -25,4 +25,12 @@ describe("마감 결함", () => {
     );
     expect(offenders).toEqual([]);
   });
+
+  it("AC-POLISH-07 · 빈 화면을 그리는 곳이 없다", () => {
+    // <Shell>{null}</Shell>는 로딩 중 흰 화면만 남긴다. 10곳이 그랬다.
+    const offenders = SOURCES.filter((path) =>
+      readFileSync(path, "utf8").includes("<Shell>{null}</Shell>"),
+    );
+    expect(offenders).toEqual([]);
+  });
 });

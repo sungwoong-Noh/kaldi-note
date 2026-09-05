@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { ApiError } from "@/lib/api-client";
 import { fetchRecipe, updateRecipe } from "../api";
@@ -31,7 +32,11 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
   });
 
   if (!ready || recipe.isPending) {
-    return <Shell>{null}</Shell>;
+    return (
+      <Shell>
+        <LoadingState />
+      </Shell>
+    );
   }
 
   if (recipe.error) {

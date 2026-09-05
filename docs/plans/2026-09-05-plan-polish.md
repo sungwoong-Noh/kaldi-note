@@ -96,12 +96,12 @@ docs/specs/2026-09-05-polish.md                 Modify — status
 **Interfaces:**
 - Produces: `body`의 `font-family`와 `font-variant-numeric`. 다른 태스크가 쓰지 않는다.
 
-- [ ] **Step 1: 시작 전 초록을 확인한다**
+- [x] **Step 1: 시작 전 초록을 확인한다**
 
 Run: `cd frontend && pnpm test && pnpm e2e`
 Expected: PASS. **두 숫자를 적어둔다**(단위 283개).
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 Create `frontend/e2e/polish.spec.ts`:
 
@@ -148,7 +148,7 @@ test.describe("폰트", () => {
 Create `frontend/src/test/polish.test.ts`:
 
 ```ts
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -159,7 +159,13 @@ function walk(dir: string): string[] {
   });
 }
 
-const SOURCES = walk("src").filter((path) => /\.(ts|tsx|css)$/.test(path));
+// 이 파일 자신은 검사 대상이 아니다 — 금지 문자열을 리터럴로 담고 있어
+// 넣어두면 무엇을 고치든 자기 자신이 offender로 잡힌다.
+const SELF = join("src", "test", "polish.test.ts");
+
+const SOURCES = walk("src").filter(
+  (path) => /\.(ts|tsx|css)$/.test(path) && path !== SELF,
+);
 
 describe("마감 결함", () => {
   it("AC-POLISH-03 · --font-geist-sans 참조가 없다", () => {
@@ -172,12 +178,12 @@ describe("마감 결함", () => {
 });
 ```
 
-- [ ] **Step 3: 테스트 실행 — 실패 확인**
+- [x] **Step 3: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test polish && pnpm e2e polish.spec.ts`
 Expected: FAIL — 3개. `fontFamily`가 `Arial, Helvetica, sans-serif`이고, `fontVariantNumeric`이 `normal`이며, `globals.css`에 `--font-geist-sans`가 있다.
 
-- [ ] **Step 4: 최소 구현**
+- [x] **Step 4: 최소 구현**
 
 Modify `frontend/src/app/globals.css`:
 
@@ -210,14 +216,14 @@ body {
 
 > **`--font-geist-sans`와 `--font-geist-mono` 참조를 지운다.** 정의된 적이 없다.
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test polish && pnpm e2e polish.spec.ts`
 Expected: PASS, 3 tests.
 
 > `fontFamily` 문자열이 기대와 다르게 나오면 **브라우저가 정규화한 실제 값을 먼저 찍어보고** `FONT_STACK`을 그 값에 맞춘다 — `globals.css`를 비틀지 않는다.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && cd ..
@@ -241,7 +247,7 @@ git commit -m "fix(web): 적용된 적 없던 폰트를 정한다 — 시스템 
 **Interfaces:**
 - Produces: `LoadingState(): JSX.Element | null` — props 없음. **마운트 후 200ms가 지나야 그린다.** 그 전에는 `null`이다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 Create `frontend/src/components/LoadingState.test.tsx`:
 
@@ -334,12 +340,12 @@ test.describe("로딩 표시", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test LoadingState polish`
 Expected: FAIL — `LoadingState` 모듈이 없고, `polish.test.ts`가 10개 파일을 offender로 잡는다.
 
-- [ ] **Step 3: 컴포넌트를 만든다**
+- [x] **Step 3: 컴포넌트를 만든다**
 
 Create `frontend/src/components/LoadingState.tsx`:
 
@@ -386,7 +392,7 @@ export function LoadingState() {
 
 > `aria-label`과 `sr-only` 텍스트를 **둘 다** 둔다. 전자는 `getByRole("status", { name })`이, 후자는 `getByText("불러오는 중")`이 잡는다 — AC-04·05가 텍스트로, AC-06이 역할로 본다.
 
-- [ ] **Step 4: 10곳을 바꾼다**
+- [x] **Step 4: 10곳을 바꾼다**
 
 각 파일에서 `return <Shell>{null}</Shell>;`를 찾아 바꾼다.
 
@@ -404,24 +410,24 @@ import를 더한다: `import { LoadingState } from "@/components/LoadingState";`
 
 > **`app/recipes/page.tsx`의 `Shell`은 인자가 다르다**(`function Shell({` 뒤에 줄바꿈). 그 파일에는 `<Shell>{null}</Shell>`가 없으므로 **손대지 않는다.** AC-POLISH-07의 검색이 이것을 확인해 준다.
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test`
-Expected: PASS. 283 + 3(LoadingState) + 1(AC-07) = **287개**.
+Expected: PASS. 283 + 1(AC-03) + 3(LoadingState) + 1(AC-07) = **288개**.
 
 > **기존 화면 테스트가 깨질 수 있다.** 로딩 중을 `container.firstChild === null`로 단언한 테스트가 있으면 이제 `<Shell>`이 그려진다. 그런 테스트는 **기대를 「빈 화면」이 아니라 「콘텐츠가 아직 없다」로 고친다** — 로딩 표시가 뜨는 것이 이번 변경의 목적이다.
 
-- [ ] **Step 6: e2e 실행 — 통과 확인**
+- [x] **Step 6: e2e 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm e2e polish.spec.ts`
 Expected: PASS, 4 tests.
 
-- [ ] **Step 7: 돌연변이로 지연을 확인한다**
+- [x] **Step 7: 돌연변이로 지연을 확인한다**
 
 `SHOW_AFTER_MS`를 `0`으로 잠시 바꾼다.
 Expected: **AC-POLISH-04만** 빨갛다. 되돌린다.
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e && cd ..
@@ -444,7 +450,7 @@ git commit -m "feat(web): 로딩 중 흰 화면 10곳에 표시를 넣는다 (AC
 **Interfaces:**
 - Produces: `src/app/icon.svg` — **PWA 스펙이 이 도형을 PNG 세 장으로 굽는다**(`2026-09-05-web-pwa.md` Task 1). 도형을 바꾸면 그쪽도 다시 구워야 한다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 Modify `frontend/src/test/polish.test.ts`:
 
@@ -458,8 +464,10 @@ Modify `frontend/src/test/polish.test.ts`:
       "vercel.svg",
       "window.svg",
     ];
-    const present = readdirSync("public").filter((name) =>
-      leftovers.includes(name),
+    // 5개가 public/의 전부여서 지우면 디렉터리째 사라진다.
+    // PWA 스펙이 sw.js와 아이콘 PNG를 넣으면 다시 생긴다.
+    const present = (existsSync("public") ? readdirSync("public") : []).filter(
+      (name) => leftovers.includes(name),
     );
     expect(present).toEqual([]);
   });
@@ -483,12 +491,12 @@ test.describe("파비콘", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test polish && pnpm e2e polish.spec.ts`
 Expected: FAIL — 3개. SVG 5개가 남아 있고 `/icon.svg`가 404다.
 
-- [ ] **Step 3: 잔재를 지운다**
+- [x] **Step 3: 잔재를 지운다**
 
 ```bash
 cd frontend && rm public/file.svg public/globe.svg public/next.svg public/vercel.svg public/window.svg
@@ -500,7 +508,7 @@ cd frontend && rm public/file.svg public/globe.svg public/next.svg public/vercel
 grep -rn "file.svg\|globe.svg\|next.svg\|vercel.svg\|window.svg" src e2e
 ```
 
-- [ ] **Step 4: 파비콘을 만든다**
+- [x] **Step 4: 파비콘을 만든다**
 
 Create `frontend/src/app/icon.svg`:
 
@@ -517,20 +525,20 @@ Create `frontend/src/app/icon.svg`:
 >
 > **PWA 스펙이 같은 도형을 PNG로 굽는다.** 여기 모양을 바꾸면 `frontend/scripts/make-icons.mjs`의 SVG도 함께 바꾼다.
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test polish && pnpm e2e polish.spec.ts`
 Expected: PASS. 단위 3개, e2e 6개.
 
-> `<link rel="icon">`이 2개로 나오면 Next가 `icon.svg`와 별개로 기본 favicon도 넣은 것이다. 그때는 `src/app/favicon.ico`가 있는지 보고 있으면 지운다.
+> **실제로 2개가 나왔다**(2026-09-05). `src/app/favicon.ico`가 있어 Next가 `icon.svg`와 별개로 링크를 하나 더 넣었다. **`favicon.ico`를 지워** 1개로 만들었다.
 
-- [ ] **Step 6: 스펙 status를 올린다**
+- [x] **Step 6: 스펙 status를 올린다**
 
 Modify `docs/specs/2026-09-05-polish.md` — `status: 초안` → `status: 구현완료`.
 
 **수동 확인 3개는 전부 비차단형이다**(폰에서 숫자 가독성, 기기 간 인상 차이, 200ms 체감). `docs/conventions/verification.md`「비차단형만 남아 `구현완료`로 올릴 때」에 따라 남은 개수와 내용을 스펙의 인용 블록에 적는다.
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e && cd ..
@@ -543,12 +551,12 @@ git commit -m "chore(web): Next 기본 잔재를 지우고 파비콘을 넣는�
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 — **287개**
-- [ ] `cd frontend && pnpm e2e` 통과 — `polish.spec.ts` 6개 포함
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — AC 604 + 12 = **616개**
-- [ ] `git diff --stat main...HEAD`에 `backend/`가 **0줄**
-- [ ] `package.json`의 의존성이 **늘지 않았다**
-- [ ] 스펙의 `status`를 `구현완료`로 (수동 확인 3개는 전부 비차단형)
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 — **289개**
+- [x] `cd frontend && pnpm e2e` 통과 — `polish.spec.ts` 6개 포함
+- [x] `./scripts/check-spec-coverage.sh` 통과 — AC 604 + 12 = **616개**
+- [x] `git diff --stat main...HEAD`에 `backend/`가 **0줄**
+- [x] `package.json`의 의존성이 **늘지 않았다**
+- [x] 스펙의 `status`를 `구현완료`로 (수동 확인 3개는 전부 비차단형)
 
 ---
 
@@ -563,9 +571,13 @@ git commit -m "chore(web): Next 기본 잔재를 지우고 파비콘을 넣는�
 - `polish.test.ts`의 `SOURCES`·`walk`는 Task 1에서 만들고 Task 2·3이 같은 것을 쓴다.
 - `e2e/polish.spec.ts`의 `installStubs` import는 세 태스크가 공유한다.
 
-**검증되지 않은 가정:**
-- **브라우저가 돌려주는 `fontFamily` 문자열의 정확한 모양.** 따옴표·공백 정규화 방식이 브라우저마다 다르다. Task 1 Step 5에 「실제 값을 찍어보고 기대를 맞추라」고 적었다 — **`globals.css`를 비틀지 않는다.**
-- **`font-variant-numeric`이 `body`에서 상속되는가.** 상속 속성이라 자식으로 내려가지만, 어딘가에서 `normal`로 덮고 있으면 목록의 숫자가 정렬되지 않는다. AC-POLISH-02는 `body`만 본다 — **수동 확인 첫 항목이 실제 화면을 본다.**
-- **기존 화면 테스트가 로딩 중을 어떻게 단언하는가.** `<Shell>{null}</Shell>`를 전제로 「아무것도 없다」를 단언한 테스트가 있으면 Task 2에서 깨진다. Step 5에 대응을 적었다 — **로딩 표시가 뜨는 것이 목적이므로 기대를 고친다.**
-- **`src/app/icon.svg`를 OpenNext/Workers가 그대로 서빙하는가.** Next의 파일 기반 메타데이터라 빌드 산출물로 나가지만, `image/svg+xml` MIME은 배포 환경이 정한다. Task 3 Step 5가 실패하면 `public/icon.svg` + `layout.tsx`의 `metadata.icons`로 바꾼다.
-- **`page.route`의 지연이 `installStubs`의 라우트를 이기는가.** 나중에 등록한 라우트가 이긴다는 전제다. `web-pwa` 계획도 같은 전제를 쓴다(`stubRecipeDetail`).
+**검증되지 않은 가정 — 2026-09-05 구현 세션의 결과:**
+- **브라우저가 돌려주는 `fontFamily` 문자열의 정확한 모양.** ✅ **기대 그대로였다.** 따옴표만 벗기면 이름 8개가 순서대로 나왔다 — `FONT_STACK`을 손보지 않았다.
+- **`font-variant-numeric`이 `body`에서 상속되는가.** `body`가 `tabular-nums`인 것은 확인했다(AC-POLISH-02). **자식에서 덮는 곳이 있는지는 여전히 미확인** — 수동 확인 첫 항목이 실제 화면을 본다.
+- **기존 화면 테스트가 로딩 중을 어떻게 단언하는가.** ✅ **깨진 것이 없었다.** 「빈 화면」을 단언한 테스트는 없었고 283개가 그대로 초록이었다.
+- **`src/app/icon.svg`를 OpenNext/Workers가 그대로 서빙하는가.** ✅ **로컬 `next start`에서 `image/svg+xml`로 200이었다**(AC-POLISH-11). **운영 Workers에서는 아직 확인하지 않았다.**
+- **`page.route`의 지연이 `installStubs`의 라우트를 이기는가.** ✅ **이겼다.** 나중에 등록한 라우트가 이긴다 — `web-pwa` 계획의 `stubRecipeDetail`도 같은 전제를 써도 된다.
+
+**구현하며 드러난 계획의 결함 2개 (본문을 고쳤다):**
+- **소스 검사 테스트가 자기 자신을 잡았다.** `polish.test.ts`가 `--font-geist-sans`·`<Shell>{null}</Shell>`를 리터럴로 담고 있어, 원안대로면 무엇을 고쳐도 초록이 될 수 없었다. `SELF` 제외를 넣었다.
+- **`public/`가 통째로 사라졌다.** 지운 5개가 그 디렉터리의 전부였다. `readdirSync("public")`가 ENOENT를 던져 `existsSync` 가드를 넣었다.

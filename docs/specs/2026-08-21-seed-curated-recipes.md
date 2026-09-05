@@ -292,8 +292,18 @@ SpringDocUtils.getConfig().addRequestWrapperToIgnore(AuthenticatedUser.class);
 
 ## 수동 확인
 
-- [ ] `bootRun`(`local` 프로파일)으로 서버를 띄우면 Flyway가 `V11`을 적용하고, 신규 계정으로 `GET /api/v1/recipes`를 호출했을 때 시드 2건이 보인다 — 마이그레이션 자동 적용은 `test` 프로파일에서 검증되지 않으므로 실제 기동으로 확인한다
-- [ ] Swagger UI(`/swagger-ui.html`)에서 임의의 엔드포인트를 펼쳤을 때 `user` 입력란이 없고, Authorize 버튼으로 넣은 토큰만으로 호출이 성공한다
+- [x] `bootRun`(`local` 프로파일)으로 서버를 띄우면 Flyway가 `V11`을 적용하고, 신규 계정으로 `GET /api/v1/recipes`를 호출했을 때 시드 2건이 보인다 — 마이그레이션 자동 적용은 `test` 프로파일에서 검증되지 않으므로 실제 기동으로 확인한다
+- [x] Swagger UI(`/swagger-ui.html`)에서 임의의 엔드포인트를 펼쳤을 때 `user` 입력란이 없고, Authorize 버튼으로 넣은 토큰만으로 호출이 성공한다
+
+> **2026-09-03 확인.**
+>
+> **Flyway V11.** 로컬 DB의 `flyway_schema_history`에 `11 | seed curated recipes | success=t`가 있다(그 위에 `12 | seed holzklotz e80`도). `recipes`에 `source_type='CURATED'`가 정확히 2건 — `James Hoffmann Ultimate V60`(id 8)과 `Tetsu Kasuya 4:6 Method`(id 9), 둘 다 `PUBLIC`. 사용자 12로 `GET /api/v1/recipes`를 호출하니 이 2건이 실제로 내려온다.
+>
+> **주의:** 실제 기동을 이 세션에서 새로 하지는 않았다. **이미 떠 있던 로컬 백엔드**에 붙어 마이그레이션 이력과 응답을 확인했다 — 즉 「어떤 실제 기동이 V11을 적용했다」까지는 증명되나, 부팅 로그를 눈으로 본 것은 아니다.
+>
+> **`user` 입력란.** OpenAPI 전체를 훑어 `user`·`principal`·`authentication` 이름의 파라미터를 찾았고 **0건**이다. 보안 스킴은 `bearerAuth`(http/bearer/JWT) 하나뿐이고, Bearer 토큰만으로 `GET /users/me`·`/recipes`·`/bean-batches`·`POST /gear/grind-conversions` 등이 전부 200을 준다.
+>
+> `GET /api/v1/brew-logs`에 `userId` 쿼리 파라미터가 있으나 이것은 인증 주체 누출이 아니라 `recipeId`·`beanBatchId`와 같은 계열의 **의도된 필터**다(설명: `그 사용자가 남긴 기록만`).
 
 ## 열어둔 결정
 

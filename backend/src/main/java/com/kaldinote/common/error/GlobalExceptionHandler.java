@@ -10,6 +10,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -62,6 +63,17 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleUnreadable(HttpMessageNotReadableException e) {
     log.warn("요청 본문을 읽을 수 없음: {}", e.getMessage());
     return toResponse(ErrorCode.INVALID_REQUEST, "요청 본문을 읽을 수 없습니다.");
+  }
+
+  /**
+   * 매핑되지 않은 경로. 스프링은 이 요청을 정적 리소스 핸들러로 보내고 거기서 이 예외가 난다. 잡지 않으면 handleUnexpected로 떨어져 오타 URL 하나가
+   * 500 + 스택트레이스가 된다.
+   */
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException e) {
+    log.warn("매핑되지 않은 경로: {} {}", e.getHttpMethod(), e.getResourcePath());
+    ErrorCode code = ErrorCode.ENDPOINT_NOT_FOUND;
+    return toResponse(code, code.getDefaultMessage());
   }
 
   @ExceptionHandler(Exception.class)

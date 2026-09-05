@@ -14,6 +14,13 @@ public enum ErrorCode {
   NOT_FOUND(HttpStatus.NOT_FOUND, "대상을 찾을 수 없습니다."),
   INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다."),
 
+  // 라우팅 오류 — docs/specs/2026-09-05-http-error-contract.md
+  // 없는 '경로'다. 없는 '리소스'(NOT_FOUND)와 구분하지 않으면 프론트가
+  // 오타 난 URL을 「삭제된 레시피」로 표시한다 (entityLabel.ts).
+  ENDPOINT_NOT_FOUND(HttpStatus.NOT_FOUND, "요청하신 주소를 찾을 수 없습니다."),
+  METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "이 주소에서 지원하지 않는 방식입니다."),
+  UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "지원하지 않는 형식입니다."),
+
   DUPLICATE_NAME(HttpStatus.CONFLICT, "이미 등록된 이름입니다."),
 
   // 분쇄도 환산 — docs/specs/2026-08-14-grind-conversion.md

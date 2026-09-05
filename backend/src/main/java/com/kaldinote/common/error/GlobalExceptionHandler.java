@@ -4,12 +4,19 @@ import com.kaldinote.extraction.domain.InvalidBrewMeasurementException;
 import com.kaldinote.grind.domain.GrindNotConvertibleException;
 import com.kaldinote.grind.domain.GrindSettingOutOfRangeException;
 import java.util.List;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.util.ClassUtils;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -62,6 +69,65 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleUnreadable(HttpMessageNotReadableException e) {
     log.warn("요청 본문을 읽을 수 없음: {}", e.getMessage());
     return toResponse(ErrorCode.INVALID_REQUEST, "요청 본문을 읽을 수 없습니다.");
+  }
+
+  /**
+   * 매핑되지 않은 경로. 스프링은 이 요청을 정적 리소스 핸들러로 보내고 거기서 이 예외가 난다. 잡지 않으면 handleUnexpected로 떨어져 오타 URL 하나가
+   * 500 + 스택트레이스가 된다.
+   */
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException e) {
+    log.warn("매핑되지 않은 경로: {} {}", e.getHttpMethod(), e.getResourcePath());
+    ErrorCode code = ErrorCode.ENDPOINT_NOT_FOUND;
+    return toResponse(code, code.getDefaultMessage());
+  }
+
+  /** 경로는 있으나 그 메서드가 매핑되지 않았다. RFC 9110은 405에 Allow 헤더를 요구한다. */
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<ErrorResponse> handleMethodNotSupported(
+      HttpRequestMethodNotSupportedException e) {
+    log.warn("지원하지 않는 메서드: {} (허용: {})", e.getMethod(), e.getSupportedHttpMethods());
+    ErrorCode code = ErrorCode.METHOD_NOT_ALLOWED;
+    ResponseEntity.BodyBuilder builder = ResponseEntity.status(code.getStatus());
+    Set<HttpMethod> supported = e.getSupportedHttpMethods();
+    // null일 수 있다 — 스프링이 허용 목록을 모를 때다. 검사를 빼면 NPE가 나고
+    // 그것을 handleUnexpected가 잡아 다시 500이 된다.
+    if (supported != null && !supported.isEmpty()) {
+      builder.allow(supported.toArray(new HttpMethod[0]));
+    }
+    return builder.body(ErrorResponse.of(code, code.getDefaultMessage()));
+  }
+
+  /** Content-Type이 application/json이 아니다. 본문을 읽기 전에 걸린다. */
+  @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+  public ResponseEntity<ErrorResponse> handleMediaTypeNotSupported(
+      HttpMediaTypeNotSupportedException e) {
+    log.warn("지원하지 않는 Content-Type: {}", e.getContentType());
+    ErrorCode code = ErrorCode.UNSUPPORTED_MEDIA_TYPE;
+    return toResponse(code, code.getDefaultMessage());
+  }
+
+  /**
+   * `?size=abc`처럼 쿼리 파라미터를 선언된 타입으로 바꾸지 못했다. 컨트롤러 본문에 들어가기 전에 걸리므로 본문 검증(MethodArgumentNotValid)과는
+   * 다른 예외다. 형식은 같게 맞춘다 — 프론트가 fieldErrors 하나로 다룬다.
+   */
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+    log.warn("파라미터 타입 변환 실패: {}={}", e.getName(), e.getValue());
+    ErrorCode code = ErrorCode.INVALID_REQUEST;
+    // int로 선언되면 required가 원시 타입이라 Number.isAssignableFrom이 false다.
+    // 래퍼로 바꾼 뒤 판정한다 — isPrimitive()만 보면 boolean·char까지 「숫자여야」가 된다.
+    Class<?> required = e.getRequiredType();
+    boolean numeric =
+        required != null
+            && Number.class.isAssignableFrom(ClassUtils.resolvePrimitiveIfNecessary(required));
+    String detail = numeric ? "숫자여야 합니다." : "형식이 올바르지 않습니다.";
+    return ResponseEntity.status(code.getStatus())
+        .body(
+            ErrorResponse.of(
+                code,
+                code.getDefaultMessage(),
+                List.of(new ErrorResponse.FieldError(e.getName(), detail))));
   }
 
   @ExceptionHandler(Exception.class)

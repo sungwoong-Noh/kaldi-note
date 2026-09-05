@@ -1270,7 +1270,7 @@ pnpm test:worker
 - [x] `cd frontend && pnpm test:worker` 통과 (6개)
 - [x] `./scripts/check-spec-coverage.sh` 통과
 - [x] 백엔드는 건드리지 않았다 — `git diff --stat main...HEAD`에 `backend/`가 없다
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] 스펙의 `status`를 `구현완료`로 변경 (2026-09-05, 비차단형만 남음)
 - [ ] 스펙 「수동 확인」 4개 완료
 
 ---

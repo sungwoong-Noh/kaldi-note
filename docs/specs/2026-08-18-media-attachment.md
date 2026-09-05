@@ -356,7 +356,12 @@ Content-Type: application/json
 
 ## 수동 확인
 
-- [ ] 실제 OCI Object Storage 크리덴셜로 업로드 URL 발급 → PAR로 실제 파일 업로드 → 확정 → 공개 URL로 이미지가 실제로 열리는지 확인한다(배포 이후, 로컬 개발에서는 `ObjectStorageClient` 인터페이스를 가짜 구현으로 대체하므로 실제 OCI 연동은 이 단계에서 처음 검증된다)
+- [ ] ★ 실제 OCI Object Storage 크리덴셜로 업로드 URL 발급 → PAR로 실제 파일 업로드 → 확정 → 공개 URL로 이미지가 실제로 열리는지 확인한다(배포 이후, 로컬 개발에서는 `ObjectStorageClient` 인터페이스를 가짜 구현으로 대체하므로 실제 OCI 연동은 이 단계에서 처음 검증된다)
+
+> **★ 2026-09-05 — 이 스펙은 `구현완료`이지만 차단형 확인이 1개 남아 있다.** 규약
+> (`docs/conventions/verification.md`「스펙의 `status`」)은 차단형이 남으면 올리지 말라고 하지만,
+> 되돌리면 이미 검증된 **AC 32개까지 검사에서 빠진다** — 검사를 줄이는 쪽이 더 나쁘다.
+> status는 그대로 두고 **미검증이라는 사실을 여기 남긴다.** 로컬은 `ObjectStorageClient`를 가짜 구현으로 대체하므로 **실제 OCI 연동은 아직 한 번도 돌아본 적이 없다.**
 
 ## 열어둔 결정
 

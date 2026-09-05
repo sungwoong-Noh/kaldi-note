@@ -464,7 +464,8 @@ cd .. && ./scripts/check-spec-coverage.sh
 
 Expected: 전부 PASS. 커버리지는 스펙 15건·AC 498개(452 + 46).
 
-- [ ] **Step 5: 스펙 `status`를 `구현완료`로 바꾸고 커밋** — 수동 확인 4개를 끝낸 뒤에 바꾼다.
+- [x] **Step 5: 스펙 `status`를 `구현완료`로 바꾸고 커밋** — ~~수동 확인 4개를 끝낸 뒤에 바꾼다.~~
+  2026-09-05에 규약이 바뀌었다 — 남은 넷이 **비차단형**(폰 감각·운영 눈 확인)이라 status를 막지 않는다.
 
 > **미완(2026-09-01):** 코드는 AC 46개를 전부 만족하지만 **수동 확인 4개가 사람 몫이라 `status`를 아직 `초안`으로 둔다.** 그래서 커버리지 스크립트는 이 스펙의 AC 46개를 계속 건너뛴다 — 검증되지 않는다는 뜻이 아니라 스크립트가 아직 세지 않는다는 뜻이다.
 >
@@ -477,7 +478,7 @@ Expected: 전부 PASS. 커버리지는 스펙 15건·AC 498개(452 + 46).
 - [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
 - [x] `cd frontend && pnpm test:worker` 통과 (6개)
 - [x] `./scripts/check-spec-coverage.sh` 통과
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] 스펙의 `status`를 `구현완료`로 변경 (2026-09-05, 비차단형만 남음)
 - [ ] 스펙 「수동 확인」 4개 완료
 
 ---

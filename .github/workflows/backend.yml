@@ -75,7 +75,10 @@ jobs:
       # 컴파일은 여기서(amd64 러너, 네이티브) 미리 끝낸다.
       - name: bootJar 빌드 (네이티브)
         working-directory: backend
-        run: ./gradlew bootJar --no-daemon
+        # -Pcommit이 sha를 build-info.properties에 굽는다. 이 값이 deploy.sh의 대조 대상이다
+        # (docs/specs/2026-09-05-build-info.md). 런타임 환경변수로 넘기면 구 이미지를
+        # 새 sha 이름으로 띄워도 통과해버린다.
+        run: ./gradlew bootJar --no-daemon -Pcommit=${{ github.sha }}
 
       - name: Buildx 설정
         uses: docker/setup-buildx-action@v3

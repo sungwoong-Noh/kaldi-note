@@ -105,6 +105,11 @@ docs/specs/2026-09-05-web-pwa.md               Modify — status
 
 **Covers:** AC-PWA-01, 02, 03, 04, 05, 06
 
+> **★ 도형의 원본은 여기가 아니다.** `docs/specs/2026-09-05-polish.md`가 `frontend/src/app/icon.svg`를
+> 파비콘으로 만든다 — 검은 바탕(`#171717`)에 흰 소문자 `k`, 같은 도형이다. **그쪽이 먼저 머지됐으면
+> `make-icons.mjs`의 SVG를 `icon.svg`와 같게 맞춘다.** 둘이 갈리면 파비콘과 홈화면 아이콘이 다른 앱처럼
+> 보인다.
+
 **Interfaces:**
 - Produces: `/manifest.json`과 `/icons/*.png` 세 장. 뒤 태스크는 쓰지 않는다.
 - Consumes: 없음.

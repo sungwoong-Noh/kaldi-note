@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { createRecipe } from "@/features/recipe/api";
 import { RecipeForm } from "@/features/recipe/components/RecipeForm";
@@ -24,7 +25,11 @@ export default function RecipeNewPage() {
   });
 
   if (!ready) {
-    return <Shell>{null}</Shell>;
+    return (
+      <Shell>
+        <LoadingState />
+      </Shell>
+    );
   }
 
   return (

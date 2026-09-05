@@ -1,6 +1,7 @@
 "use client";
 
 import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { GrindConverter } from "@/features/gear/components/GrindConverter";
 import { useGrinders } from "@/features/gear/queries";
@@ -10,7 +11,11 @@ export default function GrindConverterPage() {
   const grinders = useGrinders(onSessionLost);
 
   if (!ready || grinders.isPending) {
-    return <Shell>{null}</Shell>;
+    return (
+      <Shell>
+        <LoadingState />
+      </Shell>
+    );
   }
 
   if (grinders.error) {

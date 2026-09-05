@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { RecipeStepList } from "@/features/recipe/components/RecipeStepList";
 import { useMe } from "@/features/user/queries";
@@ -45,7 +46,11 @@ export function BrewDetail({ id }: { id: number }) {
   });
 
   if (!ready || logQuery.isPending) {
-    return <Shell>{null}</Shell>;
+    return (
+      <Shell>
+        <LoadingState />
+      </Shell>
+    );
   }
 
   if (logQuery.error) {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useMe } from "@/features/user/queries";
 import { clearSession } from "@/lib/session";
@@ -24,7 +25,11 @@ export default function MorePage() {
   }
 
   if (!ready || me.isPending) {
-    return <Shell>{null}</Shell>;
+    return (
+      <Shell>
+        <LoadingState />
+      </Shell>
+    );
   }
 
   if (me.error) {

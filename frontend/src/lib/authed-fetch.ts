@@ -33,12 +33,14 @@ export async function authedRequest<T>(
     }
 
     const refreshed = await refreshSession();
-    if (!refreshed) {
+    // 네트워크 문제라면 세션이 끊긴 것이 아니다. 지우지도 보내지도 않고 원래 오류를 올린다.
+    if (refreshed.kind === "offline") throw error;
+    if (refreshed.kind === "unauthorized") {
       clearSession();
       onSessionLost?.();
       throw error;
     }
 
-    return request(url, withAuth(rest, refreshed) as typeof rest);
+    return request(url, withAuth(rest, refreshed.accessToken) as typeof rest);
   }
 }

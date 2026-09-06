@@ -204,3 +204,63 @@ test.describe("레시피 캐시", () => {
     });
   });
 });
+
+test.describe("오프라인 재방문", () => {
+  test("AC-PWA-11 · 연 적 있는 레시피가 오프라인에서 열린다", async ({
+    page,
+    context,
+  }) => {
+    await installSwStubs(context);
+    await installStubs(page);
+    await page.goto("/recipes");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+
+    await page.goto("/recipes/2");
+    await expect(page.getByText("James Hoffmann Ultimate V60")).toBeVisible();
+
+    await goOffline(context);
+    await page.reload();
+
+    await expect(page.getByText("James Hoffmann Ultimate V60")).toBeVisible();
+    await expect(page.getByRole("listitem")).toHaveCount(7);
+  });
+
+  test("AC-PWA-12 · 연 적 없는 레시피는 안내로 떨어진다", async ({
+    page,
+    context,
+  }) => {
+    await installSwStubs(context);
+    await installStubs(page);
+    await page.goto("/recipes");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    await page.goto("/recipes/2");
+
+    await goOffline(context);
+    await page.goto("/recipes/3");
+
+    await expect(page.getByText("연결 없음")).toBeVisible();
+  });
+
+  test("AC-PWA-13 · 오프라인 콜드 스타트가 로그인으로 튕기지 않는다", async ({
+    page,
+    context,
+  }) => {
+    await installSwStubs(context);
+    await installStubs(page);
+    await page.goto("/recipes");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    await page.goto("/recipes/2");
+
+    await goOffline(context);
+    await page.reload();
+    await page.waitForTimeout(5000);
+
+    expect(new URL(page.url()).pathname).toBe("/recipes/2");
+  });
+});

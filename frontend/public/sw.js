@@ -7,8 +7,17 @@
 
 // skipWaiting/claim을 둘 다 켠다. 안 켜면 첫 방문에서 컨트롤러가 붙지 않아
 // 그 세션 동안 fetch 핸들러가 한 번도 돌지 않는다.
-self.addEventListener("install", () => {
-  self.skipWaiting();
+const SHELL_CACHE = "kaldi-shell-v1";
+
+self.addEventListener("install", (event) => {
+  // /offline은 "네트워크가 없을 때 여는 화면"이라 그때 받아올 수 없다. 설치 시점에 담는다.
+  event.waitUntil(
+    caches
+      .open(SHELL_CACHE)
+      .then((cache) => cache.add("/offline"))
+      .catch(() => undefined)
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -59,11 +68,50 @@ async function handleRecipe(request) {
   }
 }
 
+/** 문서. 온라인이면 최신을 받고 담아 두며, 실패하면 담아 둔 것을, 그것도 없으면 /offline을 준다. */
+async function handleNavigation(request) {
+  const cache = await caches.open(SHELL_CACHE);
+  try {
+    const response = await fetch(request);
+    if (response.ok) await cache.put(request.url, response.clone());
+    return response;
+  } catch {
+    const cached = await cache.match(request.url);
+    return cached ?? (await cache.match("/offline")) ?? offlineResponse();
+  }
+}
+
+/** 해시가 박힌 정적 자산. 내용이 바뀌면 이름이 바뀌므로 캐시를 먼저 본다. */
+async function handleAsset(request) {
+  const cache = await caches.open(SHELL_CACHE);
+  const cached = await cache.match(request.url);
+  if (cached) return cached;
+
+  const response = await fetch(request);
+  if (response.ok) await cache.put(request.url, response.clone());
+  return response;
+}
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
 
-  if (RECIPE_PATH.test(new URL(request.url).pathname)) {
+  const url = new URL(request.url);
+
+  if (RECIPE_PATH.test(url.pathname)) {
     event.respondWith(handleRecipe(request));
+    return;
+  }
+
+  if (request.mode === "navigate") {
+    event.respondWith(handleNavigation(request));
+    return;
+  }
+
+  if (
+    url.origin === self.location.origin &&
+    url.pathname.startsWith("/_next/")
+  ) {
+    event.respondWith(handleAsset(request));
   }
 });

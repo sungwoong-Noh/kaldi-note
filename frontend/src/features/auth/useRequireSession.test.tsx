@@ -87,4 +87,29 @@ describe("useRequireSession", () => {
     expect(screen.getByText("보호된 화면")).toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
   });
+
+  it("AC-PWA-14 · refresh가 401이면 로그인으로 보낸다", async () => {
+    pathname = "/recipes/2";
+    server.use(
+      http.post("/api/auth/refresh", () => new HttpResponse(null, { status: 401 })),
+    );
+
+    render(<Guarded />);
+
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith("/login?next=%2Frecipes%2F2"),
+    );
+  });
+
+  it("AC-PWA-13 · refresh가 네트워크로 실패하면 로그인으로 보내지 않는다", async () => {
+    // 오프라인이다. 인증이 끊긴 것이 아니므로 토큰 없이도 화면을 그려야
+    // Service Worker가 캐시된 응답을 내줄 수 있다.
+    pathname = "/recipes/2";
+    server.use(http.post("/api/auth/refresh", () => HttpResponse.error()));
+
+    render(<Guarded />);
+
+    expect(await screen.findByText("보호된 화면")).toBeInTheDocument();
+    expect(replace).not.toHaveBeenCalled();
+  });
 });

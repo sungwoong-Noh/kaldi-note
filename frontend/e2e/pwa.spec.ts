@@ -320,3 +320,22 @@ test.describe("연결 없음 화면", () => {
     await expect(page.getByText("저장된 레시피가 없습니다")).toBeVisible();
   });
 });
+
+test("AC-PWA-15 · 로그아웃하면 레시피 캐시가 빈다", async ({
+  page,
+  context,
+}) => {
+  await installSwStubs(context);
+  await installStubs(page);
+  await page.goto("/recipes");
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await page.goto("/recipes/2");
+  await expect.poll(async () => (await recipeCacheKeys(page)).length).toBe(1);
+
+  await page.goto("/more");
+  await page.getByRole("button", { name: "로그아웃" }).click();
+
+  await expect.poll(async () => (await recipeCacheKeys(page)).length).toBe(0);
+});

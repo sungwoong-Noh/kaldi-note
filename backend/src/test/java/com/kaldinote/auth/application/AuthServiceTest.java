@@ -13,6 +13,7 @@ import com.kaldinote.auth.infrastructure.oauth.OAuthClientRegistry;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.user.infrastructure.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,6 +43,7 @@ class AuthServiceTest extends AbstractIntegrationTest {
   }
 
   @Test
+  @DisplayName("AC-TESTLOGIN-16 · 기존 카카오 로그인이 그대로 동작한다")
   void 처음_로그인하면_사용자가_생성된다() {
     stubProfile("kakao-1", "a@kakao.com", "커피러버");
 

@@ -14,3 +14,56 @@ self.addEventListener("install", () => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
+
+const RECIPE_CACHE = "kaldi-recipe-v1";
+const RECIPE_LIMIT = 50;
+const RECIPE_PATH = /^\/api\/v1\/recipes\/\d+$/;
+
+function offlineResponse() {
+  return new Response(
+    JSON.stringify({
+      code: "OFFLINE",
+      message: "네트워크에 연결되어 있지 않습니다.",
+    }),
+    { status: 503, headers: { "Content-Type": "application/json" } },
+  );
+}
+
+/**
+ * 응답을 넣고 상한을 지킨다.
+ *
+ * 넣기 전에 지우는 것이 핵심이다 — Cache Storage의 keys()는 넣은 순서를 돌려주므로,
+ * 다시 연 항목을 맨 뒤로 옮겨야 "가장 오래전에 연 것"이 앞에 온다. 안 그러면 LRU가 아니라
+ * "가장 먼저 처음 연 것"을 지우게 된다.
+ */
+async function putRecipe(url, response) {
+  const cache = await caches.open(RECIPE_CACHE);
+  await cache.delete(url);
+  await cache.put(url, response);
+
+  const keys = await cache.keys();
+  for (const stale of keys.slice(0, Math.max(0, keys.length - RECIPE_LIMIT))) {
+    await cache.delete(stale);
+  }
+}
+
+async function handleRecipe(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) await putRecipe(request.url, response.clone());
+    return response;
+  } catch {
+    const cache = await caches.open(RECIPE_CACHE);
+    const cached = await cache.match(request.url);
+    return cached ?? offlineResponse();
+  }
+}
+
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+
+  if (RECIPE_PATH.test(new URL(request.url).pathname)) {
+    event.respondWith(handleRecipe(request));
+  }
+});

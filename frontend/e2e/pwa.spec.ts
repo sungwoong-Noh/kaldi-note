@@ -1,5 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { installStubs } from "./stubs";
+import type { Page } from "@playwright/test";
+import { hoffmann } from "../src/test/fixtures";
+import {
+  goOffline,
+  installStubs,
+  installSwStubs,
+  stubRecipeDetail,
+  stubSyntheticRecipes,
+} from "./stubs";
 
 test.describe("매니페스트", () => {
   test("AC-PWA-01 · /manifest.json이 200이고 manifest MIME이다", async ({
@@ -74,5 +82,125 @@ test.describe("Service Worker", () => {
     expect(
       await page.evaluate(() => navigator.serviceWorker.controller !== null),
     ).toBe(true);
+  });
+});
+
+/** `kaldi-recipe-v1`에 든 키의 URL 목록. */
+async function recipeCacheKeys(page: Page): Promise<string[]> {
+  return page.evaluate(async () => {
+    const cache = await caches.open("kaldi-recipe-v1");
+    return (await cache.keys()).map((request) => request.url);
+  });
+}
+
+test.describe("레시피 캐시", () => {
+  test("AC-PWA-09 · 연 레시피가 캐시에 들어간다", async ({ page, context }) => {
+    await installSwStubs(context);
+    await installStubs(page);
+    // Given이 "Service Worker가 등록됐고"다. 목록은 캐시 대상이 아니라 캐시는 빈 채로 남는다.
+    await page.goto("/recipes");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+
+    await page.goto("/recipes/2");
+    await expect(page.getByText("James Hoffmann Ultimate V60")).toBeVisible();
+
+    await expect
+      .poll(() => recipeCacheKeys(page))
+      .toEqual([expect.stringMatching(/\/api\/v1\/recipes\/2$/)]);
+  });
+
+  test("AC-PWA-10 · 온라인에서는 캐시가 최신을 가리지 않는다", async ({
+    page,
+    context,
+  }) => {
+    await installSwStubs(context);
+    await installStubs(page);
+    // SW가 붙기 전에는 page.route가 이겨서 갈아끼운 응답이 무시된다.
+    await page.goto("/recipes");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+
+    await page.goto("/recipes/2");
+    await expect(page.getByText("100°C")).toBeVisible();
+
+    await stubRecipeDetail(context, { ...hoffmann, waterTempC: 94.0 });
+    await page.goto("/recipes/2");
+
+    await expect(page.getByText("94°C")).toBeVisible();
+    await expect(page.getByText("100°C")).toHaveCount(0);
+  });
+
+  test("AC-PWA-19 · 50개까지는 전부 남는다", async ({ page, context }) => {
+    await installSwStubs(context);
+    await stubSyntheticRecipes(context);
+    await installStubs(page);
+    await page.goto("/recipes");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+
+    for (let id = 101; id <= 150; id += 1) await page.goto(`/recipes/${id}`);
+
+    await expect.poll(async () => (await recipeCacheKeys(page)).length).toBe(50);
+    expect(await recipeCacheKeys(page)).toContainEqual(
+      expect.stringMatching(/\/api\/v1\/recipes\/101$/),
+    );
+  });
+
+  test("AC-PWA-20 · 51번째에서 가장 오래된 것이 빠진다", async ({
+    page,
+    context,
+  }) => {
+    await installSwStubs(context);
+    await stubSyntheticRecipes(context);
+    await installStubs(page);
+    await page.goto("/recipes");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    for (let id = 101; id <= 151; id += 1) await page.goto(`/recipes/${id}`);
+
+    // 개수만 기다리면 101~150으로 이미 50이라, 마지막 151의 캐시 쓰기를 기다리지 않는다.
+    await expect
+      .poll(async () =>
+        (await recipeCacheKeys(page)).some((url) => url.endsWith("/151")),
+      )
+      .toBe(true);
+
+    await expect.poll(async () => (await recipeCacheKeys(page)).length).toBe(50);
+    const keys = await recipeCacheKeys(page);
+    expect(keys).not.toContainEqual(
+      expect.stringMatching(/\/api\/v1\/recipes\/101$/),
+    );
+    expect(keys).toContainEqual(
+      expect.stringMatching(/\/api\/v1\/recipes\/151$/),
+    );
+  });
+
+  test("AC-PWA-21 · 캐시에 없는 API 요청은 오프라인에서 503이다", async ({
+    page,
+    context,
+  }) => {
+    await installSwStubs(context);
+    await installStubs(page);
+    await page.goto("/recipes/2");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+
+    await goOffline(context);
+    const result = await page.evaluate(async () => {
+      const response = await fetch("http://localhost:8080/api/v1/recipes/3");
+      return { status: response.status, body: await response.text() };
+    });
+
+    expect(result.status).toBe(503);
+    expect(JSON.parse(result.body)).toEqual({
+      code: "OFFLINE",
+      message: "네트워크에 연결되어 있지 않습니다.",
+    });
   });
 });

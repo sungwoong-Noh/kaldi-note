@@ -14,6 +14,12 @@ export default function MorePage() {
   const { ready, onSessionLost } = useRequireSession();
   const me = useMe(onSessionLost);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  async function copyInviteLink(id: number) {
+    await navigator.clipboard.writeText(`${window.location.origin}/u/${id}`);
+    setCopied(true);
+  }
 
   async function logout() {
     setLoggingOut(true);
@@ -49,6 +55,28 @@ export default function MorePage() {
         )}
         <Row label="가입일" value={me.data.createdAt.slice(0, 10)} />
       </dl>
+
+      <div className="flex items-center justify-between gap-3 border-b border-neutral-200 py-4 dark:border-neutral-800">
+        <div className="min-w-0">
+          <p className="font-medium">내 초대 링크</p>
+          <p className="truncate text-sm text-neutral-500 dark:text-neutral-400">
+            {`/u/${me.data.id}`}
+          </p>
+        </div>
+        {copied ? (
+          <span className="shrink-0 text-sm text-neutral-500 dark:text-neutral-400">
+            복사했습니다
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => void copyInviteLink(me.data.id)}
+            className="shrink-0 rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+          >
+            복사
+          </button>
+        )}
+      </div>
 
       <ul className="flex flex-col py-2">
         <li>

@@ -95,4 +95,26 @@ describe("MorePage", () => {
       await screen.findByRole("link", { name: "분쇄도 환산기" }),
     ).toHaveAttribute("href", "/gear/grind-converter");
   });
+
+  it("AC-WEBFOLLOW-04 · 내 초대 링크와 복사 버튼이 보인다", async () => {
+    renderWithQuery(<MorePage />);
+
+    expect(await screen.findByText("내 초대 링크")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "복사" })).toBeInTheDocument();
+  });
+
+  it("AC-WEBFOLLOW-05 · 복사하면 링크가 클립보드에 들어간다", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    // jsdom에는 navigator.clipboard가 없다. 정의부터 해야 한다.
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+
+    renderWithQuery(<MorePage />);
+    await userEvent.click(await screen.findByRole("button", { name: "복사" }));
+
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/u/11`);
+    expect(await screen.findByText("복사했습니다")).toBeInTheDocument();
+  });
 });

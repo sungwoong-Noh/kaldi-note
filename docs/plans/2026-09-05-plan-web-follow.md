@@ -98,12 +98,12 @@ docs/specs/2026-09-05-web-follow.md                        Modify — status
 
 > **경로 충돌 주의.** `/users/me`(리터럴)와 `/users/{id}`(템플릿)가 같은 컨트롤러에 생긴다. 스프링은 리터럴을 먼저 고르므로 `me`가 `{id}`로 새지 않지만, **새면 `Long` 변환이 실패해 400이 된다**(`http-error-contract` 스펙이 그 핸들러를 넣어 뒀다). Step 5에 회귀 단언을 넣는다.
 
-- [ ] **Step 1: 시작 전 초록을 확인한다**
+- [x] **Step 1: 시작 전 초록을 확인한다**
 
 Run: `docker compose up -d && cd backend && ./gradlew clean check`
 Expected: PASS. **숫자를 적어둔다**(482개일 것).
 
-- [ ] **Step 2: 실패하는 테스트 작성**
+- [x] **Step 2: 실패하는 테스트 작성**
 
 Modify `UserControllerTest.java` — 기존 테스트는 건드리지 않고 더한다.
 
@@ -184,12 +184,12 @@ Modify `UserControllerTest.java` — 기존 테스트는 건드리지 않고 더
   }
 ```
 
-- [ ] **Step 3: 테스트 실행 — 실패 확인**
+- [x] **Step 3: 테스트 실행 — 실패 확인**
 
 Run: `cd backend && ./gradlew test --tests '*UserControllerTest'`
 Expected: FAIL — 5개. `/api/v1/users/{id}` 매핑이 없어 **404 `ENDPOINT_NOT_FOUND`**가 난다(AC-WEBFOLLOW-15만 상태코드가 우연히 맞지만 `code`가 달라 빨갛다).
 
-- [ ] **Step 4: DTO와 서비스를 만든다**
+- [x] **Step 4: DTO와 서비스를 만든다**
 
 Create `PublicProfileResponse.java`:
 
@@ -230,7 +230,7 @@ Modify `UserService.java` — `me` 아래에 더한다:
 
 import를 더한다: `import com.kaldinote.user.presentation.dto.PublicProfileResponse;`
 
-- [ ] **Step 5: 컨트롤러에 매핑을 더한다**
+- [x] **Step 5: 컨트롤러에 매핑을 더한다**
 
 Modify `UserController.java`:
 
@@ -245,17 +245,17 @@ import 둘을 더한다: `org.springframework.web.bind.annotation.PathVariable`,
 
 **`/users/me`가 여전히 200인지 회귀 단언을 더한다** — 기존 `AC-ME-01` 테스트가 이미 그것을 재고 있으므로 **따로 쓰지 않고 그 테스트가 초록인지 확인만 한다.** 빨가면 리터럴 경로가 템플릿에 먹힌 것이고, 그때는 `@GetMapping("/{id:\\d+}")`로 좁힌다.
 
-- [ ] **Step 6: 테스트 실행 — 통과 확인**
+- [x] **Step 6: 테스트 실행 — 통과 확인**
 
 Run: `cd backend && ./gradlew test --tests '*UserControllerTest'`
 Expected: PASS. 기존 `AC-ME-*`도 전부 초록이어야 한다.
 
-- [ ] **Step 7: 돌연변이로 누출 검사를 확인한다**
+- [x] **Step 7: 돌연변이로 누출 검사를 확인한다**
 
 `PublicProfileResponse`에 `String email`을 잠시 더하고 `from`에서 `user.getEmail()`을 넣는다.
 Expected: **AC-WEBFOLLOW-02만** 빨갛다. 확인한 뒤 되돌린다.
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 cd backend && ./gradlew spotlessApply && ./gradlew clean check
@@ -276,9 +276,9 @@ cd .. && git add backend && git commit -m "feat(backend): 공개 프로필 조�
 - Consumes: `useMe()`의 `data.id` (`features/user/queries.ts`, 이미 있다)
 - Produces: 없음. 화면 안에서 끝난다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
-Modify `frontend/src/app/more/page.test.tsx` — 기존 테스트는 그대로 두고 더한다. **파일 위쪽의 기존 렌더 헬퍼와 MSW 핸들러를 먼저 읽고 그것을 그대로 쓴다.**
+Modify `frontend/src/app/more/page.test.tsx` — 기존 테스트는 그대로 두고 더한다. **[확인됨 2026-09-06] `renderMorePage()`라는 헬퍼는 없다. 이 파일은 `renderWithQuery(<MorePage />)`를 직접 부른다** — 아래 코드의 `renderMorePage()`를 그것으로 읽는다. `me` 픽스처 id는 계획대로 `11`이 맞다.
 
 ```tsx
 it("AC-WEBFOLLOW-04 · 내 초대 링크와 복사 버튼이 보인다", async () => {
@@ -306,12 +306,12 @@ it("AC-WEBFOLLOW-05 · 복사하면 링크가 클립보드에 들어간다", asy
 
 > `11`은 이 파일의 기존 `me` 픽스처 id다. **다르면 픽스처 값에 맞춘다** — 픽스처를 고치지 않는다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test more`
 Expected: FAIL — 2개. `내 초대 링크`를 찾지 못한다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 Modify `frontend/src/app/more/page.tsx` — `useState`에 복사 상태를 더하고, 닉네임 `<dl>` 아래에 절을 넣는다.
 
@@ -348,12 +348,12 @@ Modify `frontend/src/app/more/page.tsx` — `useState`에 복사 상태를 더�
       </div>
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test more`
 Expected: PASS.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && cd ..
@@ -397,7 +397,7 @@ git commit -m "feat(web): 「더보기」에서 초대 링크를 복사한다 (A
 - Produces: `UserProfile({ id }: { id: number })` — 클라이언트 컴포넌트
 - Consumes: `useMe()`, `useRequireSession()` (둘 다 이미 있다. **고치지 않는다**)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 Create `frontend/src/app/u/[id]/page.test.tsx`. **다른 화면 테스트 파일(`app/brews/[id]/page.test.tsx`)의 렌더 헬퍼·MSW 설정을 그대로 베껴 온다** — 이 프로젝트의 화면 테스트는 그 모양이 표준이다.
 
@@ -516,12 +516,12 @@ it("AC-WEBFOLLOW-18 · 로그인하지 않았으면 로그인으로 보낸다", 
 
 > `friendProfile`·`myProfile`은 이 파일 안에 둔다 — `{ id: 12, nickname: "확인용친구" }`, `{ id: 11, nickname: "노성웅" }`. **백엔드 응답 세 필드가 전부라 실제 응답과 모양이 같다.**
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test u/`
 Expected: FAIL — 7개. `/u/[id]` 라우트가 없어 모듈을 못 찾는다.
 
-- [ ] **Step 3: 쿼리 훅을 더한다**
+- [x] **Step 3: 쿼리 훅을 더한다**
 
 Modify `frontend/src/features/user/queries.ts` — 파일 끝에 더한다. `meSchema`·`useMe`는 건드리지 않는다.
 
@@ -577,7 +577,7 @@ export function useFollowStatus(
 }
 ```
 
-- [ ] **Step 4: 프로필 컴포넌트를 만든다**
+- [x] **Step 4: 프로필 컴포넌트를 만든다**
 
 Create `frontend/src/features/user/components/UserProfile.tsx`:
 
@@ -609,7 +609,13 @@ export function UserProfile({ id }: { id: number }) {
   const isMe = me.data?.id === id;
   const status = useFollowStatus(id, ready && me.isSuccess && !isMe, onSessionLost);
 
-  if (!ready || profile.isPending) return <Shell>{null}</Shell>;
+  // polish 스펙이 빈 화면 10곳을 없앴다. 새 화면도 같은 표시를 쓴다.
+  if (!ready || profile.isPending)
+    return (
+      <Shell>
+        <LoadingState />
+      </Shell>
+    );
 
   if (profile.error) {
     return (
@@ -673,7 +679,7 @@ function FollowSection({ id, status }: { id: number; status: FollowStatus }) {
 
 > `id`는 이 태스크에서 쓰지 않지만 시그니처에 둔다 — Task 4가 곧 쓴다. 린트가 미사용 인자를 잡으면 Task 4까지 `void id;` 한 줄로 넘긴다.
 
-- [ ] **Step 5: 라우트를 만든다**
+- [x] **Step 5: 라우트를 만든다**
 
 Create `frontend/src/app/u/[id]/page.tsx`:
 
@@ -692,17 +698,17 @@ export default async function UserProfilePage({
 }
 ```
 
-- [ ] **Step 6: 테스트 실행 — 통과 확인**
+- [x] **Step 6: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test u/`
 Expected: PASS, 7 tests.
 
-- [ ] **Step 7: 돌연변이로 조합 순서를 확인한다**
+- [x] **Step 7: 돌연변이로 조합 순서를 확인한다**
 
 `noticeFor`에서 `if (status.mutual)` 줄을 맨 아래로 옮긴다.
 Expected: **AC-WEBFOLLOW-09만** 빨갛다(맞팔로우인데 `상대도 나를 팔로우하면…`이 나온다). 되돌린다.
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && cd ..
@@ -730,7 +736,7 @@ git commit -m "feat(web): 초대 링크 프로필 화면 (AC-WEBFOLLOW 7개)"
   반환은 TanStack Query의 `useMutation` 결과다. `mutate({ follow: boolean })`로 부른다.
 - Consumes: Task 3의 `FollowStatus`, `useFollowStatus`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 Modify `frontend/src/app/u/[id]/page.test.tsx` — 파일 끝에 더한다.
 
@@ -840,12 +846,12 @@ it("AC-WEBFOLLOW-19 · 팔로우가 실패하면 다시 누를 수 있다", asyn
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test u/`
 Expected: FAIL — 5개. 버튼에 `onClick`이 없어 아무 요청도 나가지 않는다.
 
-- [ ] **Step 3: 뮤테이션 훅을 더한다**
+- [x] **Step 3: 뮤테이션 훅을 더한다**
 
 Modify `frontend/src/features/user/queries.ts` — 파일 끝에 더한다.
 
@@ -863,7 +869,8 @@ export function useToggleFollow(id: number, onSessionLost?: () => void) {
     mutationFn: ({ follow }: { follow: boolean }) =>
       authedRequest(backendUrl(`/api/v1/users/${id}/follow`), {
         method: follow ? "POST" : "DELETE",
-        schema: z.unknown(),
+        // 204에 본문이 없다. 기존 삭제 API(브루잉 로그)가 쓰는 z.void()를 따른다.
+        schema: z.void(),
         onSessionLost,
       }),
     onSuccess: () =>
@@ -874,9 +881,9 @@ export function useToggleFollow(id: number, onSessionLost?: () => void) {
 
 import를 넓힌다: `import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";`
 
-> **204에 본문이 없다.** `authedRequest`가 빈 본문을 어떻게 다루는지 먼저 `lib/authed-fetch.ts`를 읽는다. `response.json()`을 무조건 부르면 204에서 깨진다. 이미 다른 삭제 API(브루잉 로그)가 204를 쓰고 있으므로 **그쪽이 쓰는 방식을 그대로 따른다.**
+> **[확인됨 2026-09-06] 선례는 `schema: z.void()`다**(`features/brewlog/api.ts:74`). 위 코드의 `z.unknown()`을 그것으로 바꿨다.
 
-- [ ] **Step 4: 버튼을 연결한다**
+- [x] **Step 4: 버튼을 연결한다**
 
 Modify `UserProfile.tsx`의 `FollowSection`:
 
@@ -910,23 +917,23 @@ import에 `useToggleFollow`를 더한다.
 
 > 오류 문구를 `toggle.error.message`로 그린다. 이 프로젝트의 `ApiError`가 서버 `message`를 담는지 `lib/authed-fetch.ts`에서 먼저 확인하고, 다르면 **기존 `ErrorState` 컴포넌트를 쓴다** — 문구를 새로 지어내지 않는다.
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test u/`
 Expected: PASS, 12 tests.
 
-- [ ] **Step 6: 전체 초록 확인**
+- [x] **Step 6: 전체 초록 확인**
 
 Run: `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e`
-Expected: PASS. 단위 테스트가 283 + 14 = **297개**여야 한다(Task 2에서 2개, Task 3에서 7개, Task 4에서 5개).
+Expected: PASS. 단위 테스트가 296 + 14 = **310개**여야 한다(Task 2에서 2개, Task 3에서 7개, Task 4에서 5개).
 
-- [ ] **Step 7: 스펙 status를 올린다**
+- [ ] **Step 7: 스펙 status를 올린다** — **하지 않았다(2026-09-06). 차단형 둘이 남아 의도적으로 `초안`으로 둔다.** 사유를 스펙의 인용 블록에 적었다.
 
 Modify `docs/specs/2026-09-05-web-follow.md` — `status: 초안` → `status: 구현완료`, `plan:` 채우기.
 
 **주의: 이 스펙의 수동 확인에는 차단형 `★`가 둘 있다**(운영에서 실제 맞팔로우, 상대 `FRIENDS` 레시피가 목록에 나타남). `docs/conventions/verification.md`는 「차단형이 하나라도 남아 있으면 `구현완료`로 올리지 않는다」이다. **둘을 밟기 전에는 올리지 않는다.** 밟을 수 없으면 `초안`으로 두고 그 사실을 스펙에 적는다.
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 cd .. && ./scripts/check-spec-coverage.sh
@@ -938,16 +945,24 @@ git commit -m "feat(web): 팔로우 버튼 (AC-WEBFOLLOW 5개)"
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과 — 482 + 5 = **487개**
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 — **297개**
-- [ ] `cd frontend && pnpm e2e` 통과 (새 e2e는 없지만 회귀 확인)
-- [ ] `./scripts/check-spec-coverage.sh` 통과
-- [ ] 스키마 변경이 **0건** — `git diff --stat main...HEAD`에 `db/migration`이 없다
+- [x] `cd backend && ./gradlew clean check` 통과 — **503개** (계획을 쓴 뒤 test-login 16개가 머지돼 기준이 482→498로 올랐다)
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 — **310개** (기준이 283→296으로 올랐다)
+- [x] `cd frontend && pnpm e2e` 통과 (새 e2e는 없지만 회귀 확인)
+- [x] `./scripts/check-spec-coverage.sh` 통과
+- [x] 스키마 변경이 **0건** — `git diff --stat main...HEAD`에 `db/migration`이 없다
 - [ ] 스펙 「수동 확인」 3개 완료 — **차단형 2개를 밟기 전에는 `status`를 올리지 않는다**
 
 ---
 
 ## 자체 검토 결과
+
+**구현 세션(2026-09-06)이 확인한 것**
+
+- **`/users/me` 리터럴이 `/users/{id}` 템플릿에 먹히지 않는다.** ✅ `AC-ME-01·02·03`이 전부 초록이었다. `@GetMapping("/{id:\\d+}")`로 좁힐 필요가 없었다.
+- **★ AC-WEBFOLLOW-16(인증 없으면 401)은 빨간불을 못 본 채로 통과했다.** 매핑이 없어도 인증이 먼저 걸려 401이 나기 때문이다. **그래서 구현 뒤에 `SecurityConfig`에 `GET /api/v1/users/*` permitAll을 잠시 넣어 확인했고, AC-16이 빨개졌다** — 이 테스트는 실제로 인가를 검증한다.
+- **`noticeFor`의 조합 순서.** `mutual` 판정을 맨 아래로 옮기면 **AC-WEBFOLLOW-09만** 빨개진다. 확인하고 되돌렸다.
+- **`PublicProfileResponse`의 누출 검사.** `email` 필드를 더하면 **AC-WEBFOLLOW-02만** 빨개진다. 확인하고 되돌렸다.
+- **`useRequireSession.ts`를 읽기만 하고 고치지 않았다.** PWA 계획과 충돌하지 않는다 — 약속대로다.
 
 **AC 커버리지:** 스펙의 AC **19개** 중 **19개**가 태스크에 매핑됐다. 매핑 표와 스펙의 `#### AC-WEBFOLLOW-` 개수를 세어 대조했다.
 

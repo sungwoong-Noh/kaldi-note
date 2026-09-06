@@ -114,12 +114,12 @@ docs/specs/2026-09-05-web-pwa.md               Modify — status
 - Produces: `/manifest.json`과 `/icons/*.png` 세 장. 뒤 태스크는 쓰지 않는다.
 - Consumes: 없음.
 
-- [ ] **Step 1: 시작 전 초록을 확인한다**
+- [x] **Step 1: 시작 전 초록을 확인한다**
 
 Run: `cd frontend && pnpm test && pnpm e2e`
 Expected: PASS. **두 숫자를 적어둔다**(단위 283개, e2e는 현재 개수).
 
-- [ ] **Step 2: 실패하는 e2e를 쓴다**
+- [x] **Step 2: 실패하는 e2e를 쓴다**
 
 Create `frontend/e2e/pwa.spec.ts`:
 
@@ -174,12 +174,12 @@ test.describe("매니페스트", () => {
 });
 ```
 
-- [ ] **Step 3: e2e 실행 — 실패 확인**
+- [x] **Step 3: e2e 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts`
 Expected: FAIL — 6개 전부. `/manifest.json`이 404라 `status()`가 `404`이고, JSON 파싱이 깨진다.
 
-- [ ] **Step 4: 아이콘을 굽는 스크립트를 쓴다**
+- [x] **Step 4: 아이콘을 굽는 스크립트를 쓴다**
 
 Create `frontend/scripts/make-icons.mjs`:
 
@@ -225,12 +225,12 @@ for (const [name, size, ratio] of [
 await browser.close();
 ```
 
-- [ ] **Step 5: 아이콘을 굽는다**
+- [x] **Step 5: 아이콘을 굽는다**
 
 Run: `cd frontend && node scripts/make-icons.mjs`
 Expected: `✓ icon-192.png (192x192)` 등 3줄. `ls -l public/icons`로 세 파일이 0바이트가 아닌지 본다.
 
-- [ ] **Step 6: 매니페스트를 쓴다**
+- [x] **Step 6: 매니페스트를 쓴다**
 
 Create `frontend/public/manifest.json`:
 
@@ -252,7 +252,7 @@ Create `frontend/public/manifest.json`:
 }
 ```
 
-- [ ] **Step 7: 문서가 매니페스트를 가리키게 한다**
+- [x] **Step 7: 문서가 매니페스트를 가리키게 한다**
 
 Modify `frontend/src/app/layout.tsx` — `metadata`에 한 줄을 더한다. Next가 `<link rel="manifest">`를 직접 넣어 준다.
 
@@ -265,14 +265,19 @@ export const metadata: Metadata = {
 };
 ```
 
-- [ ] **Step 8: e2e 실행 — 통과 확인**
+- [x] **Step 8: e2e 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts`
 Expected: PASS, 6 tests.
 
-> `Content-Type`이 `application/manifest+json`이 아니라 `application/json`으로 나오면 AC-PWA-01이 빨갛다. `public/`의 MIME은 Next(개발·`start`)와 Workers(배포)가 각각 정한다. 그때는 `public/manifest.json` 대신 `src/app/manifest.ts`(Next의 매니페스트 라우트)로 옮긴다 — Next가 이 MIME을 보장한다. 옮기면 File Structure의 경로도 함께 고친다.
+> **[2026-09-06] 실제로 `application/json`이 나왔고, 계획의 대안은 쓸 수 없었다.** Next의
+> `src/app/manifest.ts`는 MIME을 보장하지만 **경로가 `/manifest.webmanifest`로 고정**돼
+> AC-PWA-01·06의 `/manifest.json`과 어긋난다.
+>
+> **`src/app/manifest.json/route.ts`(Route Handler)로 만들었다** — 경로와 MIME을 둘 다 여기서 정한다.
+> 배포 런타임에서도 맞는지 `pnpm preview:worker` + `curl -I`로 확인했다(`application/manifest+json`).
 
-- [ ] **Step 9: 커밋**
+- [x] **Step 9: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && cd ..
@@ -297,7 +302,7 @@ git commit -m "feat(web): 홈화면 설치용 매니페스트와 아이콘 (AC-P
 - Produces: `/sw.js`가 scope `/`로 등록된다. 뒤 태스크가 이 파일에 `fetch` 처리를 더한다.
 - Produces: `ServiceWorkerRegistrar()` — props 없는 클라이언트 컴포넌트, `null`을 그린다.
 
-- [ ] **Step 1: 실패하는 e2e를 쓴다**
+- [x] **Step 1: 실패하는 e2e를 쓴다**
 
 Modify `frontend/e2e/pwa.spec.ts` — 파일 끝에 더한다.
 
@@ -323,12 +328,12 @@ test.describe("Service Worker", () => {
 });
 ```
 
-- [ ] **Step 2: e2e 실행 — 실패 확인**
+- [x] **Step 2: e2e 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts`
 Expected: FAIL — AC-PWA-07은 404, AC-PWA-08은 `navigator.serviceWorker.ready`가 영영 풀리지 않아 타임아웃.
 
-- [ ] **Step 3: 최소 Service Worker를 쓴다**
+- [x] **Step 3: 최소 Service Worker를 쓴다**
 
 Create `frontend/public/sw.js`:
 
@@ -351,7 +356,7 @@ self.addEventListener("activate", (event) => {
 });
 ```
 
-- [ ] **Step 4: 등록 컴포넌트를 쓴다**
+- [x] **Step 4: 등록 컴포넌트를 쓴다**
 
 Create `frontend/src/components/pwa/ServiceWorkerRegistrar.tsx`:
 
@@ -378,7 +383,7 @@ export function ServiceWorkerRegistrar(): null {
 }
 ```
 
-- [ ] **Step 5: 레이아웃에 붙인다**
+- [x] **Step 5: 레이아웃에 붙인다**
 
 Modify `frontend/src/app/layout.tsx` — import를 더하고 `<BottomNav />` 아래에 둔다.
 
@@ -394,16 +399,21 @@ import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar"
         </Providers>
 ```
 
-- [ ] **Step 6: ESLint가 sw.js를 훑지 않게 한다**
+- [x] **Step 6: ESLint가 sw.js를 훑지 않게 한다**
 
 Modify `frontend/eslint.config.mjs` — `ignores`에 `"public/sw.js"`를 더한다. 이미 `ignores` 배열이 있으면 항목만 추가하고, 없으면 배열 맨 앞에 `{ ignores: ["public/sw.js"] }` 항목을 넣는다.
 
-- [ ] **Step 7: e2e 실행 — 통과 확인**
+- [x] **Step 7: e2e 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts`
 Expected: PASS, 8 tests.
 
-- [ ] **Step 8: 커밋**
+> **[2026-09-06] AC-PWA-07이 빨갰다.** 정적 자산의 기본 MIME은 `application/javascript`인데 스펙은
+> `text/javascript`를 못박고 있다. 둘 다 유효한 JS MIME이고 SW 등록도 되지만(AC-PWA-08이 그 증거),
+> **AC는 승인된 계약이라 스펙을 고치지 않고** `next.config.ts`의 `headers()`로 `/sw.js`의
+> Content-Type을 지정했다. 배포 런타임에서도 유지되는 것을 확인했다.
+
+- [x] **Step 8: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && cd ..
@@ -430,7 +440,7 @@ git commit -m "feat(web): Service Worker 등록 (AC-PWA-07·08)"
 
 > **`page.route`가 아니라 `context.route`인 이유.** Service Worker가 보낸 `fetch`는 페이지가 보낸 것이 아니라서 `page.route`에 걸리지 않는다. Playwright는 `serviceWorkers: "allow"`(기본값)일 때 **컨텍스트 라우팅으로만** 이 요청을 가로챈다. Step 1이 이것을 먼저 잰다 — 여기서 어긋나면 이 태스크 이후가 전부 무너진다.
 
-- [ ] **Step 1: 가정을 먼저 잰다 — SW의 요청이 스텁에 걸리는가**
+- [x] **Step 1: 가정을 먼저 잰다 — SW의 요청이 스텁에 걸리는가**
 
 Modify `frontend/e2e/pwa.spec.ts` — 임시 테스트를 하나 더한다.
 
@@ -454,7 +464,17 @@ test("측정용 · SW가 보낸 요청이 context 스텁에 걸린다", async ({
 Run: `cd frontend && pnpm e2e pwa.spec.ts -g "측정용"`
 Expected: PASS. **빨갛게 나오면 여기서 멈추고 사람에게 알린다** — 스텁 방식을 다시 정해야 하고, 그건 계획을 고치는 일이지 코드를 비트는 일이 아니다. 통과하면 이 임시 테스트를 지운다.
 
-- [ ] **Step 2: 스텁 하네스를 넓힌다**
+> **[측정 결과 2026-09-06] 위 테스트는 빨갰지만 가정은 참이었다.** 원인은 `installStubs(page)`의
+> **`page.route`가 `context.route`보다 우선**해서 먼저 먹은 것이다. `installStubs`를 빼고 재니
+> 통과했다 — `context.route`는 정상 동작한다.
+>
+> **이 측정 테스트는 측정하려는 것을 측정하지 못한다.** 이 시점의 `sw.js`에는 `fetch` 핸들러가
+> 없어서 SW가 fetch를 보내지 않는다. 재고 있는 것은 **페이지의** fetch다.
+>
+> 실제 검증은 Step 6의 AC-PWA-09가 한다 — SW가 레시피 요청을 가로채면 그 fetch는 `page.route`를
+> 우회해 `context.route`로 간다. **그래서 `stubRecipeDetail`을 `context`에 거는 것이 맞다.**
+
+- [x] **Step 2: 스텁 하네스를 넓힌다**
 
 Modify `frontend/e2e/stubs.ts` — 파일 끝에 더한다. 기존 `HANDLERS`와 `installStubs`는 건드리지 않는다.
 
@@ -508,7 +528,7 @@ export async function stubSyntheticRecipes(context: BrowserContext): Promise<voi
 import type { BrowserContext, Page, Route } from "@playwright/test";
 ```
 
-- [ ] **Step 3: 실패하는 e2e를 쓴다**
+- [x] **Step 3: 실패하는 e2e를 쓴다**
 
 Modify `frontend/e2e/pwa.spec.ts` — 파일 끝에 더한다.
 
@@ -614,12 +634,12 @@ import {
 } from "./stubs";
 ```
 
-- [ ] **Step 4: e2e 실행 — 실패 확인**
+- [x] **Step 4: e2e 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts`
 Expected: FAIL — 5개. `caches.open("kaldi-recipe-v1")`이 빈 캐시를 만들어 키가 0개이고, AC-PWA-21은 오프라인에서 `fetch`가 `TypeError`로 죽는다.
 
-- [ ] **Step 5: sw.js에 레시피 캐시를 넣는다**
+- [x] **Step 5: sw.js에 레시피 캐시를 넣는다**
 
 Modify `frontend/public/sw.js` — `activate` 아래에 더한다.
 
@@ -678,17 +698,52 @@ self.addEventListener("fetch", (event) => {
 });
 ```
 
-- [ ] **Step 6: e2e 실행 — 통과 확인**
+- [x] **Step 6: e2e 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts`
 Expected: PASS, 13 tests.
 
-- [ ] **Step 7: 돌연변이로 LRU를 확인한다**
+> **[2026-09-06 · CI에서 다시 잡았다] 로컬 3회 초록이었는데 CI에서 3개가 빨갰다.**
+> 로컬 반복만으로는 부족했다 — 러너가 느릴 때만 드러나는 것이 있다.
+>
+> - **★ `putRecipe`가 서로의 항목을 지웠다(프로덕션 결함).** 두 요청이 각자 `keys()`를 읽어
+>   「51개다」라고 판단하고 각자 하나씩 지우면 49개가 된다. **CI에서 50개 중 44개만 남았다** —
+>   `poll` 타임아웃이 아니라 캐시가 실제로 모자랐다(타임아웃을 늘려도 44는 44다).
+>   **쓰기를 프로미스 체인으로 한 줄 세워 고쳤다.**
+> - **AC-19·20이 응답을 기다리지 않았다.** `goto`가 끝나도 레시피 fetch는 진행 중이고 다음
+>   `goto`가 그것을 취소한다. **제목이 보일 때까지 기다린다.**
+> - **AC-15의 브루로그 스텁을 `context.route`에 걸어 졌다.** `page.route`가 우선한다 — 이 계획이
+>   Step 1에서 측정해 둔 사실을 정작 여기서 어겼다. 홈이 `recipeId` 12로 레시피를 다시 불러 캐시가
+>   재차 찼다. **`page.route`로 옮겼다.**
+>
+> 캐시 `poll`에 20초를 준다. `retries: 0`을 유지하려면 테스트 쪽이 여유를 가져야 한다.
+
+> **[2026-09-06] 처음엔 flaky했다 — 3회 중 2회 실패.** `retries: 0`이라 그대로 두면 CI가 무작위로
+> 빨개진다. 원인은 프로덕션 코드가 아니라 **테스트의 경쟁 조건 둘**이었다.
+>
+> 1. **AC-PWA-09·10·19·20이 SW 등록을 기다리지 않았다.** SW가 붙기 전 요청은 `page.route`가
+>    가로채므로 캐시에 들어가지 않고, AC-10에서는 갈아끼운 응답이 무시된다. **먼저 `/recipes`를 열어
+>    `serviceWorker.ready`를 기다린 뒤** 대상 페이지로 간다(목록은 캐시 대상이 아니라 캐시는 빈 채로 남는다).
+> 2. **AC-PWA-20의 `poll(개수 === 50)`이 너무 일찍 만족됐다.** 101~150만으로 이미 50이라 마지막
+>    151의 캐시 쓰기를 기다리지 않았다. **`151이 들어왔는가`를 먼저 poll한다.**
+>
+> 고친 뒤 3회 연속 13개 초록을 확인했다.
+
+- [x] **Step 7: 돌연변이로 LRU를 확인한다**
 
 `putRecipe`의 `await cache.delete(url);` 한 줄을 잠시 지우고 돌린다.
-Expected: **AC-PWA-20만** 빨갛다(101이 남고 다른 것이 빠진다). AC-PWA-19는 초록 그대로다 — 50개까지는 재방문이 없어 순서가 같기 때문이다. 확인한 뒤 줄을 되돌린다.
 
-- [ ] **Step 8: 커밋**
+> **[2026-09-06] 이 돌연변이는 성립하지 않는다.** 지우고 전체를 두 번 돌렸더니 **13개가 전부 초록이었다.**
+> 당연한 결과다 — **AC-PWA-19·20의 시나리오에는 같은 레시피 재방문이 없다.** 101~151을 각각 한 번씩만
+> 여는데, `cache.delete(url)`은 「다시 연 항목을 맨 뒤로 옮기기」를 담당하므로 동작 차이가 나지 않는다.
+>
+> 스펙 65행도 「**가장 오래전에 넣은 항목부터** 지운다」로, 재방문 갱신을 요구하지 않는다.
+> **그래서 이 한 줄은 어떤 AC로도 보호되지 않는다.** 지워도 스펙을 위반하지 않지만, 재방문이 잦은
+> 실제 사용에서는 있는 편이 맞다. 남겨 두되 **검증되지 않는 코드임을 알고 있어야 한다.**
+>
+> 이 태스크에서 실제로 잡은 결함은 돌연변이가 아니라 **테스트의 경쟁 조건 둘**이었다(Step 6 참조).
+
+- [x] **Step 8: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && cd ..
@@ -724,7 +779,7 @@ git commit -m "feat(web): 레시피 응답을 네트워크 우선으로 캐시�
 - Changes (`useRequireSession`): 반환 타입은 그대로 `{ ready: boolean; onSessionLost: () => void }`다. **`offline`일 때 `ready`가 true가 된다** — 토큰이 없어도 화면을 그려야 Service Worker가 캐시를 내줄 수 있다.
 - Consumes: Task 3의 `installSwStubs`.
 
-- [ ] **Step 1: 실패하는 단위 테스트를 쓴다 (AC-PWA-14)**
+- [x] **Step 1: 실패하는 단위 테스트를 쓴다 (AC-PWA-14)**
 
 Modify `frontend/src/features/auth/useRequireSession.test.tsx` — 기존 테스트는 그대로 두고 더한다.
 
@@ -753,12 +808,12 @@ it("AC-PWA-13 · refresh가 네트워크로 실패하면 로그인으로 보내�
 
 > 기존 파일이 `usePathname`을 무엇으로 모킹하는지 먼저 읽고, `/recipes/2`를 돌려주도록 맞춘다. 기존 테스트가 다른 경로를 쓰고 있으면 **그 테스트를 고치지 말고** 이 두 개만 자기 경로로 맞춘다.
 
-- [ ] **Step 2: 단위 테스트 실행 — 실패 확인**
+- [x] **Step 2: 단위 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test useRequireSession`
 Expected: FAIL — AC-PWA-13이 빨갛다. 지금은 네트워크 실패도 `/login`으로 보내므로 `replace`가 불린다.
 
-- [ ] **Step 3: refresh의 반환을 넓힌다**
+- [x] **Step 3: refresh의 반환을 넓힌다**
 
 Modify `frontend/src/lib/refresh.ts` — `inFlight`의 타입과 본문을 바꾼다.
 
@@ -799,7 +854,7 @@ export function refreshSession(): Promise<RefreshResult> {
 
 > 본문 파싱이 깨져도 `offline`이 된다. 지금까지도 그 경우는 `null`이었고 화면에는 차이가 없다 — 다만 로그인으로 보내지 않게 되는 것이 유일한 변화다.
 
-- [ ] **Step 4: authed-fetch를 새 반환형에 맞춘다**
+- [x] **Step 4: authed-fetch를 새 반환형에 맞춘다**
 
 Modify `frontend/src/lib/authed-fetch.ts` — `const refreshed = await refreshSession();` 아래를 바꾼다.
 
@@ -816,7 +871,7 @@ Modify `frontend/src/lib/authed-fetch.ts` — `const refreshed = await refreshSe
     return request(url, withAuth(rest, refreshed.accessToken) as typeof rest);
 ```
 
-- [ ] **Step 5: 세션 훅을 고친다**
+- [x] **Step 5: 세션 훅을 고친다**
 
 Modify `frontend/src/features/auth/useRequireSession.ts` — `useState`를 import에 더하고 본문을 바꾼다.
 
@@ -853,12 +908,12 @@ Modify `frontend/src/features/auth/useRequireSession.ts` — `useState`를 impor
 
 `ready`를 계산하는 자리가 바뀌었으므로 반환문은 그대로 `{ ready, onSessionLost }`다.
 
-- [ ] **Step 6: 단위 테스트 실행 — 통과 확인**
+- [x] **Step 6: 단위 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS, 285 tests (283 + 2).
 
-- [ ] **Step 7: 실패하는 e2e를 쓴다 (AC-PWA-11·12·13)**
+- [x] **Step 7: 실패하는 e2e를 쓴다 (AC-PWA-11·12·13)**
 
 Modify `frontend/e2e/pwa.spec.ts` — 파일 끝에 더한다.
 
@@ -911,12 +966,12 @@ test.describe("오프라인 재방문", () => {
 });
 ```
 
-- [ ] **Step 8: e2e 실행 — 실패 확인**
+- [x] **Step 8: e2e 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts`
 Expected: FAIL — 3개. 오프라인 새로고침에서 문서 요청이 실패해 브라우저 오류 페이지가 뜬다(`/recipes/2`의 HTML이 캐시에 없다).
 
-- [ ] **Step 9: sw.js에 앱 셸 캐시를 넣는다**
+- [x] **Step 9: sw.js에 앱 셸 캐시를 넣는다**
 
 Modify `frontend/public/sw.js`.
 
@@ -990,14 +1045,18 @@ self.addEventListener("fetch", (event) => {
 });
 ```
 
-- [ ] **Step 10: e2e 실행 — 통과 확인**
+- [x] **Step 10: e2e 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts`
 Expected: PASS, 16 tests.
 
+> **[2026-09-06] AC-PWA-12는 이 태스크만으로 통과할 수 없다.** 「연결 없음」 화면(`/offline`)이
+> Task 5의 산출물이라, 그것을 먼저 만들어야 한다. **태스크 경계가 어긋나 있다** — Task 5의
+> Step 5~6(`offline-cache.ts`·`offline/page.tsx`)을 여기서 먼저 했다.
+
 > AC-PWA-11의 `getByRole("listitem")`이 7이 아니라 더 나오면, 상세 화면에 스텝 말고 다른 목록이 있다는 뜻이다. 그때는 스텝 목록에 붙은 실제 셀렉터로 좁힌다 — **기대값 7을 바꾸지 않는다.** 스펙이 못박은 숫자다.
 
-- [ ] **Step 11: 커밋**
+- [x] **Step 11: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && cd ..
@@ -1031,7 +1090,12 @@ git commit -m "feat(web): 오프라인에서 연 적 있는 레시피가 열린�
   `caches`가 없는 환경(사파리 사생활 보호 창, 서버)에서는 각각 빈 배열과 즉시 완료를 돌려준다.
 - Produces (`fixtures.ts`): `kasuya: Recipe` — id `3`, 제목 `Tetsu Kasuya 4:6 Method`, 스텝 6개.
 
-- [ ] **Step 1: kasuya 상세 픽스처를 실제 응답에서 뜬다**
+- [x] **Step 1: kasuya 상세 픽스처를 실제 응답에서 뜬다**
+
+> **[2026-09-06] 이 Step은 필요 없었다.** `fixtures.ts`에 **`kasuyaRecipe`가 이미 실제 응답에서 뜬
+> 채로 있다**(id 12, 스텝 6개 — AC-PWA-17이 요구하는 6개와 일치한다). 백엔드를 띄우지 않고
+> 스텁에서 `{ ...kasuyaRecipe, id: 3 }`으로 id만 맞춰 썼다. **계획이 스스로 경고한 「Write 전에
+> 파일이 있는지 본다」와 같은 부류의 실수다.**
 
 **지어내지 않는다**(`docs/conventions/frontend.md`「픽스처는 실제 응답에서 뜬다」). 백엔드를 띄우고 실제 응답을 받는다.
 
@@ -1059,7 +1123,7 @@ export const kasuya: Recipe = {
 };
 ```
 
-- [ ] **Step 2: 스텁이 id 3에 kasuya를 주게 한다**
+- [x] **Step 2: 스텁이 id 3에 kasuya를 주게 한다**
 
 Modify `frontend/e2e/stubs.ts` — `HANDLERS`의 **상세 항목보다 위에** 한 줄을 넣는다. 순서를 지키지 않으면 `/recipes/3`도 hoffmann을 받는다.
 
@@ -1070,7 +1134,7 @@ Modify `frontend/e2e/stubs.ts` — `HANDLERS`의 **상세 항목보다 위에** 
 
 import에 `kasuya`를 더한다.
 
-- [ ] **Step 3: 실패하는 e2e를 쓴다**
+- [x] **Step 3: 실패하는 e2e를 쓴다**
 
 Modify `frontend/e2e/pwa.spec.ts` — 파일 끝에 더한다.
 
@@ -1125,12 +1189,12 @@ test.describe("연결 없음 화면", () => {
 });
 ```
 
-- [ ] **Step 4: e2e 실행 — 실패 확인**
+- [x] **Step 4: e2e 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts`
 Expected: FAIL — 3개. `/offline`이 404다.
 
-- [ ] **Step 5: 캐시를 읽는 모듈을 쓴다**
+- [x] **Step 5: 캐시를 읽는 모듈을 쓴다**
 
 Create `frontend/src/lib/offline-cache.ts`:
 
@@ -1194,7 +1258,7 @@ export async function clearRecipeCache(): Promise<void> {
 }
 ```
 
-- [ ] **Step 6: 「연결 없음」 화면을 쓴다**
+- [x] **Step 6: 「연결 없음」 화면을 쓴다**
 
 Create `frontend/src/app/offline/page.tsx`:
 
@@ -1249,14 +1313,22 @@ export default function OfflinePage() {
 }
 ```
 
-- [ ] **Step 7: e2e 실행 — 통과 확인**
+- [x] **Step 7: e2e 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts`
 Expected: PASS, 19 tests.
 
+> **[2026-09-06] 셋 다 빨갰고, 원인은 테스트가 아니라 실제 결함이었다.** `install`에서
+> `cache.add("/offline")`은 **HTML만 담는다.** 그 화면은 Cache Storage를 읽어 목록을 그리므로 JS가
+> 필수인데, 청크 이름에 빌드 해시가 붙어 SW가 미리 알 수 없다. 그래서 오프라인에서 제목만 뜨고
+> 저장된 레시피가 영영 나오지 않았다.
+>
+> **`precacheOffline()`을 만들어 HTML을 받아 `/_next/static/...` 참조를 뽑아 함께 담는다.**
+> 사용자가 `/offline`을 한 번도 방문하지 않아도 동작해야 하므로 install 시점이 맞다.
+
 > AC-PWA-17의 `listitem` 6개가 `/offline`의 `<li>`까지 세면 안 된다. 이 단언은 **이동한 뒤** `/recipes/3`에서 재는 것이라 문제 없지만, 숫자가 어긋나면 스텝 목록 셀렉터로 좁힌다.
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && cd ..
@@ -1277,7 +1349,7 @@ git commit -m "feat(web): 「연결 없음」 화면이 저장된 레시피를 �
 **Interfaces:**
 - Consumes: Task 5의 `clearRecipeCache(): Promise<void>`.
 
-- [ ] **Step 1: 실패하는 e2e를 쓴다**
+- [x] **Step 1: 실패하는 e2e를 쓴다**
 
 Modify `frontend/e2e/pwa.spec.ts` — 파일 끝에 더한다.
 
@@ -1298,12 +1370,12 @@ test("AC-PWA-15 · 로그아웃하면 레시피 캐시가 빈다", async ({ page
 });
 ```
 
-- [ ] **Step 2: e2e 실행 — 실패 확인**
+- [x] **Step 2: e2e 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts -g "AC-PWA-15"`
 Expected: FAIL — 로그아웃 뒤에도 키가 1개다.
 
-- [ ] **Step 3: 로그아웃에 캐시 삭제를 넣는다**
+- [x] **Step 3: 로그아웃에 캐시 삭제를 넣는다**
 
 Modify `frontend/src/app/more/page.tsx` — import를 더하고 `logout` 본문을 바꾼다.
 
@@ -1327,18 +1399,18 @@ import { clearRecipeCache } from "@/lib/offline-cache";
 
 > **`clearSession()` 안에 넣지 않는다.** 그것은 401을 만났을 때도 불린다(`lib/authed-fetch.ts:37`). 토큰이 만료됐을 뿐인데 오프라인 데이터를 날리게 된다.
 
-- [ ] **Step 4: e2e 실행 — 통과 확인**
+- [x] **Step 4: e2e 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm e2e pwa.spec.ts`
 Expected: PASS, 20 tests.
 
-- [ ] **Step 5: 스펙 status를 올린다**
+- [x] **Step 5: 스펙 status를 올린다**
 
 Modify `docs/specs/2026-09-05-web-pwa.md` — `status: 초안` → `status: 구현완료`, `plan: docs/plans/2026-09-05-plan-web-pwa.md`.
 
 **남은 수동 확인 4개는 전부 비차단형이다**(폰 실물 설치와 마스킹 확인). `docs/conventions/verification.md`「비차단형만 남아 `구현완료`로 올릴 때」에 따라 스펙의 수동 확인 절에 남은 개수와 내용을 인용 블록으로 적는다.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e && cd ..
@@ -1351,13 +1423,13 @@ git commit -m "feat(web): 로그아웃하면 오프라인 캐시를 비운다 (A
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `cd frontend && pnpm e2e` 통과 — `pwa.spec.ts` 20개 포함
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — AC 604 + 21 = **625개**
-- [ ] `git diff --stat main...HEAD`에 `backend/`가 **0줄**
-- [ ] `frontend/package.json`의 의존성이 **늘지 않았다**
-- [ ] 스펙의 `status`를 `구현완료`로 변경 (남은 수동 확인 4개는 비차단형)
-- [ ] 스펙 「수동 확인」 4개 완료
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
+- [x] `cd frontend && pnpm e2e` 통과 — `pwa.spec.ts` 20개 포함
+- [x] `./scripts/check-spec-coverage.sh` 통과 — **637개** (계획을 쓴 뒤 polish 12개가 머지돼 기준이 604→616으로 올랐다)
+- [x] `git diff --stat main...HEAD`에 `backend/`가 **0줄**
+- [x] `frontend/package.json`의 의존성이 **늘지 않았다**
+- [x] 스펙의 `status`를 `구현완료`로 변경 (남은 수동 확인 4개는 비차단형)
+- [ ] 스펙 「수동 확인」 4개 완료 — **넷 다 폰 실물이 필요해 남았다(비차단형).** 상자는 비워 두고 `status`만 올렸다.
 
 ---
 

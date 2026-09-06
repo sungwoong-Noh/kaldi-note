@@ -2,10 +2,13 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar";
 
 export const metadata: Metadata = {
   title: "kaldi note",
   description: "커피 레시피를 재현 가능한 형태로 기록하고 공유합니다.",
+  // Next가 이 값으로 <link rel="manifest">를 만든다. 직접 <head>에 넣지 않는다.
+  manifest: "/manifest.json",
 };
 
 // 부엌에서 폰으로 쓰는 것이 주 사용 환경이다.
@@ -25,6 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Providers>
           {children}
           <BottomNav />
+          <ServiceWorkerRegistrar />
         </Providers>
       </body>
     </html>

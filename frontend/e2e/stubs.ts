@@ -1,4 +1,4 @@
-import type { Page, Route } from "@playwright/test";
+import type { BrowserContext, Page, Route } from "@playwright/test";
 // 픽스처는 실제 응답에서 뜬 것이다. 여기서 새로 지어내지 않는다.
 import {
   brewLogPage,
@@ -10,6 +10,7 @@ import {
   hoffmann,
   hoffmannSummary,
   holzklotzE80,
+  kasuyaRecipe,
   kasuyaSummary,
   me,
   myComandante,
@@ -28,6 +29,9 @@ import {
 const HANDLERS: ReadonlyArray<readonly [RegExp, unknown]> = [
   [/^\/api\/v1\/users\/me$/, me],
   // 상세가 목록보다 먼저 와야 한다. 순서를 바꾸면 `/recipes/12`가 목록 응답을 받는다.
+  // id 3만 kasuya다 — 「연결 없음」 화면이 서로 다른 레시피 둘을 보여주는지 재려면
+  // 캐시에 제목이 다른 항목이 둘 필요하다. `kasuyaSummary`가 3이라 id를 맞춘다.
+  [/^\/api\/v1\/recipes\/3$/, { ...kasuyaRecipe, id: 3 }],
   [/^\/api\/v1\/recipes\/\d+$/, hoffmann],
   [/^\/api\/v1\/recipes$/, pageOf([hoffmannSummary, kasuyaSummary])],
   [/^\/api\/v1\/brew-logs\/\d+$/, brewLogWithTds],
@@ -81,4 +85,65 @@ export async function installStubs(page: Page): Promise<Stubs> {
   });
 
   return { unstubbed };
+}
+
+/**
+ * Service Worker가 보낸 요청까지 가로챈다.
+ *
+ * <p>`installStubs(page)`는 `page.route`라 SW의 fetch를 못 잡는다. PWA 테스트는 SW가 네트워크에
+ * 나가는 것을 봐야 하므로 컨텍스트에 건다.
+ *
+ * <p><b>page.route가 context.route보다 우선한다</b>(2026-09-06에 측정했다). 그래서 둘을 함께 걸면
+ * 페이지가 보낸 요청은 `installStubs`가, SW가 보낸 요청은 이쪽이 처리한다 — 원하는 분담이다.
+ */
+export async function installSwStubs(context: BrowserContext): Promise<void> {
+  await context.route("**/api/auth/refresh", (route: Route) =>
+    route.fulfill({
+      json: { accessToken: "e2e.access.token", expiresInSeconds: 1800 },
+    }),
+  );
+
+  await context.route("**/api/v1/**", (route: Route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    const handler = HANDLERS.find(([pattern]) => pattern.test(pathname));
+    if (handler === undefined) return route.fulfill({ status: 404, json: {} });
+    return route.fulfill({ json: handler[1] });
+  });
+}
+
+/** `/api/v1/recipes/<숫자>` 하나의 응답을 갈아끼운다. 나중에 건 라우트가 이긴다. */
+export async function stubRecipeDetail(
+  context: BrowserContext,
+  body: unknown,
+): Promise<void> {
+  await context.route(/\/api\/v1\/recipes\/\d+$/, (route: Route) =>
+    route.fulfill({ json: body }),
+  );
+}
+
+/**
+ * id 101~151이 각자 자기 id를 담은 응답을 낸다. <b>개수만 세는 테스트 전용이다</b> — 지어낸 픽스처로
+ * 내용을 검증하지 않는다. 서로 다른 레시피 51개를 실제 응답으로 뜰 수는 없다.
+ */
+export async function stubSyntheticRecipes(
+  context: BrowserContext,
+): Promise<void> {
+  await context.route(/\/api\/v1\/recipes\/1\d\d$/, (route: Route) => {
+    const id = Number(new URL(route.request().url()).pathname.split("/").pop());
+    return route.fulfill({ json: { ...hoffmann, id, title: `레시피 ${id}` } });
+  });
+}
+
+/**
+ * 오프라인으로 만든다.
+ *
+ * <p><b>`context.setOffline(true)`만으로는 부족하다</b>(2026-09-06에 확인했다). 스텁은
+ * `route.fulfill`로 응답을 만들어 내므로 네트워크를 끊어도 계속 답한다. 라우트를 `abort`로 덮어야
+ * 실제로 끊긴다 — 나중에 건 라우트가 이긴다.
+ */
+export async function goOffline(context: BrowserContext): Promise<void> {
+  await context.route("**/*", (route: Route) =>
+    route.abort("internetdisconnected"),
+  );
+  await context.setOffline(true);
 }

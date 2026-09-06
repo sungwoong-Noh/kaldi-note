@@ -15,6 +15,9 @@ const eslintConfig = defineConfig([
     // OpenNext 빌드 산출물. 생성된 번들이라 린트 대상이 아니다.
     ".open-next/**",
     ".wrangler/**",
+    // Service Worker는 번들러를 거치지 않는다. 브라우저가 그대로 읽는 순수 JS라
+    // self·ExtendableEvent 같은 워커 전역을 쓰고, 프로젝트의 TS 규칙이 맞지 않는다.
+    "public/sw.js",
   ]),
 ]);
 

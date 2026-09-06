@@ -7,6 +7,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useMe } from "@/features/user/queries";
+import { clearRecipeCache } from "@/lib/offline-cache";
 import { clearSession } from "@/lib/session";
 
 export default function MorePage() {
@@ -26,6 +27,12 @@ export default function MorePage() {
     // `/api/auth/logout`은 백엔드가 아니라 Next 라우트 핸들러다. 실패해도 세션을 지우고
     // 나간다 — 로그아웃을 눌렀는데 로그인 상태로 남는 것이 더 나쁘다.
     await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
+    // 오프라인 캐시에는 남의 비공개 레시피가 될 수 있는 본문이 들어 있다.
+    // 계정이 바뀌기 전에 지운다(docs/specs/2026-09-05-web-pwa.md).
+    //
+    // clearSession() 안에 넣지 않는다 — 그것은 401을 만났을 때도 불린다
+    // (lib/authed-fetch.ts). 토큰이 만료됐을 뿐인데 오프라인 데이터를 날리게 된다.
+    await clearRecipeCache();
     clearSession();
     router.push("/");
   }

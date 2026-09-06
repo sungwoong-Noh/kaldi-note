@@ -1,7 +1,12 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { refreshSession } from "@/lib/refresh";
 import {
   hasAccessToken,
@@ -33,31 +38,40 @@ export function useRequireSession(): {
   const router = useRouter();
   const pathname = usePathname();
 
-  const ready = useSyncExternalStore(
+  const hasToken = useSyncExternalStore(
     subscribeSession,
     hasAccessToken,
     hasAccessTokenOnServer,
   );
+  // 서버와 첫 렌더가 어긋나지 않도록 false로 시작한다. 오프라인 판정은 effect에서만 켜진다.
+  const [offline, setOffline] = useState(false);
+  const ready = hasToken || offline;
 
   const onSessionLost = useCallback(() => {
     router.replace(loginPathFor(pathname));
   }, [router, pathname]);
 
   useEffect(() => {
-    if (ready) return;
+    if (hasToken) return;
 
     let cancelled = false;
     // 중복 호출은 refreshSession이 막는다. 여기에 ref 잠금을 두면 StrictMode의 두 번째
     // 실행이 그 잠금에 걸려 복구도 리다이렉트도 못 하고 화면이 빈 채로 멈춘다.
-    void refreshSession().then((token) => {
-      if (cancelled || token) return;
+    void refreshSession().then((result) => {
+      if (cancelled || result.kind === "ok") return;
+      // 오프라인이면 토큰 없이 그린다. Service Worker가 캐시된 응답을 내주므로
+      // 화면은 채워지고, 캐시에 없는 것만 503으로 떨어진다.
+      if (result.kind === "offline") {
+        setOffline(true);
+        return;
+      }
       router.replace(loginPathFor(pathname));
     });
 
     return () => {
       cancelled = true;
     };
-  }, [ready, router, pathname]);
+  }, [hasToken, router, pathname]);
 
   return { ready, onSessionLost };
 }

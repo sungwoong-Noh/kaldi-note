@@ -54,3 +54,25 @@ test.describe("매니페스트", () => {
     ).toHaveCount(1);
   });
 });
+
+test.describe("Service Worker", () => {
+  test("AC-PWA-07 · /sw.js가 열린다", async ({ request }) => {
+    const response = await request.get("/sw.js");
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("text/javascript");
+  });
+
+  test("AC-PWA-08 · 등록되고 scope가 루트다", async ({ page, baseURL }) => {
+    await installStubs(page);
+    await page.goto("/recipes");
+
+    const scope = await page.evaluate(async () => {
+      const registration = await navigator.serviceWorker.ready;
+      return registration.scope;
+    });
+    expect(scope).toBe(`${baseURL}/`);
+    expect(
+      await page.evaluate(() => navigator.serviceWorker.controller !== null),
+    ).toBe(true);
+  });
+});

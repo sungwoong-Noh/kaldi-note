@@ -8,7 +8,9 @@ Next.js PWA. **주 사용 환경은 "부엌에서 폰으로"** 다. 데스크톱
 >
 > **스펙 없이 코드를 쓰지 않는다.** 기능 개발은 `docs/specs/`의 스펙과 `docs/plans/`의 계획이 승인된 뒤에 시작한다. 테스트에는 인수 조건 ID를 `it('AC-GRIND-08 · ...')` 형태로 반드시 남긴다.
 
-> **현재 상태: 레시피와 브루잉 로그가 모두 동작한다. 인터넷에 떠 있다.** 로그인·목록·상세·포크(`../docs/specs/2026-08-21-web-recipe-read.md`), 레시피 생성·편집·삭제와 푸어 스텝 에디터(`../docs/specs/2026-08-30-web-recipe-write.md`), 그리고 **브루잉 로그 작성·목록·상세·삭제**가 있다(`../docs/specs/2026-08-31-web-brew-log.md`).
+> **현재 상태: 폰에 설치되고, 오프라인에서도 레시피가 열린다.** 단위 **312개** · e2e **65개**가 초록이다(2026-09-06).
+>
+> **레시피와 브루잉 로그가 모두 동작한다.** 로그인·목록·상세·포크(`../docs/specs/2026-08-21-web-recipe-read.md`), 레시피 생성·편집·삭제와 푸어 스텝 에디터(`../docs/specs/2026-08-30-web-recipe-write.md`), 그리고 **브루잉 로그 작성·목록·상세·삭제**가 있다(`../docs/specs/2026-08-31-web-brew-log.md`).
 > **로그 편집**(`../docs/specs/2026-09-02-web-brew-log-edit.md`)과 **로그 상세의 푸어 스텝 표시**
 > (`../docs/specs/2026-09-03-web-brew-log-steps.md`)까지 있다 — 후자는 새 API 호출 없이
 > `useRecipeLabel`이 이미 받아오던 `steps`를 함께 내보내는 것으로 끝났다.
@@ -54,8 +56,17 @@ Next.js PWA. **주 사용 환경은 "부엌에서 폰으로"** 다. 데스크톱
 
 부엌에서 젖은 손으로 폰을 쓴다. 앱스토어 심사 없이 홈화면에 설치되고, 네트워크가 끊겨도 저장된 레시피는 보여야 한다.
 
-- `manifest.json` + Service Worker
-- **레시피 상세는 오프라인 캐시 대상.** 추출 중에 네트워크가 끊겨도 스텝을 볼 수 있어야 한다.
+**2026-09-06에 구현됐다**(`../docs/specs/2026-09-05-web-pwa.md`, AC 21개).
+
+- **매니페스트는 `src/app/manifest.json/route.ts`다** — 정적 파일로 두면 MIME이 `application/json`이 되는데
+  스펙이 `application/manifest+json`을 요구한다. Next의 `app/manifest.ts`는 경로가 `/manifest.webmanifest`로
+  고정돼 쓸 수 없었다. `/sw.js`의 MIME은 `next.config.ts`의 `headers()`가 정한다.
+- **`public/sw.js`는 번들러를 거치지 않는다** — TypeScript도 `import`도 쓸 수 없는 순수 JS다.
+  ESLint 무시 목록에 있다. 의존성(Serwist·Workbox)을 넣지 않았다.
+- **레시피 상세는 네트워크 우선 캐시**(`kaldi-recipe-v1`, 50개 상한). 추출 중에 끊겨도 스텝을 볼 수 있다.
+  **캐시 쓰기는 직렬화돼 있다** — 동시에 돌면 상한 정리가 서로의 항목을 지운다(CI에서 실제로 드러났다).
+- **오프라인 판정이 인증과 얽힌다.** `refreshSession`이 `ok`/`unauthorized`/`offline`을 돌려주고,
+  `offline`이면 토큰 없이도 화면을 그린다 — 그러지 않으면 캐시가 차 있어도 `/login`으로 튕긴다.
 - 브루잉 로그 작성은 온라인 필수(사진 업로드 때문). 오프라인 큐잉은 하지 않는다 — YAGNI.
 
 ---

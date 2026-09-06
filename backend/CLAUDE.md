@@ -10,7 +10,7 @@ Spring Boot API 서버. 커피 레시피·추출 기록의 저장과 계산을 �
 
 > **현재 상태: 운영 중.** `https://api.kaldi-note.today`에 떠 있다. 도메인 패키지 10개
 > (`auth`·`brewlog`·`catalog`·`extraction`·`gear`·`grind`·`inventory`·`media`·`recipe`·`user`),
-> Flyway 마이그레이션 11개, **테스트 482개**가 초록이다.
+> Flyway 마이그레이션 11개, **테스트 503개**가 초록이다.
 >
 > 실행 중인 버전은 밖에서 확인할 수 있다 — `curl -s https://api.kaldi-note.today/actuator/info`가
 > `build.commit`(40자 git sha)을 돌려준다(`../docs/specs/2026-09-05-build-info.md`).

@@ -6,6 +6,7 @@ import {
   useFollowStatus,
   useMe,
   usePublicProfile,
+  useToggleFollow,
 } from "@/features/user/queries";
 import { LoadingState } from "@/components/LoadingState";
 
@@ -71,19 +72,24 @@ export function UserProfile({ id }: { id: number }) {
 }
 
 function FollowSection({ id, status }: { id: number; status: FollowStatus }) {
-  void id; // Task 4가 쓴다.
+  const toggle = useToggleFollow(id);
   const notice = noticeFor(status);
 
   return (
     <div className="flex flex-col gap-3">
       <button
         type="button"
-        className="rounded-lg bg-neutral-900 px-4 py-3 text-white dark:bg-neutral-100 dark:text-neutral-900"
+        disabled={toggle.isPending}
+        onClick={() => toggle.mutate({ follow: !status.following })}
+        className="rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900"
       >
         {status.following ? "팔로우 취소" : "팔로우"}
       </button>
       {notice !== null && (
         <p className="text-neutral-500 dark:text-neutral-400">{notice}</p>
+      )}
+      {toggle.error !== null && (
+        <p className="text-red-600 dark:text-red-400">{toggle.error.message}</p>
       )}
     </div>
   );

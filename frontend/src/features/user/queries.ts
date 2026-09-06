@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { backendUrl } from "@/lib/api-client";
 import { authedRequest } from "@/lib/authed-fetch";
@@ -80,5 +80,27 @@ export function useFollowStatus(
         schema: followStatusSchema,
         onSessionLost,
       }),
+  });
+}
+
+/**
+ * 팔로우 등록·해제.
+ *
+ * <p>낙관적 갱신을 하지 않는다 — 성공한 뒤 상태를 다시 읽어 화면을 맞춘다. 상태가 boolean 셋의 조합이라 화면에서 미리 계산하면 `mutual`을
+ * 틀리게 만들기 쉽다.
+ */
+export function useToggleFollow(id: number, onSessionLost?: () => void) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ follow }: { follow: boolean }) =>
+      authedRequest(backendUrl(`/api/v1/users/${id}/follow`), {
+        method: follow ? "POST" : "DELETE",
+        // 204에 본문이 없다. 기존 삭제 API(브루잉 로그)가 쓰는 방식과 같다.
+        schema: z.void(),
+        onSessionLost,
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["follow-status", id] }),
   });
 }

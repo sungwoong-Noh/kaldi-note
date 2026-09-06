@@ -1,4 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FollowStatus } from "@/features/user/queries";
@@ -180,5 +181,125 @@ describe("UserProfilePage", () => {
     await waitFor(() =>
       expect(replace).toHaveBeenCalledWith("/login?next=%2Fu%2F12"),
     );
+  });
+
+  it("AC-WEBFOLLOW-11 · 팔로우하면 버튼이 바뀐다", async () => {
+    let followed = false;
+    let posts = 0;
+    server.use(
+      http.get(`${BASE}/users/12`, () => HttpResponse.json(friendProfile)),
+      http.get(`${BASE}/users/12/follow`, () =>
+        HttpResponse.json(status({ following: followed })),
+      ),
+      http.post(`${BASE}/users/12/follow`, () => {
+        posts += 1;
+        followed = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    await renderProfile(12);
+    await userEvent.click(
+      await screen.findByRole("button", { name: "팔로우" }),
+    );
+
+    expect(
+      await screen.findByRole("button", { name: "팔로우 취소" }),
+    ).toBeInTheDocument();
+    expect(posts).toBe(1);
+  });
+
+  it("AC-WEBFOLLOW-12 · 응답 전에는 버튼을 누를 수 없다", async () => {
+    server.use(
+      http.get(`${BASE}/users/12`, () => HttpResponse.json(friendProfile)),
+      http.get(`${BASE}/users/12/follow`, () => HttpResponse.json(status({}))),
+      // 영영 응답하지 않는다 — disabled 상태를 붙잡아 두려는 것이다
+      http.post(`${BASE}/users/12/follow`, () => new Promise(() => {})),
+    );
+
+    await renderProfile(12);
+    const button = await screen.findByRole("button", { name: "팔로우" });
+    await userEvent.click(button);
+
+    await waitFor(() => expect(button).toBeDisabled());
+  });
+
+  it("AC-WEBFOLLOW-13 · 팔로우를 취소하면 버튼이 되돌아온다", async () => {
+    let followed = true;
+    let deletes = 0;
+    server.use(
+      http.get(`${BASE}/users/12`, () => HttpResponse.json(friendProfile)),
+      http.get(`${BASE}/users/12/follow`, () =>
+        HttpResponse.json(status({ following: followed })),
+      ),
+      http.delete(`${BASE}/users/12/follow`, () => {
+        deletes += 1;
+        followed = false;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    await renderProfile(12);
+    await userEvent.click(
+      await screen.findByRole("button", { name: "팔로우 취소" }),
+    );
+
+    expect(
+      await screen.findByRole("button", { name: "팔로우" }),
+    ).toBeInTheDocument();
+    expect(deletes).toBe(1);
+  });
+
+  it("AC-WEBFOLLOW-14 · 맞팔로우가 깨지면 문구가 즉시 내려간다", async () => {
+    let following = true;
+    server.use(
+      http.get(`${BASE}/users/12`, () => HttpResponse.json(friendProfile)),
+      http.get(`${BASE}/users/12/follow`, () =>
+        HttpResponse.json(
+          status({ following, followedBy: true, mutual: following }),
+        ),
+      ),
+      http.delete(`${BASE}/users/12/follow`, () => {
+        following = false;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+
+    await renderProfile(12);
+    expect(
+      await screen.findByText("맞팔로우 — 서로의 기록이 보입니다"),
+    ).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "팔로우 취소" }));
+
+    expect(
+      await screen.findByText("나를 팔로우하고 있습니다"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("맞팔로우 — 서로의 기록이 보입니다"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("AC-WEBFOLLOW-19 · 팔로우가 실패하면 다시 누를 수 있다", async () => {
+    server.use(
+      http.get(`${BASE}/users/12`, () => HttpResponse.json(friendProfile)),
+      http.get(`${BASE}/users/12/follow`, () => HttpResponse.json(status({}))),
+      http.post(`${BASE}/users/12/follow`, () =>
+        HttpResponse.json(
+          { code: "INTERNAL_ERROR", message: "서버 오류가 발생했습니다." },
+          { status: 500 },
+        ),
+      ),
+    );
+
+    await renderProfile(12);
+    const button = await screen.findByRole("button", { name: "팔로우" });
+    await userEvent.click(button);
+
+    await waitFor(() => expect(button).not.toBeDisabled());
+    expect(button).toHaveTextContent("팔로우");
+    expect(
+      await screen.findByText("서버 오류가 발생했습니다."),
+    ).toBeInTheDocument();
   });
 });

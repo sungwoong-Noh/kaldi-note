@@ -32,3 +32,53 @@ export function useMe(onSessionLost?: () => void) {
     staleTime: 5 * 60 * 1000,
   });
 }
+
+/** 남에게 보여주는 프로필. `MeResponse`와 달리 email·role이 없다. */
+export const publicProfileSchema = z.object({
+  id: z.number(),
+  nickname: z.string(),
+  profileImageUrl: z.string().optional(),
+});
+
+export type PublicProfile = z.infer<typeof publicProfileSchema>;
+
+export const followStatusSchema = z.object({
+  following: z.boolean(),
+  followedBy: z.boolean(),
+  mutual: z.boolean(),
+});
+
+export type FollowStatus = z.infer<typeof followStatusSchema>;
+
+export function usePublicProfile(id: number, onSessionLost?: () => void) {
+  return useQuery({
+    queryKey: ["user", id],
+    queryFn: () =>
+      authedRequest(backendUrl(`/api/v1/users/${id}`), {
+        schema: publicProfileSchema,
+        onSessionLost,
+      }),
+  });
+}
+
+/**
+ * 팔로우 상태.
+ *
+ * <p><b>`enabled`가 필요한 이유:</b> 백엔드는 자기 자신을 대상으로 한 상태 조회에 400을 낸다
+ * (`FollowService.validateTarget`). 내 프로필에서는 아예 부르지 않는다.
+ */
+export function useFollowStatus(
+  id: number,
+  enabled: boolean,
+  onSessionLost?: () => void,
+) {
+  return useQuery({
+    queryKey: ["follow-status", id],
+    enabled,
+    queryFn: () =>
+      authedRequest(backendUrl(`/api/v1/users/${id}/follow`), {
+        schema: followStatusSchema,
+        onSessionLost,
+      }),
+  });
+}

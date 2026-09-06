@@ -62,21 +62,40 @@ function offlineResponse() {
 }
 
 /**
+ * 캐시 쓰기를 한 줄로 세운다.
+ *
+ * 직렬화하지 않으면 상한 정리가 서로를 지운다 — 두 요청이 각자 keys()를 읽어 "51개다"라고
+ * 판단하고 각자 하나씩 지우면 49개가 된다. 레시피를 빠르게 여러 개 열면 캐시가 상한보다
+ * 계속 적어진다. CI에서 50개 중 44개만 남는 것으로 실제로 드러났다.
+ */
+let writeQueue = Promise.resolve();
+
+/**
  * 응답을 넣고 상한을 지킨다.
  *
  * 넣기 전에 지우는 것이 핵심이다 — Cache Storage의 keys()는 넣은 순서를 돌려주므로,
  * 다시 연 항목을 맨 뒤로 옮겨야 "가장 오래전에 연 것"이 앞에 온다. 안 그러면 LRU가 아니라
  * "가장 먼저 처음 연 것"을 지우게 된다.
  */
-async function putRecipe(url, response) {
-  const cache = await caches.open(RECIPE_CACHE);
-  await cache.delete(url);
-  await cache.put(url, response);
+function putRecipe(url, response) {
+  writeQueue = writeQueue
+    .then(async () => {
+      const cache = await caches.open(RECIPE_CACHE);
+      await cache.delete(url);
+      await cache.put(url, response);
 
-  const keys = await cache.keys();
-  for (const stale of keys.slice(0, Math.max(0, keys.length - RECIPE_LIMIT))) {
-    await cache.delete(stale);
-  }
+      const keys = await cache.keys();
+      for (const stale of keys.slice(
+        0,
+        Math.max(0, keys.length - RECIPE_LIMIT),
+      )) {
+        await cache.delete(stale);
+      }
+    })
+    // 한 번의 실패가 이후 쓰기를 전부 막으면 안 된다.
+    .catch(() => undefined);
+
+  return writeQueue;
 }
 
 async function handleRecipe(request) {

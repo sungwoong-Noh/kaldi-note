@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
-import { hoffmann } from "../src/test/fixtures";
+import { hoffmann, pageOf } from "../src/test/fixtures";
 import {
   goOffline,
   installStubs,
@@ -85,6 +85,14 @@ test.describe("Service Worker", () => {
   });
 });
 
+/**
+ * 캐시가 채워지길 기다리는 시간.
+ *
+ * 기본 5초는 CI에서 부족했다 — 러너가 느려 50개 중 44개까지만 들어간 채 타임아웃했다.
+ * `retries: 0`을 유지하려면 테스트 쪽이 여유를 가져야 한다.
+ */
+const CACHE_TIMEOUT_MS = 20_000;
+
 /** `kaldi-recipe-v1`에 든 키의 URL 목록. */
 async function recipeCacheKeys(page: Page): Promise<string[]> {
   return page.evaluate(async () => {
@@ -107,7 +115,7 @@ test.describe("레시피 캐시", () => {
     await expect(page.getByText("James Hoffmann Ultimate V60")).toBeVisible();
 
     await expect
-      .poll(() => recipeCacheKeys(page))
+      .poll(() => recipeCacheKeys(page), { timeout: CACHE_TIMEOUT_MS })
       .toEqual([expect.stringMatching(/\/api\/v1\/recipes\/2$/)]);
   });
 
@@ -142,9 +150,18 @@ test.describe("레시피 캐시", () => {
       await navigator.serviceWorker.ready;
     });
 
-    for (let id = 101; id <= 150; id += 1) await page.goto(`/recipes/${id}`);
+    // goto가 끝나도 레시피 fetch는 진행 중일 수 있고, 다음 goto가 그것을 취소한다.
+    // CI에서 실제로 44개만 캐시됐다. 제목이 보이면 응답을 받은 것이다.
+    for (let id = 101; id <= 150; id += 1) {
+      await page.goto(`/recipes/${id}`);
+      await expect(page.getByText(`레시피 ${id}`)).toBeVisible();
+    }
 
-    await expect.poll(async () => (await recipeCacheKeys(page)).length).toBe(50);
+    await expect
+      .poll(async () => (await recipeCacheKeys(page)).length, {
+        timeout: CACHE_TIMEOUT_MS,
+      })
+      .toBe(50);
     expect(await recipeCacheKeys(page)).toContainEqual(
       expect.stringMatching(/\/api\/v1\/recipes\/101$/),
     );
@@ -161,16 +178,25 @@ test.describe("레시피 캐시", () => {
     await page.evaluate(async () => {
       await navigator.serviceWorker.ready;
     });
-    for (let id = 101; id <= 151; id += 1) await page.goto(`/recipes/${id}`);
+    for (let id = 101; id <= 151; id += 1) {
+      await page.goto(`/recipes/${id}`);
+      await expect(page.getByText(`레시피 ${id}`)).toBeVisible();
+    }
 
     // 개수만 기다리면 101~150으로 이미 50이라, 마지막 151의 캐시 쓰기를 기다리지 않는다.
     await expect
-      .poll(async () =>
-        (await recipeCacheKeys(page)).some((url) => url.endsWith("/151")),
+      .poll(
+        async () =>
+          (await recipeCacheKeys(page)).some((url) => url.endsWith("/151")),
+        { timeout: CACHE_TIMEOUT_MS },
       )
       .toBe(true);
 
-    await expect.poll(async () => (await recipeCacheKeys(page)).length).toBe(50);
+    await expect
+      .poll(async () => (await recipeCacheKeys(page)).length, {
+        timeout: CACHE_TIMEOUT_MS,
+      })
+      .toBe(50);
     const keys = await recipeCacheKeys(page);
     expect(keys).not.toContainEqual(
       expect.stringMatching(/\/api\/v1\/recipes\/101$/),
@@ -327,15 +353,31 @@ test("AC-PWA-15 · 로그아웃하면 레시피 캐시가 빈다", async ({
 }) => {
   await installSwStubs(context);
   await installStubs(page);
+  // 로그아웃하면 홈으로 간다. 홈은 최근 기록의 recipeId로 레시피를 부르는데, 스텁은 인증을
+  // 보지 않고 200을 주므로 캐시가 곧바로 다시 찬다(운영에서는 401이라 캐시되지 않는다).
+  // 기록을 비워 그 요청 자체가 없게 만든다.
+  //
+  // page.route에 건다 — context.route에 걸면 installStubs의 page.route가 우선해서 진다.
+  await page.route("**/api/v1/brew-logs*", (route) =>
+    route.fulfill({ json: pageOf([]) }),
+  );
   await page.goto("/recipes");
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });
   await page.goto("/recipes/2");
-  await expect.poll(async () => (await recipeCacheKeys(page)).length).toBe(1);
+  await expect
+    .poll(async () => (await recipeCacheKeys(page)).length, {
+      timeout: CACHE_TIMEOUT_MS,
+    })
+    .toBe(1);
 
   await page.goto("/more");
   await page.getByRole("button", { name: "로그아웃" }).click();
 
-  await expect.poll(async () => (await recipeCacheKeys(page)).length).toBe(0);
+  await expect
+    .poll(async () => (await recipeCacheKeys(page)).length, {
+      timeout: CACHE_TIMEOUT_MS,
+    })
+    .toBe(0);
 });

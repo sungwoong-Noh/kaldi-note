@@ -264,3 +264,59 @@ test.describe("오프라인 재방문", () => {
     expect(new URL(page.url()).pathname).toBe("/recipes/2");
   });
 });
+
+test.describe("연결 없음 화면", () => {
+  test("AC-PWA-16 · 저장된 레시피가 목록으로 나온다", async ({
+    page,
+    context,
+  }) => {
+    await installSwStubs(context);
+    await installStubs(page);
+    await page.goto("/recipes");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    await page.goto("/recipes/2");
+    await expect(page.getByText("James Hoffmann Ultimate V60")).toBeVisible();
+    await page.goto("/recipes/3");
+    await expect(page.getByText("Tetsu Kasuya 4:6 Method")).toBeVisible();
+
+    await goOffline(context);
+    await page.goto("/offline");
+
+    await expect(page.getByText("James Hoffmann Ultimate V60")).toBeVisible();
+    await expect(page.getByText("Tetsu Kasuya 4:6 Method")).toBeVisible();
+  });
+
+  test("AC-PWA-17 · 목록의 항목이 실제로 열린다", async ({ page, context }) => {
+    await installSwStubs(context);
+    await installStubs(page);
+    await page.goto("/recipes");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    await page.goto("/recipes/3");
+    await expect(page.getByText("Tetsu Kasuya 4:6 Method")).toBeVisible();
+
+    await goOffline(context);
+    await page.goto("/offline");
+    await page.getByRole("link", { name: "Tetsu Kasuya 4:6 Method" }).click();
+
+    await expect.poll(() => new URL(page.url()).pathname).toBe("/recipes/3");
+    await expect(page.getByRole("listitem")).toHaveCount(6);
+  });
+
+  test("AC-PWA-18 · 캐시가 비면 그렇게 말한다", async ({ page, context }) => {
+    await installSwStubs(context);
+    await installStubs(page);
+    await page.goto("/recipes");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+
+    await goOffline(context);
+    await page.goto("/offline");
+
+    await expect(page.getByText("저장된 레시피가 없습니다")).toBeVisible();
+  });
+});

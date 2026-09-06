@@ -9,12 +9,35 @@
 // 그 세션 동안 fetch 핸들러가 한 번도 돌지 않는다.
 const SHELL_CACHE = "kaldi-shell-v1";
 
+/**
+ * /offline을 문서와 자산까지 함께 담는다.
+ *
+ * HTML만 담으면 안 되는 이유: 그 화면은 Cache Storage를 읽어 목록을 그리므로 JS가 필수인데,
+ * 청크는 페이지마다 다르고 이름에 빌드 해시가 붙어 SW가 미리 알 수 없다. 그래서 HTML을 받아
+ * `/_next/static/...` 참조를 뽑아 함께 담는다. 이것을 빠뜨리면 오프라인에서 「연결 없음」 화면이
+ * 제목만 뜨고 저장된 레시피가 영영 나오지 않는다.
+ */
+async function precacheOffline() {
+  const cache = await caches.open(SHELL_CACHE);
+  const response = await fetch("/offline");
+  if (!response.ok) return;
+
+  await cache.put("/offline", response.clone());
+
+  const html = await response.text();
+  const assets = new Set();
+  for (const match of html.matchAll(/["'](\/_next\/static\/[^"']+)["']/g)) {
+    assets.add(match[1]);
+  }
+  await Promise.all(
+    [...assets].map((url) => cache.add(url).catch(() => undefined)),
+  );
+}
+
 self.addEventListener("install", (event) => {
   // /offline은 "네트워크가 없을 때 여는 화면"이라 그때 받아올 수 없다. 설치 시점에 담는다.
   event.waitUntil(
-    caches
-      .open(SHELL_CACHE)
-      .then((cache) => cache.add("/offline"))
+    precacheOffline()
       .catch(() => undefined)
       .then(() => self.skipWaiting()),
   );

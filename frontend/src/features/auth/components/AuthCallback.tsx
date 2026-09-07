@@ -25,20 +25,39 @@ function CallbackMessage({ message }: { message: string }) {
 export function AuthCallback({
   code,
   next,
+  provider,
+  error,
 }: {
   code: string | null;
   next: string;
+  provider: "kakao" | "google";
+  error: string | null;
 }) {
+  // 취소는 장애가 아니다. code가 없는 것은 같지만 사용자가 스스로 한 일이다.
+  // ★ 이 분기가 !code보다 먼저 와야 한다 — 취소도 code 없이 오므로, 순서가 뒤바뀌면
+  //   영영 「인가 코드가 없습니다」가 뜬다.
+  if (error) {
+    return <CallbackMessage message="로그인을 취소했습니다" />;
+  }
+
   if (!code) {
     return (
       <CallbackMessage message="인가 코드가 없습니다. 다시 로그인해 주세요." />
     );
   }
 
-  return <AuthCallbackExchange code={code} next={next} />;
+  return <AuthCallbackExchange code={code} next={next} provider={provider} />;
 }
 
-function AuthCallbackExchange({ code, next }: { code: string; next: string }) {
+function AuthCallbackExchange({
+  code,
+  next,
+  provider,
+}: {
+  code: string;
+  next: string;
+  provider: "kakao" | "google";
+}) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   // StrictMode는 effect를 두 번 실행한다. 인가코드는 1회용이라 두 번째 교환은 반드시 실패한다.
@@ -53,7 +72,7 @@ function AuthCallbackExchange({ code, next }: { code: string; next: string }) {
         const response = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ code, provider }),
         });
 
         if (!response.ok) {
@@ -71,7 +90,7 @@ function AuthCallbackExchange({ code, next }: { code: string; next: string }) {
         setMessage("일시적인 오류가 발생했습니다.");
       }
     })();
-  }, [code, next, router]);
+  }, [code, next, provider, router]);
 
   if (message) {
     return <CallbackMessage message={message} />;

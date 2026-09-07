@@ -190,8 +190,14 @@ plan: docs/plans/2026-08-21-plan-web-recipe-read.md
 
 - **Given** `/auth/callback?code=test-code&state=%2Frecipes%2F1`이 열린다 (원래 `next=`로 썼으나 카카오가 돌려주는 것은 `state`다)
 - **When** 페이지가 마운트된다
-- **Then** `POST /api/auth/login`이 `{ "code": "test-code" }`로 호출되고, 성공 후 `/recipes/1`로 이동한다
+- **Then** `POST /api/auth/login`이 `{ "code": "test-code", "provider": "kakao" }`로 호출되고, 성공 후 `/recipes/1`로 이동한다
 - **검증** 페이지 테스트 `AuthCallbackPage.test.tsx`
+
+> **2026-09-07에 본문 모양을 갱신했다.** 원래는 `{ "code": "test-code" }`였다 — 그때는 provider가
+> 하나뿐이라 BFF의 기본값(`kakao`)에 기대고 있었다. `2026-09-07-google-login.md`가 구글을 더하면서
+> **콜백이 provider를 명시적으로 보내게** 바뀌었고, 그 스펙의 회귀 방지 조건(07번)이 「카카오는
+> 여전히 kakao로 간다」를 잠근다. **거기 AC ID를 그대로 적지 않는다** — 커버리지 스크립트가 스펙
+> 본문에서 ID를 긁어 **이 스펙의 AC로 집계한다**(2026-09-07에 실제로 678이 679가 됐다). **이 AC의 의도(인가코드를 넘기고 원래 경로로 돌아간다)는 그대로다.**
 
 #### AC-WEB-05 · refreshToken은 응답 본문에 없고 httpOnly 쿠키로 나간다
 

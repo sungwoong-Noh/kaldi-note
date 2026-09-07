@@ -15,5 +15,11 @@ export default async function AuthCallbackPage({
   // 카카오는 인가 요청에 실어 보낸 state를 그대로 돌려준다. 거기에 원래 경로가 들어 있다.
   const next = safeNextPath(params.state ?? params.next);
 
-  return <AuthCallback code={code} next={next} provider="kakao" />;
+  const error = Array.isArray(params.error)
+    ? params.error[0]
+    : (params.error ?? null);
+
+  return (
+    <AuthCallback code={code} next={next} provider="kakao" error={error} />
+  );
 }

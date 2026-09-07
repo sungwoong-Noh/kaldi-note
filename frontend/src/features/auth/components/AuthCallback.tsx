@@ -26,11 +26,20 @@ export function AuthCallback({
   code,
   next,
   provider,
+  error,
 }: {
   code: string | null;
   next: string;
   provider: "kakao" | "google";
+  error: string | null;
 }) {
+  // 취소는 장애가 아니다. code가 없는 것은 같지만 사용자가 스스로 한 일이다.
+  // ★ 이 분기가 !code보다 먼저 와야 한다 — 취소도 code 없이 오므로, 순서가 뒤바뀌면
+  //   영영 「인가 코드가 없습니다」가 뜬다.
+  if (error) {
+    return <CallbackMessage message="로그인을 취소했습니다" />;
+  }
+
   if (!code) {
     return (
       <CallbackMessage message="인가 코드가 없습니다. 다시 로그인해 주세요." />

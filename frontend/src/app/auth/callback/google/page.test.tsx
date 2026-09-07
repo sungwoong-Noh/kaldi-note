@@ -63,9 +63,7 @@ describe("GoogleAuthCallbackPage", () => {
   });
 
   it("AC-GOOGLE-10 · code도 error도 없으면 기존 문구를 유지한다", async () => {
-    render(
-      await GoogleAuthCallbackPage({ searchParams: Promise.resolve({}) }),
-    );
+    render(await GoogleAuthCallbackPage({ searchParams: Promise.resolve({}) }));
 
     expect(
       screen.getByText("인가 코드가 없습니다. 다시 로그인해 주세요."),
@@ -95,5 +93,23 @@ describe("GoogleAuthCallbackPage", () => {
       await screen.findByText("로그인에 실패했습니다."),
     ).toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
+  });
+  it("AC-GOOGLE-08 · 취소하면 전용 문구가 뜨고 BFF를 부르지 않는다", async () => {
+    let called = false;
+    server.use(
+      http.post("/api/auth/login", () => {
+        called = true;
+        return HttpResponse.json(SESSION);
+      }),
+    );
+
+    render(
+      await GoogleAuthCallbackPage({
+        searchParams: Promise.resolve({ error: "access_denied" }),
+      }),
+    );
+
+    expect(screen.getByText("로그인을 취소했습니다")).toBeInTheDocument();
+    expect(called).toBe(false);
   });
 });

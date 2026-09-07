@@ -116,4 +116,22 @@ describe("AuthCallbackPage", () => {
       expect(forwarded).toEqual({ code: "test-code", provider: "kakao" }),
     );
   });
+  it("AC-GOOGLE-09 · 카카오도 취소하면 같은 문구가 뜬다", async () => {
+    let called = false;
+    server.use(
+      http.post("/api/auth/login", () => {
+        called = true;
+        return HttpResponse.json(SESSION);
+      }),
+    );
+
+    render(
+      await AuthCallbackPage({
+        searchParams: Promise.resolve({ error: "access_denied" }),
+      }),
+    );
+
+    expect(screen.getByText("로그인을 취소했습니다")).toBeInTheDocument();
+    expect(called).toBe(false);
+  });
 });

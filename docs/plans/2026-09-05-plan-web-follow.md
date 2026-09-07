@@ -927,7 +927,7 @@ Expected: PASS, 12 tests.
 Run: `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e`
 Expected: PASS. 단위 테스트가 296 + 14 = **310개**여야 한다(Task 2에서 2개, Task 3에서 7개, Task 4에서 5개).
 
-- [ ] **Step 7: 스펙 status를 올린다** — **하지 않았다(2026-09-06). 차단형 둘이 남아 의도적으로 `초안`으로 둔다.** 사유를 스펙의 인용 블록에 적었다.
+- [x] **Step 7: 스펙 status를 올린다** — **이 세션에는 하지 않았다(2026-09-06). 차단형 둘이 남아 의도적으로 `초안`으로 뒀다.** 사유를 스펙의 인용 블록에 적었다. **그 뒤 2026-09-06 검증 세션에서 차단형 둘을 운영에서 밟고 `구현완료`로 올렸다(PR #106).**
 
 Modify `docs/specs/2026-09-05-web-follow.md` — `status: 초안` → `status: 구현완료`, `plan:` 채우기.
 
@@ -950,7 +950,7 @@ git commit -m "feat(web): 팔로우 버튼 (AC-WEBFOLLOW 5개)"
 - [x] `cd frontend && pnpm e2e` 통과 (새 e2e는 없지만 회귀 확인)
 - [x] `./scripts/check-spec-coverage.sh` 통과
 - [x] 스키마 변경이 **0건** — `git diff --stat main...HEAD`에 `db/migration`이 없다
-- [ ] 스펙 「수동 확인」 3개 완료 — **차단형 2개를 밟기 전에는 `status`를 올리지 않는다**
+- [x] 스펙 「수동 확인」 3개 완료 — 차단형 2개를 2026-09-06에 운영에서 밟았고, 그때 `status`를 `구현완료`로 올렸다
 
 ---
 

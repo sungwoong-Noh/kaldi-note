@@ -95,12 +95,12 @@ infra/.env.example                  Modify — GOOGLE_REDIRECT_URI 주석
 - Produces: `googleAuthorizeUrl(next: string): string` — `kakaoAuthorizeUrl`과 **같은 시그니처**
 - Consumes: `safeNextPath` (`features/auth/kakao.ts`에서 그대로 import)
 
-- [ ] **Step 1: 시작 전 초록을 확인한다**
+- [x] **Step 1: 시작 전 초록을 확인한다**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **숫자를 적어둔다**(312개일 것).
 
-- [ ] **Step 2: 실패하는 테스트 작성 — `google.test.ts`**
+- [x] **Step 2: 실패하는 테스트 작성 — `google.test.ts`**
 
 `process.env`를 테스트 안에서 바꾼다. `googleAuthorizeUrl`이 **호출 시점에** 읽으므로 가능하다
 (`kakaoAuthorizeUrl`도 같은 구조다).
@@ -135,12 +135,12 @@ describe("googleAuthorizeUrl", () => {
 });
 ```
 
-- [ ] **Step 3: 실행 — 실패 확인**
+- [x] **Step 3: 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test google`
 Expected: FAIL — `google.ts`가 없다. **「모듈을 찾을 수 없다」가 아닌 다른 이유로 실패하면 멈춘다.**
 
-- [ ] **Step 4: `google.ts` 최소 구현**
+- [x] **Step 4: `google.ts` 최소 구현**
 
 ```ts
 const GOOGLE_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -169,12 +169,12 @@ export function googleAuthorizeUrl(next: string): string {
 }
 ```
 
-- [ ] **Step 5: 실행 — 통과 확인**
+- [x] **Step 5: 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test google`
 Expected: PASS 2개.
 
-- [ ] **Step 6: 로그인 화면 테스트 추가**
+- [x] **Step 6: 로그인 화면 테스트 추가**
 
 `page.test.tsx`에 더한다. **기존 테스트 셋은 건드리지 않는다.**
 
@@ -223,13 +223,13 @@ Expected: PASS 2개.
 > `afterEach(() => { process.env = { ...ORIGINAL }; })`를 넣는다 — 넣지 않으면 AC-02가 설정한
 > `test-google-id`가 뒤 테스트로 샌다.
 
-- [ ] **Step 7: 실행 — 실패 확인**
+- [x] **Step 7: 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test login`
 Expected: FAIL 4개. **AC-01은 「링크가 1개뿐」으로, 나머지는 「구글로 로그인을 찾을 수 없다」로
 실패해야 한다.**
 
-- [ ] **Step 8: 로그인 화면에 링크 추가**
+- [x] **Step 8: 로그인 화면에 링크 추가**
 
 `page.tsx`에서 `googleAuthorizeUrl`을 import하고 카카오 `<a>` **아래**에 더한다. 카카오 링크의
 클래스는 그대로 두고, 구글은 흰 배경 + 테두리로 구분한다.
@@ -243,12 +243,12 @@ Expected: FAIL 4개. **AC-01은 「링크가 1개뿐」으로, 나머지는 「�
       </a>
 ```
 
-- [ ] **Step 9: 실행 — 통과 확인**
+- [x] **Step 9: 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **318개**(312 + 6). `AC-WEB-03`이 여전히 초록인지 눈으로 확인한다.
 
-- [ ] **Step 10: 커밋**
+- [x] **Step 10: 커밋**
 
 `feat(web): 구글 인가 URL과 로그인 버튼 (AC-GOOGLE 01~04·12·13)`
 
@@ -269,7 +269,7 @@ Expected: PASS. **318개**(312 + 6). `AC-WEB-03`이 여전히 초록인지 눈�
 - Produces: `AuthCallback({ code, next, provider })` — `provider: "kakao" | "google"`
 - **Consumes:** `safeNextPath` (kakao.ts), `sessionSchema`, `setAccessToken` — 전부 기존 것
 
-- [ ] **Step 1: 카카오 회귀 테스트를 먼저 쓴다 (AC-GOOGLE-07)**
+- [x] **Step 1: 카카오 회귀 테스트를 먼저 쓴다 (AC-GOOGLE-07)**
 
 `app/auth/callback/page.test.tsx`에 더한다. **지금은 `provider` 키가 아예 없으므로 실패해야 한다.**
 
@@ -296,12 +296,12 @@ Expected: PASS. **318개**(312 + 6). `AC-WEB-03`이 여전히 초록인지 눈�
   });
 ```
 
-- [ ] **Step 2: 실행 — 실패 확인**
+- [x] **Step 2: 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test auth/callback`
 Expected: FAIL 1개 — 본문이 `{code}`뿐이라 `provider` 키가 없다.
 
-- [ ] **Step 3: `AuthCallback`에 provider prop을 더한다**
+- [x] **Step 3: `AuthCallback`에 provider prop을 더한다**
 
 ```tsx
 export function AuthCallback({
@@ -323,12 +323,12 @@ export function AuthCallback({
 
 `app/auth/callback/page.tsx`는 `provider="kakao"`를 넘긴다.
 
-- [ ] **Step 4: 실행 — 통과 확인**
+- [x] **Step 4: 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test auth/callback`
 Expected: PASS. `AC-WEB-04`·`AC-WEB-06`도 초록이어야 한다.
 
-- [ ] **Step 5: 구글 콜백 테스트 작성 (AC-05, 06, 10, 11)**
+- [x] **Step 5: 구글 콜백 테스트 작성 (AC-05, 06, 10, 11)**
 
 `app/auth/callback/google/page.test.tsx`를 만든다. **카카오 테스트를 복사해 `provider`와
 문구만 바꾼다** — 하네스(`msw`, `vi.mock("next/navigation")`, `SESSION`)는 그대로 쓴다.
@@ -352,12 +352,12 @@ Expected: PASS. `AC-WEB-04`·`AC-WEB-06`도 초록이어야 한다.
   });
 ```
 
-- [ ] **Step 6: 실행 — 실패 확인**
+- [x] **Step 6: 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test callback/google`
 Expected: FAIL — 페이지가 없다.
 
-- [ ] **Step 7: 구글 콜백 페이지 생성**
+- [x] **Step 7: 구글 콜백 페이지 생성**
 
 ```tsx
 import { AuthCallback } from "@/features/auth/components/AuthCallback";
@@ -378,12 +378,12 @@ export default async function GoogleAuthCallbackPage({
 }
 ```
 
-- [ ] **Step 8: 실행 — 통과 확인**
+- [x] **Step 8: 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **323개**(318 + 5).
 
-- [ ] **Step 9: 커밋**
+- [x] **Step 9: 커밋**
 
 `feat(web): 구글 콜백 경로와 provider 명시 (AC-GOOGLE 05~07·10·11)`
 
@@ -403,7 +403,7 @@ Expected: PASS. **323개**(318 + 5).
 **Interfaces:**
 - Produces: `AuthCallback({ code, next, provider, error })` — `error: string | null`
 
-- [ ] **Step 1: 실패하는 테스트 작성 (양쪽)**
+- [x] **Step 1: 실패하는 테스트 작성 (양쪽)**
 
 각 콜백 테스트에 더한다. **BFF를 부르지 않는 것까지 단언한다** — 문구만 보면 「불렀는데 실패해서
 문구가 떴다」와 구별되지 않는다.
@@ -431,14 +431,14 @@ Expected: PASS. **323개**(318 + 5).
 
 카카오 쪽은 같은 모양으로 `AC-GOOGLE-09`.
 
-- [ ] **Step 2: 실행 — 실패 확인**
+- [x] **Step 2: 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test auth/callback`
 Expected: FAIL 2개. **문구가 「인가 코드가 없습니다…」로 뜬다** — `code`가 없어 그 분기를 타기
 때문이다. `called`는 이미 `false`이므로 **그 단언은 지금도 통과한다.** 실패 이유가 문구 하나뿐인지
 확인한다.
 
-- [ ] **Step 3: `AuthCallback`에 error 분기를 넣는다**
+- [x] **Step 3: `AuthCallback`에 error 분기를 넣는다**
 
 **`code` 없음 분기보다 먼저 판정한다.** 취소는 `code`가 없는 상태로 오므로, 순서가 뒤바뀌면
 영영 「인가 코드가 없습니다」가 뜬다.
@@ -464,18 +464,18 @@ export function AuthCallback({ code, next, provider, error }: { … }) {
   const error = Array.isArray(params.error) ? params.error[0] : (params.error ?? null);
 ```
 
-- [ ] **Step 4: 실행 — 통과 확인**
+- [x] **Step 4: 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **325개**(323 + 2).
 
-- [ ] **Step 5: 돌연변이 검사**
+- [x] **Step 5: 돌연변이 검사**
 
 `AuthCallback`에서 `error` 분기를 **일시적으로 아래로** 내려 `!code` 뒤에 둔다.
 Expected: `AC-GOOGLE-08`·`09` 둘 다 FAIL. **초록이면 그 순서를 지키는 조건이 없다는 뜻이다.**
 확인 후 되돌린다.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 `feat(web): 취소를 장애와 구분한다 (AC-GOOGLE-08·09)`
 
@@ -492,7 +492,7 @@ Expected: `AC-GOOGLE-08`·`09` 둘 다 FAIL. **초록이면 그 순서를 지키
 
 **Covers:** AC-GOOGLE-14
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `application-test.yml`은 `google.client-id`·`client-secret`만 덮고 **`redirect-uri`는 덮지
 않는다.** 그래서 `application.yml`의 기본값이 그대로 보인다.
@@ -509,12 +509,12 @@ void 구글_리디렉션_기본값() {
 > **셸에 `GOOGLE_REDIRECT_URI`가 떠 있으면 이 테스트가 그 값을 본다.** 실패하면 먼저
 > `echo $GOOGLE_REDIRECT_URI`를 확인한다.
 
-- [ ] **Step 2: 실행 — 실패 확인**
+- [x] **Step 2: 실행 — 실패 확인**
 
 Run: `cd backend && ./gradlew test --tests '*OAuthPropertiesTest*'`
 Expected: FAIL — 실제값이 `http://localhost:3000/auth/callback`이다.
 
-- [ ] **Step 3: 기본값 변경**
+- [x] **Step 3: 기본값 변경**
 
 `application.yml`의 한 줄만 바꾼다. **카카오 줄은 건드리지 않는다.**
 
@@ -522,12 +522,12 @@ Expected: FAIL — 실제값이 `http://localhost:3000/auth/callback`이다.
       redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:3000/auth/callback/google}
 ```
 
-- [ ] **Step 4: 실행 — 통과 확인**
+- [x] **Step 4: 실행 — 통과 확인**
 
 Run: `cd backend && ./gradlew clean check`
-Expected: PASS. **504개**(503 + 1).
+Expected: PASS. **505개**(503 + 2). — **계획은 504(503+1)로 적었으나 실제로는 카카오 기본값 회귀 테스트를 함께 넣어 2개가 늘었다.**
 
-- [ ] **Step 5: 배포 배선**
+- [x] **Step 5: 배포 배선**
 
 `frontend/.env.example`에 키 둘을 더한다(값은 비운다).
 
@@ -552,12 +552,12 @@ NEXT_PUBLIC_GOOGLE_REDIRECT_URI=http://localhost:3000/auth/callback/google
 > **시크릿이 비어 있어도 빌드는 성공한다.** 빈 `client_id`로 번들이 구워질 뿐이다(AC-12).
 > **그래서 배포됐다고 되는 것이 아니다** — 수동 확인이 그것을 잡는다.
 
-- [ ] **Step 6: 전체 검증**
+- [x] **Step 6: 전체 검증**
 
 Run: `cd backend && ./gradlew clean check` · `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` · `./scripts/check-spec-coverage.sh`
-Expected: 백엔드 504 · 프론트 325 · 커버리지 **692개**(678 + 14).
+Expected: 백엔드 505 · 프론트 325 · 커버리지 **692개**(678 + 14).
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 `chore: 구글 리디렉션 기본값과 배포 배선 (AC-GOOGLE-14)`
 
@@ -565,12 +565,12 @@ Expected: 백엔드 504 · 프론트 325 · 커버리지 **692개**(678 + 14).
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과 (504개)
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (325개)
-- [ ] `./scripts/check-spec-coverage.sh` 통과 (692개)
-- [ ] 스펙의 `status`를 `구현완료`로 변경 — **차단형 수동 확인이 남으므로, 그것을 밟은 뒤에만 올린다**
-- [ ] 사람이 구글 콘솔·운영 `.env`·GitHub Secrets를 채운다
-- [ ] ★ 운영에서 실제 구글 계정으로 로그인된다
+- [x] `cd backend && ./gradlew clean check` 통과 (505개 — 계획의 504는 카카오 회귀 테스트를 세지 않은 예측이었다)
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (325개)
+- [x] `./scripts/check-spec-coverage.sh` 통과 (692개)
+- [x] 스펙의 `status`를 `구현완료`로 변경 — **차단형 수동 확인이 남으므로, 그것을 밟은 뒤에만 올린다**
+- [x] 사람이 구글 콘솔·운영 `.env`·GitHub Secrets를 채운다
+- [x] ★ 운영에서 실제 구글 계정으로 로그인된다
 
 ---
 

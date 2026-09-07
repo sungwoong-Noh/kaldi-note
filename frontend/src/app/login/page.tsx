@@ -1,3 +1,4 @@
+import { googleAuthorizeUrl } from "@/features/auth/google";
 import { kakaoAuthorizeUrl, safeNextPath } from "@/features/auth/kakao";
 
 /**
@@ -28,6 +29,13 @@ export default async function LoginPage({
         className="w-full max-w-xs rounded-md bg-[#FEE500] px-4 py-3 text-center font-medium text-[#191600]"
       >
         카카오로 로그인
+      </a>
+
+      <a
+        href={googleAuthorizeUrl(next)}
+        className="w-full max-w-xs rounded-md border border-neutral-300 px-4 py-3 text-center font-medium dark:border-neutral-700"
+      >
+        구글로 로그인
       </a>
     </main>
   );

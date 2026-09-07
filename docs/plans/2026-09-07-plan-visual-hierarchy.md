@@ -131,12 +131,12 @@ frontend/
 - Produces: `readPalettes(): { light: Palette; dark: Palette }` · `contrastRatio(a: string, b: string): number` · `TOKEN_NAMES: readonly string[]`
 - Consumes: 없음
 
-- [ ] **Step 1: 시작 전 초록을 확인한다**
+- [x] **Step 1: 시작 전 초록을 확인한다**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **325개**.
 
-- [ ] **Step 2: 실패하는 테스트 작성 — 파서와 대비**
+- [x] **Step 2: 실패하는 테스트 작성 — 파서와 대비**
 
 `src/test/tokens.ts` (헬퍼, 테스트 아님):
 
@@ -260,14 +260,14 @@ describe("디자인 토큰", () => {
 });
 ```
 
-- [ ] **Step 3: 실행 — 실패 확인**
+- [x] **Step 3: 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test src/test/contrast.test.ts src/test/designTokens.test.ts`
 Expected: FAIL — 지금 `globals.css`에는 `--background`·`--foreground` 둘뿐이라 AC-06이
 `["background","foreground"]`와 8개를 비교하며 깨지고, 대비 테스트는 `palette.brand`가
 `undefined`라 `parseInt`가 `NaN`을 낸다.
 
-- [ ] **Step 4: globals.css에 토큰을 박는다**
+- [x] **Step 4: globals.css에 토큰을 박는다**
 
 ```css
 @import "tailwindcss";
@@ -334,12 +334,12 @@ body {
 > **`--font-mono`가 hex를 갖지 않으므로 파서에 걸리지 않는다.** `@theme inline`의 `var(...)` 줄도
 > 마찬가지다. 파서가 긁는 것은 `:root` 두 블록의 hex 8개씩뿐이다.
 
-- [ ] **Step 5: 실행 — 통과 확인**
+- [x] **Step 5: 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **338개**(325 + 대비 12 + 토큰 1).
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && cd ..

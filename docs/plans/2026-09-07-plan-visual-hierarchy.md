@@ -866,7 +866,7 @@ git commit -m "feat(web): 색을 토큰으로 일괄 이관하고 허용목록�
 - Consumes: `installStubs` (`e2e/stubs.ts`), 픽스처 `hoffmannSummary`(`30.0g` · `500.0g` · `1:16.7`)
 - Produces: 없음
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `e2e/visual.spec.ts`:
 
@@ -945,7 +945,7 @@ test.describe("시각 위계 — 다크", () => {
 });
 ```
 
-- [ ] **Step 2: 실행 — 실패 확인**
+- [x] **Step 2: 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm e2e visual`
 Expected: FAIL이면 안 된다 — Task 4까지 끝났으면 **이미 통과해야 한다.** 이 태스크의 테스트는
@@ -954,17 +954,17 @@ Expected: FAIL이면 안 된다 — Task 4까지 끝났으면 **이미 통과해
 > **빨갛게 나오면 그것이 이 태스크의 수확이다.** 클래스 이름을 틀렸거나 토큰이 생성되지 않은
 > 것이며, 소스 검사 5개는 그것을 잡을 수 없다. 실패하면 Task 4로 돌아가 고친다.
 
-- [ ] **Step 3: 실행 — 전체 확인**
+- [x] **Step 3: 실행 — 전체 확인**
 
 Run: `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e`
 Expected: PASS. 단위 **350개**, e2e **70개**(65 + 5).
 
-- [ ] **Step 4: 커버리지 확인**
+- [x] **Step 4: 커버리지 확인**
 
 Run: `cd .. && ./scripts/check-spec-coverage.sh`
 Expected: PASS. 스펙의 `status`를 아직 올리지 않았으므로 이 스펙은 **건너뛴다**고 나온다.
 
-- [ ] **Step 5: 스펙 status를 올린다**
+- [x] **Step 5: 스펙 status를 올린다**
 
 `docs/specs/2026-09-07-visual-hierarchy.md` — `status: 초안` → `status: 구현완료`,
 `plan: docs/plans/2026-09-07-plan-visual-hierarchy.md`.
@@ -972,7 +972,7 @@ Expected: PASS. 스펙의 `status`를 아직 올리지 않았으므로 이 스�
 **수동 확인 3개는 전부 비차단형이다.** 하나도 밟지 못해도 올린다
 (`docs/conventions/verification.md`). 남은 항목이 몇 개이고 무엇인지 스펙의 인용 블록에 적는다.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 git add frontend/e2e docs/specs/2026-09-07-visual-hierarchy.md
@@ -983,13 +983,13 @@ git commit -m "test(web): 렌더값을 브라우저로 재고 스펙을 올린�
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (**350개**)
-- [ ] `cd frontend && pnpm e2e` 통과 (**70개**)
-- [ ] `cd backend && ./gradlew clean check` 통과 (**505개** — 변경 0건이지만 회귀 확인)
-- [ ] `./scripts/check-spec-coverage.sh` 통과 (**710개** = 692 + 18)
-- [ ] `git diff --stat main...HEAD`에 `backend/`가 **없다**
-- [ ] 스펙의 `status`를 `구현완료`로 변경
-- [ ] 스펙 「수동 확인」 3개 — **전부 비차단형이라 `status`를 막지 않는다**
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 — **350개**
+- [x] `cd frontend && pnpm e2e` 통과 — **70개**. `pnpm test:worker`도 6개 통과했다
+- [x] `cd backend && ./gradlew clean check` 통과 — **505개**
+- [x] `./scripts/check-spec-coverage.sh` 통과 — **710개**, 스펙 28건
+- [x] `git diff --stat main...HEAD`에 `backend/`가 **없다** — 확인함
+- [x] 스펙의 `status`를 `구현완료`로 변경
+- [ ] 스펙 「수동 확인」 3개 — **전부 비차단형이라 `status`를 막지 않는다.** 폰 실물과 실제 조명이 필요해 남겼다
 
 ---
 

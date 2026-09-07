@@ -87,7 +87,7 @@ plan:
 정의하므로(`neutral-300` = `oklch(87% 0 none)`) sRGB로 환산해 박았다. `--color-muted`의 다크값
 `#A1A1A1`은 **v4의 `neutral-400`이다** — v3의 `#A3A3A3`가 아니다.
 
-**모든 토큰이 WCAG AA(4.5:1)를 넘긴다. 최저는 `--color-muted` 라이트값의 4.74:1이다.**
+**글자로 쓰이는 토큰은 전부 WCAG AA(4.5:1)를 넘긴다. 최저는 `--color-muted` 라이트값의 4.74:1이다.**
 
 | 조합 | 대비 |
 |---|---|
@@ -97,6 +97,15 @@ plan:
 | danger + on-accent | 4.83:1 · 6.48:1 |
 | **muted / 배경** | **4.74:1** · 7.66:1 |
 | foreground / 배경 | 17.93:1 · 16.91:1 |
+
+**다이얼로그 배경막 `bg-black/40`은 토큰으로 빼지 않는다.** 4곳(`BeanBatchDialog`·
+`UserGrinderDialog`·`DeleteRecipeDialog`·`DeleteBrewLogDialog`)에서 쓰이는데, 라이트·다크가 같은
+스크림이라 쌍이 필요 없다. 알파가 붙은 오버레이만 이 예외에 해당한다.
+
+**표면색 둘(`--color-line`·`--color-surface`)은 대비 기준에서 제외한다.** 글자가 아니라 구분선과
+면이기 때문이다. 실제 값은 `line` 1.48:1·1.91:1, `surface` 1.09:1·1.31:1이며, **지금 쓰이는
+`neutral-300`·`neutral-100`과 같은 색이라 이번 변경으로 나빠지는 것은 없다.** 이 둘에 4.5를
+요구하면 테두리가 본문만큼 진해져 위계가 다시 무너진다.
 
 ### 앰버 3곳의 처리
 
@@ -122,8 +131,8 @@ plan:
 **색은 액션에만 쓴다.** 수치는 크기와 굵기로 올리고 브라운을 칠하지 않는다 — 목록에 카드가 쌓였을 때
 갈색이 많아지면 주 액션 버튼이 묻힌다.
 
-**`h1` 11곳을 전부 `text-xl semibold`로 통일한다.** 지금 `/login`·`/offline`·`/u/[id]` 셋만
-`text-2xl bold`로 갈려 있다.
+**`h1` 14곳을 전부 `text-xl semibold`로 통일한다.** 10곳은 이미 그 형태이고, **넷이 갈려 있다** —
+`/login`(`text-2xl font-semibold`), `/login/test`·`/offline`·`UserProfile`(`text-2xl font-bold`).
 
 **별 아이콘은 글자가 아니다.** `RatingInput.tsx:30`의 `text-xl`을 `text-[22px]`로 바꿔 크기
 허용목록 검사에서 제외한다.
@@ -138,10 +147,28 @@ plan:
 | 로그 상세 | 위와 같음 + TDS·수율 |
 
 `RecipeSummary`의 `doseG`·`waterG`·`ratio`는 **셋 다 필수**라 레시피 카드의 대표 수치는 항상 있다.
-`BrewLogSummary`는 다르다 — `brewRatio`가 **옵션**이고, 항상 있는 수치는 `actualWaterTempC`와
-`brewedAt`뿐이다. 그래서 승격 규칙을 둔다.
+`BrewLogSummary`는 프론트 스키마에서 `brewRatio`가 **옵션**이라, 타입상 대표 수치 자리가 빌 수
+있다. 그래서 승격 규칙을 둔다.
 
 **승격된 값은 보조줄에서 뺀다.** 같은 값을 두 번 그리지 않는다.
+
+> ### ⚠ 승격 규칙은 방어 분기다 — 지금 백엔드로는 도달할 수 없다
+>
+> `brew_log.actual_dose_g`와 `actual_water_g`가 둘 다 `nullable = false`이고,
+> `ExtractionAnalyzer.analyze`는 `brewRatio`를 그 둘로 **분기 없이** 계산한다. **실제 API
+> 응답에서 `brewRatio`가 비는 경우는 없다.** 기존 픽스처 둘(`brewLogPage.content[0]`,
+> `brewLogWithoutTds`)이 모두 `brewRatio: 15.0`을 갖고 있는 것이 그 방증이다.
+>
+> 그래도 분기를 둔다. **프론트 스키마가 `z.number().optional()`로 선언하는 한 TypeScript가
+> 분기를 요구하고**, 지금 `BrewLogCard`도 이미 `log.brewRatio && ...`로 방어하고 있다. 분기를
+> 두면서 그 안을 검사하지 않으면 대표 수치 자리가 조용히 비는 길이 열린다.
+>
+> **따라서 AC-VISUAL-10·11·12는 「백엔드가 만들 수 있는 상태」가 아니라 「프론트 스키마가
+> 허용하는 상태」를 검사한다.** 픽스처는 실제 응답에서 `brewRatio`만 덜어내 만든다 — 지어내지
+> 않는다(`docs/conventions/frontend.md`「픽스처는 실제 응답에서 뜬다」).
+>
+> 스키마를 `z.number()`로 조이면 이 분기와 AC 셋이 통째로 사라진다. **이 스펙의 범위(색·타이포)
+> 밖이라 하지 않는다** — 「열어둔 결정」에 남긴다.
 
 ---
 
@@ -163,8 +190,9 @@ plan:
 #### AC-VISUAL-02 · Tailwind 팔레트 색 클래스가 하나도 없다
 
 - **Given** `frontend/src` 아래의 모든 `.ts`·`.tsx` 파일 (테스트 파일 포함)
-- **When** `neutral-`·`red-`·`white`를 색으로 쓰는 클래스(`text-`·`bg-`·`border-`·`ring-` 접두)를 찾는다
+- **When** `neutral-`·`red-`·`amber-`와 **불투명** `white`·`black`을 색으로 쓰는 클래스(`text-`·`bg-`·`border-`·`ring-` 접두)를 찾는다
 - **Then** **0곳**이다. 색은 토큰 유틸리티(`bg-brand`·`text-on-accent`·`text-danger`·`text-muted`·`border-line`·`bg-surface`·`bg-background`·`text-foreground`)로만 표현된다
+- **예외** 알파가 붙은 **배경** `bg-black/` (다이얼로그 배경막 4곳)만 허용한다. 양쪽 테마에서 같은 스크림이라 토큰으로 나눌 이유가 없다. **`border-black/10`처럼 테두리에 쓴 것은 예외가 아니다** — `border-line`으로 옮긴다
 - **검증** 단위 테스트 `designTokens.test.ts`
 
 #### AC-VISUAL-03 · dark: 색 클래스가 하나도 없다
@@ -197,10 +225,10 @@ plan:
 
 #### AC-VISUAL-07 · 모든 토큰 조합의 대비가 4.5:1 이상이다
 
-- **Given** 위 8개 토큰의 라이트·다크 hex 값
-- **When** WCAG 상대 휘도로 대비를 계산한다 — 의미색·표면색은 각 배경과, `on-accent`는 `brand`·`danger` 위에서
-- **Then** 12개 조합이 **전부 4.5 이상**이다(**4.5를 포함한다**). 최저값은 `--color-muted` 라이트의 **4.74**다
-- **검증** 단위 테스트 `contrast.test.ts`
+- **Given** `globals.css`에서 읽어낸 8개 토큰의 라이트·다크 hex 값
+- **When** WCAG 상대 휘도로 **글자로 쓰이는 조합만** 대비를 계산한다 — `brand`·`danger`·`muted`·`foreground`는 각 `background` 위에서, `on-accent`는 `brand`와 `danger` 위에서. **`line`과 `surface`는 글자가 아니므로 계산 대상이 아니다**
+- **Then** 라이트 6 + 다크 6 = **12개 조합이 전부 4.5 이상**이다(**4.5를 포함한다**). 최저값은 `--color-muted` 라이트의 **4.74**다
+- **검증** 단위 테스트 `contrast.test.ts`. **값은 표에서 베끼지 않고 `globals.css`를 파싱해 읽는다** — 베끼면 토큰을 고쳐도 테스트가 옛 값을 검사한다
 
 ### 정상 동작 — 컴포넌트
 
@@ -220,31 +248,31 @@ plan:
 
 #### AC-VISUAL-10 · 비율이 없으면 물 온도가 승격된다
 
-- **Given** `brewRatio`가 `undefined`이고 `actualWaterTempC: 92`인 `BrewLogSummary`
+- **Given** 실제 응답 `brewLogPage.content[0]`에서 `brewRatio`만 덜어낸 `BrewLogSummary` (`actualWaterTempC: 92`). **프론트 스키마가 허용하는 상태이며, 지금 백엔드로는 도달할 수 없다**
 - **When** `BrewLogCard`를 렌더한다
 - **Then** `92°C`를 담은 요소가 `text-lg`와 `font-semibold`를 갖는다
 - **검증** 단위 테스트 `BrewLogCard.test.tsx`
 
 #### AC-VISUAL-11 · 승격된 값은 보조줄에 다시 나오지 않는다
 
-- **Given** AC-VISUAL-10과 같은 `BrewLogSummary`
+- **Given** AC-VISUAL-10과 같은 `BrewLogSummary` (`brewRatio`만 덜어낸 것)
 - **When** `BrewLogCard`를 렌더한다
 - **Then** `92°C`가 화면 전체에 **정확히 1번** 나타난다
 - **검증** 단위 테스트 `BrewLogCard.test.tsx`
 
 #### AC-VISUAL-12 · 대표 수치는 언제나 정확히 하나다
 
-- **Given** 비율이 있는 기록과 없는 기록 **두 가지** `BrewLogSummary`
+- **Given** `brewLogPage.content[0]`(비율 있음)과 거기서 `brewRatio`만 덜어낸 것(비율 없음) **두 가지**
 - **When** 각각 `BrewLogCard`를 렌더한다
 - **Then** 두 경우 모두 `text-lg font-semibold`를 가진 요소가 **정확히 1개**다
 - **검증** 단위 테스트 `BrewLogCard.test.tsx`
 
-#### AC-VISUAL-13 · 화면 제목 11곳이 같은 단계를 쓴다
+#### AC-VISUAL-13 · 화면 제목 14곳이 같은 단계를 쓴다
 
-- **Given** `h1`을 그리는 화면·컴포넌트 11곳
-- **When** 각각 렌더한다
-- **Then** 모든 `h1`이 `text-xl`과 `font-semibold`를 갖는다. `text-2xl`·`font-bold`는 **0곳**이다
-- **검증** 단위 테스트 `headings.test.tsx`
+- **Given** `frontend/src` 아래에서 `<h1`을 그리는 곳 **14곳**
+- **When** 각 `<h1`의 `className`을 읽는다
+- **Then** 14곳 모두 `text-xl`과 `font-semibold`를 갖는다. `text-2xl`·`font-bold`는 **0곳**이다
+- **검증** 단위 테스트 `headings.test.ts` (소스 검사). **실제로 20px로 렌더되는지는 `AC-VISUAL-15`가 브라우저에서 잰다** — 클래스가 맞아도 화면이 다를 수 있으므로 둘 다 필요하다
 
 ### 정상 동작 — 실제 렌더값 (Playwright)
 
@@ -314,5 +342,8 @@ WCAG 판정 외에 범위 경계가 없다. **AC-VISUAL-07의 `4.5`는 포함이
   분리한다.**
 - **SCA 구간에 색을 줄지.** 의미색이 4개가 되고 「좋다/나쁘다」를 색으로 단언하게 된다. 추출 분석
   화면을 손볼 때 다시 본다.
+- **`brewRatio` 스키마를 필수로 조일지.** 백엔드가 `nullable = false`인 두 컬럼으로 분기 없이
+  계산하므로 실제로는 절대 비지 않는다. 조이면 승격 분기와 AC 셋이 사라지지만, 이 스펙의
+  범위(색·타이포) 밖이라 하지 않는다. 브루잉 로그 계약을 손볼 때 다시 본다.
 - **브랜드 색의 농도 변형.** 지금은 `brand` 하나뿐이라 hover·pressed 상태를 따로 두지 않는다.
   필요해지면 그때 `--color-brand-strong`을 더한다.

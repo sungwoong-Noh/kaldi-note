@@ -353,9 +353,9 @@ git commit -m "feat(web): 색 토큰 8개와 대비 잠금 (AC-VISUAL-06·07)"
 
 **Files:**
 - Modify: `frontend/src/features/recipe/components/RecipeCard.tsx`
-- Modify: `frontend/src/features/recipe/components/RecipeCard.test.tsx`
+- Create: `frontend/src/features/recipe/components/RecipeCard.test.tsx` — **계획은 `Modify`로 적었으나 카드에는 전용 테스트가 없었다. 화면 테스트를 통해서만 렌더되고 있었다**
 - Modify: `frontend/src/features/brewlog/components/BrewLogCard.tsx`
-- Modify: `frontend/src/features/brewlog/components/BrewLogCard.test.tsx`
+- Create: `frontend/src/features/brewlog/components/BrewLogCard.test.tsx` — 위와 같음
 
 **Covers:** AC-VISUAL-08, 09, 10, 11, 12
 
@@ -363,7 +363,7 @@ git commit -m "feat(web): 색 토큰 8개와 대비 잠금 (AC-VISUAL-06·07)"
 - Consumes: Task 1의 토큰 유틸리티(`text-muted`·`border-line`·`bg-surface`)
 - Produces: 대표 수치 규칙 — `text-lg font-semibold`를 가진 요소가 카드마다 정확히 1개
 
-- [ ] **Step 1: 실패하는 테스트 작성 — 레시피 카드**
+- [x] **Step 1: 실패하는 테스트 작성 — 레시피 카드**
 
 `RecipeCard.test.tsx`에 더한다.
 
@@ -382,7 +382,7 @@ git commit -m "feat(web): 색 토큰 8개와 대비 잠금 (AC-VISUAL-06·07)"
   });
 ```
 
-- [ ] **Step 2: 실패하는 테스트 작성 — 로그 카드**
+- [x] **Step 2: 실패하는 테스트 작성 — 로그 카드**
 
 `BrewLogCard.test.tsx`에 더한다. **비율 없는 픽스처는 실제 응답에서 그 필드만 덜어내 만든다.**
 
@@ -437,13 +437,13 @@ const withoutRatio = (() => {
   });
 ```
 
-- [ ] **Step 3: 실행 — 실패 확인**
+- [x] **Step 3: 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test RecipeCard BrewLogCard`
 Expected: FAIL — 지금 두 카드 모두 `text-sm` 한 줄에 값을 나열하므로 `text-lg`가 0개다.
 AC-VISUAL-10은 `92°C`를 찾긴 하지만 클래스가 없어 깨진다.
 
-- [ ] **Step 4: RecipeCard를 고친다**
+- [x] **Step 4: RecipeCard를 고친다**
 
 `<dl>`을 두 줄로 나눈다. 첫 줄이 대표 수치, 둘째 줄이 보조다.
 
@@ -492,7 +492,7 @@ CURATED 칩:
             <span className="shrink-0 rounded bg-surface px-1.5 py-0.5 text-xs text-muted">
 ```
 
-- [ ] **Step 5: BrewLogCard를 고친다**
+- [x] **Step 5: BrewLogCard를 고친다**
 
 대표 수치를 고르고, 고른 값을 보조 목록에서 뺀다.
 
@@ -587,12 +587,12 @@ function summaryEntries(
 > **Step 2의 AC-09·10은 `dd`가 아니라 그 부모를 봐야 한다.** 실행해서 실패 메시지를 확인한 뒤
 > `.parentElement`로 맞춘다 — 레시피 카드(AC-08)가 이미 그 형태다.
 
-- [ ] **Step 6: 실행 — 통과 확인**
+- [x] **Step 6: 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **343개**(338 + 5).
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && cd ..

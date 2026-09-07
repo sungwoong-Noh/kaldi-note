@@ -10,6 +10,15 @@
 #   503을, 이후에는 200을 돌려주게 한다. 새 배포는 실패하고 롤백본은 성공하는
 #   실제 상황과 같은 모양이 된다.
 #
+# 이 드릴이 밟지 못하는 것 (2026-09-07에 확인)
+#   deploy.sh는 2026-09-05부터 wait_healthy에서 INFO_URL의 build.commit까지 대조한다
+#   (docs/specs/2026-09-05-build-info.md). 그런데 여기서는 가짜 서버가 12번 내내 503을
+#   주므로 「UP이지만 아직 이전 버전」 분기에 애초에 도달하지 못한다 — 그 경로는
+#   infra/scripts/deploy.test.sh가 build-info 스펙의 헬스 대기 AC 다섯(06~10번)으로 덮는다.
+#   AC ID를 그대로 적지 않는다 — infra/scripts는 check-spec-coverage.sh의 테스트 검색 경로라
+#   주석 한 줄이 AC를 만족시킨 것으로 집계된다. 이 드릴이 보는 것은
+#   「헬스가 끝내 안 올라올 때 롤백하는가」 하나다.
+#
 # 서비스 영향
 #   두 이미지 모두 정상이라 컨테이너가 두 번 교체되는 순간만 끊긴다(각 10~20초).
 #   deploy.sh는 성공했을 때만 상태 파일을 갱신하므로 .last-deployed-tag는 오염되지 않는다.
@@ -22,8 +31,16 @@ REAL_SCRIPT="$INFRA_DIR/scripts/deploy.sh"
 IMAGE_REPO="ghcr.io/sungwoong-noh/kaldi-note-api"
 FAKE_PORT=9999
 
-# 롤백 대상으로 쓸 후보. 상태 파일의 태그와 다른 것을 고른다.
+# 「새 배포」로 시도할 태그 후보. 상태 파일의 태그와 다른 것을 고른다.
+#
+# ★ 최신부터 적는다. 이 태그는 잠깐이지만 실제로 운영에 뜬다 — 드릴이 예상과 달리
+#   성공해버리면 그 상태로 남을 수 있고(스크립트가 되돌리지만), 그때 한 커밋 전 이미지와
+#   3주 전 이미지는 위험이 전혀 다르다. 아래 오래된 셋은 최신 것이 GHCR에서 사라졌을 때를
+#   위한 예비다.
 CANDIDATES=(
+  5ac1e13e9f87930ad24f6f2351d0f42dcddbbc85
+  ed6e94c7cfdba7a2e94198f7040aeb407aee9431
+  4d78d4cb387e489e8f2b4e54f52ff24b7db34dcc
   2efac2674d5118a4d83e5b8c9b3b20470305e0f9
   f7f88fb970928985c1d11fc784af312318e47748
   5ea01913b3064d15e5b1c2b6b8a53d1e07a4f4c9

@@ -142,6 +142,8 @@ jobs:
           NEXT_PUBLIC_KAKAO_REDIRECT_URI: https://kaldi-note.today/auth/callback
           # 카카오 REST API 키. 어차피 브라우저 번들에 노출되지만 저장소에는 남기지 않는다.
           NEXT_PUBLIC_KAKAO_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_KAKAO_CLIENT_ID }}
+          NEXT_PUBLIC_GOOGLE_REDIRECT_URI: https://kaldi-note.today/auth/callback/google
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
         run: pnpm build:worker
 
       - name: 배포

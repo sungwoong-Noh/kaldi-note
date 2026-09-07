@@ -25,9 +25,11 @@ function CallbackMessage({ message }: { message: string }) {
 export function AuthCallback({
   code,
   next,
+  provider,
 }: {
   code: string | null;
   next: string;
+  provider: "kakao" | "google";
 }) {
   if (!code) {
     return (
@@ -35,10 +37,18 @@ export function AuthCallback({
     );
   }
 
-  return <AuthCallbackExchange code={code} next={next} />;
+  return <AuthCallbackExchange code={code} next={next} provider={provider} />;
 }
 
-function AuthCallbackExchange({ code, next }: { code: string; next: string }) {
+function AuthCallbackExchange({
+  code,
+  next,
+  provider,
+}: {
+  code: string;
+  next: string;
+  provider: "kakao" | "google";
+}) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   // StrictMode는 effect를 두 번 실행한다. 인가코드는 1회용이라 두 번째 교환은 반드시 실패한다.
@@ -53,7 +63,7 @@ function AuthCallbackExchange({ code, next }: { code: string; next: string }) {
         const response = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ code, provider }),
         });
 
         if (!response.ok) {
@@ -71,7 +81,7 @@ function AuthCallbackExchange({ code, next }: { code: string; next: string }) {
         setMessage("일시적인 오류가 발생했습니다.");
       }
     })();
-  }, [code, next, router]);
+  }, [code, next, provider, router]);
 
   if (message) {
     return <CallbackMessage message={message} />;

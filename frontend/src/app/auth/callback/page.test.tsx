@@ -45,7 +45,7 @@ describe("AuthCallbackPage", () => {
     );
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/recipes/1"));
-    expect(forwarded).toEqual({ code: "test-code" });
+    expect(forwarded).toEqual({ code: "test-code", provider: "kakao" });
   });
 
   it("AC-WEB-06 · accessToken을 브라우저 저장소에 쓰지 않는다", async () => {
@@ -96,5 +96,24 @@ describe("AuthCallbackPage", () => {
 
     expect(await screen.findByText(/인가 코드가 없습니다/)).toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
+  });
+  it("AC-GOOGLE-07 · 카카오 콜백은 provider를 kakao로 보낸다", async () => {
+    let forwarded: unknown = null;
+    server.use(
+      http.post("/api/auth/login", async ({ request }) => {
+        forwarded = await request.json();
+        return HttpResponse.json(SESSION);
+      }),
+    );
+
+    render(
+      await AuthCallbackPage({
+        searchParams: Promise.resolve({ code: "test-code", state: "/recipes" }),
+      }),
+    );
+
+    await waitFor(() =>
+      expect(forwarded).toEqual({ code: "test-code", provider: "kakao" }),
+    );
   });
 });

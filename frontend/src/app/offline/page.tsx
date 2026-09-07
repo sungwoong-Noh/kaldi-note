@@ -19,7 +19,7 @@ export default function OfflinePage() {
 
   return (
     <main className="flex flex-col gap-4 px-4 py-6">
-      <h1 className="text-2xl font-bold">연결 없음</h1>
+      <h1 className="text-xl font-semibold">연결 없음</h1>
       <p className="text-neutral-500 dark:text-neutral-400">
         네트워크에 연결되어 있지 않습니다. 저장된 레시피는 볼 수 있습니다.
       </p>

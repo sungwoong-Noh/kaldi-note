@@ -59,7 +59,7 @@ export function UserProfile({ id }: { id: number }) {
             className="size-16 rounded-full object-cover"
           />
         )}
-        <h1 className="text-2xl font-bold">{profile.data.nickname}</h1>
+        <h1 className="text-xl font-semibold">{profile.data.nickname}</h1>
       </div>
 
       {isMe ? (

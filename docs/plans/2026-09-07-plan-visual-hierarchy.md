@@ -617,7 +617,7 @@ git commit -m "feat(web): 목록 카드의 대표 수치 (AC-VISUAL-08~12)"
 - Consumes: 없음
 - Produces: `<h1`이 `text-xl font-semibold`를 갖는다는 불변식
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `src/test/headings.test.ts`:
 
@@ -664,7 +664,7 @@ describe("AC-VISUAL-13 · 화면 제목 14곳이 같은 단계를 쓴다", () =>
 });
 ```
 
-- [ ] **Step 2: 실행 — 실패 확인**
+- [x] **Step 2: 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test src/test/headings.test.ts`
 Expected: FAIL — 개수 단언은 통과하고(14곳), 클래스 단언이 깨진다. offenders에 넷이 담긴다 —
@@ -677,7 +677,7 @@ Expected: FAIL — 개수 단언은 통과하고(14곳), 클래스 단언이 깨
 > **개수가 14가 아니면 화면이 늘거나 줄어든 것이다** — 테스트를 개수에 맞추지 말고 무엇이 바뀌었는지
 > 먼저 본다.
 
-- [ ] **Step 3: 네 곳을 규칙에 맞춘다**
+- [x] **Step 3: 네 곳을 규칙에 맞춘다**
 
 ```tsx
 <h1 className="text-xl font-semibold">kaldi note</h1>
@@ -686,12 +686,12 @@ Expected: FAIL — 개수 단언은 통과하고(14곳), 클래스 단언이 깨
 <h1 className="text-xl font-semibold">{profile.data.nickname}</h1>
 ```
 
-- [ ] **Step 4: 실행 — 통과 확인**
+- [x] **Step 4: 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test`
 Expected: PASS. **345개**(343 + 2).
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && cd ..

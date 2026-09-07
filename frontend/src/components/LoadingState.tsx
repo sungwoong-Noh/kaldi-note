@@ -30,7 +30,7 @@ export function LoadingState() {
     >
       <span
         aria-hidden="true"
-        className="size-6 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900 dark:border-neutral-700 dark:border-t-neutral-100"
+        className="size-6 animate-spin rounded-full border-2 border-line border-t-foreground"
       />
       <span className="sr-only">불러오는 중</span>
     </div>

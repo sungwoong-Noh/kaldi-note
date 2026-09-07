@@ -48,13 +48,13 @@ export function GrindConverter({
       />
 
       <label className="flex items-center gap-2 text-sm">
-        <span className="w-28 text-neutral-500">설정값</span>
+        <span className="w-28 text-muted">설정값</span>
         <input
           type="number"
           aria-label="설정값"
           value={setting}
           onChange={(e) => setSetting(e.target.value)}
-          className="w-32 rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+          className="w-32 rounded border border-line px-2 py-1"
         />
       </label>
 
@@ -69,37 +69,37 @@ export function GrindConverter({
         type="button"
         disabled={convert.isPending}
         onClick={() => convert.mutate()}
-        className="self-start rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
+        className="self-start rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
       >
         환산
       </button>
 
       {convert.error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-danger">
           {errorMessageOf(convert.error)}
         </p>
       )}
 
       {result && (
-        <dl className="flex flex-col gap-2 border-t border-neutral-200 pt-4 text-sm dark:border-neutral-800">
+        <dl className="flex flex-col gap-2 border-t border-line pt-4 text-sm">
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="text-neutral-500">입자 크기</dt>
+            <dt className="text-muted">입자 크기</dt>
             <dd>{result.micron} µm</dd>
           </div>
           {result.targetSetting !== undefined && (
             <div className="flex items-baseline justify-between gap-3">
-              <dt className="text-neutral-500">대상 설정값</dt>
+              <dt className="text-muted">대상 설정값</dt>
               <dd>
                 {result.targetSetting}
                 {result.targetOutOfRange && (
-                  <span className="ml-2 text-xs text-red-600">범위 밖</span>
+                  <span className="ml-2 text-xs text-danger">범위 밖</span>
                 )}
               </dd>
             </div>
           )}
           {result.estimated && (
-            <p className="text-xs text-neutral-500">
-              <span className="mr-1 rounded bg-neutral-200 px-1 py-0.5 dark:bg-neutral-800">
+            <p className="text-xs text-muted">
+              <span className="mr-1 rounded bg-surface px-1 py-0.5">
                 추정치
               </span>
               {result.warning}
@@ -124,12 +124,12 @@ function GrinderSelect({
 }) {
   return (
     <label className="flex items-center gap-2 text-sm">
-      <span className="w-28 text-neutral-500">{label}</span>
+      <span className="w-28 text-muted">{label}</span>
       <select
         aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="flex-1 rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+        className="flex-1 rounded border border-line px-2 py-1"
       >
         <option value="">선택하세요</option>
         {grinders.map((grinder) => (

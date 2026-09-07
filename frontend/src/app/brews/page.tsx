@@ -52,7 +52,7 @@ export default function BrewsPage() {
   if (logs.length === 0) {
     return (
       <Shell>
-        <p className="py-12 text-center text-sm text-neutral-500">
+        <p className="py-12 text-center text-sm text-muted">
           아직 기록이 없습니다
         </p>
       </Shell>
@@ -76,7 +76,7 @@ export default function BrewsPage() {
           type="button"
           onClick={() => void fetchNextPage()}
           disabled={isFetchingNextPage}
-          className="mt-4 w-full rounded-md border border-neutral-300 py-2.5 text-sm disabled:opacity-50 dark:border-neutral-700"
+          className="mt-4 w-full rounded-md border border-line py-2.5 text-sm disabled:opacity-50"
         >
           더 보기
         </button>
@@ -90,7 +90,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     <main className="mx-auto w-full max-w-2xl px-4 py-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">브루잉 로그</h1>
-        <Link href="/recipes" className="text-sm text-neutral-500">
+        <Link href="/recipes" className="text-sm text-muted">
           레시피
         </Link>
       </div>

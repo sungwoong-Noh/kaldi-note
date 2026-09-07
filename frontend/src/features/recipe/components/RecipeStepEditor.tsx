@@ -65,10 +65,10 @@ export function RecipeStepEditor({
             <li
               key={step.uid}
               aria-label={`스텝 ${number}`}
-              className="flex flex-col gap-2 rounded-lg border border-neutral-200 p-3"
+              className="flex flex-col gap-2 rounded-lg border border-line p-3"
             >
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-neutral-500">
+                <span className="text-sm font-medium text-muted">
                   {number}
                 </span>
                 <label className="sr-only" htmlFor={`step-${step.uid}-type`}>
@@ -81,7 +81,7 @@ export function RecipeStepEditor({
                   onChange={(e) =>
                     update(index, { stepType: e.target.value as StepType })
                   }
-                  className="rounded border border-neutral-300 px-2 py-1 text-sm"
+                  className="rounded border border-line px-2 py-1 text-sm"
                 >
                   {Object.entries(STEP_TYPE_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -96,7 +96,7 @@ export function RecipeStepEditor({
                     aria-label={`스텝 ${number} 위로`}
                     disabled={index === 0}
                     onClick={() => onChange(moveStep(steps, index, -1))}
-                    className="rounded border border-neutral-300 px-2 py-1 text-sm disabled:opacity-40"
+                    className="rounded border border-line px-2 py-1 text-sm disabled:opacity-40"
                   >
                     ↑
                   </button>
@@ -105,7 +105,7 @@ export function RecipeStepEditor({
                     aria-label={`스텝 ${number} 아래로`}
                     disabled={index === steps.length - 1}
                     onClick={() => onChange(moveStep(steps, index, 1))}
-                    className="rounded border border-neutral-300 px-2 py-1 text-sm disabled:opacity-40"
+                    className="rounded border border-line px-2 py-1 text-sm disabled:opacity-40"
                   >
                     ↓
                   </button>
@@ -113,7 +113,7 @@ export function RecipeStepEditor({
                     type="button"
                     aria-label={`스텝 ${number} 삭제`}
                     onClick={() => onChange(removeStep(steps, index))}
-                    className="rounded border border-neutral-300 px-2 py-1 text-sm"
+                    className="rounded border border-line px-2 py-1 text-sm"
                   >
                     삭제
                   </button>
@@ -153,7 +153,7 @@ export function RecipeStepEditor({
               </div>
 
               {errors[index] && (
-                <p className="whitespace-pre-line text-sm text-red-600">
+                <p className="whitespace-pre-line text-sm text-danger">
                   {errors[index]}
                 </p>
               )}
@@ -163,7 +163,7 @@ export function RecipeStepEditor({
                 aria-label={`스텝 ${number} 아래에 추가`}
                 disabled={atLimit}
                 onClick={() => onChange(insertStepAfter(steps, index))}
-                className="self-start text-sm text-neutral-500 disabled:opacity-40"
+                className="self-start text-sm text-muted disabled:opacity-40"
               >
                 여기 아래에 추가
               </button>
@@ -176,7 +176,7 @@ export function RecipeStepEditor({
         type="button"
         disabled={atLimit}
         onClick={() => onChange(appendStep(steps))}
-        className="self-start rounded border border-neutral-300 px-3 py-2 text-sm disabled:opacity-40"
+        className="self-start rounded border border-line px-3 py-2 text-sm disabled:opacity-40"
       >
         스텝 추가
       </button>
@@ -203,12 +203,12 @@ function WaterSummary({
         {formatGrams(poured)} / {formatGrams(waterG)}
       </span>
       {difference > 0 && (
-        <span className="text-amber-600">
+        <span className="text-danger">
           {formatGrams(difference)} 부족합니다
         </span>
       )}
       {difference < 0 && (
-        <span className="text-amber-600">
+        <span className="text-danger">
           {formatGrams(-difference)} 초과합니다
         </span>
       )}
@@ -240,7 +240,7 @@ function NumberField({
         <label htmlFor>로 두면 레시피 전체의 "물량" 입력과 라벨 텍스트가 겹쳐
         어느 쪽을 가리키는지 사람도 스크린리더도 알 수 없다.
       */}
-      <span aria-hidden="true" className="text-sm text-neutral-500">
+      <span aria-hidden="true" className="text-sm text-muted">
         {label.replace(/^스텝 \d+ /, "")}
       </span>
       <input
@@ -252,10 +252,10 @@ function NumberField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="w-20 rounded border border-neutral-300 px-2 py-1 text-sm"
+        className="w-20 rounded border border-line px-2 py-1 text-sm"
       />
-      <span className="text-sm text-neutral-500">{suffix}</span>
-      {hint && <span className="text-sm text-neutral-400">{hint}</span>}
+      <span className="text-sm text-muted">{suffix}</span>
+      {hint && <span className="text-sm text-muted">{hint}</span>}
     </span>
   );
 }

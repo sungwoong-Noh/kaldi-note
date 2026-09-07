@@ -44,7 +44,7 @@ export function BrewLogFields({
   return (
     <>
       <label className="flex flex-col gap-1 text-sm">
-        <span className="text-neutral-500">내린 시각</span>
+        <span className="text-muted">내린 시각</span>
         <input
           type="datetime-local"
           aria-label="내린 시각"
@@ -53,10 +53,10 @@ export function BrewLogFields({
           aria-describedby={
             fieldErrors?.byField.brewedAt ? "brew-brewed-at-error" : undefined
           }
-          className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+          className="rounded border border-line px-2 py-1"
         />
         {fieldErrors?.byField.brewedAt && (
-          <span id="brew-brewed-at-error" className="text-xs text-red-600">
+          <span id="brew-brewed-at-error" className="text-xs text-danger">
             {fieldErrors.byField.brewedAt}
           </span>
         )}
@@ -67,11 +67,11 @@ export function BrewLogFields({
       <fieldset className="flex flex-col gap-2">
         <legend className="text-base font-semibold">그라인더</legend>
         {grinders.length === 0 && (
-          <p className="text-sm text-neutral-500">등록된 그라인더가 없습니다</p>
+          <p className="text-sm text-muted">등록된 그라인더가 없습니다</p>
         )}
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-1 text-sm">
-            <span className="text-neutral-500">그라인더</span>
+            <span className="text-muted">그라인더</span>
             <select
               aria-label="그라인더"
               value={state.userGrinderId ?? ""}
@@ -81,7 +81,7 @@ export function BrewLogFields({
                   e.target.value === "" ? null : Number(e.target.value),
                 )
               }
-              className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+              className="rounded border border-line px-2 py-1"
             >
               <option value="">선택 안 함</option>
               {grinders.map((grinder) => (
@@ -96,7 +96,7 @@ export function BrewLogFields({
             <button
               type="button"
               onClick={onAddGrinder}
-              className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
+              className="rounded-md border border-line px-3 py-1.5 text-sm"
             >
               + 그라인더 등록
             </button>
@@ -167,7 +167,7 @@ export function BrewLogFields({
           <button
             type="button"
             onClick={() => set("sensoryExpanded", true)}
-            className="self-start rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
+            className="self-start rounded-md border border-line px-3 py-1.5 text-sm"
           >
             맛 자세히
           </button>
@@ -176,7 +176,7 @@ export function BrewLogFields({
         {state.sensoryExpanded &&
           SENSORY_AXES.map(({ key, label }) => (
             <label key={key} className="flex items-center gap-2 text-sm">
-              <span className="w-20 text-neutral-500">{label}</span>
+              <span className="w-20 text-muted">{label}</span>
               <select
                 aria-label={label}
                 value={state[key] ?? ""}
@@ -186,7 +186,7 @@ export function BrewLogFields({
                     e.target.value === "" ? null : Number(e.target.value),
                   )
                 }
-                className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+                className="rounded border border-line px-2 py-1"
               >
                 <option value="">선택 안 함</option>
                 {[1, 2, 3, 4, 5].map((score) => (
@@ -199,7 +199,7 @@ export function BrewLogFields({
           ))}
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-neutral-500">메모</span>
+          <span className="text-muted">메모</span>
           <textarea
             aria-label="메모"
             value={state.overallNote}
@@ -208,10 +208,10 @@ export function BrewLogFields({
             aria-describedby={
               fieldErrors?.byField.overallNote ? "brew-note-error" : undefined
             }
-            className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+            className="rounded border border-line px-2 py-1"
           />
           {fieldErrors?.byField.overallNote && (
-            <span id="brew-note-error" className="text-xs text-red-600">
+            <span id="brew-note-error" className="text-xs text-danger">
               {fieldErrors.byField.overallNote}
             </span>
           )}
@@ -242,7 +242,7 @@ function NumberField({
 
   return (
     <label className="flex items-center gap-2 text-sm">
-      <span className="w-20 text-neutral-500">{label}</span>
+      <span className="w-20 text-muted">{label}</span>
       <input
         type="number"
         aria-label={label}
@@ -251,10 +251,10 @@ function NumberField({
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
         aria-describedby={error ? errorId : undefined}
-        className="w-32 rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+        className="w-32 rounded border border-line px-2 py-1"
       />
       {error && (
-        <span id={errorId} className="text-xs text-red-600">
+        <span id={errorId} className="text-xs text-danger">
           {error}
         </span>
       )}

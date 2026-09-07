@@ -714,7 +714,7 @@ git commit -m "feat(web): 화면 제목을 한 단계로 통일 (AC-VISUAL-13)"
 - Consumes: 「색 이관 대응표」
 - Produces: 허용목록 밖 클래스가 0곳이라는 불변식
 
-- [ ] **Step 1: 실패하는 검사를 먼저 쓴다**
+- [x] **Step 1: 실패하는 검사를 먼저 쓴다**
 
 `src/test/designTokens.test.ts`에 더한다. **이 파일 자신은 검사 대상에서 뺀다** — 금지 문자열을
 리터럴로 담고 있어 넣어두면 무엇을 고치든 자기 자신이 offender로 잡힌다(`polish.test.ts`의 선례).
@@ -774,13 +774,13 @@ describe("허용목록", () => {
 > **돌려봐야 안다.** Step 2에서 나오는 offender 목록을 읽고, 크기가 아닌 것이 걸렸으면 목록에
 > 더한다. **걸린 것을 목록에 더하는 것과 진짜 위반을 고치는 것을 혼동하지 않는다.**
 
-- [ ] **Step 2: 실행 — 실패 확인**
+- [x] **Step 2: 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test src/test/designTokens.test.ts`
 Expected: FAIL — 다섯 개가 모두 빨갛다. offender 목록에 이관하지 않은 파일들이 나온다.
 **그 목록을 그대로 이관 체크리스트로 쓴다.**
 
-- [ ] **Step 3: 대응표대로 일괄 이관한다**
+- [x] **Step 3: 대응표대로 일괄 이관한다**
 
 Step 2가 뱉은 파일을 하나씩 연다. 「색 이관 대응표」 그대로 바꾸고 `dark:` 짝은 지운다.
 
@@ -836,7 +836,7 @@ Step 2가 뱉은 파일을 하나씩 연다. 「색 이관 대응표」 그대�
             className="rounded-md bg-danger px-3 py-1.5 text-sm text-on-accent"
 ```
 
-- [ ] **Step 4: 실행 — 통과 확인**
+- [x] **Step 4: 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build`
 Expected: PASS. **350개**(345 + 5). 빌드도 통과해야 한다 — 존재하지 않는 유틸리티를 쓰면
@@ -846,7 +846,7 @@ Tailwind가 클래스를 만들지 않아 조용히 색이 빠진다.
 > 생성된다. 이름을 하나라도 틀리면 테스트는 초록인데 화면에서 색이 사라진다 — 소스 검사는
 > 「금지된 것이 없다」만 보지 「의도한 것이 있다」는 보지 않는다. 그건 Task 5가 잡는다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add frontend/src

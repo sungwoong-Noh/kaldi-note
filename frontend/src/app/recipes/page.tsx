@@ -58,7 +58,7 @@ export default function RecipesPage() {
   if (recipes.length === 0) {
     return (
       <Shell mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
-        <p className="py-12 text-center text-sm text-neutral-500">
+        <p className="py-12 text-center text-sm text-muted">
           레시피가 없습니다
         </p>
       </Shell>
@@ -78,7 +78,7 @@ export default function RecipesPage() {
           type="button"
           onClick={() => void fetchNextPage()}
           disabled={isFetchingNextPage}
-          className="mt-4 w-full rounded-md border border-neutral-300 py-2.5 text-sm disabled:opacity-50 dark:border-neutral-700"
+          className="mt-4 w-full rounded-md border border-line py-2.5 text-sm disabled:opacity-50"
         >
           더 보기
         </button>
@@ -102,7 +102,7 @@ function Shell({
         <h1 className="text-xl font-semibold">레시피</h1>
         <Link
           href="/recipes/new"
-          className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white"
+          className="rounded-md bg-brand px-3 py-1.5 text-sm text-on-accent"
         >
           새 레시피
         </Link>

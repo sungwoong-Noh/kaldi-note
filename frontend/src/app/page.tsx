@@ -46,12 +46,12 @@ export default function HomePage() {
   if (logs.length === 0) {
     return (
       <Shell>
-        <p className="py-8 text-center text-sm text-neutral-500">
+        <p className="py-8 text-center text-sm text-muted">
           아직 기록이 없습니다
         </p>
         <Link
           href="/recipes"
-          className="block rounded-md bg-neutral-900 py-2.5 text-center text-sm text-white dark:bg-white dark:text-neutral-900"
+          className="block rounded-md bg-brand py-2.5 text-center text-sm text-on-accent"
         >
           레시피 보러 가기
         </Link>
@@ -79,7 +79,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     <main className="mx-auto w-full max-w-2xl px-4 py-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">최근 기록</h1>
-        <Link href="/brews" className="text-sm text-neutral-500">
+        <Link href="/brews" className="text-sm text-muted">
           전체 보기
         </Link>
       </div>

@@ -55,7 +55,7 @@ export default function MorePage() {
 
   return (
     <Shell>
-      <dl className="flex flex-col gap-3 border-b border-neutral-200 pb-5 dark:border-neutral-800">
+      <dl className="flex flex-col gap-3 border-b border-line pb-5">
         <Row label="닉네임" value={me.data.nickname} />
         {me.data.email !== undefined && (
           <Row label="이메일" value={me.data.email} />
@@ -63,22 +63,22 @@ export default function MorePage() {
         <Row label="가입일" value={me.data.createdAt.slice(0, 10)} />
       </dl>
 
-      <div className="flex items-center justify-between gap-3 border-b border-neutral-200 py-4 dark:border-neutral-800">
+      <div className="flex items-center justify-between gap-3 border-b border-line py-4">
         <div className="min-w-0">
           <p className="font-medium">내 초대 링크</p>
-          <p className="truncate text-sm text-neutral-500 dark:text-neutral-400">
+          <p className="truncate text-sm text-muted">
             {`/u/${me.data.id}`}
           </p>
         </div>
         {copied ? (
-          <span className="shrink-0 text-sm text-neutral-500 dark:text-neutral-400">
+          <span className="shrink-0 text-sm text-muted">
             복사했습니다
           </span>
         ) : (
           <button
             type="button"
             onClick={() => void copyInviteLink(me.data.id)}
-            className="shrink-0 rounded-lg border border-neutral-300 px-3 py-2 dark:border-neutral-700"
+            className="shrink-0 rounded-lg border border-line px-3 py-2"
           >
             복사
           </button>
@@ -100,7 +100,7 @@ export default function MorePage() {
         type="button"
         onClick={() => void logout()}
         disabled={loggingOut}
-        className="mt-4 w-full rounded-md border border-neutral-300 py-2.5 text-sm disabled:opacity-50 dark:border-neutral-700"
+        className="mt-4 w-full rounded-md border border-line py-2.5 text-sm disabled:opacity-50"
       >
         로그아웃
       </button>
@@ -111,7 +111,7 @@ export default function MorePage() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-sm text-neutral-500">{label}</dt>
+      <dt className="text-sm text-muted">{label}</dt>
       <dd className="text-sm">{value}</dd>
     </div>
   );

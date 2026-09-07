@@ -1,7 +1,7 @@
 ---
 id: GOOGLE
 title: 구글 로그인 버튼
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-09-07-plan-google-login.md
 ---
 
@@ -201,14 +201,37 @@ plan: docs/plans/2026-09-07-plan-google-login.md
 
 ## 수동 확인
 
-- [ ] ★ **운영에서 실제 구글 계정으로 로그인되고 「더보기」에 닉네임이 뜬다.** 자동 테스트는 구글의
+- [x] ★ **운영에서 실제 구글 계정으로 로그인되고 「더보기」에 닉네임이 뜬다.** 자동 테스트는 구글의
       동의 화면을 밟을 수 없다. **이것이 `oci-deploy`의 「구글은 미확인」도 함께 푼다**
-- [ ] 사전 준비 — 구글 클라우드 콘솔에 리디렉션 URI 둘(`http://localhost:3000/auth/callback/google`,
+- [x] 사전 준비 — 구글 클라우드 콘솔에 리디렉션 URI 둘(`http://localhost:3000/auth/callback/google`,
       `https://kaldi-note.today/auth/callback/google`)을 등록하고, 운영 `.env`의 `GOOGLE_CLIENT_ID`·
-      `GOOGLE_CLIENT_SECRET`·`GOOGLE_REDIRECT_URI`를 채우고, GitHub Secrets에
-      `NEXT_PUBLIC_GOOGLE_CLIENT_ID`를 넣는다
-- [ ] 폰에서 구글 동의 화면을 **취소**하면 「로그인을 취소했습니다」가 뜬다
+      `GOOGLE_CLIENT_SECRET`을 채우고, **`GOOGLE_REDIRECT_URI`를 `/auth/callback/google`로 고치고**,
+      GitHub Secrets에 `NEXT_PUBLIC_GOOGLE_CLIENT_ID`를 넣은 뒤 **앱 컨테이너를 재기동한다**
+      (`.env`는 파일일 뿐이라 다시 띄워야 앱이 읽는다)
+- [x] 폰에서 구글 동의 화면을 **취소**하면 「로그인을 취소했습니다」가 뜬다
 - [ ] 카카오 로그인이 여전히 된다 (기존 계정으로)
+
+> **2026-09-07 확인 — 차단형이 풀렸다. 운영에서 실제 구글 계정으로 로그인된다.**
+> 「더보기」에 구글 계정 닉네임이 뜨고, 동의 화면에서 취소하면 「로그인을 취소했습니다」가 뜬다.
+> **이것이 `2026-08-18-oci-deploy.md`의 「구글은 미확인」도 함께 닫았다.**
+>
+> **★ 처음 두 번은 실패했고, 원인은 `.env`의 값이 아니라 「고치지 않은 값」이었다.**
+> `GOOGLE_REDIRECT_URI`가 `.../auth/callback`(구글 전용 경로가 아닌 옛 값)으로 **이미 적혀
+> 있었다.** `application.yml`의 기본값을 바꿨지만 **환경변수가 있으면 기본값은 아무 역할도 하지
+> 않는다.** 이 스펙의 「사전 준비」가 「채운다」라고만 적어 그 함정을 드러내지 못했다 — **새로
+> 채우는 것과 이미 있는 값을 고치는 것은 다른 일이다.** 문구를 고쳤다.
+>
+> **세 번째 실패는 재기동을 안 해서였다.** `.env`를 고쳐도 컨테이너가 다시 뜨지 않으면 앱은 옛
+> 값을 들고 있다. `docker inspect --format '{{.State.StartedAt}}'`이 실패 시각보다 **앞선다는
+> 것**으로 그 사실을 확정했다 — 밖에서는 알 수 없었다(actuator가 `health`·`info`만 연다).
+>
+> **원인은 추측이 아니라 구글이 직접 말해줬다.** `docker logs`에 `구글 토큰 교환 실패`와 함께
+> `{"error":"redirect_uri_mismatch"}`가 찍혀 있었다. **`GlobalExceptionHandler`의 한 줄
+> (`OAUTH_TOKEN_EXCHANGE_FAILED`)만 보면 원인이 셋 중 무엇인지 알 수 없다** — 그 위의
+> `GoogleOAuthClient` 로그까지 봐야 한다.
+>
+> **인가코드는 1회용이다.** 콜백 URL을 새로고침해 재시도하면 `invalid_grant`가 난다. 재시도는
+> 반드시 `/login`부터 한다.
 
 ## 열어둔 결정
 

@@ -13,8 +13,11 @@ const manifest = {
   lang: "ko",
   start_url: "/",
   display: "standalone",
+  // 스플래시 바탕. 앱 배경과 같아야 렌더 직후 색이 튀지 않는다.
   background_color: "#ffffff",
-  theme_color: "#ffffff",
+  // 상단바·상태바 색. globals.css의 --brand 라이트 값과 같다.
+  // 매니페스트는 값을 하나만 가지므로 다크에서도 이 브라운이 쓰인다.
+  theme_color: "#6f4e37",
   icons: [
     {
       src: "/icons/icon-192.png",

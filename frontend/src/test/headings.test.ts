@@ -20,7 +20,7 @@ function headingClasses(source: string): string[] {
   );
 }
 
-describe("AC-VISUAL-13 · 화면 제목 14곳이 같은 단계를 쓴다", () => {
+describe("AC-VISUAL-13 · 화면 제목 15곳이 같은 단계를 쓴다", () => {
   const found = SOURCES.flatMap((path) =>
     headingClasses(readFileSync(path, "utf8")).map((className) => ({
       path,
@@ -28,8 +28,8 @@ describe("AC-VISUAL-13 · 화면 제목 14곳이 같은 단계를 쓴다", () =>
     })),
   );
 
-  it("h1이 14곳이다", () => {
-    expect(found).toHaveLength(14);
+  it("h1이 15곳이다", () => {
+    expect(found).toHaveLength(15);
   });
 
   it("모든 h1이 text-xl font-semibold다", () => {

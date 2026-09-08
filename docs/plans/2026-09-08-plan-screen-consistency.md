@@ -569,7 +569,7 @@ cd .. && git add . && git commit -m "feat(web): 상세에 대표 수치를 세�
 > 스펙 본문의 「14곳」도 함께 15곳으로 고치고 **갱신 이유를 그 AC 자리에 남긴다.**
 > 스펙을 안 고치고 테스트만 고치면 문서와 코드가 갈린다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `src/app/brews/[id]/page.test.tsx`:
 
@@ -621,7 +621,7 @@ describe("AC-VISUAL-13 · 화면 제목 15곳이 같은 단계를 쓴다", () =>
   });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test "brews/\[id\]" headings`
 
@@ -630,7 +630,7 @@ Expected: FAIL 3개.
 - AC-13 — 같은 이유
 - `headings` — `h1`이 14곳인데 15를 기대한다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `BrewDetail.tsx` — **링크를 `h1` 안에 넣는다.** `h1`을 링크 안에 넣으면 못 읽을 때 `h1`이 사라진다.
 
@@ -660,12 +660,12 @@ Expected: FAIL 3개.
 > 「모든 `h1`이 `text-xl font-semibold`」라는 조건 자체는 그대로다.
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test`
 Expected: PASS, **364** (362 + 2). `headings`는 개수만 바뀌어 총계가 늘지 않는다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm typecheck && pnpm lint && pnpm test

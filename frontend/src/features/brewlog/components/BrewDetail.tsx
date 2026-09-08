@@ -78,21 +78,26 @@ export function BrewDetail({ id }: { id: number }) {
             {log.brewedAt.slice(0, 10)}
           </p>
           {/*
-            제목을 읽었을 때만 링크다. 못 읽었다는 것은 그 레시피를 볼 권한이 없다는 뜻이라
-            링크를 누르면 403 화면으로 간다. 두 갈래가 같은 글자 크기·굵기를 갖게 해서
-            폴백일 때 레이아웃이 흔들리지 않게 한다.
+            화면 제목이다. **`h1`은 언제나 그리고 링크만 조건부로 한다** — 조건부로 사라지면
+            제목 없는 화면이 생기고, 스크린리더 사용자가 「지금 무엇을 보고 있는가」를 제목
+            탐색으로 알 수 없다.
+
+            읽었을 때만 링크다. 못 읽었다는 것은 그 레시피를 볼 권한이 없다는 뜻이라 링크를
+            누르면 403 화면으로 간다. 두 갈래가 같은 크기·굵기를 갖게 해서 폴백일 때 레이아웃이
+            흔들리지 않게 한다.
           */}
-          {recipeId !== undefined &&
-            (recipe.isReady ? (
+          <h1 className="text-xl font-semibold">
+            {recipeId !== undefined && recipe.isReady ? (
               <Link
                 href={`/recipes/${recipeId}`}
-                className="text-lg font-medium underline-offset-2 hover:underline"
+                className="underline-offset-2 hover:underline"
               >
                 {recipe.label}
               </Link>
             ) : (
-              <span className="text-lg font-medium">{recipe.label}</span>
-            ))}
+              recipe.label
+            )}
+          </h1>
           {bean.label !== "" && (
             <dl className="flex items-center gap-1 text-sm text-muted">
               <dt>원두</dt>

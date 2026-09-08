@@ -135,7 +135,8 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 **색은 액션에만 쓴다.** 수치는 크기와 굵기로 올리고 브라운을 칠하지 않는다 — 목록에 카드가 쌓였을 때
 갈색이 많아지면 주 액션 버튼이 묻힌다.
 
-**`h1` 14곳을 전부 `text-xl semibold`로 통일한다.** 10곳은 이미 그 형태이고, **넷이 갈려 있다** —
+**`h1`을 전부 `text-xl semibold`로 통일한다.** (작성 시점 14곳. 2026-09-08에 `BrewDetail`이
+더해져 **15곳**이 됐다 — `AC-VISUAL-13`의 갱신 노트 참조.) 10곳은 이미 그 형태이고, **넷이 갈려 있다** —
 `/login`(`text-2xl font-semibold`), `/login/test`·`/offline`·`UserProfile`(`text-2xl font-bold`).
 
 **별 아이콘은 글자가 아니다.** `RatingInput.tsx:30`의 `text-xl`을 `text-[22px]`로 바꿔 크기
@@ -272,12 +273,17 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 - **Then** 두 경우 모두 `text-lg font-semibold`를 가진 요소가 **정확히 1개**다
 - **검증** 단위 테스트 `BrewLogCard.test.tsx`
 
-#### AC-VISUAL-13 · 화면 제목 14곳이 같은 단계를 쓴다
+#### AC-VISUAL-13 · 화면 제목 15곳이 같은 단계를 쓴다
 
-- **Given** `frontend/src` 아래에서 `<h1`을 그리는 곳 **14곳**
+- **Given** `frontend/src` 아래에서 `<h1`을 그리는 곳 **15곳**
 - **When** 각 `<h1`의 `className`을 읽는다
-- **Then** 14곳 모두 `text-xl`과 `font-semibold`를 갖는다. `text-2xl`·`font-bold`는 **0곳**이다
+- **Then** 15곳 모두 `text-xl`과 `font-semibold`를 갖는다. `text-2xl`·`font-bold`는 **0곳**이다
 - **검증** 단위 테스트 `headings.test.ts` (소스 검사). **실제로 20px로 렌더되는지는 `AC-VISUAL-15`가 브라우저에서 잰다** — 클래스가 맞아도 화면이 다를 수 있으므로 둘 다 필요하다
+
+> **2026-09-08 갱신: 14곳 → 15곳.** `screen-consistency` 스펙이 `BrewDetail`에 `h1`을 더했다.
+> **브루로그 상세만 화면 제목이 없었다** — 레시피 이름이 `<Link className="text-lg font-medium">`
+> 이라 제목 탐색으로 「지금 무엇을 보고 있는가」를 알 수 없었다.
+> **조건 자체(「모든 `h1`이 `text-xl font-semibold`」)는 그대로다.**
 
 ### 정상 동작 — 실제 렌더값 (Playwright)
 

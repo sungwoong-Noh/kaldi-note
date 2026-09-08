@@ -106,6 +106,41 @@ async function measureLabels(): Promise<(string | null)[]> {
 }
 
 describe("BrewDetailPage", () => {
+  it("AC-CONSIST-12 · h1이 하나이고 레시피 이름이다", async () => {
+    await renderDetail();
+
+    // 로그가 먼저 오고 레시피 이름이 뒤에 온다. 이름이 붙기 전의 빈 h1을 잡지 않도록
+    // 이름으로 기다린 뒤 개수를 센다.
+    await screen.findByRole("heading", { level: 1, name: "Kasuya 4:6" });
+    const headings = screen.getAllByRole("heading", { level: 1 });
+
+    expect(headings).toHaveLength(1);
+    expect(headings[0].className).toContain("text-xl");
+    expect(headings[0].className).toContain("font-semibold");
+  });
+
+  it("AC-CONSIST-13 · 레시피를 못 읽어도 h1이 하나다", async () => {
+    // `AC-WEBNAME-31`이 쓰는 403 폴백을 그대로 쓴다.
+    server.use(
+      http.get(`${BASE}/recipes/1`, () =>
+        HttpResponse.json(
+          { code: "FORBIDDEN", message: "권한이 없습니다." },
+          { status: 403 },
+        ),
+      ),
+    );
+
+    await renderDetail();
+
+    await screen.findByRole("heading", { level: 1, name: "비공개 레시피" });
+    const headings = screen.getAllByRole("heading", { level: 1 });
+
+    expect(headings).toHaveLength(1);
+    expect(headings[0].className).toContain("text-xl");
+    expect(headings[0].className).toContain("font-semibold");
+    expect(headings[0].querySelector("a")).toBeNull();
+  });
+
   it("AC-CONSIST-09 · 대표 수치가 하나이고 1:15.0이다", async () => {
     await renderDetail();
     // `h1`은 Task 4에서 생긴다. 지금 확실히 있는 것을 기다린다.

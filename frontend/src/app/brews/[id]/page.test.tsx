@@ -73,7 +73,84 @@ beforeEach(() => {
   );
 });
 
+/** 대표 수치는 세 클래스를 모두 가진 요소다. 하나라도 빠지면 잡히지 않는다. */
+function leadElements(): Element[] {
+  return [...document.querySelectorAll(".text-lg.font-semibold.tabular-nums")];
+}
+
+/** 비율 없는 로그. `JSON.stringify`가 `undefined` 키를 지우므로 응답에서 통째로 빠진다. */
+function withoutRatio() {
+  return http.get(DETAIL_URL, () =>
+    HttpResponse.json({
+      ...brewLogWithTds,
+      id: 42,
+      recipeId: 1,
+      brewRatio: undefined,
+    }),
+  );
+}
+
+/** 실측값 절. `stepSection()`과 같은 방식이다 — 이 파일이 이미 쓰는 패턴. */
+async function measureSection(): Promise<HTMLElement> {
+  const heading = await screen.findByText("실측값");
+  const section = heading.closest("section");
+  expect(section).not.toBeNull();
+  return section as HTMLElement;
+}
+
+/** 실측값 절의 라벨. 대표로 올라간 항목은 여기서 빠져 있어야 한다. */
+async function measureLabels(): Promise<(string | null)[]> {
+  return [...(await measureSection()).querySelectorAll("dt")].map(
+    (dt) => dt.textContent,
+  );
+}
+
 describe("BrewDetailPage", () => {
+  it("AC-CONSIST-09 · 대표 수치가 하나이고 1:15.0이다", async () => {
+    await renderDetail();
+    // `h1`은 Task 4에서 생긴다. 지금 확실히 있는 것을 기다린다.
+    await screen.findByText("실측값");
+
+    const leads = leadElements();
+
+    expect(leads).toHaveLength(1);
+    expect(leads[0].textContent).toBe("비율1:15.0");
+    expect(leads[0].querySelector("dt")?.className).toContain("sr-only");
+  });
+
+  it("AC-CONSIST-10 · 비율이 없으면 물 온도가 대표로 승격한다", async () => {
+    server.use(withoutRatio());
+
+    await renderDetail();
+    // `h1`은 Task 4에서 생긴다. 지금 확실히 있는 것을 기다린다.
+    await screen.findByText("실측값");
+
+    const leads = leadElements();
+
+    expect(leads).toHaveLength(1);
+    expect(leads[0].textContent).toBe("물 온도92°C");
+  });
+
+  it("AC-CONSIST-11 · 대표로 올린 비율은 실측값에 없다", async () => {
+    await renderDetail();
+
+    const labels = await measureLabels();
+
+    expect(labels).not.toContain("비율");
+    expect(labels).toContain("물 온도");
+  });
+
+  it("AC-CONSIST-11 · 승격된 물 온도도 실측값에서 빠진다", async () => {
+    server.use(withoutRatio());
+
+    await renderDetail();
+
+    const labels = await measureLabels();
+
+    expect(labels).not.toContain("물 온도");
+    expect(labels).not.toContain("비율");
+  });
+
   it("AC-CONSIST-06 · 라벨이 폼 어휘를 쓴다", async () => {
     await renderDetail();
     await screen.findByText("실측값");

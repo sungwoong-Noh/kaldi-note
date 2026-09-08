@@ -16,6 +16,8 @@ import {
   formatTemperature,
 } from "@/lib/format";
 import { deleteBrewLog, fetchBrewLog } from "../api";
+import { headline } from "../headline";
+import type { BrewLog } from "../schema";
 import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
 import { DeleteBrewLogDialog } from "./DeleteBrewLogDialog";
 import { ExtractionSummary } from "./ExtractionSummary";
@@ -66,6 +68,7 @@ export function BrewDetail({ id }: { id: number }) {
 
   const log = logQuery.data;
   const isMine = me.data !== undefined && log.userId === me.data.id;
+  const lead = headline(log);
 
   return (
     <Shell>
@@ -104,32 +107,24 @@ export function BrewDetail({ id }: { id: number }) {
         )}
       </div>
 
+      {/* 대표 수치. 상세에서 정확히 하나가 18px로 뜬다. 라벨은 sr-only다. */}
+      <dl className="flex items-center gap-1 text-lg font-semibold tabular-nums">
+        <dt className="sr-only">{lead.label}</dt>
+        <dd>{lead.value}</dd>
+      </dl>
+
       <section className="flex flex-col gap-2">
         <h2 className="text-base font-semibold">실측값</h2>
         <dl className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
-          {/* `원두량`이다. 위에 원두 이름 줄이 생겨 `원두`로 두면 같은 라벨이 둘이 된다.
-              작성·편집 폼의 입력칸 이름도 `원두량`이라 이쪽이 일관된다. */}
-          <Measure label="원두량" value={formatGrams(log.actualDoseG)} />
-          <Measure label="물량" value={formatGrams(log.actualWaterG)} />
-          <Measure
-            label="물 온도"
-            value={formatTemperature(log.actualWaterTempC)}
-          />
-          {log.actualTotalTimeSeconds !== undefined && (
-            <Measure
-              label="추출 시간"
-              value={formatDuration(log.actualTotalTimeSeconds)}
-            />
-          )}
-          {log.brewRatio !== undefined && (
-            <Measure label="비율" value={formatRatio(log.brewRatio)} />
-          )}
-          {log.actualGrindSettingValue !== undefined && (
-            <Measure
-              label="분쇄도"
-              value={String(log.actualGrindSettingValue)}
-            />
-          )}
+          {measures(log)
+            .filter((entry) => entry.label !== lead.label)
+            .map((entry) => (
+              <Measure
+                key={entry.label}
+                label={entry.label}
+                value={entry.value}
+              />
+            ))}
         </dl>
       </section>
 
@@ -187,6 +182,44 @@ export function BrewDetail({ id }: { id: number }) {
         />
       )}
     </Shell>
+  );
+}
+
+/**
+ * 실측값 항목. **값이 없는 것은 자리째 뺀다** — 빈칸이 줄지어 있으면 측정하지 않은 것이
+ * 결함처럼 보인다(「TDS 없이도 앱이 온전히 동작해야 한다」).
+ *
+ * <p><b>`원두량`이다.</b> 위에 원두 이름 줄이 생겨 `원두`로 두면 같은 라벨이 둘이 된다.
+ * 작성·편집 폼의 입력칸 이름도 `원두량`이라 이쪽이 일관된다.
+ *
+ * <p><b>대표로 올라간 항목은 부르는 쪽에서 뺀다.</b> 「복사」가 아니라 「이동」이다.
+ */
+function measures(log: BrewLog): { label: string; value: string }[] {
+  const entries = [
+    { label: "원두량", value: formatGrams(log.actualDoseG) },
+    { label: "물량", value: formatGrams(log.actualWaterG) },
+    { label: "물 온도", value: formatTemperature(log.actualWaterTempC) },
+    {
+      label: "추출 시간",
+      value:
+        log.actualTotalTimeSeconds !== undefined &&
+        formatDuration(log.actualTotalTimeSeconds),
+    },
+    {
+      label: "비율",
+      value: log.brewRatio !== undefined && formatRatio(log.brewRatio),
+    },
+    {
+      label: "분쇄도",
+      value:
+        log.actualGrindSettingValue !== undefined &&
+        String(log.actualGrindSettingValue),
+    },
+  ];
+
+  return entries.filter(
+    (entry): entry is { label: string; value: string } =>
+      typeof entry.value === "string",
   );
 }
 

@@ -65,7 +65,28 @@ beforeEach(() => {
   server.use(...baseHandlers());
 });
 
+/**
+ * 대표 수치는 세 클래스를 **모두** 가진 요소다. 하나라도 빠지면 잡히지 않는다.
+ * 클래스 이름을 틀렸는지까지는 잡지 못한다 — 그것은 e2e가 잰다.
+ */
+function leadElements(): Element[] {
+  return [...document.querySelectorAll(".text-lg.font-semibold.tabular-nums")];
+}
+
 describe("RecipeDetailPage", () => {
+  it("AC-CONSIST-08 · 대표 수치가 하나이고 30.0g → 500.0g이다", async () => {
+    await renderDetail();
+    await screen.findByRole("heading", { level: 1 });
+
+    const leads = leadElements();
+
+    expect(leads).toHaveLength(1);
+    // 이 파일의 픽스처는 hoffmann이라 30.0g → 500.0g이다.
+    // 20.0g → 300.0g은 kasuyaRecipe(레시피 12)의 값으로 e2e에서만 쓴다.
+    expect(leads[0].textContent).toBe("원두량30.0g→물량500.0g");
+    expect(leads[0].querySelector("dt")?.className).toContain("sr-only");
+  });
+
   it("AC-CONSIST-05 · 상세 메타줄의 라벨이 화면에 보인다", async () => {
     await renderDetail();
 

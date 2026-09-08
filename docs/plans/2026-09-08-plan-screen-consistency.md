@@ -370,7 +370,7 @@ cd .. && git add . && git commit -m "feat(web): 라벨 어휘를 폼에 맞추�
 > **승격 규칙을 두 곳에 손으로 베끼지 않는다.** 한쪽만 고치면 카드와 상세의 대표 수치가 갈린다.
 > `BrewLogSummary`와 `BrewLog` 둘 다 만족하도록 인자를 **구조적 타입**으로 좁힌다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `src/app/recipes/[id]/page.test.tsx`:
 
@@ -471,7 +471,7 @@ it("AC-CONSIST-11 · 승격된 물 온도도 실측값에서 빠진다", async (
 > 갈리고 이 저장소에는 `getByRole("list")` 사용례가 **0곳**이다. 이미 쓰이는
 > `heading.closest("section")` 패턴을 그대로 따른다 — `aria-label`도 필요 없어진다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test "recipes/\[id\]" "brews/\[id\]"`
 
@@ -481,7 +481,7 @@ Expected: FAIL 5개.
 - AC-10 — 같은 이유
 - AC-11 둘 — `getByRole("list", { name: "실측값" })`이 없어서 못 찾는다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `src/features/brewlog/headline.ts`를 새로 만들고 `BrewLogCard.tsx`의 `headline`·`summaryEntries`를
 옮긴다. 주석(비율 우선 · 승격 이유)도 함께 옮긴다.
@@ -533,12 +533,12 @@ Expected: FAIL 5개.
           <div className="flex items-center gap-1 text-lg font-semibold tabular-nums">
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test`
 Expected: PASS, **362** (357 + 5)
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm typecheck && pnpm lint && pnpm test

@@ -119,7 +119,7 @@ export function BeanBatchDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="bean-batch-title"
-        className="flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto rounded-lg bg-white p-5 dark:bg-neutral-900"
+        className="flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto rounded-lg bg-background p-5"
       >
         <h2 id="bean-batch-title" className="text-base font-semibold">
           원두 등록
@@ -169,12 +169,12 @@ export function BeanBatchDialog({
               error={nameErrorFor("product")}
             />
             <label className="flex flex-col gap-1 text-sm">
-              <span className="text-neutral-500">배전도</span>
+              <span className="text-muted">배전도</span>
               <select
                 aria-label="배전도"
                 value={roastLevel}
                 onChange={(e) => setRoastLevel(e.target.value as RoastLevel)}
-                className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+                className="rounded border border-line px-2 py-1"
               >
                 <option value="">선택 안 함</option>
                 {ROAST_LEVELS.map((level) => (
@@ -194,7 +194,7 @@ export function BeanBatchDialog({
         )}
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-neutral-500">중량</span>
+          <span className="text-muted">중량</span>
           <input
             type="number"
             aria-label="중량"
@@ -205,17 +205,17 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.weightG ? "bean-batch-weight-error" : undefined
             }
-            className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+            className="rounded border border-line px-2 py-1"
           />
           {mapped?.byField.weightG && (
-            <span id="bean-batch-weight-error" className="text-xs text-red-600">
+            <span id="bean-batch-weight-error" className="text-xs text-danger">
               {mapped.byField.weightG}
             </span>
           )}
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-neutral-500">로스팅일</span>
+          <span className="text-muted">로스팅일</span>
           <input
             type="date"
             aria-label="로스팅일"
@@ -224,12 +224,12 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.roastedAt ? "bean-batch-roasted-error" : undefined
             }
-            className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+            className="rounded border border-line px-2 py-1"
           />
           {mapped?.byField.roastedAt && (
             <span
               id="bean-batch-roasted-error"
-              className="text-xs text-red-600"
+              className="text-xs text-danger"
             >
               {mapped.byField.roastedAt}
             </span>
@@ -237,14 +237,14 @@ export function BeanBatchDialog({
         </label>
 
         {submit.error && (
-          <p className="text-xs text-red-600">{submit.error.message}</p>
+          <p className="text-xs text-danger">{submit.error.message}</p>
         )}
 
         <div className="flex justify-end gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
+            className="rounded-md border border-line px-3 py-1.5 text-sm"
           >
             취소
           </button>
@@ -252,7 +252,7 @@ export function BeanBatchDialog({
             type="button"
             disabled={submit.isPending}
             onClick={() => submit.mutate()}
-            className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
+            className="rounded-md bg-brand px-3 py-1.5 text-sm text-on-accent disabled:opacity-50"
           >
             등록
           </button>
@@ -275,14 +275,14 @@ function SelectField({
 }) {
   return (
     <label className="flex flex-col gap-1 text-sm">
-      <span className="text-neutral-500">{label}</span>
+      <span className="text-muted">{label}</span>
       <select
         aria-label={label}
         value={value ?? ""}
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+        className="rounded border border-line px-2 py-1"
       >
         <option value="">새로 만들기</option>
         {options.map((option) => (
@@ -309,16 +309,16 @@ function TextField({
   const errorId = `bean-batch-${label}-error`;
   return (
     <label className="flex flex-col gap-1 text-sm">
-      <span className="text-neutral-500">{label}</span>
+      <span className="text-muted">{label}</span>
       <input
         aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-describedby={error ? errorId : undefined}
-        className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+        className="rounded border border-line px-2 py-1"
       />
       {error && (
-        <span id={errorId} className="text-xs text-red-600">
+        <span id={errorId} className="text-xs text-danger">
           {error}
         </span>
       )}

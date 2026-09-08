@@ -18,8 +18,8 @@ export default async function LoginPage({
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-8 px-6">
       <div className="text-center">
-        <h1 className="text-2xl font-semibold">kaldi note</h1>
-        <p className="mt-2 text-sm text-neutral-500">
+        <h1 className="text-xl font-semibold">kaldi note</h1>
+        <p className="mt-2 text-sm text-muted">
           커피 레시피를 재현 가능한 형태로 기록하고 공유합니다.
         </p>
       </div>
@@ -33,7 +33,7 @@ export default async function LoginPage({
 
       <a
         href={googleAuthorizeUrl(next)}
-        className="w-full max-w-xs rounded-md border border-neutral-300 px-4 py-3 text-center font-medium dark:border-neutral-700"
+        className="w-full max-w-xs rounded-md border border-line px-4 py-3 text-center font-medium"
       >
         구글로 로그인
       </a>

@@ -44,7 +44,7 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
     if (recipe.error instanceof ApiError && recipe.error.code === "NOT_FOUND") {
       return (
         <Shell>
-          <p className="py-12 text-center text-sm text-neutral-500">
+          <p className="py-12 text-center text-sm text-muted">
             레시피를 찾을 수 없습니다
           </p>
         </Shell>

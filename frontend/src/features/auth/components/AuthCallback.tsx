@@ -98,7 +98,7 @@ function AuthCallbackExchange({
 
   return (
     <main className="flex min-h-dvh items-center justify-center px-6">
-      <p className="text-sm text-neutral-500">로그인하는 중…</p>
+      <p className="text-sm text-muted">로그인하는 중…</p>
     </main>
   );
 }

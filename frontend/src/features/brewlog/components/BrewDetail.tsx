@@ -71,7 +71,7 @@ export function BrewDetail({ id }: { id: number }) {
     <Shell>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-muted">
             {log.brewedAt.slice(0, 10)}
           </p>
           {/*
@@ -91,7 +91,7 @@ export function BrewDetail({ id }: { id: number }) {
               <span className="text-lg font-medium">{recipe.label}</span>
             ))}
           {bean.label !== "" && (
-            <dl className="flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400">
+            <dl className="flex items-center gap-1 text-sm text-muted">
               <dt>원두</dt>
               <dd>{bean.label}</dd>
             </dl>
@@ -165,14 +165,14 @@ export function BrewDetail({ id }: { id: number }) {
         <div className="flex items-center gap-2 self-start">
           <Link
             href={`/brews/${id}/edit`}
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
+            className="rounded-md border border-line px-3 py-1.5 text-sm"
           >
             편집
           </Link>
           <button
             type="button"
             onClick={() => setConfirmingDelete(true)}
-            className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-600 dark:border-red-800"
+            className="rounded-md border border-danger px-3 py-1.5 text-sm text-danger"
           >
             삭제
           </button>
@@ -193,7 +193,7 @@ export function BrewDetail({ id }: { id: number }) {
 function Measure({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-1">
-      <dt className="text-neutral-500">{label}</dt>
+      <dt className="text-muted">{label}</dt>
       <dd>{value}</dd>
     </div>
   );

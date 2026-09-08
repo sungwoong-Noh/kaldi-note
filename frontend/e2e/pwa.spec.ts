@@ -32,9 +32,14 @@ test.describe("매니페스트", () => {
     expect(manifest.start_url).toBe("/");
   });
 
-  test("AC-PWA-04 · 색이 흰색이다", async ({ request }) => {
+  test("AC-PWA-04 · 상단바는 브랜드색이고 스플래시는 흰색이다", async ({
+    request,
+  }) => {
     const manifest = await (await request.get("/manifest.json")).json();
-    expect(manifest.theme_color).toBe("#ffffff");
+    // 2026-09-08에 theme_color를 #ffffff에서 브랜드 브라운으로 바꿨다.
+    // 이유는 docs/design/2026-09-08-brand.md와 이 AC의 갱신 노트에 있다.
+    expect(manifest.theme_color).toBe("#6f4e37");
+    // 스플래시는 앱 배경과 같아야 렌더 직후 색이 튀지 않는다.
     expect(manifest.background_color).toBe("#ffffff");
   });
 

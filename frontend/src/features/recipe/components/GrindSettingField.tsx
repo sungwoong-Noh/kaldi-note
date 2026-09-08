@@ -53,7 +53,7 @@ export function GrindSettingField({
 
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-1 text-sm">
-          <span className="text-neutral-500">그라인더</span>
+          <span className="text-muted">그라인더</span>
           <select
             aria-label="그라인더"
             value={grinderModelId ?? ""}
@@ -62,7 +62,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="rounded border border-neutral-300 px-2 py-1"
+            className="rounded border border-line px-2 py-1"
           >
             <option value="">선택 안 함</option>
             {(grinders.data ?? []).map((grinder) => (
@@ -74,7 +74,7 @@ export function GrindSettingField({
         </label>
 
         <label className="flex items-center gap-1 text-sm">
-          <span className="text-neutral-500">분쇄도 단위</span>
+          <span className="text-muted">분쇄도 단위</span>
           <select
             aria-label="분쇄도 단위"
             value={unit ?? ""}
@@ -85,7 +85,7 @@ export function GrindSettingField({
                   : (e.target.value as GrindSettingUnit),
               )
             }
-            className="rounded border border-neutral-300 px-2 py-1"
+            className="rounded border border-line px-2 py-1"
           >
             <option value="">선택 안 함</option>
             {Object.entries(UNIT_LABELS).map(([code, label]) => (
@@ -97,7 +97,7 @@ export function GrindSettingField({
         </label>
 
         <label className="flex items-center gap-1 text-sm">
-          <span className="text-neutral-500">분쇄도 값</span>
+          <span className="text-muted">분쇄도 값</span>
           <input
             aria-label="분쇄도 값"
             type="number"
@@ -108,7 +108,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="w-24 rounded border border-neutral-300 px-2 py-1"
+            className="w-24 rounded border border-line px-2 py-1"
           />
         </label>
       </div>
@@ -149,7 +149,7 @@ function MicronPreview({
       error.status === 422
         ? "이 그라인더는 환산 정보가 없습니다"
         : error.message;
-    return <p className="text-sm text-amber-600">{message}</p>;
+    return <p className="text-sm text-muted">{message}</p>;
   }
 
   if (micron === undefined) return null;
@@ -159,8 +159,8 @@ function MicronPreview({
 
 function Estimate({ micron }: { micron: number }) {
   return (
-    <p className="text-sm text-neutral-600">
-      약 {micron} µm <span className="text-neutral-400">(추정치)</span>
+    <p className="text-sm text-muted">
+      약 {micron} µm <span className="text-muted">(추정치)</span>
     </p>
   );
 }

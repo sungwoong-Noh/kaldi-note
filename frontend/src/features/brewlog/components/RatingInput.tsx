@@ -19,7 +19,7 @@ export function RatingInput({
 }) {
   return (
     <div className="flex items-center gap-1">
-      <span className="w-20 text-sm text-neutral-500">별점</span>
+      <span className="w-20 text-sm text-muted">별점</span>
       {STARS.map((star) => (
         <button
           key={star}
@@ -27,7 +27,7 @@ export function RatingInput({
           aria-label={`별점 ${star}`}
           aria-pressed={value !== null && star <= value}
           onClick={() => onChange(value === star ? null : star)}
-          className="px-1 text-xl leading-none"
+          className="px-1 text-[22px] leading-none"
         >
           <span aria-hidden="true">
             {value !== null && star <= value ? "★" : "☆"}

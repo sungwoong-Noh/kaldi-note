@@ -52,14 +52,14 @@ export function UserGrinderDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="user-grinder-title"
-        className="flex w-full max-w-sm flex-col gap-4 rounded-lg bg-white p-5 dark:bg-neutral-900"
+        className="flex w-full max-w-sm flex-col gap-4 rounded-lg bg-background p-5"
       >
         <h2 id="user-grinder-title" className="text-base font-semibold">
           그라인더 등록
         </h2>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-neutral-500">모델</span>
+          <span className="text-muted">모델</span>
           <select
             aria-label="모델"
             value={grinderModelId ?? ""}
@@ -68,7 +68,7 @@ export function UserGrinderDialog({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+            className="rounded border border-line px-2 py-1"
           >
             <option value="">선택 안 함</option>
             {(grinders.data ?? []).map((model) => (
@@ -80,7 +80,7 @@ export function UserGrinderDialog({
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-neutral-500">별명</span>
+          <span className="text-muted">별명</span>
           <input
             aria-label="별명"
             value={nickname}
@@ -90,12 +90,12 @@ export function UserGrinderDialog({
                 ? "user-grinder-nickname-error"
                 : undefined
             }
-            className="rounded border border-neutral-300 px-2 py-1 dark:border-neutral-700"
+            className="rounded border border-line px-2 py-1"
           />
           {fieldErrors?.byField.nickname && (
             <span
               id="user-grinder-nickname-error"
-              className="text-xs text-red-600"
+              className="text-xs text-danger"
             >
               {fieldErrors.byField.nickname}
             </span>
@@ -103,14 +103,14 @@ export function UserGrinderDialog({
         </label>
 
         {create.error && !fieldErrors?.byField.nickname && (
-          <p className="text-xs text-red-600">{create.error.message}</p>
+          <p className="text-xs text-danger">{create.error.message}</p>
         )}
 
         <div className="flex justify-end gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm dark:border-neutral-700"
+            className="rounded-md border border-line px-3 py-1.5 text-sm"
           >
             취소
           </button>
@@ -120,7 +120,7 @@ export function UserGrinderDialog({
             onClick={() => {
               if (grinderModelId !== null) create.mutate(grinderModelId);
             }}
-            className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
+            className="rounded-md bg-brand px-3 py-1.5 text-sm text-on-accent disabled:opacity-50"
           >
             등록
           </button>

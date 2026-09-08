@@ -16,30 +16,30 @@ export function ExtractionSummary({ log }: { log: BrewLog }) {
       <h2 className="text-base font-semibold">추출 분석</h2>
       <dl className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
         <div className="flex items-center gap-1">
-          <dt className="text-neutral-500">TDS</dt>
+          <dt className="text-muted">TDS</dt>
           <dd>{log.tdsPercent} %</dd>
         </div>
         {log.extractionYieldPercent !== undefined && (
           <div className="flex items-center gap-1">
-            <dt className="text-neutral-500">수율</dt>
+            <dt className="text-muted">수율</dt>
             <dd>{log.extractionYieldPercent} %</dd>
           </div>
         )}
         {log.strengthZone !== undefined && (
           <div className="flex items-center gap-1">
-            <dt className="text-neutral-500">농도</dt>
+            <dt className="text-muted">농도</dt>
             <dd>{log.strengthZone}</dd>
           </div>
         )}
         {log.extractionZone !== undefined && (
           <div className="flex items-center gap-1">
-            <dt className="text-neutral-500">추출</dt>
+            <dt className="text-muted">추출</dt>
             <dd>{log.extractionZone}</dd>
           </div>
         )}
       </dl>
       {log.diagnosis !== undefined && (
-        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+        <p className="text-sm text-muted">
           {log.diagnosis}
         </p>
       )}

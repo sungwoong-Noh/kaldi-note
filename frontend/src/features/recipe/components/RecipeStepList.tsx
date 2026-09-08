@@ -24,7 +24,7 @@ function isPouring(step: RecipeStep): boolean {
 export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
   if (steps.length === 0) {
     return (
-      <p className="py-6 text-center text-sm text-neutral-500">
+      <p className="py-6 text-center text-sm text-muted">
         등록된 스텝이 없습니다
       </p>
     );
@@ -43,11 +43,11 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
             // 스텝 응답에 id가 없다. stepOrder가 레시피 안에서 UNIQUE한 식별자다.
             // 배열 인덱스를 쓰면 순서가 바뀔 때 확실한 버그가 된다.
             key={step.stepOrder}
-            className="flex gap-3 border-t border-neutral-200 py-3 first:border-t-0 dark:border-neutral-800"
+            className="flex gap-3 border-t border-line py-3 first:border-t-0"
           >
             <span
               data-testid="step-start"
-              className="w-12 shrink-0 pt-0.5 font-mono text-sm tabular-nums text-neutral-500"
+              className="w-12 shrink-0 pt-0.5 font-mono text-sm tabular-nums text-muted"
             >
               {formatDuration(step.startAtSeconds)}
             </span>
@@ -63,19 +63,19 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
                 )}
 
                 {showCumulative && (
-                  <span className="text-sm text-neutral-500">
+                  <span className="text-sm text-muted">
                     누적{" "}
                     {formatCumulativeGrams(step.cumulativeWaterG as number)}
                   </span>
                 )}
 
-                <span className="text-sm text-neutral-400">
+                <span className="text-sm text-muted">
                   {step.durationSeconds}초
                 </span>
               </div>
 
               {step.note && (
-                <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
+                <p className="mt-0.5 text-sm text-muted">
                   {step.note}
                 </p>
               )}

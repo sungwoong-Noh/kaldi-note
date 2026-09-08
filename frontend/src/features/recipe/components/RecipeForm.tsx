@@ -82,7 +82,7 @@ export function RecipeForm({
       }}
     >
       {error !== null && error !== undefined && (
-        <div role="alert" className="flex flex-col gap-1 text-sm text-red-600">
+        <div role="alert" className="flex flex-col gap-1 text-sm text-danger">
           <p>{errorMessageOf(error)}</p>
           {fieldErrors.unmapped.map((line) => (
             <p key={line}>{line}</p>
@@ -145,12 +145,12 @@ export function RecipeForm({
       </div>
 
       <label className="flex items-center gap-2 text-sm">
-        <span className="text-neutral-500">공개 범위</span>
+        <span className="text-muted">공개 범위</span>
         <select
           aria-label="공개 범위"
           value={state.visibility}
           onChange={(e) => patch({ visibility: e.target.value as Visibility })}
-          className="rounded border border-neutral-300 px-2 py-1"
+          className="rounded border border-line px-2 py-1"
         >
           {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
             <option key={code} value={code}>
@@ -204,14 +204,14 @@ export function RecipeForm({
         <button
           type="submit"
           disabled={submitting}
-          className="self-start rounded-md bg-neutral-900 px-4 py-2 text-sm text-white disabled:opacity-50"
+          className="self-start rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
         >
           저장
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="self-start rounded-md border border-neutral-300 px-4 py-2 text-sm dark:border-neutral-700"
+          className="self-start rounded-md border border-line px-4 py-2 text-sm"
         >
           취소
         </button>
@@ -244,12 +244,12 @@ function TextField({
     value,
     "aria-describedby": error ? errorId : undefined,
     onChange: (e: { target: { value: string } }) => onChange(e.target.value),
-    className: "rounded border border-neutral-300 px-2 py-1 text-sm",
+    className: "rounded border border-line px-2 py-1 text-sm",
   };
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-sm text-neutral-500">
+      <label htmlFor={inputId} className="text-sm text-muted">
         {label}
       </label>
       {multiline ? <textarea {...shared} rows={3} /> : <input {...shared} />}
@@ -279,7 +279,7 @@ function NumberField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-sm text-neutral-500">
+      <label htmlFor={inputId} className="text-sm text-muted">
         {label}
       </label>
       <span className="flex items-baseline gap-1">
@@ -292,10 +292,10 @@ function NumberField({
           onChange={(e) =>
             onChange(e.target.value === "" ? null : Number(e.target.value))
           }
-          className="w-24 rounded border border-neutral-300 px-2 py-1 text-sm"
+          className="w-24 rounded border border-line px-2 py-1 text-sm"
         />
-        <span className="text-sm text-neutral-500">{suffix}</span>
-        {hint && <span className="text-sm text-neutral-400">{hint}</span>}
+        <span className="text-sm text-muted">{suffix}</span>
+        {hint && <span className="text-sm text-muted">{hint}</span>}
       </span>
       <FieldError id={errorId} message={error} />
     </div>
@@ -317,7 +317,7 @@ function SelectField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-sm text-neutral-500">
+      <label htmlFor={inputId} className="text-sm text-muted">
         {label}
       </label>
       <select
@@ -326,7 +326,7 @@ function SelectField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="rounded border border-neutral-300 px-2 py-1 text-sm"
+        className="rounded border border-line px-2 py-1 text-sm"
       >
         <option value="">선택 안 함</option>
         {options.map((option) => (
@@ -342,7 +342,7 @@ function SelectField({
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={id} className="whitespace-pre-line text-sm text-red-600">
+    <p id={id} className="whitespace-pre-line text-sm text-danger">
       {message}
     </p>
   );

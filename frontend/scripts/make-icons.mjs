@@ -13,7 +13,7 @@
  * maskable만 도형이 다르다 — 안드로이드 런처가 가장자리를 최대 20%까지 깎으므로
  * 모서리를 둥글리지 않고(런처가 깎는다) 글자를 더 작게 그린다.
  */
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { chromium } from "@playwright/test";
 
 const OUT = new URL("../public/icons/", import.meta.url);
@@ -23,13 +23,29 @@ const CORNER_RATIO = 12 / 64;
 const GLYPH_RATIO = 40 / 64;
 
 /**
+ * 바탕색은 `globals.css`의 `--brand`를 **읽어서** 쓴다. 베껴 적으면 토큰을 고쳐도
+ * 아이콘만 옛 색으로 남는다(docs/design/2026-09-08-brand.md).
+ *
+ * <p>라이트 값을 쓴다 — 진한 브라운 위에 흰 글자가 7.44:1이다. 다크 값(`#c9a98a`)은
+ * 밝아서 흰 글자가 2.20:1로 읽히지 않는다.
+ */
+const GLOBALS_CSS = new URL("../src/app/globals.css", import.meta.url);
+const css = await readFile(GLOBALS_CSS, "utf8");
+const brand = css
+  .slice(0, css.indexOf("@media (prefers-color-scheme: dark)"))
+  .match(/--brand:\s*(#[0-9a-fA-F]{6})\s*;/)?.[1];
+
+if (!brand) throw new Error("globals.css의 :root에서 --brand를 찾지 못했다");
+console.log(`바탕색 ${brand} (globals.css의 --brand)`);
+
+/**
  * @param {number} size 캔버스 한 변
  * @param {number} glyphRatio 글자 높이가 캔버스에서 차지할 비율
  * @param {number} cornerRatio 모서리 반지름 비율. maskable은 0이다
  */
 const svg = (size, glyphRatio, cornerRatio) => `
 <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-  <rect width="${size}" height="${size}" rx="${Math.round(size * cornerRatio)}" fill="#171717"/>
+  <rect width="${size}" height="${size}" rx="${Math.round(size * cornerRatio)}" fill="${brand}"/>
   <text x="50%" y="50%" fill="#ffffff" font-family="Helvetica, Arial, sans-serif"
         font-weight="700" font-size="${Math.round(size * glyphRatio)}"
         text-anchor="middle" dominant-baseline="central">k</text>

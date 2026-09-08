@@ -65,7 +65,42 @@ beforeEach(() => {
   server.use(...baseHandlers());
 });
 
+/**
+ * 대표 수치는 세 클래스를 **모두** 가진 요소다. 하나라도 빠지면 잡히지 않는다.
+ * 클래스 이름을 틀렸는지까지는 잡지 못한다 — 그것은 e2e가 잰다.
+ */
+function leadElements(): Element[] {
+  return [...document.querySelectorAll(".text-lg.font-semibold.tabular-nums")];
+}
+
 describe("RecipeDetailPage", () => {
+  it("AC-CONSIST-08 · 대표 수치가 하나이고 30.0g → 500.0g이다", async () => {
+    await renderDetail();
+    await screen.findByRole("heading", { level: 1 });
+
+    const leads = leadElements();
+
+    expect(leads).toHaveLength(1);
+    // 이 파일의 픽스처는 hoffmann이라 30.0g → 500.0g이다.
+    // 20.0g → 300.0g은 kasuyaRecipe(레시피 12)의 값으로 e2e에서만 쓴다.
+    expect(leads[0].textContent).toBe("원두량30.0g→물량500.0g");
+    expect(leads[0].querySelector("dt")?.className).toContain("sr-only");
+  });
+
+  it("AC-CONSIST-05 · 상세 메타줄의 라벨이 화면에 보인다", async () => {
+    await renderDetail();
+
+    // hoffmann은 waterTempC 100.0 · totalTimeSeconds 210이라 세 라벨이 전부 그려진다.
+    for (const label of ["비율", "물 온도", "총 시간"]) {
+      const dt = await screen.findByText(label);
+
+      // jsdom은 Tailwind를 읽지 않아 `sr-only`가 걸려 있어도 toBeVisible()이 통과한다.
+      // 실제로 일을 하는 것은 아래 className 검사다.
+      expect(dt).toBeVisible();
+      expect(dt.className).not.toContain("sr-only");
+    }
+  });
+
   it("AC-WEB-14 · 제목과 출처와 파라미터가 표시된다", async () => {
     await renderDetail();
 

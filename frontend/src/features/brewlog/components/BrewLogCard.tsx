@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatDuration, formatRatio, formatTemperature } from "@/lib/format";
+import { headline } from "../headline";
 import type { BrewLogSummary } from "../schema";
 
 /**
@@ -34,15 +35,14 @@ export function BrewLogCard({
         </div>
 
         <dl className="mt-2 flex flex-col gap-1">
-          <div className="text-lg font-semibold">
+          <div className="text-lg font-semibold tabular-nums">
             <dt className="sr-only">{lead.label}</dt>
             <dd>{lead.value}</dd>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs text-muted">
-            {summaryEntries(log, lead.label).map((entry, index) => (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+            {summaryEntries(log, lead.label).map((entry) => (
               <div key={entry.label} className="flex items-center gap-1">
-                {index > 0 && <span aria-hidden>·</span>}
                 <dt className="sr-only">{entry.label}</dt>
                 <dd>{entry.value}</dd>
               </div>
@@ -52,22 +52,6 @@ export function BrewLogCard({
       </Link>
     </li>
   );
-}
-
-/**
- * 대표 수치. 목록에서 카드마다 정확히 하나가 18px로 뜬다.
- *
- * <p><b>비율이 우선이다.</b> 레시피 카드가 「도즈 → 물」을 대표로 세우므로 같은 축에서 비교된다.
- *
- * <p><b>비율이 없으면 물 온도로 내려간다.</b> `brewRatio`는 프론트 스키마에서 옵션이라 타입상 빌 수
- * 있다. 지금 백엔드로는 도달할 수 없지만(`actual_dose_g`·`actual_water_g`가 둘 다 `nullable = false`이고
- * `ExtractionAnalyzer`가 분기 없이 나눈다), 분기를 두는 한 그 안이 비면 대표 자리가 조용히 사라진다.
- * 물 온도는 필수라 마지막 보루가 된다.
- */
-function headline(log: BrewLogSummary): { label: string; value: string } {
-  return log.brewRatio !== undefined
-    ? { label: "브루 비율", value: formatRatio(log.brewRatio) }
-    : { label: "물 온도", value: formatTemperature(log.actualWaterTempC) };
 }
 
 /**
@@ -82,7 +66,7 @@ function summaryEntries(
 ): { label: string; value: string }[] {
   const entries = [
     { label: "내린 날", value: formatBrewedDate(log.brewedAt) },
-    { label: "브루 비율", value: log.brewRatio && formatRatio(log.brewRatio) },
+    { label: "비율", value: log.brewRatio && formatRatio(log.brewRatio) },
     { label: "물 온도", value: formatTemperature(log.actualWaterTempC) },
     {
       label: "추출 시간",

@@ -130,43 +130,46 @@ export function RecipeDetail({ id }: { id: number }) {
         dl의 직계 자식은 dt·dd 또는 그것을 감싼 div만 허용된다. span을 그대로 두면
         파서가 교정하면서 서버 HTML과 클라이언트 트리가 어긋날 수 있다.
       */}
-      <dl className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-        <div className="flex items-center gap-1">
-          <dt className="sr-only">원두</dt>
+      <dl className="mt-5 flex flex-col gap-1">
+        {/* 대표 수치. 상세에서 정확히 하나가 18px로 뜬다. 라벨은 sr-only다 —
+            18px 숫자 옆에 12px 라벨을 붙이면 대표 수치가 깎인다. */}
+        <div className="flex items-center gap-1 text-lg font-semibold tabular-nums">
+          <dt className="sr-only">원두량</dt>
           <dd>{formatGrams(recipe.doseG)}</dd>
           <span aria-hidden className="text-muted">
             →
           </span>
-          <dt className="sr-only">물</dt>
+          <dt className="sr-only">물량</dt>
           <dd>{formatGrams(recipe.waterG)}</dd>
         </div>
 
-        <div>
-          <dt className="sr-only">비율</dt>
-          <dd>{formatRatio(recipe.ratio)}</dd>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+          <div className="flex items-center gap-1">
+            <dt className="text-xs text-muted">비율</dt>
+            <dd>{formatRatio(recipe.ratio)}</dd>
+          </div>
+
+          {recipe.waterTempC !== undefined && (
+            <div className="flex items-center gap-1">
+              <dt className="text-xs text-muted">물 온도</dt>
+              <dd>{formatTemperature(recipe.waterTempC)}</dd>
+            </div>
+          )}
+
+          {recipe.totalTimeSeconds !== undefined && (
+            <div className="flex items-center gap-1">
+              <dt className="text-xs text-muted">총 시간</dt>
+              <dd>{formatDuration(recipe.totalTimeSeconds)}</dd>
+            </div>
+          )}
         </div>
-
-        {recipe.waterTempC !== undefined && (
-          <div>
-            <dt className="sr-only">물 온도</dt>
-            <dd>{formatTemperature(recipe.waterTempC)}</dd>
-          </div>
-        )}
-
-        {recipe.totalTimeSeconds !== undefined && (
-          <div>
-            <dt className="sr-only">총 시간</dt>
-            <dd>{formatDuration(recipe.totalTimeSeconds)}</dd>
-          </div>
-        )}
       </dl>
 
       {(brewer || filter) && (
-        <p className="mt-2 text-sm text-muted">
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted">
           {brewer && <span>{`${brewer.brand} ${brewer.name}`}</span>}
-          {brewer && filter && <span aria-hidden> · </span>}
           {filter && <span>{filter.name}</span>}
-        </p>
+        </div>
       )}
 
       {recipe.grindSettingValue !== undefined && (

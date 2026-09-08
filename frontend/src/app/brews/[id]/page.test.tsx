@@ -73,7 +73,143 @@ beforeEach(() => {
   );
 });
 
+/** 대표 수치는 세 클래스를 모두 가진 요소다. 하나라도 빠지면 잡히지 않는다. */
+function leadElements(): Element[] {
+  return [...document.querySelectorAll(".text-lg.font-semibold.tabular-nums")];
+}
+
+/** 비율 없는 로그. `JSON.stringify`가 `undefined` 키를 지우므로 응답에서 통째로 빠진다. */
+function withoutRatio() {
+  return http.get(DETAIL_URL, () =>
+    HttpResponse.json({
+      ...brewLogWithTds,
+      id: 42,
+      recipeId: 1,
+      brewRatio: undefined,
+    }),
+  );
+}
+
+/** 실측값 절. `stepSection()`과 같은 방식이다 — 이 파일이 이미 쓰는 패턴. */
+async function measureSection(): Promise<HTMLElement> {
+  const heading = await screen.findByText("실측값");
+  const section = heading.closest("section");
+  expect(section).not.toBeNull();
+  return section as HTMLElement;
+}
+
+/** 실측값 절의 라벨. 대표로 올라간 항목은 여기서 빠져 있어야 한다. */
+async function measureLabels(): Promise<(string | null)[]> {
+  return [...(await measureSection()).querySelectorAll("dt")].map(
+    (dt) => dt.textContent,
+  );
+}
+
 describe("BrewDetailPage", () => {
+  it("AC-CONSIST-12 · h1이 하나이고 레시피 이름이다", async () => {
+    await renderDetail();
+
+    // 로그가 먼저 오고 레시피 이름이 뒤에 온다. 이름이 붙기 전의 빈 h1을 잡지 않도록
+    // 이름으로 기다린 뒤 개수를 센다.
+    await screen.findByRole("heading", { level: 1, name: "Kasuya 4:6" });
+    const headings = screen.getAllByRole("heading", { level: 1 });
+
+    expect(headings).toHaveLength(1);
+    expect(headings[0].className).toContain("text-xl");
+    expect(headings[0].className).toContain("font-semibold");
+  });
+
+  it("AC-CONSIST-13 · 레시피를 못 읽어도 h1이 하나다", async () => {
+    // `AC-WEBNAME-31`이 쓰는 403 폴백을 그대로 쓴다.
+    server.use(
+      http.get(`${BASE}/recipes/1`, () =>
+        HttpResponse.json(
+          { code: "FORBIDDEN", message: "권한이 없습니다." },
+          { status: 403 },
+        ),
+      ),
+    );
+
+    await renderDetail();
+
+    await screen.findByRole("heading", { level: 1, name: "비공개 레시피" });
+    const headings = screen.getAllByRole("heading", { level: 1 });
+
+    expect(headings).toHaveLength(1);
+    expect(headings[0].className).toContain("text-xl");
+    expect(headings[0].className).toContain("font-semibold");
+    expect(headings[0].querySelector("a")).toBeNull();
+  });
+
+  it("AC-CONSIST-09 · 대표 수치가 하나이고 1:15.0이다", async () => {
+    await renderDetail();
+    // `h1`은 Task 4에서 생긴다. 지금 확실히 있는 것을 기다린다.
+    await screen.findByText("실측값");
+
+    const leads = leadElements();
+
+    expect(leads).toHaveLength(1);
+    expect(leads[0].textContent).toBe("비율1:15.0");
+    expect(leads[0].querySelector("dt")?.className).toContain("sr-only");
+  });
+
+  it("AC-CONSIST-10 · 비율이 없으면 물 온도가 대표로 승격한다", async () => {
+    server.use(withoutRatio());
+
+    await renderDetail();
+    // `h1`은 Task 4에서 생긴다. 지금 확실히 있는 것을 기다린다.
+    await screen.findByText("실측값");
+
+    const leads = leadElements();
+
+    expect(leads).toHaveLength(1);
+    expect(leads[0].textContent).toBe("물 온도92°C");
+  });
+
+  it("AC-CONSIST-11 · 대표로 올린 비율은 실측값에 없다", async () => {
+    await renderDetail();
+
+    const labels = await measureLabels();
+
+    expect(labels).not.toContain("비율");
+    expect(labels).toContain("물 온도");
+  });
+
+  it("AC-CONSIST-11 · 승격된 물 온도도 실측값에서 빠진다", async () => {
+    server.use(withoutRatio());
+
+    await renderDetail();
+
+    const labels = await measureLabels();
+
+    expect(labels).not.toContain("물 온도");
+    expect(labels).not.toContain("비율");
+  });
+
+  it("AC-CONSIST-06 · 라벨이 폼 어휘를 쓴다", async () => {
+    await renderDetail();
+    await screen.findByText("실측값");
+
+    const labels = [...document.querySelectorAll("dt")].map(
+      (dt) => dt.textContent,
+    );
+
+    // 순서가 아니라 어휘를 본다. Task 3에서 `비율`이 대표로 올라가며 자리가 바뀐다.
+    expect(labels).toEqual(
+      expect.arrayContaining([
+        "원두량",
+        "물량",
+        "물 온도",
+        "추출 시간",
+        "비율",
+        "분쇄도",
+      ]),
+    );
+    for (const stale of ["물", "온도", "시간"]) {
+      expect(labels).not.toContain(stale);
+    }
+  });
+
   it("AC-WEBBREW-40 · 실측값이 서버 값 그대로 보인다", async () => {
     await renderDetail();
 

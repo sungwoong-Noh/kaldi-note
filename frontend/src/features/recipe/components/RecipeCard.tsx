@@ -26,11 +26,11 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
 
         <dl className="mt-2 flex flex-col gap-1">
           {/* 대표 수치. 목록에서 카드마다 정확히 하나가 18px로 뜬다. */}
-          <div className="flex items-center gap-1 text-lg font-semibold">
-            <dt className="sr-only">원두</dt>
+          <div className="flex items-center gap-1 text-lg font-semibold tabular-nums">
+            <dt className="sr-only">원두량</dt>
             <dd>{formatGrams(recipe.doseG)}</dd>
             <span aria-hidden>→</span>
-            <dt className="sr-only">물</dt>
+            <dt className="sr-only">물량</dt>
             <dd>{formatGrams(recipe.waterG)}</dd>
           </div>
 

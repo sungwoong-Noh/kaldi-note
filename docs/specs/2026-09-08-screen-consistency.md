@@ -1,7 +1,7 @@
 ---
 id: CONSIST
 title: 화면 간 일관성 정비 — 라벨·구분자·대표 수치
-status: 승인
+status: 구현완료
 plan: docs/plans/2026-09-08-plan-screen-consistency.md
 ---
 

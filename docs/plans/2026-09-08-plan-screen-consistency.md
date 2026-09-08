@@ -693,7 +693,7 @@ cd .. && git add . && git commit -m "feat(web): 브루로그 상세에 화면 �
 > `reuseExistingServer`가 이긴다. **돌리기 전에 dev 서버를 내린다.** 2026-09-07에 PWA 테스트
 > 4개가 이것 때문에 빨갛게 나왔다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 import { expect, test } from "@playwright/test";
@@ -761,7 +761,7 @@ test.describe("일관성 — 렌더값", () => {
 > 기대한 것인지 **먼저 `page.pause()`나 `--debug`로 확인하고 나서** 단언을 붙인다.
 > 잡히는 요소가 다르면 셀렉터를 고치되, **AC의 값(12px · muted · tabular-nums)은 바꾸지 않는다.**
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 pkill -f "next dev" || true
@@ -772,11 +772,11 @@ Expected: **Task 1~4를 먼저 하므로 여기서는 전부 PASS가 정상이�
 클래스 이름이 틀렸거나 유틸리티가 생성되지 않았다는 뜻이다 — **소스 검사가 못 잡는 것을 잡은
 것이므로 그 자리를 고친다.**
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 **없다.** Task 1~4에서 클래스를 이미 넣었다. Step 2가 빨갛다면 그때 그 자리만 고친다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pkill -f "next dev" || true
@@ -785,7 +785,7 @@ pnpm e2e
 
 Expected: PASS, 70 + 10 = **80 tests**
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd .. && git add . && git commit -m "test(web): 렌더값을 브라우저로 재고 스펙을 올린다 (AC-CONSIST-04·07·14)"
@@ -795,11 +795,11 @@ cd .. && git add . && git commit -m "test(web): 렌더값을 브라우저로 재
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (테스트 364개)
-- [ ] `cd frontend && pnpm e2e` 통과 (80개) — **dev 서버를 내리고 돌린다**
-- [ ] `./scripts/check-spec-coverage.sh` 통과 (AC 710 + 14 = **724**)
-- [ ] 스펙의 `status`를 `구현완료`로 변경
-- [ ] `visual-hierarchy` 스펙의 「화면 제목 14곳」이 15곳으로 갱신되고 이유가 그 자리에 남았다
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (테스트 364개)
+- [x] `cd frontend && pnpm e2e` 통과 (80개) — **dev 서버를 내리고 돌린다**
+- [x] `./scripts/check-spec-coverage.sh` 통과 (AC 710 + 14 = **724**)
+- [x] 스펙의 `status`를 `구현완료`로 변경
+- [x] `visual-hierarchy` 스펙의 「화면 제목 14곳」이 15곳으로 갱신되고 이유가 그 자리에 남았다
 - [ ] 스펙 「수동 확인」 2개 — **둘 다 비차단형이라 `status`를 막지 않는다.** 폰 실물과 실제 조명이 필요하다
 
 ---

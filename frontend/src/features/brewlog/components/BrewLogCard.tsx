@@ -65,7 +65,7 @@ export function BrewLogCard({
  */
 function headline(log: BrewLogSummary): { label: string; value: string } {
   return log.brewRatio !== undefined
-    ? { label: "브루 비율", value: formatRatio(log.brewRatio) }
+    ? { label: "비율", value: formatRatio(log.brewRatio) }
     : { label: "물 온도", value: formatTemperature(log.actualWaterTempC) };
 }
 
@@ -81,7 +81,7 @@ function summaryEntries(
 ): { label: string; value: string }[] {
   const entries = [
     { label: "내린 날", value: formatBrewedDate(log.brewedAt) },
-    { label: "브루 비율", value: log.brewRatio && formatRatio(log.brewRatio) },
+    { label: "비율", value: log.brewRatio && formatRatio(log.brewRatio) },
     { label: "물 온도", value: formatTemperature(log.actualWaterTempC) },
     {
       label: "추출 시간",

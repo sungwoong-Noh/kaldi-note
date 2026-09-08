@@ -74,6 +74,30 @@ beforeEach(() => {
 });
 
 describe("BrewDetailPage", () => {
+  it("AC-CONSIST-06 · 라벨이 폼 어휘를 쓴다", async () => {
+    await renderDetail();
+    await screen.findByText("실측값");
+
+    const labels = [...document.querySelectorAll("dt")].map(
+      (dt) => dt.textContent,
+    );
+
+    // 순서가 아니라 어휘를 본다. Task 3에서 `비율`이 대표로 올라가며 자리가 바뀐다.
+    expect(labels).toEqual(
+      expect.arrayContaining([
+        "원두량",
+        "물량",
+        "물 온도",
+        "추출 시간",
+        "비율",
+        "분쇄도",
+      ]),
+    );
+    for (const stale of ["물", "온도", "시간"]) {
+      expect(labels).not.toContain(stale);
+    }
+  });
+
   it("AC-WEBBREW-40 · 실측값이 서버 값 그대로 보인다", async () => {
     await renderDetail();
 

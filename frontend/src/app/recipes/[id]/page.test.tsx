@@ -66,6 +66,20 @@ beforeEach(() => {
 });
 
 describe("RecipeDetailPage", () => {
+  it("AC-CONSIST-05 · 상세 메타줄의 라벨이 화면에 보인다", async () => {
+    await renderDetail();
+
+    // hoffmann은 waterTempC 100.0 · totalTimeSeconds 210이라 세 라벨이 전부 그려진다.
+    for (const label of ["비율", "물 온도", "총 시간"]) {
+      const dt = await screen.findByText(label);
+
+      // jsdom은 Tailwind를 읽지 않아 `sr-only`가 걸려 있어도 toBeVisible()이 통과한다.
+      // 실제로 일을 하는 것은 아래 className 검사다.
+      expect(dt).toBeVisible();
+      expect(dt.className).not.toContain("sr-only");
+    }
+  });
+
   it("AC-WEB-14 · 제목과 출처와 파라미터가 표시된다", async () => {
     await renderDetail();
 

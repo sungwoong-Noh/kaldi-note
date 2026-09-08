@@ -99,7 +99,7 @@ frontend/
 - Consumes: 없음 (첫 태스크)
 - Produces: `src/test/consistency.test.ts` — Task 2~4가 소스 검사를 더할 자리
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `headings.test.ts`의 `walk()` 패턴을 그대로 따른다. 파일을 읽어 문자열을 세는 검사다.
 
@@ -156,7 +156,7 @@ describe("AC-CONSIST-03 · 메타줄 4곳의 가로 간격이 gap-x-3이다", ()
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test src/test/consistency.test.ts`
 
@@ -165,7 +165,7 @@ Expected: FAIL 3개.
 - AC-02 — `RecipeDetail.tsx`의 기구 줄 `<span aria-hidden> · </span>` 때문에 같은 이유
 - AC-03 두 번째 — `BrewLogCard`가 `gap-x-1`, `BrewDetail`이 `gap-x-4`다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `BrewLogCard.tsx` 보조줄 — 구분자를 지우고 간격을 넓힌다. `index`가 더 이상 쓰이지 않는다.
 
@@ -198,7 +198,7 @@ Expected: FAIL 3개.
         <dl className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test src/test/consistency.test.ts`
 Expected: PASS, 4 tests
@@ -206,7 +206,7 @@ Expected: PASS, 4 tests
 Run: `pnpm test`
 Expected: PASS, 350 tests + 4 = **354**. 기존 테스트가 `·`를 단언하지 않는 것은 확인됐다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm typecheck && pnpm lint && pnpm test
@@ -247,7 +247,7 @@ cd .. && git add . && git commit -m "feat(web): 카드·상세 메타줄의 구�
 | `BrewDetail.tsx` | `물` · `온도` · `시간` | `물량` · `물 온도` · `추출 시간` |
 | `BrewDetail.tsx` | `원두량` · `비율` · `분쇄도` · 원두 이름의 `원두` | 그대로 |
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `RecipeCard.test.tsx`에 더한다. `dt`는 `sr-only`라 화면에 안 보이므로 `getByText`가 아니라
 컨테이너에서 직접 찾는다.
@@ -299,7 +299,7 @@ it("AC-CONSIST-05 · 상세 메타줄의 라벨이 화면에 보인다", async (
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test RecipeCard BrewLogCard "recipes/\[id\]"`
 
@@ -308,7 +308,7 @@ Expected: FAIL 3개.
 - `BrewLogCard` — `"브루 비율"`이 첫 항목으로 온다
 - `recipes/[id]` — `sr-only`라 `findByText`가 요소는 찾지만 `toBeVisible()`이 실패한다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 카드 둘과 `BrewDetail`은 문자열만 바꾼다. `RecipeDetail`은 **`sr-only`를 12px muted로 바꾼다.**
 
@@ -335,12 +335,12 @@ function Measure({ label, value }: { label: string; value: string }) {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test`
 Expected: PASS, **357** (354 + 3)
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm typecheck && pnpm lint && pnpm test

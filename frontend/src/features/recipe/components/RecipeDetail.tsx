@@ -132,30 +132,30 @@ export function RecipeDetail({ id }: { id: number }) {
       */}
       <dl className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
         <div className="flex items-center gap-1">
-          <dt className="sr-only">원두</dt>
+          <dt className="sr-only">원두량</dt>
           <dd>{formatGrams(recipe.doseG)}</dd>
           <span aria-hidden className="text-muted">
             →
           </span>
-          <dt className="sr-only">물</dt>
+          <dt className="sr-only">물량</dt>
           <dd>{formatGrams(recipe.waterG)}</dd>
         </div>
 
         <div>
-          <dt className="sr-only">비율</dt>
+          <dt className="text-xs text-muted">비율</dt>
           <dd>{formatRatio(recipe.ratio)}</dd>
         </div>
 
         {recipe.waterTempC !== undefined && (
           <div>
-            <dt className="sr-only">물 온도</dt>
+            <dt className="text-xs text-muted">물 온도</dt>
             <dd>{formatTemperature(recipe.waterTempC)}</dd>
           </div>
         )}
 
         {recipe.totalTimeSeconds !== undefined && (
           <div>
-            <dt className="sr-only">총 시간</dt>
+            <dt className="text-xs text-muted">총 시간</dt>
             <dd>{formatDuration(recipe.totalTimeSeconds)}</dd>
           </div>
         )}

@@ -110,14 +110,14 @@ export function BrewDetail({ id }: { id: number }) {
           {/* `원두량`이다. 위에 원두 이름 줄이 생겨 `원두`로 두면 같은 라벨이 둘이 된다.
               작성·편집 폼의 입력칸 이름도 `원두량`이라 이쪽이 일관된다. */}
           <Measure label="원두량" value={formatGrams(log.actualDoseG)} />
-          <Measure label="물" value={formatGrams(log.actualWaterG)} />
+          <Measure label="물량" value={formatGrams(log.actualWaterG)} />
           <Measure
-            label="온도"
+            label="물 온도"
             value={formatTemperature(log.actualWaterTempC)}
           />
           {log.actualTotalTimeSeconds !== undefined && (
             <Measure
-              label="시간"
+              label="추출 시간"
               value={formatDuration(log.actualTotalTimeSeconds)}
             />
           )}
@@ -193,7 +193,7 @@ export function BrewDetail({ id }: { id: number }) {
 function Measure({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-1">
-      <dt className="text-muted">{label}</dt>
+      <dt className="text-xs text-muted">{label}</dt>
       <dd>{value}</dd>
     </div>
   );

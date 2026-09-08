@@ -66,4 +66,22 @@ describe("브루잉 로그 카드", () => {
       unmount();
     }
   });
+
+  it("AC-CONSIST-06 · 라벨이 폼 어휘를 쓴다", () => {
+    const { container } = renderCard(withRatio);
+
+    const labels = [...container.querySelectorAll("dt")].map(
+      (dt) => dt.textContent,
+    );
+
+    // 대표로 올라간 `비율`이 보조줄에서 빠지므로 다섯이다 — 대표 1 + 보조 4.
+    expect(labels).toEqual([
+      "비율",
+      "내린 날",
+      "물 온도",
+      "추출 시간",
+      "추출 수율",
+    ]);
+    expect(labels).not.toContain("브루 비율");
+  });
 });

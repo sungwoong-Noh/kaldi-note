@@ -17,4 +17,18 @@ describe("레시피 카드", () => {
     expect(line).toHaveClass("text-lg", "font-semibold");
     expect(line).toHaveTextContent("300.0g");
   });
+
+  it("AC-CONSIST-06 · 라벨이 폼 어휘를 쓴다", () => {
+    const { container } = render(
+      <ul>
+        <RecipeCard recipe={kasuyaSummary} />
+      </ul>,
+    );
+
+    const labels = [...container.querySelectorAll("dt")].map(
+      (dt) => dt.textContent,
+    );
+
+    expect(labels).toEqual(["원두량", "물량", "비율", "물 온도", "총 시간"]);
+  });
 });

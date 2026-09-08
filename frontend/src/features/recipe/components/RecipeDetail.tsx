@@ -162,11 +162,10 @@ export function RecipeDetail({ id }: { id: number }) {
       </dl>
 
       {(brewer || filter) && (
-        <p className="mt-2 text-sm text-muted">
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted">
           {brewer && <span>{`${brewer.brand} ${brewer.name}`}</span>}
-          {brewer && filter && <span aria-hidden> · </span>}
           {filter && <span>{filter.name}</span>}
-        </p>
+        </div>
       )}
 
       {recipe.grindSettingValue !== undefined && (

@@ -106,7 +106,7 @@ export function BrewDetail({ id }: { id: number }) {
 
       <section className="flex flex-col gap-2">
         <h2 className="text-base font-semibold">실측값</h2>
-        <dl className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        <dl className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
           {/* `원두량`이다. 위에 원두 이름 줄이 생겨 `원두`로 두면 같은 라벨이 둘이 된다.
               작성·편집 폼의 입력칸 이름도 `원두량`이라 이쪽이 일관된다. */}
           <Measure label="원두량" value={formatGrams(log.actualDoseG)} />

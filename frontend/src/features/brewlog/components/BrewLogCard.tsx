@@ -39,10 +39,9 @@ export function BrewLogCard({
             <dd>{lead.value}</dd>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs text-muted">
-            {summaryEntries(log, lead.label).map((entry, index) => (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+            {summaryEntries(log, lead.label).map((entry) => (
               <div key={entry.label} className="flex items-center gap-1">
-                {index > 0 && <span aria-hidden>·</span>}
                 <dt className="sr-only">{entry.label}</dt>
                 <dd>{entry.value}</dd>
               </div>

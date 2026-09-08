@@ -136,15 +136,19 @@ plan: docs/plans/2026-09-08-plan-screen-consistency.md
 #### AC-CONSIST-01 · `BrewLogCard`에 구분자 `·`가 없다
 
 - **Given** `frontend/src/features/brewlog/components/BrewLogCard.tsx`
-- **When** 소스 문자열에서 `·`(U+00B7)를 센다
+- **When** **주석을 지운** 소스 문자열에서 `·`(U+00B7)를 센다
 - **Then** 0개다
 - **검증** 소스 검사 `src/test/consistency.test.ts`
+
+> **주석을 지우고 센다.** 이 저장소는 주석에서 `·`를 한국어 연결 부호로 정상적으로 쓴다
+> (`dt·dd`, `actual_dose_g`·`actual_water_g`). 원본 그대로 세면 구분자가 아니라 설명 문장을
+> 금지하게 된다. **검사하려는 것은 화면에 그려지는 것이다.**
 
 #### AC-CONSIST-02 · `RecipeDetail`에 구분자 `·`가 없다
 
 - **Given** `frontend/src/features/recipe/components/RecipeDetail.tsx` — 기구 줄이
   `<span aria-hidden> · </span>`으로 브루어와 필터를 잇고 있다
-- **When** 소스 문자열에서 `·`(U+00B7)를 센다
+- **When** **주석을 지운** 소스 문자열에서 `·`(U+00B7)를 센다
 - **Then** 0개다
 - **검증** 소스 검사 `src/test/consistency.test.ts`
 

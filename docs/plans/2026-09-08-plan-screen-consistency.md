@@ -423,7 +423,8 @@ async function measureSection(): Promise<HTMLElement> {
 
 it("AC-CONSIST-09 · 대표 수치가 하나이고 1:15.0이다", async () => {
   await renderDetail();
-  await screen.findByRole("heading", { level: 1 });
+  // `h1`은 Task 4에서 생긴다. 지금 확실히 있는 것을 기다린다.
+  await screen.findByText("실측값");
 
   const leads = leadElements();
 
@@ -435,7 +436,7 @@ it("AC-CONSIST-10 · 비율이 없으면 물 온도가 대표로 승격한다", 
   server.use(withoutRatio());
 
   await renderDetail();
-  await screen.findByRole("heading", { level: 1 });
+  await screen.findByText("실측값");
 
   const leads = leadElements();
 
@@ -834,3 +835,38 @@ cd .. && git add . && git commit -m "test(web): 렌더값을 브라우저로 재
   저장소에 사용례가 0곳이다. `heading.closest("section")`으로 바꿨다 — 그래서 `aria-label`도
   필요 없어졌다.
 - **열어둔 결정은 스펙과 같다** — 터치 타깃 44×44px, 간격·모서리·그림자 체계. 둘 다 별도 스펙.
+
+---
+
+## 구현하며 드러난 것 (2026-09-08 갱신)
+
+> 계획을 세운 뒤 실제로 밟으면서 어긋난 것들. **다음에 이 계획을 읽는 사람이 속지 않도록 남긴다.**
+
+- **★ `AC-CONSIST-01·02`의 검사 방식이 틀렸다.** 「소스에서 `·`를 센다」로 썼는데, 이 저장소는
+  **주석에서 `·`를 한국어 연결 부호로 정상적으로 쓴다**(`dt·dd`,
+  `actual_dose_g`·`actual_water_g`). 원본 그대로 세면 구분자가 아니라 설명 문장을 금지한다.
+  **주석을 지우고 세도록 고치고 스펙의 그 AC에도 이유를 남겼다.**
+- **★ `AC-CONSIST-14`는 클래스가 없어도 통과한다.** `globals.css`의 `body`가 이미
+  `font-variant-numeric: tabular-nums`를 걸어 **모든 숫자가 상속으로 tabular가 된다.**
+  계획이 「규정해놓고 어디에도 안 붙어 있다」고 쓴 것은 **클래스 기준으로는 맞지만 렌더 기준으로는
+  틀렸다.** e2e는 남겼다 — 재는 것은 클래스가 아니라 화면에 그려진 결과이고, `body` 규칙이
+  사라지면 빨개진다. 클래스 자체는 `AC-CONSIST-08`·`09`가 본다.
+- **★ Task 3의 테스트가 Task 4의 `h1`을 기다렸다.** 계획 스니펫이
+  `findByRole("heading", { level: 1 })`을 썼는데 그 `h1`은 Task 4에서야 생긴다.
+  **태스크가 서로 물리면 순서대로 초록일 수 없다.** `findByText("실측값")`으로 고쳤다.
+- **★ `h1`이 이름보다 먼저 그려진다.** 로그가 오고 레시피 이름이 뒤에 온다.
+  `findAllByRole("heading")`은 **비어 있는 `h1`을 잡는다.** `name`으로 기다린 뒤 개수를 센다.
+- **★ Task 2가 레이아웃을 깨뜨렸다.** `RecipeDetail`의 메타 항목이 플레인 `<div>`라 라벨을
+  드러내는 순간 `dt`·`dd`가 세로로 쌓였다. **테스트는 초록이었다** — 문자열만 봤기 때문이다.
+  Task 3의 재구조화에서 `flex items-center gap-1`로 감쌌다.
+- **★ e2e 경로 리터럴이 또 틀렸다.** `/recipes/12`는 kasuya가 아니라 **hoffmann**이다
+  (`30.0g → 500.0g` · `1:16.7` · `100°C`). kasuya는 **id 3**이다 — `e2e/stubs.ts`의 핸들러
+  순서가 그렇게 정한다.
+- **테스트 개수가 계획과 하나 어긋났다.** 357이 아니라 358이다. `BrewDetail`의 어휘 검사를
+  따로 세워 하나 늘었다. 최종 **365개**(계획 364).
+- **돌연변이로 그물이 비어 있지 않음을 확인했다.** `BrewDetail`의 `gap-x-3`을 `gap-x-2`로
+  바꾸니 `AC-CONSIST-04`가 「element(s) not found」로 빨개졌다.
+- **`pnpm e2e` 첫 실행(빌드 포함, 6.1분)에서 PWA 캐시 테스트 4개가 타임아웃했다.**
+  재실행(26.7초)과 `pwa.spec.ts` 단독 실행은 초록이다. **회귀가 아니라 부하 민감이다** —
+  `AC-PWA-19`·`20`은 단독으로도 14초씩 걸린다.
+

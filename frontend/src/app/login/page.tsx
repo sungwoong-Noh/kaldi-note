@@ -16,7 +16,7 @@ export default async function LoginPage({
   const next = safeNextPath((await searchParams).next);
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-8 px-6">
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 px-6">
       <div className="text-center">
         <h1 className="text-xl font-semibold">kaldi note</h1>
         <p className="mt-2 text-sm text-muted">

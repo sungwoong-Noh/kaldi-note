@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { TOUCH_TARGET_PX } from "../src/test/touchTarget";
+import { meetsTouchTarget, TOUCH_TARGET_PX } from "../src/test/touchTarget";
 import { installStubs } from "./stubs";
 
 /**
@@ -61,4 +61,63 @@ test.describe("터치 타깃 — 예외", () => {
       expect(count).toBe(expected);
     });
   }
+});
+
+test.describe("터치 타깃 — 아이콘 버튼", () => {
+  test("AC-TOUCH-04 · ★ 별점 5개가 각각 44×44다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/brews/new?recipeId=12");
+
+    for (const star of [1, 2, 3, 4, 5]) {
+      const box = await page
+        .getByRole("button", { name: `별점 ${star}` })
+        .boundingBox();
+
+      expect(box, `별점 ${star}`).not.toBeNull();
+      expect(
+        meetsTouchTarget(box!),
+        `별점 ${star} ${box!.width}x${box!.height}`,
+      ).toBe(true);
+    }
+  });
+
+  test("AC-TOUCH-05 · 스텝 행의 ↑ ↓ 삭제가 각각 44×44다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/recipes/12/edit");
+
+    for (const name of ["스텝 2 위로", "스텝 2 아래로", "스텝 2 삭제"]) {
+      const box = await page.getByRole("button", { name }).boundingBox();
+
+      expect(
+        meetsTouchTarget(box!),
+        `${name} ${box!.width}x${box!.height}`,
+      ).toBe(true);
+    }
+  });
+
+  test("AC-TOUCH-06 · 「내 레시피만」 체크박스가 44×44다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/recipes");
+
+    const box = await page
+      .getByRole("checkbox", { name: "내 레시피만" })
+      .boundingBox();
+
+    expect(meetsTouchTarget(box!), `${box!.width}x${box!.height}`).toBe(true);
+  });
+
+  test("AC-TOUCH-07 · disabled인 ↑ ↓도 44×44다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/recipes/12/edit");
+
+    // hoffmann은 스텝이 7개다. 첫 스텝의 ↑와 마지막 스텝의 ↓가 disabled다.
+    const first = page.getByRole("button", { name: "스텝 1 위로" });
+    const last = page.getByRole("button", { name: "스텝 7 아래로" });
+
+    await expect(first).toBeDisabled();
+    await expect(last).toBeDisabled();
+
+    expect(meetsTouchTarget((await first.boundingBox())!)).toBe(true);
+    expect(meetsTouchTarget((await last.boundingBox())!)).toBe(true);
+  });
 });

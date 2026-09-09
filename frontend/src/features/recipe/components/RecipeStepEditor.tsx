@@ -81,7 +81,7 @@ export function RecipeStepEditor({
                   onChange={(e) =>
                     update(index, { stepType: e.target.value as StepType })
                   }
-                  className="rounded border border-line px-2 py-1 text-sm min-h-11"
+                  className="inline-flex size-11 items-center justify-center rounded border border-line text-sm"
                 >
                   {Object.entries(STEP_TYPE_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -96,7 +96,7 @@ export function RecipeStepEditor({
                     aria-label={`스텝 ${number} 위로`}
                     disabled={index === 0}
                     onClick={() => onChange(moveStep(steps, index, -1))}
-                    className="rounded border border-line px-2 py-1 text-sm disabled:opacity-40 min-h-11"
+                    className="inline-flex size-11 items-center justify-center rounded border border-line text-sm disabled:opacity-40"
                   >
                     ↑
                   </button>
@@ -105,7 +105,7 @@ export function RecipeStepEditor({
                     aria-label={`스텝 ${number} 아래로`}
                     disabled={index === steps.length - 1}
                     onClick={() => onChange(moveStep(steps, index, 1))}
-                    className="rounded border border-line px-2 py-1 text-sm disabled:opacity-40 min-h-11"
+                    className="inline-flex size-11 items-center justify-center rounded border border-line text-sm disabled:opacity-40"
                   >
                     ↓
                   </button>
@@ -113,7 +113,7 @@ export function RecipeStepEditor({
                     type="button"
                     aria-label={`스텝 ${number} 삭제`}
                     onClick={() => onChange(removeStep(steps, index))}
-                    className="rounded border border-line px-2 py-1 text-sm min-h-11"
+                    className="inline-flex size-11 items-center justify-center rounded border border-line text-sm"
                   >
                     삭제
                   </button>

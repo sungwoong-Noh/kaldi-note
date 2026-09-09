@@ -112,6 +112,7 @@ function Shell({
         <label className="mb-4 flex items-center gap-2 text-sm">
           <input
             type="checkbox"
+            className="size-11"
             checked={mineOnly ?? false}
             onChange={(e) => onMineOnlyChange(e.target.checked)}
           />

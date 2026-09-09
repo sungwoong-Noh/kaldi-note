@@ -412,7 +412,7 @@ cd .. && git add . && git commit -m "feat(web): 버튼과 버튼형 링크를 44
 > `80 + 5×44 + gap 20 = 320px`로 **328px 중 8px만 남는다.** `AC-TOUCH-12`(Task 5)가 이것을 잡지만,
 > 이 태스크에서 이미 눈으로 확인해두면 원인을 찾기 쉽다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 import { meetsTouchTarget } from "../src/test/touchTarget";
@@ -467,14 +467,14 @@ test.describe("터치 타깃 — 아이콘 버튼", () => {
 > **`/recipes/12`는 hoffmann이고 스텝이 7개다**(`hoffmannSteps`). 스텝 수가 다르면
 > `스텝 7 아래로`가 없어 이 테스트가 헛돈다. **먼저 화면을 열어 스텝 수를 확인한다.**
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 pnpm e2e e2e/touch-targets.spec.ts
 ```
 Expected: FAIL 4개 — ★ `30x22` · ↑↓ `29x30` · 삭제 `42x30` · 체크박스 `13x13`
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `RatingInput.tsx` — `px-1`을 크기로 바꾸고 가운데 정렬한다.
 
@@ -494,7 +494,7 @@ Expected: FAIL 4개 — ★ `30x22` · ↑↓ `29x30` · 삭제 `42x30` · 체�
             className="size-11"
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pnpm e2e e2e/touch-targets.spec.ts
@@ -506,7 +506,7 @@ pnpm test
 ```
 Expected: PASS, 371
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm typecheck && pnpm lint && pnpm test

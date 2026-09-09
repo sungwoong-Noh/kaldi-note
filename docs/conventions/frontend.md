@@ -177,6 +177,10 @@ const form = useForm<CreateRecipeInput>({
 - 모든 `<img>`에 `alt`. 장식용이면 `alt=""`.
 - 폼 입력에 `<label>`을 연결한다.
 - **터치 타깃은 최소 44×44px.** 부엌에서 젖은 손으로 쓴다.
+  **`e2e/touch-targets.spec.ts`가 화면을 쓸어서 검사한다** — 새 버튼을 목록에 등록할 필요가 없다.
+  예외는 `<p>`·`<h1>`~`<h6>`의 자손인 `<a>`(글줄에 녹은 링크)뿐이다.
+  `min-h-11 min-w-11`(44px)과 `inline-flex items-center justify-center`를 함께 붙인다 —
+  `min-h`만 주면 글자가 위로 붙는다. `block`·`w-full`인 요소에는 `inline-flex` 대신 `flex`를 쓴다.
 
 ---
 

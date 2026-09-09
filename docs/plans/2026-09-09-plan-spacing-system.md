@@ -110,7 +110,7 @@ frontend/
 > **고칠 것을 찾는 그물이 아니라 「0곳인 상태」를 결정으로 바꾸는 그물이다.**
 > 통과했다고 건너뛰면 다음 사람이 `shadow-sm`을 흘려넣는다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `designTokens.test.ts`의 `walk`·`offenders` 패턴을 그대로 따른다.
 
@@ -158,23 +158,23 @@ describe("간격·모서리 허용목록", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test src/test/spacing.test.ts`
 
 Expected: **PASS 2개다.** 세 패턴 다 지금 0곳이라 통과하는 것이 정상이다.
 **빨간 것이 나오면 실측이 틀린 것이므로 거기서 멈추고 스펙을 다시 본다.**
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 **없다.** 지금 상태가 이미 조건을 만족한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test`
 Expected: PASS, 371 + 2 = **373**
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm typecheck && pnpm lint && pnpm test

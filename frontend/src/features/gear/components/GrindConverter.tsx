@@ -69,7 +69,7 @@ export function GrindConverter({
         type="button"
         disabled={convert.isPending}
         onClick={() => convert.mutate()}
-        className="self-start rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
+        className="inline-flex min-h-11 items-center justify-center self-start rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
       >
         환산
       </button>

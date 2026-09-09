@@ -82,7 +82,7 @@ export default function TestLoginPage() {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-brand px-4 py-3 text-on-accent disabled:opacity-50"
+          className="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand px-4 py-3 text-on-accent disabled:opacity-50"
         >
           테스트 로그인
         </button>

@@ -320,7 +320,7 @@ cd .. && git add . && git commit -m "feat(web): 입력칸과 select를 44px로 (
 > `BrewDetail`의 제목 링크(`<h1>` 안)는 **그대로 둔다.** 나머지 링크 넷
 > (`전체 보기`·`레시피`·`새 레시피`·`편집`)은 `<h1>`의 **형제**이지 자손이 아니므로 대상이다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test.describe("터치 타깃 — 예외", () => {
@@ -348,7 +348,7 @@ test.describe("터치 타깃 — 예외", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 pnpm e2e e2e/touch-targets.spec.ts
@@ -357,7 +357,7 @@ Expected: **이 테스트는 첫 실행에 통과할 수 있다.** 예외 규칙
 **이 테스트가 지키는 것은 「Task 3이 그 둘을 건드리지 않았다」이다.** 통과하면 그대로 두고
 Step 3으로 간다. 실패하면 예외 규칙이 실제와 다르다는 뜻이므로 **거기서 멈추고 스펙을 다시 본다.**
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 버튼·링크의 클래스 문자열에 `min-h-11`과 정렬을 더한다.
 
@@ -372,7 +372,7 @@ Step 3으로 간다. 실패하면 예외 규칙이 실제와 다르다는 뜻이
 - `RecipeDetail`의 `{recipe.authorName}` 링크 (`<p>` 안)
 - `BrewDetail`의 `<h1>` 안 `<Link>`
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pnpm e2e e2e/touch-targets.spec.ts
@@ -385,7 +385,7 @@ pnpm test
 Expected: PASS, 371. **`headings.test.ts`(h1 15곳)와 `consistency.test.ts`가 초록이어야 한다** —
 `<h1>` 안을 건드리지 않았다는 뜻이다
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm typecheck && pnpm lint && pnpm test

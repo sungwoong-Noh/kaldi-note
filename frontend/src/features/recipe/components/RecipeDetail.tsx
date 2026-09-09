@@ -202,7 +202,7 @@ export function RecipeDetail({ id }: { id: number }) {
       {isMine ? (
         <Link
           href={`/brews/new?recipeId=${id}`}
-          className="mt-6 block rounded-md bg-brand py-3 text-center text-sm font-medium text-on-accent"
+          className="flex min-h-11 items-center justify-center mt-6 block rounded-md bg-brand py-3 text-center text-sm font-medium text-on-accent"
         >
           이 레시피로 내렸다
         </Link>
@@ -216,14 +216,14 @@ export function RecipeDetail({ id }: { id: number }) {
         <div className="mt-3 flex gap-2">
           <Link
             href={`/recipes/${id}/edit`}
-            className="flex-1 rounded-md border border-line py-3 text-center text-sm font-medium"
+            className="flex min-h-11 items-center justify-center flex-1 rounded-md border border-line py-3 text-center text-sm font-medium"
           >
             편집
           </Link>
           <button
             type="button"
             onClick={() => setConfirmingDelete(true)}
-            className="rounded-md border border-danger px-4 py-3 text-sm font-medium text-danger"
+            className="inline-flex min-h-11 items-center justify-center rounded-md border border-danger px-4 py-3 text-sm font-medium text-danger"
           >
             삭제
           </button>
@@ -251,7 +251,7 @@ export function RecipeDetail({ id }: { id: number }) {
             type="button"
             onClick={() => fork.mutate()}
             disabled={fork.isPending}
-            className="w-full rounded-md bg-brand py-3 text-sm font-medium text-on-accent disabled:opacity-50"
+            className="flex min-h-11 items-center justify-center w-full rounded-md bg-brand py-3 text-sm font-medium text-on-accent disabled:opacity-50"
           >
             내 레시피로 가져오기
           </button>

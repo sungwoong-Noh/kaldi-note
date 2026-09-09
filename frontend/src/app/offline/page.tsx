@@ -35,7 +35,7 @@ export default function OfflinePage() {
               <li key={recipe.id}>
                 <Link
                   href={`/recipes/${recipe.id}`}
-                  className="block rounded-lg px-2 py-3 hover:bg-surface dark:hover:bg-brand"
+                  className="flex min-h-11 items-center justify-center block rounded-lg px-2 py-3 hover:bg-surface dark:hover:bg-brand"
                 >
                   {recipe.title}
                 </Link>

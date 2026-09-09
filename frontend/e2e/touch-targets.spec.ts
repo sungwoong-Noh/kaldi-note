@@ -29,3 +29,36 @@ test.describe("터치 타깃 — 입력 요소", () => {
     expect(box?.height).toBe(TOUCH_TARGET_PX);
   });
 });
+
+test.describe("터치 타깃 — 예외", () => {
+  /**
+   * 예외는 **산문·제목 안의 링크**다. 글줄에 녹아 있어 높이를 강제하면 줄간격이 무너진다.
+   *
+   * <p><b>경로마다 테스트를 나눈다.</b> 한 테스트 안에서 여러 경로를 연속 이동하면 두 번째부터
+   * 데이터가 붙지 않아 링크가 아예 안 그려진다 — 그러면 「예외가 0개」라는 거짓 초록이 된다.
+   */
+  const EXPECTED: Record<string, number> = {
+    "/": 0,
+    "/recipes": 0,
+    "/recipes/12": 1, // <p> 안의 출처 링크 James Hoffmann
+    "/brews": 0,
+    "/brews/2": 1, // <h1> 안의 레시피 제목
+    "/more": 0,
+  };
+
+  for (const [path, expected] of Object.entries(EXPECTED)) {
+    test(`AC-TOUCH-03 · ${path}의 예외가 ${expected}개다`, async ({ page }) => {
+      await installStubs(page);
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+
+      // 브라우저 네이티브 querySelectorAll을 쓴다. 스윕과 **같은 엔진**이어야 판정이 갈리지 않는다.
+      const count = await page.evaluate(
+        () =>
+          document.querySelectorAll(":is(p, h1, h2, h3, h4, h5, h6) a").length,
+      );
+
+      expect(count).toBe(expected);
+    });
+  }
+});

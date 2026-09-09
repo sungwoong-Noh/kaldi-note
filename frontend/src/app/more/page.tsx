@@ -78,7 +78,7 @@ export default function MorePage() {
           <button
             type="button"
             onClick={() => void copyInviteLink(me.data.id)}
-            className="shrink-0 rounded-lg border border-line px-3 py-2"
+            className="inline-flex min-h-11 items-center justify-center shrink-0 rounded-lg border border-line px-3 py-2"
           >
             복사
           </button>
@@ -89,7 +89,7 @@ export default function MorePage() {
         <li>
           <Link
             href="/gear/grind-converter"
-            className="block py-3 text-sm underline-offset-4 hover:underline"
+            className="flex min-h-11 items-center justify-center block py-3 text-sm underline-offset-4 hover:underline"
           >
             분쇄도 환산기
           </Link>
@@ -100,7 +100,7 @@ export default function MorePage() {
         type="button"
         onClick={() => void logout()}
         disabled={loggingOut}
-        className="mt-4 w-full rounded-md border border-line py-2.5 text-sm disabled:opacity-50"
+        className="flex min-h-11 items-center justify-center mt-4 w-full rounded-md border border-line py-2.5 text-sm disabled:opacity-50"
       >
         로그아웃
       </button>

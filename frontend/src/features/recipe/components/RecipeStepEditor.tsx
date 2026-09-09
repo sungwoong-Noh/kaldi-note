@@ -163,7 +163,7 @@ export function RecipeStepEditor({
                 aria-label={`스텝 ${number} 아래에 추가`}
                 disabled={atLimit}
                 onClick={() => onChange(insertStepAfter(steps, index))}
-                className="self-start text-sm text-muted disabled:opacity-40"
+                className="inline-flex min-h-11 items-center justify-center self-start text-sm text-muted disabled:opacity-40"
               >
                 여기 아래에 추가
               </button>
@@ -176,7 +176,7 @@ export function RecipeStepEditor({
         type="button"
         disabled={atLimit}
         onClick={() => onChange(appendStep(steps))}
-        className="self-start rounded border border-line px-3 py-2 text-sm disabled:opacity-40"
+        className="inline-flex min-h-11 items-center justify-center self-start rounded border border-line px-3 py-2 text-sm disabled:opacity-40"
       >
         스텝 추가
       </button>

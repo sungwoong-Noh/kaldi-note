@@ -54,7 +54,7 @@ export function GrindConverter({
           aria-label="설정값"
           value={setting}
           onChange={(e) => setSetting(e.target.value)}
-          className="w-32 rounded border border-line px-2 py-1"
+          className="w-32 rounded border border-line px-2 py-1 min-h-11"
         />
       </label>
 
@@ -129,7 +129,7 @@ function GrinderSelect({
         aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="flex-1 rounded border border-line px-2 py-1"
+        className="flex-1 rounded border border-line px-2 py-1 min-h-11"
       >
         <option value="">선택하세요</option>
         {grinders.map((grinder) => (

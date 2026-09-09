@@ -168,7 +168,8 @@ plan: docs/plans/2026-09-09-plan-touch-targets.md
 
 #### AC-TOUCH-09 · 「공개 범위」 select의 높이가 44px다
 
-- **Given** `/brews/new?recipeId=12` — 지금 99×29px이다
+- **Given** `/brews/2/edit` — 지금 99×29px이다. **`/brews/new`에는 이 select가 없다** —
+  공개 범위는 `BrewLogEditor`(편집)와 `RecipeForm`에만 있고 작성 폼에는 없다
 - **When** `getByLabelText("공개 범위")`의 높이를 잰다
 - **Then** `height`가 `44px`다
 - **검증** e2e `e2e/touch-targets.spec.ts`

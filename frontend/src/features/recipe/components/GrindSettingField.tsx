@@ -62,7 +62,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="rounded border border-line px-2 py-1"
+            className="rounded border border-line px-2 py-1 min-h-11"
           >
             <option value="">선택 안 함</option>
             {(grinders.data ?? []).map((grinder) => (
@@ -85,7 +85,7 @@ export function GrindSettingField({
                   : (e.target.value as GrindSettingUnit),
               )
             }
-            className="rounded border border-line px-2 py-1"
+            className="rounded border border-line px-2 py-1 min-h-11"
           >
             <option value="">선택 안 함</option>
             {Object.entries(UNIT_LABELS).map(([code, label]) => (
@@ -108,7 +108,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="w-24 rounded border border-line px-2 py-1"
+            className="w-24 rounded border border-line px-2 py-1 min-h-11"
           />
         </label>
       </div>

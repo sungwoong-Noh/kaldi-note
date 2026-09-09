@@ -182,7 +182,7 @@ function Fields({
               visibility: toVisibility(e.target.value),
             }))
           }
-          className="rounded border border-line px-2 py-1"
+          className="rounded border border-line px-2 py-1 min-h-11"
         >
           {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
             <option key={code} value={code}>

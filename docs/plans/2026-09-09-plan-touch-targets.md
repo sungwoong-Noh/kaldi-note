@@ -229,7 +229,7 @@ cd .. && git add . && git commit -m "test(web): 터치 타깃 판정 함수와 �
 
 **`textarea`는 이미 70px라 손대지 않는다.**
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 import { expect, test } from "@playwright/test";
@@ -248,7 +248,8 @@ test.describe("터치 타깃 — 입력 요소", () => {
 
   test("AC-TOUCH-09 · 「공개 범위」 select의 높이가 44px다", async ({ page }) => {
     await installStubs(page);
-    await page.goto("/brews/new?recipeId=12");
+    // 공개 범위는 BrewLogEditor(편집)에만 있다. 작성 폼(/brews/new)에는 없다.
+    await page.goto("/brews/2/edit");
 
     const box = await page.getByLabel("공개 범위").boundingBox();
 
@@ -257,14 +258,14 @@ test.describe("터치 타깃 — 입력 요소", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 pnpm e2e e2e/touch-targets.spec.ts
 ```
 Expected: FAIL 2개 — 각각 `30`과 `29`가 와서 `44`와 다르다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 각 파일에서 위 표의 클래스 문자열에 `min-h-11`을 더한다. 예:
 
@@ -275,7 +276,7 @@ Expected: FAIL 2개 — 각각 `30`과 `29`가 와서 `44`와 다르다
 > **`select`는 `min-h-11`만으로 충분한지 렌더로 확인한다.** 브라우저가 화살표를 세로 가운데로
 > 옮겨주는지는 재보기 전에는 모른다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pnpm e2e e2e/touch-targets.spec.ts
@@ -287,7 +288,7 @@ pnpm test && pnpm typecheck && pnpm lint
 ```
 Expected: PASS, 371 (단위 테스트는 늘지 않는다)
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm typecheck && pnpm lint && pnpm test

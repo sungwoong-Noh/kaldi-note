@@ -411,7 +411,7 @@ cd .. && git add . && git commit -m "feat(web): 모서리를 면·컨트롤 두 
 > **소스 검사는 「금지된 것이 없다」만 본다.** 클래스가 맞아도 부모가 덮으면 화면이 다르다.
 > **★ 이 스위트가 첫 실행에 통과하는 것이 정상이다.**
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 import { expect, test } from "@playwright/test";
@@ -472,7 +472,7 @@ test.describe("간격·모서리 — 렌더값", () => {
 > 계획 초고가 `last: true`로 지어냈다가 픽스처를 열어보고 잡았다. 틀리면 스키마 파싱에서 죽고,
 > 그때 「빈 상태가 안 뜬다」로 오해하기 쉽다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 pkill -f "next start" || true
@@ -481,11 +481,11 @@ pnpm e2e e2e/spacing.spec.ts
 Expected: **Task 2·3을 먼저 했으므로 전부 PASS가 정상이다.** 빨간 것이 나오면 클래스가 맞는데
 화면이 다르다는 뜻이므로 **소스 검사가 못 잡는 것을 잡은 것이다** — 그 자리를 고친다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 **없다.** Step 2가 빨갛다면 그때 그 자리만 고친다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pkill -f "next start" || true
@@ -498,7 +498,7 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 ```
 Expected: PASS, 379
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd .. && git add . && git commit -m "test(web): 간격·모서리 렌더값을 브라우저로 잰다 (AC-SPACE-09~11)"
@@ -508,10 +508,10 @@ cd .. && git add . && git commit -m "test(web): 간격·모서리 렌더값을 �
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (**379개**)
-- [ ] `cd frontend && pnpm e2e` 통과 (**122개**) — 첫 실행이 느리면 재실행해 PWA 타임아웃과 구분한다
-- [ ] `./scripts/check-spec-coverage.sh` 통과 (AC 736 + 11 = **747**)
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (**379개**)
+- [x] `cd frontend && pnpm e2e` 통과 (**122개**) — 첫 실행이 느리면 재실행해 PWA 타임아웃과 구분한다
+- [x] `./scripts/check-spec-coverage.sh` 통과 (AC 736 + 11 = **747**)
+- [x] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 2개 — **둘 다 비차단형이라 `status`를 막지 않는다.** 폰 실물이 필요하다
 
 ---

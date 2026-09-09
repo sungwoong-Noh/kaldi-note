@@ -1,7 +1,7 @@
 ---
 id: SPACE
 title: 간격·모서리 체계
-status: 승인
+status: 구현완료
 plan: docs/plans/2026-09-09-plan-spacing-system.md
 ---
 

@@ -129,7 +129,7 @@ frontend/
 > **왜 함수로 빼는가.** 44라는 숫자가 e2e 여러 곳에 흩어지면 한 곳만 고쳐도 조용히 어긋난다.
 > 그리고 「43.99는 미달」 같은 경계는 **e2e가 아니라 단위 테스트로 못박는 편이 싸다.**
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -153,12 +153,12 @@ describe("AC-TOUCH-11 · 판정 함수의 경계값", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test src/test/touchTarget.test.ts`
 Expected: FAIL — `Failed to resolve import "./touchTarget"`. 모듈이 아직 없다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```ts
 /**
@@ -181,7 +181,7 @@ export function meetsTouchTarget(box: {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test src/test/touchTarget.test.ts`
 Expected: PASS, 6 tests
@@ -189,7 +189,7 @@ Expected: PASS, 6 tests
 Run: `pnpm test`
 Expected: PASS, 365 + 6 = **371**
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm typecheck && pnpm lint && pnpm test

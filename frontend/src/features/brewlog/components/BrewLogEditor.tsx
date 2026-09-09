@@ -206,14 +206,14 @@ function Fields({
           type="button"
           disabled={save.isPending || cleared.length > 0}
           onClick={submit}
-          className="inline-flex min-h-11 items-center justify-center rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
         >
           저장
         </button>
         <button
           type="button"
           onClick={() => router.push(`/brews/${log.id}`)}
-          className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 py-2 text-sm"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-4 py-2 text-sm"
         >
           취소
         </button>

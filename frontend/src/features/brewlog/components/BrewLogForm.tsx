@@ -151,7 +151,7 @@ function Fields({
         <button
           type="button"
           onClick={() => setAddingBean(true)}
-          className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-3 py-1.5 text-sm"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-1.5 text-sm"
         >
           + 원두 등록
         </button>
@@ -179,14 +179,14 @@ function Fields({
           type="button"
           disabled={save.isPending}
           onClick={() => save.mutate()}
-          className="inline-flex min-h-11 items-center justify-center rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
         >
           기록하기
         </button>
         <button
           type="button"
           onClick={() => router.push(`/recipes/${recipe.id}`)}
-          className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-4 py-2 text-sm"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-4 py-2 text-sm"
         >
           취소
         </button>

@@ -204,14 +204,14 @@ export function RecipeForm({
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex min-h-11 items-center justify-center self-start rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
         >
           저장
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex min-h-11 items-center justify-center self-start rounded-md border border-line px-4 py-2 text-sm"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-line px-4 py-2 text-sm"
         >
           취소
         </button>
@@ -244,7 +244,7 @@ function TextField({
     value,
     "aria-describedby": error ? errorId : undefined,
     onChange: (e: { target: { value: string } }) => onChange(e.target.value),
-    className: "rounded border border-line px-2 py-1 text-sm",
+    className: "min-h-11 rounded border border-line px-2 py-1 text-sm",
   };
 
   return (

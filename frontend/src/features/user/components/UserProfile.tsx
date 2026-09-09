@@ -81,7 +81,7 @@ function FollowSection({ id, status }: { id: number; status: FollowStatus }) {
         type="button"
         disabled={toggle.isPending}
         onClick={() => toggle.mutate({ follow: !status.following })}
-        className="inline-flex min-h-11 items-center justify-center rounded-lg bg-brand px-4 py-3 text-on-accent disabled:opacity-50"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-brand px-4 py-3 text-on-accent disabled:opacity-50"
       >
         {status.following ? "팔로우 취소" : "팔로우"}
       </button>

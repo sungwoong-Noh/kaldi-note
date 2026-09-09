@@ -534,7 +534,7 @@ cd .. && git add . && git commit -m "feat(web): 별점·스텝 버튼·체크박
 > 드러난다. Step 2에서 빨간 목록이 나오면 그것이 이 태스크가 존재하는 이유다 —
 > 목록을 보고 Step 3에서 고친다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 import { SCREENS } from "./screens";
@@ -624,7 +624,7 @@ test.describe("터치 타깃 — 다이얼로그", () => {
 > `meetsTouchTarget`을 `undersized` 안에서 쓰지 않는 것은 `page.evaluate`가 **브라우저 안에서**
 > 돌아 Node 모듈을 볼 수 없기 때문이다. 경계값은 `AC-TOUCH-11`이 이미 못박았다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 pkill -f "next start" || true
@@ -634,12 +634,12 @@ Expected: FAIL — **다이얼로그 4개는 확실히 빨갛다**(`py-1`·`py-1
 화면 스윕 11개 중 몇이 빨간지는 **모른다** — Task 2~4가 놓친 것이 여기서 드러난다.
 **실패 메시지가 `이름 30x22` 형태로 무엇이 몇 px인지 알려준다.**
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 다이얼로그 넷의 입력·select·버튼에 Task 2·3과 같은 방식으로 `min-h-11`과 정렬을 더한다.
 그리고 **Step 2가 알려준 나머지를 고친다.**
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pkill -f "next start" || true
@@ -652,7 +652,7 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 ```
 Expected: PASS, 371
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd .. && git add . && git commit -m "test(web): 화면을 쓸어 터치 타깃을 재고 다이얼로그를 고친다 (AC-TOUCH-01·02·10·12)"
@@ -662,10 +662,10 @@ cd .. && git add . && git commit -m "test(web): 화면을 쓸어 터치 타깃�
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (**371개**)
-- [ ] `cd frontend && pnpm e2e` 통과 (**114개**) — 첫 실행이 느리면 재실행해 PWA 타임아웃과 구분한다
-- [ ] `./scripts/check-spec-coverage.sh` 통과 (AC 724 + 12 = **736**)
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 (**371개**)
+- [x] `cd frontend && pnpm e2e` 통과 (**114개**) — 첫 실행이 느리면 재실행해 PWA 타임아웃과 구분한다
+- [x] `./scripts/check-spec-coverage.sh` 통과 (AC 724 + 12 = **736**)
+- [x] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 2개 — **둘 다 비차단형이라 `status`를 막지 않는다.** 폰 실물이 필요하다
 
 ---
@@ -696,3 +696,36 @@ cd .. && git add . && git commit -m "test(web): 화면을 쓸어 터치 타깃�
   `스텝 7 아래로`가 존재한다. `/recipes/3`은 kasuya라 6개다 — 헷갈리지 마라.
 - **건드리지 않는 파일을 명시했다** — `BottomNav`(이미 90×44)와 카드 둘(전체가 링크).
   `AC-TOUCH-10`이 `BottomNav`의 회귀를 막는다.
+
+---
+
+## 구현하며 드러난 것 (2026-09-09 갱신)
+
+> 계획을 세운 뒤 실제로 밟으면서 어긋난 것들. **다음에 이 계획을 읽는 사람이 속지 않도록 남긴다.**
+
+- **★ 스윕이 제 몫을 했다.** Task 2~4가 「아는 것」을 다 고친 뒤에도 스윕이 **7개를 빨갛게 냈다** —
+  다이얼로그 4개(예정), 그리고 **예정에 없던 둘**:
+  - `RecipeForm.tsx:247`의 `className`이 **JSX 속성이 아니라 props 객체 안**(`className: "..."`)
+    이라 Task 2의 치환이 못 봤다. `<input>`과 `<textarea>`가 그것을 공유한다
+  - `/brews`의 헤더 링크 「레시피」가 **36×44** — 높이는 맞고 **너비가 미달**이었다
+- **★ `min-h-11`만으로는 부족했다.** AC는 두 축을 모두 요구하는데 계획은 높이만 이야기했다.
+  **`min-w-11`을 34곳에 함께 붙였다.** 넓은 버튼에는 아무 변화가 없고 좁은 것만 44px가 된다.
+- **★ 첫 시도의 일괄 치환이 `<main>` 컨테이너까지 잡았다.** 클래스 문자열(`px-4 py-6`)만 보고
+  바꿨더니 페이지 컨테이너가 `inline-flex`가 될 뻔했다. **되돌리고 요소 단위로 다시 했다.**
+  그다음 시도는 `onClick={() => …}`의 `>` 때문에 여는 태그를 조기 종료해 여러 버튼을 놓쳤다.
+  **중괄호 깊이를 세는 스캐너**로 바로잡았다.
+- **★ `block`·`w-full`에 `inline-flex`를 주면 폭이 무너진다.** 그런 요소에는 `flex`를 준다.
+- **★ 한 테스트 안에서 여러 경로를 연속 이동하면 데이터가 안 붙는다.** `AC-TOUCH-03` 초고가
+  한 테스트에서 6개 경로를 돌았더니 두 번째부터 링크가 아예 안 그려져 **「예외가 0개」라는 거짓
+  초록**이 될 뻔했다. 경로마다 테스트를 나눴다. **스윕은 원래 화면당 하나라 무사했다.**
+- **★ Playwright 셀렉터 엔진과 브라우저 네이티브 `querySelectorAll`은 별개다.**
+  `page.locator(":is(p, h1…) a")`와 `page.evaluate(() => document.querySelectorAll(…))`가
+  다른 결과를 준다. **예외 판정이 갈리지 않도록 스윕과 같은 `evaluate`로 통일했다.**
+- **`AC-TOUCH-09`의 Given이 틀려 있었다.** 「공개 범위」는 `/brews/new`에 없다 —
+  `BrewLogEditor`(편집)와 `RecipeForm`에만 있다. **스펙을 고쳤다.**
+- **★ `SCREENS` 11개 밖은 스윕이 닿지 않는다.** `/login` · `/login/test` · `/offline` ·
+  `/auth/callback`이 그렇다. **이번에 그 화면들의 요소도 손으로 고쳤지만 검사받지 않는다.**
+  스펙이 「11개 화면」으로 명시했으므로 거짓은 아니나, **구멍인 것은 사실이다.**
+- **테스트 개수가 계획과 다르다.** e2e 80 → **119**다(계획 114). `AC-TOUCH-03`을 경로별로
+  나누며 1개가 6개가 됐다. 단위 테스트는 365 → **371**로 계획과 같다.
+

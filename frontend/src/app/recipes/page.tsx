@@ -78,7 +78,7 @@ export default function RecipesPage() {
           type="button"
           onClick={() => void fetchNextPage()}
           disabled={isFetchingNextPage}
-          className="flex min-h-11 items-center justify-center mt-4 w-full rounded-md border border-line py-2.5 text-sm disabled:opacity-50"
+          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-line py-2.5 text-sm disabled:opacity-50"
         >
           더 보기
         </button>
@@ -102,7 +102,7 @@ function Shell({
         <h1 className="text-xl font-semibold">레시피</h1>
         <Link
           href="/recipes/new"
-          className="inline-flex min-h-11 items-center justify-center rounded-md bg-brand px-3 py-1.5 text-sm text-on-accent"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-1.5 text-sm text-on-accent"
         >
           새 레시피
         </Link>

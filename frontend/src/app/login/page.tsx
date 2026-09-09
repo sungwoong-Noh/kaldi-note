@@ -26,14 +26,14 @@ export default async function LoginPage({
 
       <a
         href={kakaoAuthorizeUrl(next)}
-        className="flex min-h-11 items-center justify-center w-full max-w-xs rounded-md bg-[#FEE500] px-4 py-3 text-center font-medium text-[#191600]"
+        className="flex min-h-11 min-w-11 items-center justify-center w-full max-w-xs rounded-md bg-[#FEE500] px-4 py-3 text-center font-medium text-[#191600]"
       >
         카카오로 로그인
       </a>
 
       <a
         href={googleAuthorizeUrl(next)}
-        className="flex min-h-11 items-center justify-center w-full max-w-xs rounded-md border border-line px-4 py-3 text-center font-medium"
+        className="flex min-h-11 min-w-11 items-center justify-center w-full max-w-xs rounded-md border border-line px-4 py-3 text-center font-medium"
       >
         구글로 로그인
       </a>

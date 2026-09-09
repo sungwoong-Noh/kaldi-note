@@ -34,7 +34,7 @@ export function DeleteBrewLogDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-line px-3 py-1.5 text-sm"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-1.5 text-sm"
           >
             취소
           </button>
@@ -42,7 +42,7 @@ export function DeleteBrewLogDialog({
             type="button"
             onClick={onConfirm}
             disabled={deleting}
-            className="rounded-md bg-danger px-3 py-1.5 text-sm text-on-accent disabled:opacity-50"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-danger px-3 py-1.5 text-sm text-on-accent disabled:opacity-50"
           >
             삭제합니다
           </button>

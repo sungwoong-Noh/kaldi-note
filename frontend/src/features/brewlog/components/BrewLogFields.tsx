@@ -53,7 +53,7 @@ export function BrewLogFields({
           aria-describedby={
             fieldErrors?.byField.brewedAt ? "brew-brewed-at-error" : undefined
           }
-          className="rounded border border-line px-2 py-1"
+          className="rounded border border-line px-2 py-1 min-h-11"
         />
         {fieldErrors?.byField.brewedAt && (
           <span id="brew-brewed-at-error" className="text-xs text-danger">
@@ -81,7 +81,7 @@ export function BrewLogFields({
                   e.target.value === "" ? null : Number(e.target.value),
                 )
               }
-              className="rounded border border-line px-2 py-1"
+              className="rounded border border-line px-2 py-1 min-h-11"
             >
               <option value="">선택 안 함</option>
               {grinders.map((grinder) => (
@@ -96,7 +96,7 @@ export function BrewLogFields({
             <button
               type="button"
               onClick={onAddGrinder}
-              className="rounded-md border border-line px-3 py-1.5 text-sm"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-1.5 text-sm"
             >
               + 그라인더 등록
             </button>
@@ -167,7 +167,7 @@ export function BrewLogFields({
           <button
             type="button"
             onClick={() => set("sensoryExpanded", true)}
-            className="self-start rounded-md border border-line px-3 py-1.5 text-sm"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-line px-3 py-1.5 text-sm"
           >
             맛 자세히
           </button>
@@ -186,7 +186,7 @@ export function BrewLogFields({
                     e.target.value === "" ? null : Number(e.target.value),
                   )
                 }
-                className="rounded border border-line px-2 py-1"
+                className="rounded border border-line px-2 py-1 min-h-11"
               >
                 <option value="">선택 안 함</option>
                 {[1, 2, 3, 4, 5].map((score) => (
@@ -208,7 +208,7 @@ export function BrewLogFields({
             aria-describedby={
               fieldErrors?.byField.overallNote ? "brew-note-error" : undefined
             }
-            className="rounded border border-line px-2 py-1"
+            className="rounded border border-line px-2 py-1 min-h-11"
           />
           {fieldErrors?.byField.overallNote && (
             <span id="brew-note-error" className="text-xs text-danger">
@@ -251,7 +251,7 @@ function NumberField({
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
         aria-describedby={error ? errorId : undefined}
-        className="w-32 rounded border border-line px-2 py-1"
+        className="w-32 rounded border border-line px-2 py-1 min-h-11"
       />
       {error && (
         <span id={errorId} className="text-xs text-danger">

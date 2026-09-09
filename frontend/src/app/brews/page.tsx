@@ -76,7 +76,7 @@ export default function BrewsPage() {
           type="button"
           onClick={() => void fetchNextPage()}
           disabled={isFetchingNextPage}
-          className="mt-4 w-full rounded-md border border-line py-2.5 text-sm disabled:opacity-50"
+          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-line py-2.5 text-sm disabled:opacity-50"
         >
           더 보기
         </button>
@@ -90,7 +90,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     <main className="mx-auto w-full max-w-2xl px-4 py-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">브루잉 로그</h1>
-        <Link href="/recipes" className="text-sm text-muted">
+        <Link href="/recipes" className="inline-flex min-h-11 min-w-11 items-center justify-center text-sm text-muted">
           레시피
         </Link>
       </div>

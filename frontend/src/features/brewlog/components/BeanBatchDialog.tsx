@@ -174,7 +174,7 @@ export function BeanBatchDialog({
                 aria-label="배전도"
                 value={roastLevel}
                 onChange={(e) => setRoastLevel(e.target.value as RoastLevel)}
-                className="rounded border border-line px-2 py-1"
+                className="min-h-11 rounded border border-line px-2 py-1"
               >
                 <option value="">선택 안 함</option>
                 {ROAST_LEVELS.map((level) => (
@@ -205,7 +205,7 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.weightG ? "bean-batch-weight-error" : undefined
             }
-            className="rounded border border-line px-2 py-1"
+            className="min-h-11 rounded border border-line px-2 py-1"
           />
           {mapped?.byField.weightG && (
             <span id="bean-batch-weight-error" className="text-xs text-danger">
@@ -224,7 +224,7 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.roastedAt ? "bean-batch-roasted-error" : undefined
             }
-            className="rounded border border-line px-2 py-1"
+            className="min-h-11 rounded border border-line px-2 py-1"
           />
           {mapped?.byField.roastedAt && (
             <span
@@ -244,7 +244,7 @@ export function BeanBatchDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-line px-3 py-1.5 text-sm"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-1.5 text-sm"
           >
             취소
           </button>
@@ -252,7 +252,7 @@ export function BeanBatchDialog({
             type="button"
             disabled={submit.isPending}
             onClick={() => submit.mutate()}
-            className="rounded-md bg-brand px-3 py-1.5 text-sm text-on-accent disabled:opacity-50"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-1.5 text-sm text-on-accent disabled:opacity-50"
           >
             등록
           </button>
@@ -282,7 +282,7 @@ function SelectField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="rounded border border-line px-2 py-1"
+        className="min-h-11 rounded border border-line px-2 py-1"
       >
         <option value="">새로 만들기</option>
         {options.map((option) => (
@@ -315,7 +315,7 @@ function TextField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-describedby={error ? errorId : undefined}
-        className="rounded border border-line px-2 py-1"
+        className="min-h-11 rounded border border-line px-2 py-1"
       />
       {error && (
         <span id={errorId} className="text-xs text-danger">

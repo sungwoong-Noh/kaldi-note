@@ -9,7 +9,7 @@ function CallbackMessage({ message }: { message: string }) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6">
       <p className="text-center text-sm">{message}</p>
-      <a href="/login" className="text-sm underline">
+      <a href="/login" className="inline-flex min-h-11 min-w-11 items-center justify-center text-sm underline">
         로그인으로 돌아가기
       </a>
     </main>

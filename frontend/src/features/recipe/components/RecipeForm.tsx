@@ -150,7 +150,7 @@ export function RecipeForm({
           aria-label="공개 범위"
           value={state.visibility}
           onChange={(e) => patch({ visibility: e.target.value as Visibility })}
-          className="rounded border border-line px-2 py-1"
+          className="rounded border border-line px-2 py-1 min-h-11"
         >
           {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
             <option key={code} value={code}>
@@ -204,14 +204,14 @@ export function RecipeForm({
         <button
           type="submit"
           disabled={submitting}
-          className="self-start rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
         >
           저장
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="self-start rounded-md border border-line px-4 py-2 text-sm"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-line px-4 py-2 text-sm"
         >
           취소
         </button>
@@ -244,7 +244,7 @@ function TextField({
     value,
     "aria-describedby": error ? errorId : undefined,
     onChange: (e: { target: { value: string } }) => onChange(e.target.value),
-    className: "rounded border border-line px-2 py-1 text-sm",
+    className: "min-h-11 rounded border border-line px-2 py-1 text-sm",
   };
 
   return (
@@ -292,7 +292,7 @@ function NumberField({
           onChange={(e) =>
             onChange(e.target.value === "" ? null : Number(e.target.value))
           }
-          className="w-24 rounded border border-line px-2 py-1 text-sm"
+          className="w-24 rounded border border-line px-2 py-1 text-sm min-h-11"
         />
         <span className="text-sm text-muted">{suffix}</span>
         {hint && <span className="text-sm text-muted">{hint}</span>}
@@ -326,7 +326,7 @@ function SelectField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="rounded border border-line px-2 py-1 text-sm"
+        className="rounded border border-line px-2 py-1 text-sm min-h-11"
       >
         <option value="">선택 안 함</option>
         {options.map((option) => (

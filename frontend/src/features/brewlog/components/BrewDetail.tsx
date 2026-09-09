@@ -165,14 +165,14 @@ export function BrewDetail({ id }: { id: number }) {
         <div className="flex items-center gap-2 self-start">
           <Link
             href={`/brews/${id}/edit`}
-            className="rounded-md border border-line px-3 py-1.5 text-sm"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-1.5 text-sm"
           >
             편집
           </Link>
           <button
             type="button"
             onClick={() => setConfirmingDelete(true)}
-            className="rounded-md border border-danger px-3 py-1.5 text-sm text-danger"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-danger px-3 py-1.5 text-sm text-danger"
           >
             삭제
           </button>

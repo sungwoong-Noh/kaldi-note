@@ -52,7 +52,7 @@ export function UserGrinderDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="user-grinder-title"
-        className="flex w-full max-w-sm flex-col gap-4 rounded-lg bg-background p-5"
+        className="flex w-full max-w-sm flex-col gap-4 rounded-lg bg-background p-4"
       >
         <h2 id="user-grinder-title" className="text-base font-semibold">
           그라인더 등록
@@ -110,7 +110,7 @@ export function UserGrinderDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-1.5 text-sm"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-sm"
           >
             취소
           </button>
@@ -120,7 +120,7 @@ export function UserGrinderDialog({
             onClick={() => {
               if (grinderModelId !== null) create.mutate(grinderModelId);
             }}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-1.5 text-sm text-on-accent disabled:opacity-50"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-2 text-sm text-on-accent disabled:opacity-50"
           >
             등록
           </button>

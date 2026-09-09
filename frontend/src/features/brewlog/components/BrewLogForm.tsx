@@ -151,7 +151,7 @@ function Fields({
         <button
           type="button"
           onClick={() => setAddingBean(true)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-1.5 text-sm"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-sm"
         >
           + 원두 등록
         </button>
@@ -160,7 +160,7 @@ function Fields({
   );
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <BrewLogFields
         state={state}
         grinders={grinders}

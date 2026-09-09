@@ -119,7 +119,7 @@ export function BeanBatchDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="bean-batch-title"
-        className="flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto rounded-lg bg-background p-5"
+        className="flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto rounded-lg bg-background p-4"
       >
         <h2 id="bean-batch-title" className="text-base font-semibold">
           원두 등록
@@ -244,7 +244,7 @@ export function BeanBatchDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-1.5 text-sm"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-sm"
           >
             취소
           </button>
@@ -252,7 +252,7 @@ export function BeanBatchDialog({
             type="button"
             disabled={submit.isPending}
             onClick={() => submit.mutate()}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-1.5 text-sm text-on-accent disabled:opacity-50"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-2 text-sm text-on-accent disabled:opacity-50"
           >
             등록
           </button>

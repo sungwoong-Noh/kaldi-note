@@ -99,7 +99,7 @@ export function GrindConverter({
           )}
           {result.estimated && (
             <p className="text-xs text-muted">
-              <span className="mr-1 rounded bg-surface px-1 py-0.5">
+              <span className="mr-1 rounded bg-surface px-1 py-1">
                 추정치
               </span>
               {result.warning}

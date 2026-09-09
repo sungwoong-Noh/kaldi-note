@@ -96,5 +96,5 @@ function FollowSection({ id, status }: { id: number; status: FollowStatus }) {
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return <main className="flex flex-col gap-5 px-4 py-6">{children}</main>;
+  return <main className="flex flex-col gap-4 px-4 py-6">{children}</main>;
 }

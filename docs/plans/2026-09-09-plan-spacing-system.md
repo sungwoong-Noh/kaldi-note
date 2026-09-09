@@ -207,7 +207,7 @@ cd .. && git add . && git commit -m "test(web): 임의값·음수 마진·그림
 | `p-5`·`pb-5`·`gap-5`·`mt-5` | `4` | 10 | 다이얼로그 안쪽 · 폼 세로 간격 |
 | `py-8`·`gap-8` | `6` | 2 | 홈 여백 · 로그인 화면 |
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 const SCALE = [1, 2, 3, 4, 6, 12] as const;
@@ -250,14 +250,14 @@ describe("AC-SPACE-02 · 6단계가 각각 쓰인다", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test src/test/spacing.test.ts`
 
 Expected: FAIL 1개(`AC-SPACE-01`) — **38개 항목**이 목록에 뜬다.
 `AC-SPACE-02`는 여섯 단계가 이미 다 쓰이고 있어 통과한다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 흡수 표대로 20개 파일을 고친다. **클래스 문자열 치환이라 값이 곧 규칙이다.**
 
@@ -265,7 +265,7 @@ Expected: FAIL 1개(`AC-SPACE-01`) — **38개 항목**이 목록에 뜬다.
 > 눈에 띄는 유일한 변화이므로 **폰 실물 확인 항목에 이미 들어 있다.**
 > **`p-5`(다이얼로그 안쪽) → `p-4`도 다이얼로그가 살짝 좁아진다.**
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test`
 Expected: PASS, **373** (테스트 개수는 늘지 않는다 — `it` 2개를 더했으므로 **375**)
@@ -277,7 +277,7 @@ pnpm e2e e2e/touch-targets.spec.ts e2e/consistency.spec.ts e2e/visual.spec.ts
 ```
 Expected: PASS — **`py-1.5`→`py-2`가 버튼 높이를 바꾸지 않았음을 여기서 확인한다.**
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm typecheck && pnpm lint && pnpm test

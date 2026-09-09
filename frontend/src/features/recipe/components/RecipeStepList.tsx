@@ -47,7 +47,7 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
           >
             <span
               data-testid="step-start"
-              className="w-12 shrink-0 pt-0.5 font-mono text-sm tabular-nums text-muted"
+              className="w-12 shrink-0 pt-1 font-mono text-sm tabular-nums text-muted"
             >
               {formatDuration(step.startAtSeconds)}
             </span>
@@ -75,7 +75,7 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
               </div>
 
               {step.note && (
-                <p className="mt-0.5 text-sm text-muted">
+                <p className="mt-1 text-sm text-muted">
                   {step.note}
                 </p>
               )}

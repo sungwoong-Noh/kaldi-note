@@ -76,7 +76,7 @@ export default function BrewsPage() {
           type="button"
           onClick={() => void fetchNextPage()}
           disabled={isFetchingNextPage}
-          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-line py-2.5 text-sm disabled:opacity-50"
+          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-line py-3 text-sm disabled:opacity-50"
         >
           더 보기
         </button>

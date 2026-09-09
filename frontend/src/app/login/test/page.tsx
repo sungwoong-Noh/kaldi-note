@@ -54,7 +54,7 @@ export default function TestLoginPage() {
   }
 
   return (
-    <main className="flex flex-col gap-5 px-4 py-6">
+    <main className="flex flex-col gap-4 px-4 py-6">
       <h1 className="text-xl font-semibold">테스트 로그인</h1>
       <p className="text-muted">
         OAuth 없이 세션을 발급합니다. 시크릿은 저장되지 않습니다.

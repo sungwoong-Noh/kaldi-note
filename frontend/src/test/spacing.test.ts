@@ -39,3 +39,45 @@ describe("간격·모서리 허용목록", () => {
     expect(offenders(/\bshadow(?:-[a-z0-9]+)?\b/)).toEqual([]);
   });
 });
+
+/** 잠근 간격 단계. `1` = `0.25rem` = 4px. */
+const SCALE = [1, 2, 3, 4, 6, 12] as const;
+
+/** 소스에서 간격 유틸리티의 숫자만 뽑는다. */
+function spacingValues(): Map<string, string[]> {
+  const found = new Map<string, string[]>();
+  for (const path of SOURCES) {
+    const source = readFileSync(path, "utf8");
+    const values = [
+      ...source.matchAll(
+        /\b(?:gap|gap-x|gap-y|space-x|space-y|[pm][xytblr]?)-(\d+(?:\.\d+)?)\b/g,
+      ),
+    ].map((match) => match[1]);
+    if (values.length > 0) {
+      found.set(path, values);
+    }
+  }
+  return found;
+}
+
+describe("AC-SPACE-01 · 간격이 6단계 밖의 값을 쓰지 않는다", () => {
+  it("스케일 밖의 값이 없다", () => {
+    const allowed = new Set(SCALE.map(String));
+    const bad = [...spacingValues()].flatMap(([path, values]) =>
+      [...new Set(values.filter((value) => !allowed.has(value)))].map(
+        (value) => `${path}: ${value}`,
+      ),
+    );
+
+    expect(bad).toEqual([]);
+  });
+});
+
+describe("AC-SPACE-02 · 6단계가 각각 쓰인다", () => {
+  it("죽은 단계가 없다", () => {
+    const used = new Set([...spacingValues().values()].flat());
+    const dead = SCALE.filter((step) => !used.has(String(step)));
+
+    expect(dead).toEqual([]);
+  });
+});

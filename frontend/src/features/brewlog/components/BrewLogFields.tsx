@@ -96,7 +96,7 @@ export function BrewLogFields({
             <button
               type="button"
               onClick={onAddGrinder}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-1.5 text-sm"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-sm"
             >
               + 그라인더 등록
             </button>
@@ -167,7 +167,7 @@ export function BrewLogFields({
           <button
             type="button"
             onClick={() => set("sensoryExpanded", true)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-line px-3 py-1.5 text-sm"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-line px-3 py-2 text-sm"
           >
             맛 자세히
           </button>

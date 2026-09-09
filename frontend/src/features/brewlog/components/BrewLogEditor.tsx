@@ -147,7 +147,7 @@ function Fields({
   ) => setState((prev) => ({ ...prev, [key]: value }));
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <BrewLogFields
         state={state}
         grinders={grinders}

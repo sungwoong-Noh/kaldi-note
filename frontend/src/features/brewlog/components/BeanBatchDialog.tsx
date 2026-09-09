@@ -174,7 +174,7 @@ export function BeanBatchDialog({
                 aria-label="배전도"
                 value={roastLevel}
                 onChange={(e) => setRoastLevel(e.target.value as RoastLevel)}
-                className="min-h-11 rounded border border-line px-2 py-1"
+                className="min-h-11 rounded-md border border-line px-2 py-1"
               >
                 <option value="">선택 안 함</option>
                 {ROAST_LEVELS.map((level) => (
@@ -205,7 +205,7 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.weightG ? "bean-batch-weight-error" : undefined
             }
-            className="min-h-11 rounded border border-line px-2 py-1"
+            className="min-h-11 rounded-md border border-line px-2 py-1"
           />
           {mapped?.byField.weightG && (
             <span id="bean-batch-weight-error" className="text-xs text-danger">
@@ -224,7 +224,7 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.roastedAt ? "bean-batch-roasted-error" : undefined
             }
-            className="min-h-11 rounded border border-line px-2 py-1"
+            className="min-h-11 rounded-md border border-line px-2 py-1"
           />
           {mapped?.byField.roastedAt && (
             <span
@@ -282,7 +282,7 @@ function SelectField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="min-h-11 rounded border border-line px-2 py-1"
+        className="min-h-11 rounded-md border border-line px-2 py-1"
       >
         <option value="">새로 만들기</option>
         {options.map((option) => (
@@ -315,7 +315,7 @@ function TextField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-describedby={error ? errorId : undefined}
-        className="min-h-11 rounded border border-line px-2 py-1"
+        className="min-h-11 rounded-md border border-line px-2 py-1"
       />
       {error && (
         <span id={errorId} className="text-xs text-danger">

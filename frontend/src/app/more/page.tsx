@@ -78,7 +78,7 @@ export default function MorePage() {
           <button
             type="button"
             onClick={() => void copyInviteLink(me.data.id)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center shrink-0 rounded-lg border border-line px-3 py-2"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center shrink-0 rounded-md border border-line px-3 py-2"
           >
             복사
           </button>

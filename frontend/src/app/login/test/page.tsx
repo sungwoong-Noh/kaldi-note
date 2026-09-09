@@ -82,7 +82,7 @@ export default function TestLoginPage() {
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-brand px-4 py-3 text-on-accent disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-3 text-on-accent disabled:opacity-50"
         >
           테스트 로그인
         </button>
@@ -120,7 +120,7 @@ function Field({
         inputMode={inputMode}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="min-h-11 rounded-lg border border-line px-3 py-2"
+        className="min-h-11 rounded-md border border-line px-3 py-2"
       />
     </label>
   );

@@ -137,7 +137,7 @@ function Fields({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="rounded border border-line px-2 py-1 min-h-11"
+            className="rounded-md border border-line px-2 py-1 min-h-11"
           >
             <option value="">선택 안 함</option>
             {(batches.data ?? []).map((batch) => (

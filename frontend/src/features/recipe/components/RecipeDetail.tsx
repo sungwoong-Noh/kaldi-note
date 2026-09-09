@@ -96,7 +96,7 @@ export function RecipeDetail({ id }: { id: number }) {
         <div className="flex items-start justify-between gap-2">
           <h1 className="text-xl font-semibold">{recipe.title}</h1>
           {recipe.sourceType === "CURATED" && (
-            <span className="shrink-0 rounded bg-surface px-2 py-1 text-xs text-muted">
+            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-xs text-muted">
               CURATED
             </span>
           )}

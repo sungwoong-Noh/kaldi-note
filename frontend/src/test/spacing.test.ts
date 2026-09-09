@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, sep } from "node:path";
 import { describe, expect, it } from "vitest";
 
 function walk(dir: string): string[] {
@@ -79,5 +79,59 @@ describe("AC-SPACE-02 · 6단계가 각각 쓰인다", () => {
     const dead = SCALE.filter((step) => !used.has(String(step)));
 
     expect(dead).toEqual([]);
+  });
+});
+
+/**
+ * `rounded-lg`(8px)가 남는 곳 — **면**이다.
+ *
+ * <p>경로 구분자를 리터럴 `/`로 쓰지 않는다. `walk`가 `join`으로 만든 경로는 플랫폼 구분자를
+ * 쓰므로 윈도에서 비교가 어긋난다.
+ */
+const SURFACES = [
+  ["src", "features", "recipe", "components", "RecipeCard.tsx"],
+  ["src", "features", "brewlog", "components", "BrewLogCard.tsx"],
+  ["src", "features", "brewlog", "components", "BeanBatchDialog.tsx"],
+  ["src", "features", "brewlog", "components", "UserGrinderDialog.tsx"],
+  ["src", "features", "recipe", "components", "DeleteRecipeDialog.tsx"],
+  ["src", "features", "brewlog", "components", "DeleteBrewLogDialog.tsx"],
+  ["src", "features", "recipe", "components", "RecipeStepEditor.tsx"],
+].map((parts) => parts.join(sep));
+
+function count(path: string, pattern: RegExp): number {
+  return readFileSync(path, "utf8").match(pattern)?.length ?? 0;
+}
+
+describe("모서리", () => {
+  it("AC-SPACE-04 · rounded(4px)가 없다", () => {
+    // 뒤에 값이 붙지 않은 `rounded`만 잡는다. rounded-md·-lg·-full은 제외다.
+    expect(offenders(/\brounded(?![-\w])/)).toEqual([]);
+  });
+
+  it("AC-SPACE-05 · 면 7곳이 rounded-lg를 쓴다", () => {
+    const missing = SURFACES.filter((path) => count(path, /\brounded-lg\b/g) < 1);
+
+    expect(missing).toEqual([]);
+  });
+
+  it("AC-SPACE-06 · rounded-lg가 면 밖에 없다", () => {
+    const outside = SOURCES.filter(
+      (path) =>
+        !SURFACES.includes(path) && count(path, /\brounded-lg\b/g) > 0,
+    );
+
+    expect(outside).toEqual([]);
+  });
+
+  it("AC-SPACE-07 · rounded-full이 아바타와 스피너 2곳뿐이다", () => {
+    const found = SOURCES.flatMap((path) =>
+      Array(count(path, /\brounded-full\b/g)).fill(path),
+    );
+
+    expect(found).toHaveLength(2);
+    expect(found.map((path) => path.split(sep).pop()).sort()).toEqual([
+      "LoadingState.tsx",
+      "UserProfile.tsx",
+    ]);
   });
 });

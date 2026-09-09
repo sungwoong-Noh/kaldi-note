@@ -308,7 +308,7 @@ DeleteRecipeDialog.tsx · DeleteBrewLogDialog.tsx         다이얼로그 4
 RecipeStepEditor.tsx                                     스텝 카드 1
 ```
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 const SURFACES = [
@@ -362,7 +362,7 @@ describe("모서리", () => {
 > **경로 구분자에 주의한다.** `walk`가 `join`으로 만든 경로는 플랫폼 구분자를 쓴다.
 > 리터럴을 `/`로 쓰면 비교가 어긋난다 — `node:path`의 `sep`으로 맞춘다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test src/test/spacing.test.ts`
 
@@ -372,12 +372,12 @@ Expected: FAIL 2개.
 
 `AC-SPACE-05`·`07`은 지금도 성립해 통과한다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 - `rounded` → `rounded-md` (32곳, 11파일)
 - 컨트롤 5곳의 `rounded-lg` → `rounded-md`
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test`
 Expected: PASS, **379** (375 + 4)
@@ -388,7 +388,7 @@ pnpm e2e
 ```
 Expected: PASS, 119
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm typecheck && pnpm lint && pnpm test

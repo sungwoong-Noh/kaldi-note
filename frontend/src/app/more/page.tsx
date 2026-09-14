@@ -55,7 +55,7 @@ export default function MorePage() {
 
   return (
     <Shell>
-      <dl className="flex flex-col gap-3 border-b border-line pb-5">
+      <dl className="flex flex-col gap-3 border-b border-line pb-4">
         <Row label="닉네임" value={me.data.nickname} />
         {me.data.email !== undefined && (
           <Row label="이메일" value={me.data.email} />
@@ -78,7 +78,7 @@ export default function MorePage() {
           <button
             type="button"
             onClick={() => void copyInviteLink(me.data.id)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center shrink-0 rounded-lg border border-line px-3 py-2"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center shrink-0 rounded-md border border-line px-3 py-2"
           >
             복사
           </button>
@@ -100,7 +100,7 @@ export default function MorePage() {
         type="button"
         onClick={() => void logout()}
         disabled={loggingOut}
-        className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-line py-2.5 text-sm disabled:opacity-50"
+        className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-line py-3 text-sm disabled:opacity-50"
       >
         로그아웃
       </button>

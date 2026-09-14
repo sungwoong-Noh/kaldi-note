@@ -147,7 +147,7 @@ function Fields({
   ) => setState((prev) => ({ ...prev, [key]: value }));
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <BrewLogFields
         state={state}
         grinders={grinders}
@@ -182,7 +182,7 @@ function Fields({
               visibility: toVisibility(e.target.value),
             }))
           }
-          className="rounded border border-line px-2 py-1 min-h-11"
+          className="rounded-md border border-line px-2 py-1 min-h-11"
         >
           {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
             <option key={code} value={code}>

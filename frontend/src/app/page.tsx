@@ -46,12 +46,12 @@ export default function HomePage() {
   if (logs.length === 0) {
     return (
       <Shell>
-        <p className="py-8 text-center text-sm text-muted">
+        <p className="py-6 text-center text-sm text-muted">
           아직 기록이 없습니다
         </p>
         <Link
           href="/recipes"
-          className="flex min-h-11 min-w-11 items-center justify-center block rounded-md bg-brand py-2.5 text-center text-sm text-on-accent"
+          className="flex min-h-11 min-w-11 items-center justify-center block rounded-md bg-brand py-3 text-center text-sm text-on-accent"
         >
           레시피 보러 가기
         </Link>

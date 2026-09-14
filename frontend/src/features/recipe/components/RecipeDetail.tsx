@@ -96,7 +96,7 @@ export function RecipeDetail({ id }: { id: number }) {
         <div className="flex items-start justify-between gap-2">
           <h1 className="text-xl font-semibold">{recipe.title}</h1>
           {recipe.sourceType === "CURATED" && (
-            <span className="shrink-0 rounded bg-surface px-1.5 py-0.5 text-xs text-muted">
+            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-xs text-muted">
               CURATED
             </span>
           )}
@@ -130,7 +130,7 @@ export function RecipeDetail({ id }: { id: number }) {
         dl의 직계 자식은 dt·dd 또는 그것을 감싼 div만 허용된다. span을 그대로 두면
         파서가 교정하면서 서버 HTML과 클라이언트 트리가 어긋날 수 있다.
       */}
-      <dl className="mt-5 flex flex-col gap-1">
+      <dl className="mt-4 flex flex-col gap-1">
         {/* 대표 수치. 상세에서 정확히 하나가 18px로 뜬다. 라벨은 sr-only다 —
             18px 숫자 옆에 12px 라벨을 붙이면 대표 수치가 깎인다. */}
         <div className="flex items-center gap-1 text-lg font-semibold tabular-nums">

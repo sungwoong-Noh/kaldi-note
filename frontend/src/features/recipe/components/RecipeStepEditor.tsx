@@ -81,7 +81,7 @@ export function RecipeStepEditor({
                   onChange={(e) =>
                     update(index, { stepType: e.target.value as StepType })
                   }
-                  className="inline-flex size-11 items-center justify-center rounded border border-line text-sm"
+                  className="inline-flex size-11 items-center justify-center rounded-md border border-line text-sm"
                 >
                   {Object.entries(STEP_TYPE_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -96,7 +96,7 @@ export function RecipeStepEditor({
                     aria-label={`스텝 ${number} 위로`}
                     disabled={index === 0}
                     onClick={() => onChange(moveStep(steps, index, -1))}
-                    className="inline-flex size-11 items-center justify-center rounded border border-line text-sm disabled:opacity-40"
+                    className="inline-flex size-11 items-center justify-center rounded-md border border-line text-sm disabled:opacity-40"
                   >
                     ↑
                   </button>
@@ -105,7 +105,7 @@ export function RecipeStepEditor({
                     aria-label={`스텝 ${number} 아래로`}
                     disabled={index === steps.length - 1}
                     onClick={() => onChange(moveStep(steps, index, 1))}
-                    className="inline-flex size-11 items-center justify-center rounded border border-line text-sm disabled:opacity-40"
+                    className="inline-flex size-11 items-center justify-center rounded-md border border-line text-sm disabled:opacity-40"
                   >
                     ↓
                   </button>
@@ -113,7 +113,7 @@ export function RecipeStepEditor({
                     type="button"
                     aria-label={`스텝 ${number} 삭제`}
                     onClick={() => onChange(removeStep(steps, index))}
-                    className="inline-flex size-11 items-center justify-center rounded border border-line text-sm"
+                    className="inline-flex size-11 items-center justify-center rounded-md border border-line text-sm"
                   >
                     삭제
                   </button>
@@ -176,7 +176,7 @@ export function RecipeStepEditor({
         type="button"
         disabled={atLimit}
         onClick={() => onChange(appendStep(steps))}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded border border-line px-3 py-2 text-sm disabled:opacity-40"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-line px-3 py-2 text-sm disabled:opacity-40"
       >
         스텝 추가
       </button>
@@ -252,7 +252,7 @@ function NumberField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="w-20 rounded border border-line px-2 py-1 text-sm min-h-11"
+        className="w-20 rounded-md border border-line px-2 py-1 text-sm min-h-11"
       />
       <span className="text-sm text-muted">{suffix}</span>
       {hint && <span className="text-sm text-muted">{hint}</span>}

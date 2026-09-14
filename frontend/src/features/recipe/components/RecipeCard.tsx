@@ -18,7 +18,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
         <div className="flex items-start justify-between gap-2">
           <h2 className="font-medium">{recipe.title}</h2>
           {recipe.sourceType === "CURATED" && (
-            <span className="shrink-0 rounded bg-surface px-1.5 py-0.5 text-xs text-muted">
+            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-xs text-muted">
               CURATED
             </span>
           )}

@@ -542,7 +542,7 @@ git add . && git commit -m "feat(web): 글자 184곳을 한 단계씩 올린다 
 > **소스 검사만으로는 부족하다.** 클래스가 붙어 있어도 부모가 짓누르면 크기가 달라진다.
 > `touch-targets` 세션이 같은 이유로 렌더 측정을 택했다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `frontend/e2e/readability.spec.ts`:
 
@@ -619,7 +619,7 @@ test.describe("읽힘 — 렌더된 크기", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 # ★ dev 서버가 떠 있으면 reuseExistingServer가 이겨 프로덕션 빌드에 안 붙는다.
@@ -630,12 +630,12 @@ pnpm e2e readability
 Expected: FAIL — Task 3 전이면 제목이 `20px`, 수치가 `18px`로 나온다.
 Task 3 후에 돌리면 `AC-READ-13`만 실패한다(굵기·자간 미적용).
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 Task 3의 Step 3에서 이미 `font-semibold tracking-[-0.02em]`을 붙였다면 추가 구현이 없다.
 빨간 것이 있으면 그 요소에만 붙인다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pnpm e2e readability
@@ -643,7 +643,11 @@ pnpm e2e readability
 
 Expected: PASS, 5 tests.
 
-- [ ] **Step 5: 커밋**
+> **★ Task 3 뒤에 쓴 테스트라 빨강을 보지 못했다.** 돌연변이로 확인했다 — `RecipeDetail`의
+> 대표 수치를 `text-lg`로 낮추고 `tracking`을 떼고 `--muted`를 옛 값으로 되돌리니
+> **`AC-READ-12`·`13`·`15`가 빨개졌다.** 원복 후 다시 5개 전부 초록.
+
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "test(web): 읽힘을 렌더로 잰다 (AC-READ 5개)"

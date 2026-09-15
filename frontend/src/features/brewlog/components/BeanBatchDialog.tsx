@@ -169,12 +169,12 @@ export function BeanBatchDialog({
               error={nameErrorFor("product")}
             />
             <label className="flex flex-col gap-1 text-base">
-              <span className="text-muted">배전도</span>
+              <span className="shrink-0 text-muted">배전도</span>
               <select
                 aria-label="배전도"
                 value={roastLevel}
                 onChange={(e) => setRoastLevel(e.target.value as RoastLevel)}
-                className="appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 8%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%221.5%22><path d=%22M1 1l5 5 5-5%22/></svg>')] bg-[length:12px_8px] bg-[right_0.75rem_center] bg-no-repeat pr-12 w-full min-h-11 rounded-md border border-line px-2 py-1"
+                className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-md border border-line px-2 py-1"
               >
                 <option value="">선택 안 함</option>
                 {ROAST_LEVELS.map((level) => (
@@ -194,7 +194,7 @@ export function BeanBatchDialog({
         )}
 
         <label className="flex flex-col gap-1 text-base">
-          <span className="text-muted">중량</span>
+          <span className="shrink-0 text-muted">중량</span>
           <input
             type="number"
             aria-label="중량"
@@ -215,7 +215,7 @@ export function BeanBatchDialog({
         </label>
 
         <label className="flex flex-col gap-1 text-base">
-          <span className="text-muted">로스팅일</span>
+          <span className="shrink-0 text-muted">로스팅일</span>
           <input
             type="date"
             aria-label="로스팅일"
@@ -275,14 +275,14 @@ function SelectField({
 }) {
   return (
     <label className="flex flex-col gap-1 text-base">
-      <span className="text-muted">{label}</span>
+      <span className="shrink-0 text-muted">{label}</span>
       <select
         aria-label={label}
         value={value ?? ""}
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 8%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%221.5%22><path d=%22M1 1l5 5 5-5%22/></svg>')] bg-[length:12px_8px] bg-[right_0.75rem_center] bg-no-repeat pr-12 w-full min-h-11 rounded-md border border-line px-2 py-1"
+        className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-md border border-line px-2 py-1"
       >
         <option value="">새로 만들기</option>
         {options.map((option) => (
@@ -309,7 +309,7 @@ function TextField({
   const errorId = `bean-batch-${label}-error`;
   return (
     <label className="flex flex-col gap-1 text-base">
-      <span className="text-muted">{label}</span>
+      <span className="shrink-0 text-muted">{label}</span>
       <input
         aria-label={label}
         value={value}

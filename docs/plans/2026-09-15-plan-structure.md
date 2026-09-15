@@ -507,7 +507,7 @@ git add . && git commit -m "feat(web): 스텝 행의 열을 고정한다 (AC-STR
 
 > **이 스펙의 기억될 화면이다.** 대담함을 여기 한 곳에만 쓴다 — 나머지는 조용히 둔다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-STRUCT-07 · 읽기 2곳의 스텝에 시간 축이 있다", async ({ page }) => {
@@ -527,18 +527,18 @@ test("AC-STRUCT-09 · 편집 화면에는 타임라인이 없다", async ({ page
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: FAIL — `AC-STRUCT-07`이 0개를 찾는다. **`AC-STRUCT-09`는 처음부터 통과한다**(타임라인이
 아직 없으니 당연하다). Step 4에서 돌연변이로 확인한다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `RecipeStepList`에 시간 열(고정 폭)과 세로선을 넣는다. 세로선은 `border-l border-line`을 쓴
 컨테이너 하나이고 거기에 `data-timeline-axis`를 붙인다. **`RecipeStepEditor`는 이 컴포넌트를
 쓰지 않으므로 편집 화면은 자동으로 제외된다.**
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e structure`
 Expected: PASS 3개.
@@ -546,13 +546,27 @@ Expected: PASS 3개.
 **`AC-STRUCT-09`를 돌연변이로 확인한다** — `RecipeStepEditor`에 `data-timeline-axis`를 잠시
 붙여 빨개지는지 보고 되돌린다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 푸어 스텝을 시간 축으로 그린다 (AC-STRUCT 3개)"
 ```
 
 ---
+
+
+> **★ 스크린샷으로 회귀 둘을 잡았다(2026-09-15). 테스트는 전부 초록이었다.**
+>
+> 1. **라벨이 두 줄로 깨졌다** — 「공개 범 / 위」, 「그라인 / 더」. 라벨 행을 `w-full`로 만들면서
+>    라벨 글자가 눌렸다. `shrink-0`을 주니 이번엔 `w-full` 입력이 부모를 넘쳐 `right`가 360(화면
+>    끝)이 됐다. **flex 안의 `w-full`은 `min-width:auto` 때문에 줄어들지 못한다** — `min-w-0`이 답이다.
+> 2. **`select` 화살표가 아예 없었다.** `appearance-none`은 걸렸는데 `backgroundImage`가 `none`이다.
+>    **Tailwind가 `bg-[url('data:image/svg+xml;…')]`를 생성하지 못한다** — data URI의 따옴표와
+>    괄호를 파서가 처리하지 못한다. `globals.css`의 `.select-chevron`으로 옮기고
+>    **`AC-STRUCT-21`을 새로 만들어 렌더를 검사**하게 했다. `AC-STRUCT-02`는 `appearance-none`만
+>    봐서 이것을 놓쳤다.
+>
+> **교훈: 「클래스가 붙었다」와 「그려진다」는 다르다.** 소스 검사만 믿으면 안 된다.
 
 ## Task 7: 기록이 「레시피대로 내렸나」를 말하게 한다
 

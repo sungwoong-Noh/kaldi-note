@@ -59,7 +59,7 @@ export function UserGrinderDialog({
         </h2>
 
         <label className="flex flex-col gap-1 text-base">
-          <span className="text-muted">모델</span>
+          <span className="shrink-0 text-muted">모델</span>
           <select
             aria-label="모델"
             value={grinderModelId ?? ""}
@@ -68,7 +68,7 @@ export function UserGrinderDialog({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 8%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%221.5%22><path d=%22M1 1l5 5 5-5%22/></svg>')] bg-[length:12px_8px] bg-[right_0.75rem_center] bg-no-repeat pr-12 w-full min-h-11 rounded-md border border-line px-2 py-1"
+            className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-md border border-line px-2 py-1"
           >
             <option value="">선택 안 함</option>
             {(grinders.data ?? []).map((model) => (
@@ -80,7 +80,7 @@ export function UserGrinderDialog({
         </label>
 
         <label className="flex flex-col gap-1 text-base">
-          <span className="text-muted">별명</span>
+          <span className="shrink-0 text-muted">별명</span>
           <input
             aria-label="별명"
             value={nickname}

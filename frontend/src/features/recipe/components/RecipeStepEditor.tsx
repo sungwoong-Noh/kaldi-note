@@ -85,7 +85,7 @@ export function RecipeStepEditor({
                   onChange={(e) =>
                     update(index, { stepType: e.target.value as StepType })
                   }
-                  className="appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 8%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%221.5%22><path d=%22M1 1l5 5 5-5%22/></svg>')] bg-[length:12px_8px] bg-[right_0.75rem_center] bg-no-repeat pr-12 inline-flex size-11 items-center justify-center rounded-md border border-line text-base"
+                  className="min-w-0 appearance-none select-chevron pr-12 inline-flex size-11 items-center justify-center rounded-md border border-line text-base"
                 >
                   {Object.entries(STEP_TYPE_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>

@@ -199,6 +199,20 @@ plan: docs/plans/2026-09-15-plan-structure.md
 - **Then** **13곳 모두** `appearance-none`을 포함한다
 - **검증** 단위 테스트 `designTokens.test.ts`
 
+#### AC-STRUCT-21 · `select`에 화살표가 그려진다
+
+- **Given** `/recipes/new`
+- **When** 「공개 범위」 `select`의 `appearance`와 `backgroundImage`를 읽는다
+- **Then** `appearance`가 `none`이고 `backgroundImage`가 **SVG를 담고 있다**
+- **검증** e2e `structure.spec.ts`
+
+> **추가 (2026-09-15).** `AC-STRUCT-02`는 `appearance-none`만 검사해서 **화살표가 사라진 것을
+> 잡지 못했다.** OS 기본 모양을 벗기면 화살표도 함께 없어져 드롭다운인지 알 수 없게 된다.
+>
+> **Tailwind 임의값으로는 화살표를 그릴 수 없다.** `bg-[url('data:image/svg+xml;…')]`는
+> data URI의 따옴표·괄호를 파서가 처리하지 못해 `background-image: none`이 된다(실측).
+> `globals.css`의 `.select-chevron`에서 정의한다.
+
 #### AC-STRUCT-03 · `select`의 렌더 높이가 44px를 유지한다
 
 - **Given** `/recipes/new`
@@ -242,8 +256,12 @@ plan: docs/plans/2026-09-15-plan-structure.md
 
 - **Given** `/recipes/12`와 `/brews/2`
 - **When** 첫 스텝의 시간 표시(`0:00`) 요소 폭을 각각 읽는다
-- **Then** 두 값이 **같다**
+- **Then** **두 화면 모두 48px**이다
 - **검증** e2e `structure.spec.ts`
+
+> **검증 방식 조정 (2026-09-15).** 처음에는 한 테스트에서 두 화면을 돌며 「두 값이 같다」를
+> 봤는데, 한 테스트 안에서 두 번 `goto`하면 두 번째 화면의 요소를 기다리다 타임아웃했다.
+> 화면마다 독립 테스트로 나누고 **리터럴 48px**을 본다 — **「같다」를 함의하면서 안정적이다.**
 
 #### AC-STRUCT-09 · 편집 화면에는 타임라인이 없다
 

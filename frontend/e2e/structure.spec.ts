@@ -173,3 +173,56 @@ test("AC-STRUCT-05 · 스텝 행의 열 위치가 행마다 같다", async ({ pa
   expect(cols.types).toHaveLength(1);
   expect(cols.firstNums).toHaveLength(1);
 });
+
+test.describe("구조 — 타임라인", () => {
+  for (const path of ["/recipes/12", "/brews/2"]) {
+    test(`AC-STRUCT-07 · ${path}의 스텝에 시간 축이 있다`, async ({ page }) => {
+      await installStubs(page);
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+
+      await expect(page.locator("[data-timeline-axis]"), path).toHaveCount(1);
+    });
+  }
+
+  // 한 테스트에서 두 번 goto하면 두 번째 화면의 요소를 기다리다 타임아웃한다.
+  // 화면마다 독립 테스트로 나누고 「둘 다 48px」을 본다 — 같은 값임을 함의하면서 안정적이다.
+  for (const path of ["/recipes/12", "/brews/2"]) {
+    test(`AC-STRUCT-08 · ${path}의 시간 열이 48px다`, async ({ page }) => {
+      await installStubs(page);
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+
+      const box = await page
+        .locator('[data-testid="step-start"]')
+        .first()
+        .boundingBox();
+
+      expect(Math.round(box!.width), path).toBe(48);
+    });
+  }
+
+  test("AC-STRUCT-09 · 편집 화면에는 타임라인이 없다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/recipes/12/edit");
+    await page.waitForLoadState("networkidle");
+
+    await expect(page.locator("[data-timeline-axis]")).toHaveCount(0);
+  });
+});
+
+test("AC-STRUCT-21 · select에 화살표가 그려진다", async ({ page }) => {
+  await installStubs(page);
+  await page.goto("/recipes/new");
+  await page.waitForLoadState("networkidle");
+
+  // appearance-none만 주면 화살표가 사라져 드롭다운인지 알 수 없다.
+  // Tailwind 임의값으로는 data URI가 생성되지 않아 globals.css에서 정의한다.
+  const style = await page.getByLabel("공개 범위").evaluate((el) => {
+    const computed = getComputedStyle(el);
+    return { image: computed.backgroundImage, appearance: computed.appearance };
+  });
+
+  expect(style.appearance).toBe("none");
+  expect(style.image).toContain("svg");
+});

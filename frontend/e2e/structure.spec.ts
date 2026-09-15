@@ -46,3 +46,33 @@ test.describe("구조 — 상태값", () => {
     await expect(page.getByText("기본 제공")).toHaveCount(2);
   });
 });
+
+test.describe("구조 — 대표 수치", () => {
+  // 36px 클래스로 찾지 않는다. 스타일이 바뀔 때마다 셀렉터가 깨진다.
+  for (const path of ["/recipes", "/recipes/12"]) {
+    test(`AC-STRUCT-17 · ${path}의 대표 수치가 1:비율이다`, async ({ page }) => {
+      await installStubs(page);
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+
+      // sr-only 라벨이 innerText에 섞이므로 값(dd)만 읽는다.
+      const text = await page.locator("[data-lead] dd").first().innerText();
+
+      expect(text, path).toMatch(/^1:\d+\.\d$/);
+      expect(text, path).not.toContain("→");
+    });
+  }
+
+  for (const path of ["/brews", "/brews/2"]) {
+    test(`AC-STRUCT-18 · ${path}의 대표 수치가 1:비율이다`, async ({ page }) => {
+      await installStubs(page);
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+
+      // sr-only 라벨이 innerText에 섞이므로 값(dd)만 읽는다.
+      const text = await page.locator("[data-lead] dd").first().innerText();
+
+      expect(text, path).toMatch(/^1:\d+\.\d$/);
+    });
+  }
+});

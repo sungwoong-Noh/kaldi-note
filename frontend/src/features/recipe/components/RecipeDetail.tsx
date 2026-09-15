@@ -132,22 +132,25 @@ export function RecipeDetail({ id }: { id: number }) {
         파서가 교정하면서 서버 HTML과 클라이언트 트리가 어긋날 수 있다.
       */}
       <dl className="mt-4 flex flex-col gap-1">
-        {/* 대표 수치. 상세에서 정확히 하나가 18px로 뜬다. 라벨은 sr-only다 —
-            18px 숫자 옆에 12px 라벨을 붙이면 대표 수치가 깎인다. */}
-        <div className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]">
-          <dt className="sr-only">원두량</dt>
-          <dd>{formatGrams(recipe.doseG)}</dd>
-          <span aria-hidden className="text-muted">
-            →
-          </span>
-          <dt className="sr-only">물량</dt>
-          <dd>{formatGrams(recipe.waterG)}</dd>
+        {/* 대표 수치. 상세에서 정확히 하나가 36px로 뜬다. 라벨은 sr-only다 —
+            36px 숫자 옆에 14px 라벨을 붙이면 대표 수치가 깎인다. */}
+        <div
+          data-lead
+          className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]"
+        >
+          <dt className="sr-only">비율</dt>
+          <dd>{formatRatio(recipe.ratio)}</dd>
         </div>
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-base">
           <div className="flex items-center gap-1">
-            <dt className="text-sm text-muted">비율</dt>
-            <dd>{formatRatio(recipe.ratio)}</dd>
+            <dt className="text-sm text-muted">원두량</dt>
+            <dd>{formatGrams(recipe.doseG)}</dd>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <dt className="text-sm text-muted">물량</dt>
+            <dd>{formatGrams(recipe.waterG)}</dd>
           </div>
 
           {recipe.waterTempC !== undefined && (

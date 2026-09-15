@@ -26,19 +26,23 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
         </div>
 
         <dl className="mt-2 flex flex-col gap-1">
-          {/* 대표 수치. 목록에서 카드마다 정확히 하나가 18px로 뜬다. */}
-          <div className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]">
-            <dt className="sr-only">원두량</dt>
-            <dd>{formatGrams(recipe.doseG)}</dd>
-            <span aria-hidden>→</span>
-            <dt className="sr-only">물량</dt>
-            <dd>{formatGrams(recipe.waterG)}</dd>
+          {/* 대표 수치. 카드마다 정확히 하나가 36px로 뜬다. 기록 화면과 같은 1:비율 형태다 —
+              비율은 배치 크기에 독립적이라 다른 레시피와 바로 비교된다. */}
+          <div
+            data-lead
+            className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]"
+          >
+            <dt className="sr-only">비율</dt>
+            <dd>{formatRatio(recipe.ratio)}</dd>
           </div>
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-            <div>
-              <dt className="sr-only">비율</dt>
-              <dd>{formatRatio(recipe.ratio)}</dd>
+            <div className="flex items-center gap-1">
+              <dt className="sr-only">원두량</dt>
+              <dd>{formatGrams(recipe.doseG)}</dd>
+              <span aria-hidden>→</span>
+              <dt className="sr-only">물량</dt>
+              <dd>{formatGrams(recipe.waterG)}</dd>
             </div>
 
             {recipe.waterTempC !== undefined && (

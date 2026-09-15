@@ -74,16 +74,16 @@ function leadElements(): Element[] {
 }
 
 describe("RecipeDetailPage", () => {
-  it("AC-CONSIST-08 · 대표 수치가 하나이고 30.0g → 500.0g이다", async () => {
+  it("AC-CONSIST-08 · 대표 수치가 하나이고 1:16.7이다", async () => {
     await renderDetail();
     await screen.findByRole("heading", { level: 1 });
 
     const leads = leadElements();
 
     expect(leads).toHaveLength(1);
-    // 이 파일의 픽스처는 hoffmann이라 30.0g → 500.0g이다.
-    // 20.0g → 300.0g은 kasuyaRecipe(레시피 12)의 값으로 e2e에서만 쓴다.
-    expect(leads[0].textContent).toBe("원두량30.0g→물량500.0g");
+    // 갱신(2026-09-15): structure 스펙이 대표 수치를 1:비율로 통일했다.
+    // 이 파일의 픽스처는 hoffmann이라 ratio 16.7이다.
+    expect(leads[0].textContent).toBe("비율1:16.7");
     expect(leads[0].querySelector("dt")?.className).toContain("sr-only");
   });
 
@@ -91,7 +91,8 @@ describe("RecipeDetailPage", () => {
     await renderDetail();
 
     // hoffmann은 waterTempC 100.0 · totalTimeSeconds 210이라 세 라벨이 전부 그려진다.
-    for (const label of ["비율", "물 온도", "총 시간"]) {
+    // 갱신(2026-09-15): 「비율」이 대표 수치로 올라가고 절대량이 메타줄로 내려왔다.
+    for (const label of ["원두량", "물량", "물 온도", "총 시간"]) {
       const dt = await screen.findByText(label);
 
       // jsdom은 Tailwind를 읽지 않아 `sr-only`가 걸려 있어도 toBeVisible()이 통과한다.

@@ -113,7 +113,10 @@ export function BrewDetail({ id }: { id: number }) {
       </div>
 
       {/* 대표 수치. 상세에서 정확히 하나가 18px로 뜬다. 라벨은 sr-only다. */}
-      <dl className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]">
+      <dl
+        data-lead
+        className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]"
+      >
         <dt className="sr-only">{lead.label}</dt>
         <dd>{lead.value}</dd>
       </dl>

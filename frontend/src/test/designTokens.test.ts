@@ -95,7 +95,7 @@ describe("읽힘 — 글자 단계", () => {
     expect(countClass("text-xs")).toBe(0);
   });
 
-  it("AC-READ-08 · 단계별 개수가 4/15/18/127/20이다", () => {
+  it("AC-READ-08 · 단계별 개수가 4/15/18/127/21이다", () => {
     // 치환 순서 사고를 잡는다. text-sm을 먼저 올리면 127곳이 이중 변환되어
     // text-base가 0, text-lg가 145가 된다.
     const counts = {
@@ -111,9 +111,9 @@ describe("읽힘 — 글자 단계", () => {
       "text-2xl": 15,
       "text-lg": 18,
       "text-base": 127,
-      "text-sm": 20,
+      "text-sm": 21,
     });
-    expect(Object.values(counts).reduce((a, b) => a + b)).toBe(184);
+    expect(Object.values(counts).reduce((a, b) => a + b)).toBe(185);
   });
 
   it("AC-READ-09 · 5단계 밖의 크기 클래스가 없다", () => {

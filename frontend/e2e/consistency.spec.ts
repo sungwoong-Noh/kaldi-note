@@ -19,19 +19,17 @@ const MUTED_LIGHT = "rgb(84, 84, 84)";
  * <p><b>`/recipes/12`는 hoffmann이다</b>(30.0g → 500.0g · 1:16.7 · 100°C). kasuya는 id 3이다 —
  * `e2e/stubs.ts`의 핸들러 순서가 그렇게 정한다. 지어낸 값으로 쓰면 셀렉터가 빗나간다.
  */
+// 갱신(2026-09-15): structure 스펙이 대표 수치를 1:비율로 통일하면서 `1:16.7`이 메타줄에서
+// 대표 자리로 올라갔다. 메타줄 앵커를 거기 남은 값으로 바꾼다.
 const META_ROWS = [
-  { path: "/recipes", text: "1:16.7", what: "카드 보조줄" },
+  { path: "/recipes", text: "100°C", what: "카드 보조줄" },
   { path: "/brews", text: "2026-08-31", what: "카드 보조줄" },
-  { path: "/recipes/12", text: "1:16.7", what: "상세 메타줄" },
+  { path: "/recipes/12", text: "100°C", what: "상세 메타줄" },
   { path: "/brews/2", text: "20.0g", what: "상세 실측값" },
 ] as const;
 
-const LEADS = [
-  { path: "/recipes", text: "30.0g" },
-  { path: "/brews", text: "1:15.0" },
-  { path: "/recipes/12", text: "30.0g" },
-  { path: "/brews/2", text: "1:15.0" },
-] as const;
+/** 대표 수치는 `data-lead`로 찾는다 — 텍스트로 찾으면 표현이 바뀔 때마다 깨진다. */
+const LEAD_PATHS = ["/recipes", "/brews", "/recipes/12", "/brews/2"] as const;
 
 /** `text`를 담은 요소에서 위로 올라가 `className`에 `token`을 가진 첫 조상. */
 function ancestorWith(
@@ -89,14 +87,14 @@ test.describe("일관성 — 렌더값", () => {
    * `body` 규칙을 지우거나 어느 조상에 `font-variant-numeric: normal`을 걸면 여기가 빨개진다.
    * 대표 수치에 클래스가 붙어 있는지는 `AC-CONSIST-08`·`09`가 따로 본다.
    */
-  for (const { path, text } of LEADS) {
+  for (const path of LEAD_PATHS) {
     test(`AC-CONSIST-14 · ${path}의 대표 수치가 tabular-nums로 그려진다`, async ({
       page,
     }) => {
       await installStubs(page);
       await page.goto(path);
 
-      const lead = ancestorWith(page, text, "tabular-nums");
+      const lead = page.locator("[data-lead]").first();
       await expect(lead).toBeAttached();
 
       expect(

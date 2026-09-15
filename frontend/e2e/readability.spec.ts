@@ -25,8 +25,10 @@ test.describe("읽힘 — 렌더된 크기", () => {
     await installStubs(page);
     await page.goto("/recipes/12");
 
+    // 텍스트가 아니라 data-lead로 찾는다 — 표현이 바뀌어도 깨지지 않는다(2026-09-15).
     const size = await page
-      .getByText("30.0g", { exact: true })
+      .locator("[data-lead]")
+      .first()
       .evaluate((el) => getComputedStyle(el).fontSize);
 
     expect(size).toBe("36px");
@@ -39,7 +41,8 @@ test.describe("읽힘 — 렌더된 크기", () => {
     await page.goto("/recipes/12");
 
     const style = await page
-      .getByText("30.0g", { exact: true })
+      .locator("[data-lead]")
+      .first()
       .evaluate((el) => {
         const computed = getComputedStyle(el);
         return {
@@ -68,8 +71,9 @@ test.describe("읽힘 — 렌더된 크기", () => {
     await installStubs(page);
     await page.goto("/recipes/12");
 
+    // 「비율」은 대표 수치의 sr-only 라벨이 됐다. 메타줄에 남은 라벨을 잰다(2026-09-15).
     const style = await page
-      .getByText("비율", { exact: true })
+      .getByText("물 온도", { exact: true })
       .evaluate((el) => {
         const computed = getComputedStyle(el);
         return { size: computed.fontSize, color: computed.color };

@@ -370,7 +370,7 @@ git add . && git commit -m "feat(web): 폼의 오른쪽 끝을 하나로 맞춘�
 
 > **터치 타깃을 잃기 쉬운 태스크다.** `AC-TOUCH-01`·`06`·`09`가 이 변경을 감시한다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 // designTokens.test.ts
@@ -400,30 +400,42 @@ test("AC-STRUCT-04 · 체크박스가 20×20에 탭 44×44다", async ({ page })
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: FAIL — `appearance-none`이 0곳이고, 체크박스가 44×44(네이티브가 규약 때문에 커진 상태)다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `select`: `appearance-none min-h-11 w-full rounded-md border border-line bg-background pr-9` +
 배경 이미지나 `absolute` 아이콘으로 화살표를 그린다.
 체크박스: `appearance-none h-5 w-5 rounded-md border border-line checked:bg-brand` +
 감싸는 `label`에 `min-h-11 min-w-11 flex items-center gap-2`.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test && pnpm e2e`
 Expected: PASS. **`AC-TOUCH-06`이 44×44를 기대하는데 입력 자체는 20×20이 된다** — 그 AC의
 대상을 감싼 `label`로 옮기고 갱신 이유를 남긴다. **승인된 AC 변경이므로 사람에게 먼저 보고한다.**
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 컨트롤에서 OS 기본 모양을 벗긴다 (AC-STRUCT 3개)"
 ```
 
 ---
+
+
+> **★ `AC-TOUCH-06`과 스윕이 예고대로 걸렸고, 사람에게 확인받아 갱신했다(2026-09-15).**
+> 입력이 20×20이 되면서 두 조건이 깨졌다. **탭 영역(감싼 `label`)을 재는 쪽으로 바꿨다** —
+> 사람이 실제로 누르는 것을 재는 게 맞고, 라벨 글자까지 탭 영역이 되어 오히려 넓어졌다.
+> 스윕 판정도 「라벨에 감싸인 컨트롤은 그 라벨을 잰다」로 고쳤고, 라벨을 20px로 줄여
+> **둘 다 빨개지는 것을 확인**했다.
+>
+> **`pr-9`가 `AC-SPACE-01`에 걸렸다.** 간격 6단계(`1·2·3·4·6·12`) 밖이라 `pr-12`로 바꿨다.
+>
+> **JSX 표현식 자리에 주석과 요소를 같이 둘 수 없다.** `{cond && ( {/* */} <label> )}`가
+> 구문 오류가 나서 주석을 조건 밖으로 옮겼다.
 
 ## Task 5: 스텝 행의 열을 고정한다
 
@@ -433,7 +445,7 @@ git add . && git commit -m "feat(web): 컨트롤에서 OS 기본 모양을 벗�
 
 **Covers:** AC-STRUCT-05
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-STRUCT-05 · 스텝 행의 열 위치가 행마다 같다", async ({ page }) => {
@@ -458,22 +470,22 @@ test("AC-STRUCT-05 · 스텝 행의 열 위치가 행마다 같다", async ({ pa
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: 스텝 행에 `data-step-row`가 없어 배열이 비고 `toHaveLength(1)`이 깨진다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 스텝 행 컨테이너에 `data-step-row`를 붙이고, 열 폭을 `grid-cols-[4rem_5rem_5rem_1fr]`처럼
 고정한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e structure`
 Expected: PASS. **Task 3의 `AC-STRUCT-01`이 `data-step-row`로 스텝 행을 제외하므로 함께 초록인지
 확인한다.**
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 스텝 행의 열을 고정한다 (AC-STRUCT 1개)"

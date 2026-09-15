@@ -170,3 +170,21 @@ describe("읽힘 — 글자 단계", () => {
     expect(total).toBe(13);
   });
 });
+
+/**
+ * 구조와 폼 — docs/specs/2026-09-15-structure.md
+ */
+describe("구조 — 컨트롤", () => {
+  it("AC-STRUCT-02 · select 13곳이 appearance-none이다", () => {
+    const bare: string[] = [];
+    for (const path of APP_SOURCES) {
+      for (const match of readFileSync(path, "utf8").matchAll(
+        /<select\b[\s\S]*?className="([^"]*)"/g,
+      )) {
+        if (!/\bappearance-none\b/.test(match[1])) bare.push(`${path}`);
+      }
+    }
+
+    expect(bare).toEqual([]);
+  });
+});

@@ -182,7 +182,7 @@ function Fields({
               visibility: toVisibility(e.target.value),
             }))
           }
-          className="w-full rounded-md border border-line px-2 py-1 min-h-11"
+          className="appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 12 8%22 fill=%22none%22 stroke=%22currentColor%22 stroke-width=%221.5%22><path d=%22M1 1l5 5 5-5%22/></svg>')] bg-[length:12px_8px] bg-[right_0.75rem_center] bg-no-repeat pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
         >
           {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
             <option key={code} value={code}>

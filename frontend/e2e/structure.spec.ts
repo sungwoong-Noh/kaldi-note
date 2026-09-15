@@ -121,3 +121,55 @@ test.describe("구조 — 폼", () => {
     expect(unit!.x + unit!.width).toBeLessThan(input!.x + input!.width);
   });
 });
+
+test.describe("구조 — 컨트롤", () => {
+  test("AC-STRUCT-03 · select의 렌더 높이가 44px를 유지한다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.goto("/recipes/new");
+    await page.waitForLoadState("networkidle");
+
+    const box = await page.getByLabel("공개 범위").boundingBox();
+
+    expect(box!.height).toBe(44);
+  });
+
+  test("AC-STRUCT-04 · 체크박스가 20×20에 탭 영역 44×44다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.goto("/recipes");
+    await page.waitForLoadState("networkidle");
+
+    const input = await page.locator('input[type="checkbox"]').boundingBox();
+    const tap = await page
+      .locator('label:has(input[type="checkbox"])')
+      .boundingBox();
+
+    expect({ w: input!.width, h: input!.height }).toEqual({ w: 20, h: 20 });
+    expect(tap!.width).toBeGreaterThanOrEqual(44);
+    expect(tap!.height).toBeGreaterThanOrEqual(44);
+  });
+});
+
+test("AC-STRUCT-05 · 스텝 행의 열 위치가 행마다 같다", async ({ page }) => {
+  await installStubs(page);
+  await page.goto("/recipes/12/edit");
+  await page.waitForLoadState("networkidle");
+
+  const cols = await page.evaluate(() => {
+    const types: number[] = [];
+    const firstNums: number[] = [];
+    for (const row of document.querySelectorAll("[data-step-row]")) {
+      const select = row.querySelector("select");
+      const num = row.querySelector("input");
+      if (select) types.push(Math.round(select.getBoundingClientRect().left));
+      if (num) firstNums.push(Math.round(num.getBoundingClientRect().left));
+    }
+    return { types: [...new Set(types)], firstNums: [...new Set(firstNums)] };
+  });
+
+  expect(cols.types).toHaveLength(1);
+  expect(cols.firstNums).toHaveLength(1);
+});

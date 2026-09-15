@@ -5,7 +5,7 @@
 **Spec:** `docs/specs/2026-09-15-readability.md`
 
 **Goal:** 라이트 모드의 보조색·테두리·오류색을 진하게 바꾸고 글자 5단계를 한 칸씩 올려, 낮에 부엌
-조명에서 라벨과 힌트가 읽히게 만든다. 동시에 커버리지 스크립트가 자기 접두어의 AC만 세게 고친다.
+조명에서 라벨과 힌트가 읽히게 만든다. 동시에 커버리지 스크립트가 각 스펙이 소유한 AC만 세게 고친다.
 
 **Architecture:** 색은 `globals.css` 세 줄만 고친다 — `text-muted` 91곳·`border-line` 57곳·
 `text-danger` 24곳이 전부 토큰을 가리키므로 앱 코드를 건드리지 않고 172곳에 전달된다. 글자는
@@ -22,8 +22,8 @@ Task 3에서 순서를 고정하고 각 단계마다 개수를 센다.
 
 | AC ID | 요약 | 담당 태스크 | 검증 방식 |
 |---|---|---|---|
-| AC-READ-19 | 스크립트가 자기 접두어만 센다 | Task 1 | 쉘 테스트 |
-| AC-READ-20 | 기존 31개 집계 불변 | Task 1 | 쉘 테스트 |
+| AC-READ-19 | 스크립트가 헤딩 정의분만 센다 | Task 1 | 쉘 테스트 |
+| AC-READ-20 | 소유 기준 합계가 739 | Task 1 | 쉘 테스트 |
 | AC-READ-01 | muted `#545454` · 7.57:1 | Task 2 | 단위 테스트 |
 | AC-READ-02 | line `#b8b8b8` | Task 2 | 단위 테스트 |
 | AC-READ-03 | danger `#b91c1c` · 6.47:1 | Task 2 | 단위 테스트 |
@@ -61,8 +61,9 @@ Task 3에서 순서를 고정하고 각 단계마다 개수를 센다.
 
 ```
 scripts/
-  check-spec-coverage.sh            수정 — frontmatter의 id로 접두어를 좁힌다
+  check-spec-coverage.sh            수정 — `#### AC-` 헤딩으로 소유를 판정한다
   check-spec-coverage.test.sh       신규 — 순수 bash, spec.yml이 돌린다
+.github/workflows/spec.yml          수정 — 위 테스트를 CI 단계로 추가
 frontend/
   src/app/globals.css               수정 — :root 세 줄
   src/test/contrast.test.ts         수정 — AC-READ-01·02·03·06·16
@@ -75,7 +76,7 @@ frontend/
 
 ---
 
-## Task 1: 커버리지 스크립트가 자기 접두어만 센다
+## Task 1: 커버리지 스크립트가 헤딩 정의분만 센다
 
 **Files:**
 - Modify: `scripts/check-spec-coverage.sh`
@@ -90,7 +91,7 @@ frontend/
 > **왜 먼저 하나.** 이 태스크가 끝나야 이후 태스크의 커버리지 출력이 믿을 수 있는 숫자가 된다.
 > 나중에 하면 그동안의 집계가 전부 부풀려진 채로 남는다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `scripts/check-spec-coverage.test.sh`:
 
@@ -120,7 +121,7 @@ check() {
   fi
 }
 
-# ── AC-READ-19 · 자기 접두어의 AC만 센다 ──────────────────────────────
+# ── AC-READ-19 · 헤딩으로 정의된 AC만 센다 ──────────────────────────────
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$TMP/specs"
@@ -140,10 +141,10 @@ out=$(SPEC_DIR="$TMP/specs" "$SCRIPT" 2>&1)
 count=$(echo "$out" | grep -oE 'AC [0-9]+개' | grep -oE '[0-9]+' | head -1)
 check "AC-READ-19 · AC-BAR-99를 세지 않는다" "2" "$count"
 
-# ── AC-READ-20 · 기존 스펙 31개의 집계가 변하지 않는다 ────────────────
+# ── AC-READ-20 · 소유 기준 합계가 739다 ──────────────────────────────
 real=$("$SCRIPT" 2>&1)
 total=$(echo "$real" | grep -oE '인수 조건 [0-9]+개' | grep -oE '[0-9]+')
-check "AC-READ-20 · 합계가 747이다" "747" "$total"
+check "AC-READ-20 · 합계가 739다" "739" "$total"
 
 echo
 if [ "$failed" -eq 0 ]; then
@@ -154,36 +155,45 @@ fi
 exit "$failed"
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 chmod +x scripts/check-spec-coverage.test.sh
 ./scripts/check-spec-coverage.test.sh
 ```
 
-Expected: **`AC-READ-19`만 FAIL** — `2`가 아니라 `3`을 돌려준다(`AC-BAR-99`를 같이 셈).
+**실제 관측(2026-09-15):** `AC-READ-19` FAIL(`2` 기대, **`25`** 실제) · `AC-READ-20` PASS.
 
-**`AC-READ-20`은 이 시점에 이미 통과한다.** 합계 747은 `구현완료` 스펙만 세고 `초안`은
-건너뛰므로, 이번 스펙(초안)이 31개로 부풀려 집계되어도 합계에 영향을 주지 않는다.
+`25`가 나온 것은 두 결함이 겹친 결과다 — `SPEC_DIR`이 환경변수가 아니라 임시 디렉터리 대신
+실제 `docs/specs`를 검사했고, 거기에 접두어 미구분까지 더해졌다.
 
-> **★ 빨강이 보장되지 않는 조건이다.** 회귀 검사라 원래 통과하는 것이 정상이지만, **그대로 두면
-> 「검사가 비어 있는 것」과 구분되지 않는다.** 돌연변이로 확인한다 — `check-spec-coverage.sh`의
-> `AC_PATTERN`을 `AC-[A-Z]` → `AC-[A-Z]{99}`처럼 잠시 망가뜨려 합계가 747에서 떨어지는지 보고
-> 되돌린다. 이 프로젝트가 반복해서 쓰는 방법이다(JOURNAL 2026-09-09·09-10).
+**`AC-READ-20`은 이 시점에 이미 통과한다.** 합계는 `구현완료` 스펙만 세고 `초안`은 건너뛰므로,
+이번 스펙(초안)이 부풀려 집계되어도 합계에 영향을 주지 않는다.
 
-- [ ] **Step 3: 최소 구현**
+> **★ 빨강이 보장되지 않는 조건이다.** **그대로 두면 「검사가 비어 있는 것」과 구분되지 않는다.**
+> 돌연변이로 확인한다 — `AC_PATTERN`을 `AC-[A-Z]{99}`처럼 잠시 망가뜨리고 되돌린다.
+> **실제로 해봤고 합계가 `747 → 0`으로 떨어지며 빨개졌다.** 검사는 비어 있지 않다.
+
+- [x] **Step 3: 최소 구현**
 
 `scripts/check-spec-coverage.sh`의 `ids=` 줄(46~48행 부근)을 바꾼다:
 
+> **★ 계획이 처음 적은 `id` 기반 구현은 틀렸다.** 실제로 해보니 합계가 **747 → 689**로
+> **58개가 사라졌다.** 한 스펙이 여러 접두어를 소유하기 때문이다 —
+> `visibility-authorization`(`id: VIS`)이 `AC-FOLLOW`를, `list-query-api`(`id: LIST`)가
+> `AC-BLEDIT`·`AC-ME`를, `seed-curated-recipes`가 `AC-SWAGGER`를, `web-recipe-read`가
+> `AC-CORS`를 **자기 헤딩으로 정의**한다. `id`로 걸렀더니 그것들이 통째로 빠졌다.
+>
+> 올바른 기준은 `id`가 아니라 **소유(`#### AC-` 헤딩) vs 언급(본문 참조)**이다.
+
 ```bash
-  # 이 스펙이 소유한 AC만 센다. frontmatter의 id가 접두어다.
-  # id가 없으면 예전처럼 전부 센다 — 옛 스펙이 깨지지 않게 한다.
-  spec_id=$(grep -m1 '^id:' "$spec" 2>/dev/null | sed 's/^id:[[:space:]]*//' | tr -d '\r' || true)
-  if [ -n "$spec_id" ]; then
-    ids=$(grep -oE "AC-${spec_id}-[0-9]+" "$spec" 2>/dev/null | sort -u || true)
-  else
-    ids=$(grep -oE "$AC_PATTERN" "$spec" 2>/dev/null | sort -u || true)
-  fi
+  # 이 스펙이 소유한 AC만 센다. 소유의 표시는 `#### AC-…` 헤딩이다.
+  #
+  # 스펙이 남의 AC를 본문에서 참조하는 일이 있다 — 갱신 대상을 명시하거나 선행 스펙을
+  # 가리킬 때다. 그것까지 세면 같은 AC가 두 스펙에서 잡혀 합계가 부풀려진다.
+  #
+  # frontmatter의 id로 좁히지 않는 이유: 한 스펙이 여러 접두어를 소유한다.
+  ids=$(grep -oE "^#### $AC_PATTERN" "$spec" 2>/dev/null | sed 's/^#### //' | sort -u || true)
 ```
 
 **`SPEC_DIR`의 환경변수화가 반드시 필요하다.** 22행이 `SPEC_DIR="docs/specs"`로 고정돼 있어
@@ -196,19 +206,23 @@ SPEC_DIR="${SPEC_DIR:-docs/specs}"
 > 스크립트 19행의 `cd "$(dirname "$0")/.."`가 먼저 실행되므로 상대경로 기본값은 그대로 동작한다.
 > 테스트는 절대경로를 넘긴다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 ./scripts/check-spec-coverage.test.sh
 ./scripts/check-spec-coverage.sh | tail -3
 ```
 
-Expected: PASS 2개. 커버리지 합계가 **747**로 돌아오고, 이번 스펙이 `[초안] — AC 21개`로 보고된다.
+Expected: PASS 2개. 이번 스펙이 `[초안] — AC 21개`로 보고되고, 합계가 **739**가 된다.
 
-- [ ] **Step 5: 커밋**
+> **★ 합계가 747에서 739로 8개 줄어드는 것이 정상이다.** 6개 스펙이 본문에서 참조만 한 남의 AC가
+> 소유 스펙에서 한 번 더 세어져 **중복 집계돼 왔다.** `747`은 처음부터 부풀려진 숫자였다.
+> `AC-READ-20`을 이 사실에 맞춰 갱신했고 이유를 스펙 그 자리에 남겼다.
+
+- [x] **Step 5: 커밋**
 
 ```bash
-git add scripts/ docs/ && git commit -m "fix(scripts): 커버리지가 자기 접두어의 AC만 센다 (AC-READ 2개)"
+git add scripts/ docs/ && git commit -m "fix(scripts): 커버리지가 각 스펙이 소유한 AC만 센다 (AC-READ 2개)"
 ```
 
 ---
@@ -729,7 +743,7 @@ git add . && git commit -m "feat(web): 글자를 키워도 레이아웃이 버�
 
 - [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
 - [ ] `cd frontend && pnpm e2e` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — 합계가 **768**(747 + 21)
+- [ ] `./scripts/check-spec-coverage.sh` 통과 — 합계가 **760**(739 + 21)
 - [ ] `./scripts/check-spec-coverage.test.sh` 통과
 - [ ] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 3개 — **폰 실물과 실제 조명이 필요해 비차단형이다**

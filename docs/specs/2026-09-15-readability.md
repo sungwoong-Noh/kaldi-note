@@ -20,8 +20,8 @@ plan: docs/plans/2026-09-15-plan-readability.md
 이것은 **시각 재설계 3부작의 첫 번째**다. 색과 크기가 먼저 서야 구조 변경(②)과 폼 정비(③)가
 그 위에 설 수 있다.
 
-함께 `scripts/check-spec-coverage.sh`가 **자기 접두어의 AC만 세도록** 고친다. 이 스펙이 갱신 대상
-기존 AC를 본문에 명시하는 첫 스펙이라 문제가 드러났다 — 아래 「집계」 절 참조.
+함께 `scripts/check-spec-coverage.sh`가 **각 스펙이 소유한 AC만 세도록** 고친다. 이 스펙이 갱신
+대상 기존 AC를 본문에 명시하는 첫 스펙이라 문제가 드러났다 — 아래 「집계」 절 참조.
 
 ### 범위 밖 (Non-goals)
 
@@ -280,30 +280,43 @@ muted  #545454   7.57:1   「읽어도 되고 안 읽어도 된다」   ← 이�
 
 ### 집계
 
-> `scripts/check-spec-coverage.sh`는 `AC-[A-Z]+-[0-9]+`를 **접두어 구분 없이** 센다. frontmatter에
-> `id:`가 있는데도 쓰지 않는다. 기존 스펙 31개가 타 스펙의 AC를 한 번도 언급하지 않아 지금까지
-> 드러나지 않았다. 이 스펙은 갱신 대상 4개를 명시해야 해서 처음으로 걸렸다 — 자기 AC 18개인데
-> **25개로 집계된다.**
+> `scripts/check-spec-coverage.sh`는 문서 어디에 나오든 `AC-[A-Z]+-[0-9]+`를 전부 센다.
+> **정의한 것과 언급한 것을 구분하지 않는다.** 이 스펙이 갱신 대상 4개를 본문에 명시하면서
+> 드러났다 — 자기 AC 21개인데 **31개로 집계된다.**
+>
+> **소유의 표시는 `#### AC-…` 헤딩이다.** frontmatter의 `id:`로 좁히면 안 된다. 한 스펙이 여러
+> 접두어를 소유하기 때문이다 — `visibility-authorization`(`id: VIS`)이 `AC-FOLLOW`를,
+> `list-query-api`(`id: LIST`)가 `AC-BLEDIT`·`AC-ME`를, `seed-curated-recipes`가 `AC-SWAGGER`를,
+> `web-recipe-read`가 `AC-CORS`를 자기 헤딩으로 정의한다.
 >
 > 검증은 `infra/scripts/deploy.test.sh`와 같은 방식으로 한다. 순수 bash이고 CI(`spec.yml`)에서
 > 이미 같은 자리에서 돈다. 새 의존성은 없다.
 
-#### AC-READ-19 · 스크립트가 자기 접두어의 AC만 센다
+#### AC-READ-19 · 스크립트가 헤딩으로 정의된 AC만 센다
 
-- **Given** `id: FOO`이고 본문에 `AC-FOO-01` · `AC-FOO-02` · `AC-BAR-99`가 있는 임시 스펙 파일
+- **Given** 본문에 `#### AC-FOO-01` · `#### AC-FOO-02` 헤딩이 있고, 그와 별개로
+  `AC-BAR-99`를 문장 안에서 언급하는 임시 스펙 파일
 - **When** `check-spec-coverage.sh`를 돌린다
 - **Then** 그 스펙의 AC 개수를 **2개**로 보고한다(`AC-BAR-99`는 세지 않는다)
 - **검증** 쉘 테스트 `scripts/check-spec-coverage.test.sh`
 
-#### AC-READ-20 · 기존 스펙 31개의 집계가 변하지 않는다
+> **`id`로 좁히지 않는다.** 한 스펙이 여러 접두어를 소유하기 때문이다 —
+> `visibility-authorization`(`id: VIS`)은 `AC-VIS`와 **`AC-FOLLOW`**를,
+> `list-query-api`(`id: LIST`)는 `AC-LIST`·**`AC-BLEDIT`**·**`AC-ME`**를 자기 헤딩으로 정의한다.
+> `id`로 걸렀다면 이것들이 통째로 누락된다(실제로 구현 중 58개가 사라져 발견했다).
 
-- **Given** 수정 전 `./scripts/check-spec-coverage.sh`의 출력
-- **When** 수정 후 다시 돌린다
-- **Then** 기존 스펙 31개의 AC 개수가 **전부 동일**하고 합계가 **747**로 같다
+#### AC-READ-20 · 소유 기준 합계가 739다
+
+- **Given** 헤딩으로 좁힌 `./scripts/check-spec-coverage.sh`
+- **When** 돌려서 합계를 읽는다
+- **Then** 합계가 **739**다
 - **검증** 쉘 테스트 `scripts/check-spec-coverage.test.sh`
 
-> 기존 스펙이 자기 AC만 쓰고 있다는 사실이 이 조건의 근거다. 하나라도 달라지면 그 전제가 틀린
-> 것이므로 멈추고 확인해야 한다.
+> **갱신 이유 (2026-09-15).** 이 조건은 처음에 「기존 집계가 **747**로 변하지 않는다」였다.
+> 구현 중 **그 전제가 틀렸음이 드러났다** — 6개 스펙이 본문에서 남의 AC를 참조하고 있었고
+> (`brew-log`가 `AC-BLEDIT`을 언급하는 식), 그 **8개가 소유 스펙에서 한 번 더 세어져
+> 중복 집계**돼 왔다. **`747`은 처음부터 8개 부풀려진 숫자이고 실제 소유 기준은 `739`다.**
+> 줄어드는 것이 정상이며, 이 조건은 회귀 검사가 아니라 **올바른 값의 확정**이다.
 
 ### 경계값
 

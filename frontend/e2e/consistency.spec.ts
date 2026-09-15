@@ -61,18 +61,21 @@ test.describe("일관성 — 렌더값", () => {
     });
   }
 
-  for (const path of ["/recipes/12", "/brews/2"] as const) {
+  // 화면마다 메타줄에 남은 라벨이 다르다(2026-09-15). `/brews/2`의 원두량·물량·물 온도·
+  // 추출 시간은 비교표로 옮겨갔고 분쇄도만 실측값에 남는다.
+  const META_LABELS = [
+    { path: "/recipes/12", label: "물 온도" },
+    { path: "/brews/2", label: "분쇄도" },
+  ] as const;
+
+  for (const { path, label: labelText } of META_LABELS) {
     test(`AC-CONSIST-07 · ${path}의 메타줄 라벨이 14px muted다`, async ({
       page,
     }) => {
       await installStubs(page);
       await page.goto(path);
 
-      // 비교표에도 「물 온도」가 있다(2026-09-15). 비교표 밖의 라벨만 잰다.
-      const label = page
-        .getByText("물 온도", { exact: true })
-        .and(page.locator(":not([data-compare] *)"))
-        .first();
+      const label = page.getByText(labelText, { exact: true }).first();
       await expect(label).toBeVisible();
 
       expect(

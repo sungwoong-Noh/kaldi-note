@@ -312,8 +312,12 @@ plan: docs/plans/2026-08-21-plan-web-recipe-read.md
 
 - **Given** 상세 응답의 `sourceType`이 `"CURATED"`다
 - **When** `/recipes/1`을 연다
-- **Then** `CURATED`가 화면에 있다
+- **Then** **「기본 제공」**이 화면에 있다
 - **검증** 페이지 테스트 `RecipeDetailPage.test.tsx`
+
+> **갱신 (2026-09-15).** 처음에는 `CURATED`를 그대로 찾았다. `2026-09-15-structure.md`가
+> 화면의 영어 상태값을 없애면서 배지 문구가 「기본 제공」이 됐다.
+> **배지가 붙는다는 조건 자체는 그대로다** — 검사하는 문자열만 바뀌었다.
 
 #### AC-WEB-21 · 없는 레시피를 열면 안내를 보여준다
 

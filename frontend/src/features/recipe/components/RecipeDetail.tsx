@@ -20,6 +20,7 @@ import { deleteRecipe, fetchRecipe, forkRecipe } from "../api";
 import type { Recipe } from "../schema";
 import { DeleteRecipeDialog } from "./DeleteRecipeDialog";
 import { RecipeStepList } from "./RecipeStepList";
+import { statusLabel } from "@/lib/statusLabel";
 
 export function RecipeDetail({ id }: { id: number }) {
   const router = useRouter();
@@ -97,7 +98,7 @@ export function RecipeDetail({ id }: { id: number }) {
           <h1 className="text-2xl font-semibold">{recipe.title}</h1>
           {recipe.sourceType === "CURATED" && (
             <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-sm text-muted">
-              CURATED
+              {statusLabel("source", "CURATED")}
             </span>
           )}
         </div>

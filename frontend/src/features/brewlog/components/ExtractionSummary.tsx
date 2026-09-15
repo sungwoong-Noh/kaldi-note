@@ -1,4 +1,5 @@
 import type { BrewLog } from "../schema";
+import { statusLabel } from "@/lib/statusLabel";
 
 /**
  * 추출 분석. **`tdsPercent`가 있을 때만 그린다.**
@@ -28,13 +29,13 @@ export function ExtractionSummary({ log }: { log: BrewLog }) {
         {log.strengthZone !== undefined && (
           <div className="flex items-center gap-1">
             <dt className="text-muted">농도</dt>
-            <dd>{log.strengthZone}</dd>
+            <dd>{statusLabel("strength", log.strengthZone)}</dd>
           </div>
         )}
         {log.extractionZone !== undefined && (
           <div className="flex items-center gap-1">
             <dt className="text-muted">추출</dt>
-            <dd>{log.extractionZone}</dd>
+            <dd>{statusLabel("extraction", log.extractionZone)}</dd>
           </div>
         )}
       </dl>

@@ -153,7 +153,7 @@ describe("RecipeDetailPage", () => {
   it("AC-WEB-20 · CURATED 레시피에 배지가 붙는다", async () => {
     await renderDetail();
 
-    expect(await screen.findByText("CURATED")).toBeInTheDocument();
+    expect(await screen.findByText("기본 제공")).toBeInTheDocument();
   });
 
   it("AC-WEB-21 · 없는 레시피를 열면 안내를 보여준다", async () => {

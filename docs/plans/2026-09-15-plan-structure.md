@@ -59,8 +59,8 @@
 
 ```
 frontend/src/
-  features/brewlog/statusLabel.ts           신규 — enum → 한글
-  features/brewlog/statusLabel.test.ts      신규 — AC-STRUCT-15
+  lib/statusLabel.ts                        신규 — enum → 한글 (features 교차 import를 피해 lib에 둔다)
+  lib/statusLabel.test.ts                   신규 — AC-STRUCT-15·16
   features/brewlog/components/
     ExtractionSummary.tsx                   수정 — 한글 적용
     BrewDetail.tsx                          수정 — 대표 수치·비교표
@@ -85,7 +85,7 @@ frontend/e2e/
 ## Task 1: 영어 상태값을 없앤다
 
 **Files:**
-- Create: `src/features/brewlog/statusLabel.ts` · `statusLabel.test.ts`
+- Create: `src/lib/statusLabel.ts` · `statusLabel.test.ts`
 - Modify: `src/features/brewlog/components/ExtractionSummary.tsx`
 - Modify: `src/features/recipe/components/RecipeCard.tsx` · `RecipeDetail.tsx`
 - Test: `e2e/structure.spec.ts` (신규)
@@ -98,7 +98,7 @@ frontend/e2e/
 
 > **왜 먼저 하나.** 가장 닫힌 변경이다. 순수 함수 하나와 그것을 부르는 곳 넷이 전부다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `src/features/brewlog/statusLabel.test.ts`:
 
@@ -128,12 +128,12 @@ describe("상태값 한글", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test -- statusLabel`
 Expected: FAIL — `statusLabel` 모듈이 없어 import 오류.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```ts
 /** 백엔드 enum을 화면 문구로 바꾼다. enum 자체는 바꾸지 않는다. */
@@ -160,7 +160,7 @@ export function statusLabel(kind: StatusKind, value: string): string {
 `{log.extractionZone}` → `{statusLabel("extraction", log.extractionZone)}`.
 `RecipeCard.tsx`·`RecipeDetail.tsx`의 `CURATED` 배지 텍스트 → `{statusLabel("source", "CURATED")}`.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- statusLabel`
 Expected: PASS, 2 tests.
@@ -181,13 +181,22 @@ test("AC-STRUCT-14 · 화면에 영어 상태값이 하나도 없다", async ({ 
 });
 ```
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 영어 상태값을 한글로 바꾼다 (AC-STRUCT 3개)"
 ```
 
 ---
+
+
+> **★ `features/`가 아니라 `lib/`에 둔다(2026-09-15 수정).** 처음에 `features/brewlog/`에 만들었더니
+> `recipe`의 컴포넌트가 그것을 import하게 됐다. `frontend/CLAUDE.md`가 **「`features/` 끼리는 서로
+> import 하지 않는다」**고 못박고 있다.
+>
+> **★ 예고하지 못한 AC가 하나 깨졌다 — `AC-WEB-20`.** 「`CURATED`가 화면에 있다」로 문자열을
+> 직접 검사하고 있었다. 배지가 붙는다는 조건 자체는 그대로이므로 검사 문자열만 「기본 제공」으로
+> 갱신하고 이유를 그 AC 자리에 남겼다.
 
 ## Task 2: 대표 수치를 `1:비율`로 통일한다
 

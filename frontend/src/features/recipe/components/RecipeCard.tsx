@@ -6,6 +6,7 @@ import {
   formatTemperature,
 } from "@/lib/format";
 import type { RecipeSummary } from "../schema";
+import { statusLabel } from "@/lib/statusLabel";
 
 /** 목록의 한 항목. 카드 전체가 링크라 탭 타깃이 크다 — 부엌에서 폰으로 쓰는 환경을 전제한다. */
 export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
@@ -19,7 +20,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
           <h2 className="text-lg font-medium">{recipe.title}</h2>
           {recipe.sourceType === "CURATED" && (
             <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-sm text-muted">
-              CURATED
+              {statusLabel("source", "CURATED")}
             </span>
           )}
         </div>

@@ -219,8 +219,13 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 
 - **Given** `frontend/src` 아래의 모든 `.ts`·`.tsx` 파일
 - **When** `text-` 뒤에 크기가 오는 클래스를 찾는다
-- **Then** `text-xs`·`text-sm`·`text-base`·`text-lg`·`text-xl` **다섯 개만** 나온다. 예외는 `RatingInput.tsx`의 `text-[22px]` **한 곳**이다
+- **Then** `text-sm`·`text-base`·`text-lg`·`text-2xl`·`text-4xl` **다섯 개만** 나온다. 예외는 `RatingInput.tsx`의 `text-[22px]` **한 곳**이다
 - **검증** 단위 테스트 `designTokens.test.ts`
+
+> **갱신 (2026-09-15).** 다섯 단계가 `20/18/16/14/12`에서 **`36/24/18/16/14`**로 재배치됐다.
+> **개수는 그대로 다섯이고 값만 바뀌었다.** 본문 14px·라벨 12px이 부엌에서 작았고, 주요 수치
+> 18px과 화면 제목 20px의 차이가 2px뿐이라 위계가 평평했다
+> (`docs/specs/2026-09-15-readability.md`).
 
 #### AC-VISUAL-06 · 토큰 8개가 라이트·다크 값을 모두 갖는다
 

@@ -8,8 +8,8 @@ import { setAccessToken } from "@/lib/session";
 function CallbackMessage({ message }: { message: string }) {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-6">
-      <p className="text-center text-sm">{message}</p>
-      <a href="/login" className="inline-flex min-h-11 min-w-11 items-center justify-center text-sm underline">
+      <p className="text-center text-base">{message}</p>
+      <a href="/login" className="inline-flex min-h-11 min-w-11 items-center justify-center text-base underline">
         로그인으로 돌아가기
       </a>
     </main>
@@ -98,7 +98,7 @@ function AuthCallbackExchange({
 
   return (
     <main className="flex min-h-dvh items-center justify-center px-6">
-      <p className="text-sm text-muted">로그인하는 중…</p>
+      <p className="text-base text-muted">로그인하는 중…</p>
     </main>
   );
 }

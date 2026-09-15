@@ -57,7 +57,7 @@ export function BottomNav() {
             key={tab.href}
             href={tab.href}
             aria-current={active ? "page" : undefined}
-            className={`py-3 text-center text-sm ${active ? "font-semibold text-brand" : "text-muted"}`}
+            className={`py-3 text-center text-base ${active ? "font-semibold text-brand" : "text-muted"}`}
           >
             {tab.label}
           </Link>

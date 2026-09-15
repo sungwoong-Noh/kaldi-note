@@ -35,7 +35,7 @@ describe("브루잉 로그 카드", () => {
     renderCard(withRatio);
 
     expect(screen.getByText("1:15.0").parentElement).toHaveClass(
-      "text-lg",
+      "text-4xl",
       "font-semibold",
     );
   });
@@ -44,7 +44,7 @@ describe("브루잉 로그 카드", () => {
     renderCard(withoutRatio);
 
     expect(screen.getByText("92°C").parentElement).toHaveClass(
-      "text-lg",
+      "text-4xl",
       "font-semibold",
     );
   });
@@ -59,7 +59,7 @@ describe("브루잉 로그 카드", () => {
     for (const log of [withRatio, withoutRatio]) {
       const { container, unmount } = renderCard(log);
 
-      expect(container.querySelectorAll(".text-lg.font-semibold")).toHaveLength(
+      expect(container.querySelectorAll(".text-4xl.font-semibold")).toHaveLength(
         1,
       );
 

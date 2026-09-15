@@ -352,7 +352,7 @@ git add . && git commit -m "feat(web): 라이트 모드 대비를 올린다 (AC-
 - Consumes: Task 2의 토큰 값
 - Produces: 새 5단계. Task 4가 렌더로 다시 잰다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `src/test/designTokens.test.ts`에 추가. **`SOURCES`가 테스트 파일까지 포함하므로 앱 코드만 거르는
 상수를 새로 만든다:**
@@ -445,7 +445,7 @@ describe("읽힘 — 글자 단계", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 pnpm test -- designTokens
@@ -453,7 +453,13 @@ pnpm test -- designTokens
 
 Expected: FAIL — `AC-READ-07`이 `text-xl` 15곳, `text-xs` 20곳을 찾는다.
 
-- [ ] **Step 3: 최소 구현 — 순서를 지켜 치환한다**
+- [x] **Step 3: 최소 구현 — 순서를 지켜 치환한다**
+
+> **★ `sed`로는 안 된다(2026-09-15 실측).** BSD sed(macOS)는 `\b`(단어 경계)를 지원하지 않아
+> **치환이 0건**이었다. GNU sed 전용 문법이다. `perl -pi -e`로 바꿔야 한다.
+>
+> **★ zsh에서는 `xargs`를 써야 한다.** `files=$(grep -rl …)` 뒤에 `perl … $files`로 넘기면
+> zsh가 단어 분리를 하지 않아 전체가 파일명 하나가 되고 `File name too long`이 난다.
 
 **순서가 결과를 바꾼다.** 아래 순서로만 실행한다. `text-sm`을 먼저 올리면 127곳이 다음 치환에
 다시 걸려 `text-lg`가 된다.
@@ -505,7 +511,7 @@ text-4xl font-semibold tabular-nums tracking-[-0.02em]
 `tracking-[-0.02em]` 하나뿐이다. 이것은 임의값이지만 **크기가 아니라 자간**이라
 `AC-READ-10`의 대상이 아니다(그 조건은 `text-[숫자px]`만 센다).
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pnpm test
@@ -514,7 +520,7 @@ pnpm test
 Expected: PASS — `designTokens` 4개 신규 통과. **기존 테스트 중 클래스 문자열을 검사하는 것이
 빨개지면 그 assert를 새 값으로 고친다**(`.test.tsx` 8곳). 고친 뒤 379개 + 신규가 전부 초록.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 글자 184곳을 한 단계씩 올린다 (AC-READ 4개)"

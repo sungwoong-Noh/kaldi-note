@@ -24,7 +24,7 @@ function isPouring(step: RecipeStep): boolean {
 export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
   if (steps.length === 0) {
     return (
-      <p className="py-6 text-center text-sm text-muted">
+      <p className="py-6 text-center text-base text-muted">
         등록된 스텝이 없습니다
       </p>
     );
@@ -47,7 +47,7 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
           >
             <span
               data-testid="step-start"
-              className="w-12 shrink-0 pt-1 font-mono text-sm tabular-nums text-muted"
+              className="w-12 shrink-0 pt-1 font-mono text-base tabular-nums text-muted"
             >
               {formatDuration(step.startAtSeconds)}
             </span>
@@ -57,25 +57,25 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
                 <span className="font-medium">{STEP_LABEL[step.stepType]}</span>
 
                 {step.waterG !== undefined && (
-                  <span className="text-sm">
+                  <span className="text-base">
                     {formatCumulativeGrams(step.waterG)}
                   </span>
                 )}
 
                 {showCumulative && (
-                  <span className="text-sm text-muted">
+                  <span className="text-base text-muted">
                     누적{" "}
                     {formatCumulativeGrams(step.cumulativeWaterG as number)}
                   </span>
                 )}
 
-                <span className="text-sm text-muted">
+                <span className="text-base text-muted">
                   {step.durationSeconds}초
                 </span>
               </div>
 
               {step.note && (
-                <p className="mt-1 text-sm text-muted">
+                <p className="mt-1 text-base text-muted">
                   {step.note}
                 </p>
               )}

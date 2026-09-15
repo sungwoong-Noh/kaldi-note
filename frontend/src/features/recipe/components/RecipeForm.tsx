@@ -82,7 +82,7 @@ export function RecipeForm({
       }}
     >
       {error !== null && error !== undefined && (
-        <div role="alert" className="flex flex-col gap-1 text-sm text-danger">
+        <div role="alert" className="flex flex-col gap-1 text-base text-danger">
           <p>{errorMessageOf(error)}</p>
           {fieldErrors.unmapped.map((line) => (
             <p key={line}>{line}</p>
@@ -144,7 +144,7 @@ export function RecipeForm({
         />
       </div>
 
-      <label className="flex items-center gap-2 text-sm">
+      <label className="flex items-center gap-2 text-base">
         <span className="text-muted">공개 범위</span>
         <select
           aria-label="공개 범위"
@@ -204,14 +204,14 @@ export function RecipeForm({
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md bg-brand px-4 py-2 text-base text-on-accent disabled:opacity-50"
         >
           저장
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-line px-4 py-2 text-sm"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-line px-4 py-2 text-base"
         >
           취소
         </button>
@@ -244,12 +244,12 @@ function TextField({
     value,
     "aria-describedby": error ? errorId : undefined,
     onChange: (e: { target: { value: string } }) => onChange(e.target.value),
-    className: "min-h-11 rounded-md border border-line px-2 py-1 text-sm",
+    className: "min-h-11 rounded-md border border-line px-2 py-1 text-base",
   };
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-sm text-muted">
+      <label htmlFor={inputId} className="text-base text-muted">
         {label}
       </label>
       {multiline ? <textarea {...shared} rows={3} /> : <input {...shared} />}
@@ -279,7 +279,7 @@ function NumberField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-sm text-muted">
+      <label htmlFor={inputId} className="text-base text-muted">
         {label}
       </label>
       <span className="flex items-baseline gap-1">
@@ -292,10 +292,10 @@ function NumberField({
           onChange={(e) =>
             onChange(e.target.value === "" ? null : Number(e.target.value))
           }
-          className="w-24 rounded-md border border-line px-2 py-1 text-sm min-h-11"
+          className="w-24 rounded-md border border-line px-2 py-1 text-base min-h-11"
         />
-        <span className="text-sm text-muted">{suffix}</span>
-        {hint && <span className="text-sm text-muted">{hint}</span>}
+        <span className="text-base text-muted">{suffix}</span>
+        {hint && <span className="text-base text-muted">{hint}</span>}
       </span>
       <FieldError id={errorId} message={error} />
     </div>
@@ -317,7 +317,7 @@ function SelectField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-sm text-muted">
+      <label htmlFor={inputId} className="text-base text-muted">
         {label}
       </label>
       <select
@@ -326,7 +326,7 @@ function SelectField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="rounded-md border border-line px-2 py-1 text-sm min-h-11"
+        className="rounded-md border border-line px-2 py-1 text-base min-h-11"
       >
         <option value="">선택 안 함</option>
         {options.map((option) => (
@@ -342,7 +342,7 @@ function SelectField({
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={id} className="whitespace-pre-line text-sm text-danger">
+    <p id={id} className="whitespace-pre-line text-base text-danger">
       {message}
     </p>
   );

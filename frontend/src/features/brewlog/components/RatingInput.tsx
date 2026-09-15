@@ -19,7 +19,7 @@ export function RatingInput({
 }) {
   return (
     <div className="flex items-center gap-1">
-      <span className="w-20 text-sm text-muted">별점</span>
+      <span className="w-20 text-base text-muted">별점</span>
       {STARS.map((star) => (
         <button
           key={star}

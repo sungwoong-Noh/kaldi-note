@@ -26,21 +26,21 @@ export function BrewLogCard({
         className="block rounded-lg border border-line p-4 active:bg-surface"
       >
         <div className="flex items-start justify-between gap-2">
-          <h2 className="font-medium">{recipeLabel}</h2>
+          <h2 className="text-lg font-medium">{recipeLabel}</h2>
           {log.rating !== undefined && (
-            <span className="shrink-0 text-sm text-muted">
+            <span className="shrink-0 text-base text-muted">
               <span aria-hidden>★</span> {formatRating(log.rating)}
             </span>
           )}
         </div>
 
         <dl className="mt-2 flex flex-col gap-1">
-          <div className="text-lg font-semibold tabular-nums">
+          <div className="text-4xl font-semibold tabular-nums tracking-[-0.02em]">
             <dt className="sr-only">{lead.label}</dt>
             <dd>{lead.value}</dd>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
             {summaryEntries(log, lead.label).map((entry) => (
               <div key={entry.label} className="flex items-center gap-1">
                 <dt className="sr-only">{entry.label}</dt>

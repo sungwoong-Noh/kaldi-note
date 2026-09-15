@@ -5,7 +5,7 @@
 **Spec:** `docs/specs/2026-09-15-readability.md`
 
 **Goal:** 라이트 모드의 보조색·테두리·오류색을 진하게 바꾸고 글자 5단계를 한 칸씩 올려, 낮에 부엌
-조명에서 라벨과 힌트가 읽히게 만든다. 동시에 커버리지 스크립트가 자기 접두어의 AC만 세게 고친다.
+조명에서 라벨과 힌트가 읽히게 만든다. 동시에 커버리지 스크립트가 각 스펙이 소유한 AC만 세게 고친다.
 
 **Architecture:** 색은 `globals.css` 세 줄만 고친다 — `text-muted` 91곳·`border-line` 57곳·
 `text-danger` 24곳이 전부 토큰을 가리키므로 앱 코드를 건드리지 않고 172곳에 전달된다. 글자는
@@ -22,8 +22,8 @@ Task 3에서 순서를 고정하고 각 단계마다 개수를 센다.
 
 | AC ID | 요약 | 담당 태스크 | 검증 방식 |
 |---|---|---|---|
-| AC-READ-19 | 스크립트가 자기 접두어만 센다 | Task 1 | 쉘 테스트 |
-| AC-READ-20 | 기존 31개 집계 불변 | Task 1 | 쉘 테스트 |
+| AC-READ-19 | 스크립트가 헤딩 정의분만 센다 | Task 1 | 쉘 테스트 |
+| AC-READ-20 | 소유 기준 합계가 739 | Task 1 | 쉘 테스트 |
 | AC-READ-01 | muted `#545454` · 7.57:1 | Task 2 | 단위 테스트 |
 | AC-READ-02 | line `#b8b8b8` | Task 2 | 단위 테스트 |
 | AC-READ-03 | danger `#b91c1c` · 6.47:1 | Task 2 | 단위 테스트 |
@@ -61,8 +61,9 @@ Task 3에서 순서를 고정하고 각 단계마다 개수를 센다.
 
 ```
 scripts/
-  check-spec-coverage.sh            수정 — frontmatter의 id로 접두어를 좁힌다
+  check-spec-coverage.sh            수정 — `#### AC-` 헤딩으로 소유를 판정한다
   check-spec-coverage.test.sh       신규 — 순수 bash, spec.yml이 돌린다
+.github/workflows/spec.yml          수정 — 위 테스트를 CI 단계로 추가
 frontend/
   src/app/globals.css               수정 — :root 세 줄
   src/test/contrast.test.ts         수정 — AC-READ-01·02·03·06·16
@@ -75,7 +76,7 @@ frontend/
 
 ---
 
-## Task 1: 커버리지 스크립트가 자기 접두어만 센다
+## Task 1: 커버리지 스크립트가 헤딩 정의분만 센다
 
 **Files:**
 - Modify: `scripts/check-spec-coverage.sh`
@@ -90,7 +91,7 @@ frontend/
 > **왜 먼저 하나.** 이 태스크가 끝나야 이후 태스크의 커버리지 출력이 믿을 수 있는 숫자가 된다.
 > 나중에 하면 그동안의 집계가 전부 부풀려진 채로 남는다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `scripts/check-spec-coverage.test.sh`:
 
@@ -120,7 +121,7 @@ check() {
   fi
 }
 
-# ── AC-READ-19 · 자기 접두어의 AC만 센다 ──────────────────────────────
+# ── AC-READ-19 · 헤딩으로 정의된 AC만 센다 ──────────────────────────────
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$TMP/specs"
@@ -140,10 +141,10 @@ out=$(SPEC_DIR="$TMP/specs" "$SCRIPT" 2>&1)
 count=$(echo "$out" | grep -oE 'AC [0-9]+개' | grep -oE '[0-9]+' | head -1)
 check "AC-READ-19 · AC-BAR-99를 세지 않는다" "2" "$count"
 
-# ── AC-READ-20 · 기존 스펙 31개의 집계가 변하지 않는다 ────────────────
+# ── AC-READ-20 · 소유 기준 합계가 739다 ──────────────────────────────
 real=$("$SCRIPT" 2>&1)
 total=$(echo "$real" | grep -oE '인수 조건 [0-9]+개' | grep -oE '[0-9]+')
-check "AC-READ-20 · 합계가 747이다" "747" "$total"
+check "AC-READ-20 · 합계가 739다" "739" "$total"
 
 echo
 if [ "$failed" -eq 0 ]; then
@@ -154,36 +155,45 @@ fi
 exit "$failed"
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 chmod +x scripts/check-spec-coverage.test.sh
 ./scripts/check-spec-coverage.test.sh
 ```
 
-Expected: **`AC-READ-19`만 FAIL** — `2`가 아니라 `3`을 돌려준다(`AC-BAR-99`를 같이 셈).
+**실제 관측(2026-09-15):** `AC-READ-19` FAIL(`2` 기대, **`25`** 실제) · `AC-READ-20` PASS.
 
-**`AC-READ-20`은 이 시점에 이미 통과한다.** 합계 747은 `구현완료` 스펙만 세고 `초안`은
-건너뛰므로, 이번 스펙(초안)이 31개로 부풀려 집계되어도 합계에 영향을 주지 않는다.
+`25`가 나온 것은 두 결함이 겹친 결과다 — `SPEC_DIR`이 환경변수가 아니라 임시 디렉터리 대신
+실제 `docs/specs`를 검사했고, 거기에 접두어 미구분까지 더해졌다.
 
-> **★ 빨강이 보장되지 않는 조건이다.** 회귀 검사라 원래 통과하는 것이 정상이지만, **그대로 두면
-> 「검사가 비어 있는 것」과 구분되지 않는다.** 돌연변이로 확인한다 — `check-spec-coverage.sh`의
-> `AC_PATTERN`을 `AC-[A-Z]` → `AC-[A-Z]{99}`처럼 잠시 망가뜨려 합계가 747에서 떨어지는지 보고
-> 되돌린다. 이 프로젝트가 반복해서 쓰는 방법이다(JOURNAL 2026-09-09·09-10).
+**`AC-READ-20`은 이 시점에 이미 통과한다.** 합계는 `구현완료` 스펙만 세고 `초안`은 건너뛰므로,
+이번 스펙(초안)이 부풀려 집계되어도 합계에 영향을 주지 않는다.
 
-- [ ] **Step 3: 최소 구현**
+> **★ 빨강이 보장되지 않는 조건이다.** **그대로 두면 「검사가 비어 있는 것」과 구분되지 않는다.**
+> 돌연변이로 확인한다 — `AC_PATTERN`을 `AC-[A-Z]{99}`처럼 잠시 망가뜨리고 되돌린다.
+> **실제로 해봤고 합계가 `747 → 0`으로 떨어지며 빨개졌다.** 검사는 비어 있지 않다.
+
+- [x] **Step 3: 최소 구현**
 
 `scripts/check-spec-coverage.sh`의 `ids=` 줄(46~48행 부근)을 바꾼다:
 
+> **★ 계획이 처음 적은 `id` 기반 구현은 틀렸다.** 실제로 해보니 합계가 **747 → 689**로
+> **58개가 사라졌다.** 한 스펙이 여러 접두어를 소유하기 때문이다 —
+> `visibility-authorization`(`id: VIS`)이 `AC-FOLLOW`를, `list-query-api`(`id: LIST`)가
+> `AC-BLEDIT`·`AC-ME`를, `seed-curated-recipes`가 `AC-SWAGGER`를, `web-recipe-read`가
+> `AC-CORS`를 **자기 헤딩으로 정의**한다. `id`로 걸렀더니 그것들이 통째로 빠졌다.
+>
+> 올바른 기준은 `id`가 아니라 **소유(`#### AC-` 헤딩) vs 언급(본문 참조)**이다.
+
 ```bash
-  # 이 스펙이 소유한 AC만 센다. frontmatter의 id가 접두어다.
-  # id가 없으면 예전처럼 전부 센다 — 옛 스펙이 깨지지 않게 한다.
-  spec_id=$(grep -m1 '^id:' "$spec" 2>/dev/null | sed 's/^id:[[:space:]]*//' | tr -d '\r' || true)
-  if [ -n "$spec_id" ]; then
-    ids=$(grep -oE "AC-${spec_id}-[0-9]+" "$spec" 2>/dev/null | sort -u || true)
-  else
-    ids=$(grep -oE "$AC_PATTERN" "$spec" 2>/dev/null | sort -u || true)
-  fi
+  # 이 스펙이 소유한 AC만 센다. 소유의 표시는 `#### AC-…` 헤딩이다.
+  #
+  # 스펙이 남의 AC를 본문에서 참조하는 일이 있다 — 갱신 대상을 명시하거나 선행 스펙을
+  # 가리킬 때다. 그것까지 세면 같은 AC가 두 스펙에서 잡혀 합계가 부풀려진다.
+  #
+  # frontmatter의 id로 좁히지 않는 이유: 한 스펙이 여러 접두어를 소유한다.
+  ids=$(grep -oE "^#### $AC_PATTERN" "$spec" 2>/dev/null | sed 's/^#### //' | sort -u || true)
 ```
 
 **`SPEC_DIR`의 환경변수화가 반드시 필요하다.** 22행이 `SPEC_DIR="docs/specs"`로 고정돼 있어
@@ -196,19 +206,23 @@ SPEC_DIR="${SPEC_DIR:-docs/specs}"
 > 스크립트 19행의 `cd "$(dirname "$0")/.."`가 먼저 실행되므로 상대경로 기본값은 그대로 동작한다.
 > 테스트는 절대경로를 넘긴다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 ./scripts/check-spec-coverage.test.sh
 ./scripts/check-spec-coverage.sh | tail -3
 ```
 
-Expected: PASS 2개. 커버리지 합계가 **747**로 돌아오고, 이번 스펙이 `[초안] — AC 21개`로 보고된다.
+Expected: PASS 2개. 이번 스펙이 `[초안] — AC 21개`로 보고되고, 합계가 **739**가 된다.
 
-- [ ] **Step 5: 커밋**
+> **★ 합계가 747에서 739로 8개 줄어드는 것이 정상이다.** 6개 스펙이 본문에서 참조만 한 남의 AC가
+> 소유 스펙에서 한 번 더 세어져 **중복 집계돼 왔다.** `747`은 처음부터 부풀려진 숫자였다.
+> `AC-READ-20`을 이 사실에 맞춰 갱신했고 이유를 스펙 그 자리에 남겼다.
+
+- [x] **Step 5: 커밋**
 
 ```bash
-git add scripts/ docs/ && git commit -m "fix(scripts): 커버리지가 자기 접두어의 AC만 센다 (AC-READ 2개)"
+git add scripts/ docs/ && git commit -m "fix(scripts): 커버리지가 각 스펙이 소유한 AC만 센다 (AC-READ 2개)"
 ```
 
 ---
@@ -226,7 +240,7 @@ git add scripts/ docs/ && git commit -m "fix(scripts): 커버리지가 자기 �
 - Consumes: `readPalettes()` · `contrastRatio()` (`src/test/tokens.ts` · `contrast.ts`)
 - Produces: 확정된 토큰 값. Task 4의 `AC-READ-15`가 `rgb(84,84,84)`를 기대한다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `src/test/contrast.test.ts` 끝에 추가:
 
@@ -286,7 +300,7 @@ describe("읽힘 — 라이트 모드의 대비", () => {
 it("AC-VISUAL-06 · AC-READ-04 · 토큰 8개가 라이트·다크 값을 모두 갖는다", () => {
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 cd frontend && pnpm test -- contrast
@@ -294,7 +308,7 @@ cd frontend && pnpm test -- contrast
 
 Expected: FAIL — `AC-READ-01`이 `#737373`을 받아 `#545454`와 다르다고 한다. 3개 실패.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `frontend/src/app/globals.css`의 `:root` 세 줄만 바꾼다:
 
@@ -308,7 +322,7 @@ Expected: FAIL — `AC-READ-01`이 `#737373`을 받아 `#545454`와 다르다고
 
 **`@media (prefers-color-scheme: dark)` 블록은 한 줄도 건드리지 않는다.**
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pnpm test -- contrast designTokens
@@ -316,7 +330,7 @@ pnpm test -- contrast designTokens
 
 Expected: PASS. 기존 `AC-VISUAL-07`(AA 4.5:1)도 통과가 유지된다 — 전부 값을 올리는 방향이다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 라이트 모드 대비를 올린다 (AC-READ 7개)"
@@ -338,7 +352,7 @@ git add . && git commit -m "feat(web): 라이트 모드 대비를 올린다 (AC-
 - Consumes: Task 2의 토큰 값
 - Produces: 새 5단계. Task 4가 렌더로 다시 잰다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `src/test/designTokens.test.ts`에 추가. **`SOURCES`가 테스트 파일까지 포함하므로 앱 코드만 거르는
 상수를 새로 만든다:**
@@ -431,7 +445,7 @@ describe("읽힘 — 글자 단계", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 pnpm test -- designTokens
@@ -439,7 +453,13 @@ pnpm test -- designTokens
 
 Expected: FAIL — `AC-READ-07`이 `text-xl` 15곳, `text-xs` 20곳을 찾는다.
 
-- [ ] **Step 3: 최소 구현 — 순서를 지켜 치환한다**
+- [x] **Step 3: 최소 구현 — 순서를 지켜 치환한다**
+
+> **★ `sed`로는 안 된다(2026-09-15 실측).** BSD sed(macOS)는 `\b`(단어 경계)를 지원하지 않아
+> **치환이 0건**이었다. GNU sed 전용 문법이다. `perl -pi -e`로 바꿔야 한다.
+>
+> **★ zsh에서는 `xargs`를 써야 한다.** `files=$(grep -rl …)` 뒤에 `perl … $files`로 넘기면
+> zsh가 단어 분리를 하지 않아 전체가 파일명 하나가 되고 `File name too long`이 난다.
 
 **순서가 결과를 바꾼다.** 아래 순서로만 실행한다. `text-sm`을 먼저 올리면 127곳이 다음 치환에
 다시 걸려 `text-lg`가 된다.
@@ -491,7 +511,7 @@ text-4xl font-semibold tabular-nums tracking-[-0.02em]
 `tracking-[-0.02em]` 하나뿐이다. 이것은 임의값이지만 **크기가 아니라 자간**이라
 `AC-READ-10`의 대상이 아니다(그 조건은 `text-[숫자px]`만 센다).
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pnpm test
@@ -500,7 +520,7 @@ pnpm test
 Expected: PASS — `designTokens` 4개 신규 통과. **기존 테스트 중 클래스 문자열을 검사하는 것이
 빨개지면 그 assert를 새 값으로 고친다**(`.test.tsx` 8곳). 고친 뒤 379개 + 신규가 전부 초록.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 글자 184곳을 한 단계씩 올린다 (AC-READ 4개)"
@@ -522,7 +542,7 @@ git add . && git commit -m "feat(web): 글자 184곳을 한 단계씩 올린다 
 > **소스 검사만으로는 부족하다.** 클래스가 붙어 있어도 부모가 짓누르면 크기가 달라진다.
 > `touch-targets` 세션이 같은 이유로 렌더 측정을 택했다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `frontend/e2e/readability.spec.ts`:
 
@@ -599,7 +619,7 @@ test.describe("읽힘 — 렌더된 크기", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 # ★ dev 서버가 떠 있으면 reuseExistingServer가 이겨 프로덕션 빌드에 안 붙는다.
@@ -610,12 +630,12 @@ pnpm e2e readability
 Expected: FAIL — Task 3 전이면 제목이 `20px`, 수치가 `18px`로 나온다.
 Task 3 후에 돌리면 `AC-READ-13`만 실패한다(굵기·자간 미적용).
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 Task 3의 Step 3에서 이미 `font-semibold tracking-[-0.02em]`을 붙였다면 추가 구현이 없다.
 빨간 것이 있으면 그 요소에만 붙인다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pnpm e2e readability
@@ -623,7 +643,11 @@ pnpm e2e readability
 
 Expected: PASS, 5 tests.
 
-- [ ] **Step 5: 커밋**
+> **★ Task 3 뒤에 쓴 테스트라 빨강을 보지 못했다.** 돌연변이로 확인했다 — `RecipeDetail`의
+> 대표 수치를 `text-lg`로 낮추고 `tracking`을 떼고 `--muted`를 옛 값으로 되돌리니
+> **`AC-READ-12`·`13`·`15`가 빨개졌다.** 원복 후 다시 5개 전부 초록.
+
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "test(web): 읽힘을 렌더로 잰다 (AC-READ 5개)"
@@ -647,7 +671,7 @@ git add . && git commit -m "test(web): 읽힘을 렌더로 잰다 (AC-READ 5개)
 > **앱 코드 184곳에서 글자를 키우는 변경이다.** 레이아웃이 깨지는 것이 최대 위험이고,
 > 그것은 가로 스크롤로 먼저 드러난다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `readability.spec.ts`에 추가:
 
@@ -676,7 +700,7 @@ test.describe("읽힘 — 회귀", () => {
 test(`AC-TOUCH-01 · AC-READ-18 · ${path}의 모든 타깃이 44×44 이상이다`, ...
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 pnpm e2e
@@ -688,12 +712,12 @@ Expected: 11개 중 일부가 FAIL일 수 있다 — 36px 수치가 360px 폭을
 
 > 앞 세션들이 반복해서 겪은 것이다 — 첫 실행에 통과하는 검사는 **비어 있는 검사와 구분되지 않는다.**
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 넘치는 화면이 있으면 그 요소에 한해 줄바꿈을 허용하거나 컨테이너에 `min-w-0`을 준다.
 **글자 크기를 되돌리지 않는다** — 그러면 이 스펙의 목적이 사라진다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pnpm e2e && pnpm test && pnpm typecheck && pnpm lint && pnpm build
@@ -701,7 +725,7 @@ pnpm e2e && pnpm test && pnpm typecheck && pnpm lint && pnpm build
 
 Expected: e2e 122 + 신규 16, 단위 379 + 신규 9가 전부 PASS.
 
-- [ ] **Step 5: 기존 스펙의 AC 값을 갱신하고 커밋**
+- [x] **Step 5: 기존 스펙의 AC 값을 갱신하고 커밋**
 
 `docs/specs/2026-09-07-visual-hierarchy.md`:
 
@@ -727,11 +751,11 @@ git add . && git commit -m "feat(web): 글자를 키워도 레이아웃이 버�
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `cd frontend && pnpm e2e` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — 합계가 **768**(747 + 21)
-- [ ] `./scripts/check-spec-coverage.test.sh` 통과
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 — 단위 **389**
+- [x] `cd frontend && pnpm e2e` 통과 — e2e **138**
+- [x] `./scripts/check-spec-coverage.sh` 통과 — 스펙 **32건** · 합계 **760**(739 + 21)
+- [x] `./scripts/check-spec-coverage.test.sh` 통과
+- [x] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 3개 — **폰 실물과 실제 조명이 필요해 비차단형이다**
 
 ---

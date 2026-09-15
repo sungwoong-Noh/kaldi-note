@@ -11,7 +11,7 @@ import { installStubs } from "./stubs";
  */
 
 /** globals.css의 --color-muted를 브라우저가 정규화한 값. visual.spec.ts와 같다. */
-const MUTED_LIGHT = "rgb(115, 115, 115)";
+const MUTED_LIGHT = "rgb(84, 84, 84)";
 
 /**
  * 스텁이 주는 것만 쓴다.
@@ -63,7 +63,7 @@ test.describe("일관성 — 렌더값", () => {
   }
 
   for (const path of ["/recipes/12", "/brews/2"] as const) {
-    test(`AC-CONSIST-07 · ${path}의 메타줄 라벨이 12px muted다`, async ({
+    test(`AC-CONSIST-07 · ${path}의 메타줄 라벨이 14px muted다`, async ({
       page,
     }) => {
       await installStubs(page);
@@ -74,7 +74,7 @@ test.describe("일관성 — 렌더값", () => {
 
       expect(
         await label.evaluate((el) => getComputedStyle(el).fontSize),
-      ).toBe("12px");
+      ).toBe("14px");
       expect(await label.evaluate((el) => getComputedStyle(el).color)).toBe(
         MUTED_LIGHT,
       );

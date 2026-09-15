@@ -58,7 +58,7 @@ export default function RecipesPage() {
   if (recipes.length === 0) {
     return (
       <Shell mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
-        <p className="py-12 text-center text-sm text-muted">
+        <p className="py-12 text-center text-base text-muted">
           레시피가 없습니다
         </p>
       </Shell>
@@ -78,7 +78,7 @@ export default function RecipesPage() {
           type="button"
           onClick={() => void fetchNextPage()}
           disabled={isFetchingNextPage}
-          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-line py-3 text-sm disabled:opacity-50"
+          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-line py-3 text-base disabled:opacity-50"
         >
           더 보기
         </button>
@@ -99,17 +99,17 @@ function Shell({
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-6">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">레시피</h1>
+        <h1 className="text-2xl font-semibold">레시피</h1>
         <Link
           href="/recipes/new"
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-2 text-sm text-on-accent"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-2 text-base text-on-accent"
         >
           새 레시피
         </Link>
       </div>
 
       {onMineOnlyChange && (
-        <label className="mb-4 flex items-center gap-2 text-sm">
+        <label className="mb-4 flex items-center gap-2 text-base">
           <input
             type="checkbox"
             className="size-11"

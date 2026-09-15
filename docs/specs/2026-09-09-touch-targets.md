@@ -174,12 +174,16 @@ plan: docs/plans/2026-09-09-plan-touch-targets.md
 - **Then** `height`가 `44px`다
 - **검증** e2e `e2e/touch-targets.spec.ts`
 
-#### AC-TOUCH-10 · `BottomNav` 탭 4개가 90×44px 그대로다
+#### AC-TOUCH-10 · `BottomNav` 탭 4개가 90×48px이다
 
-- **Given** `/recipes` — 지금 각 탭이 90×44px로 **이미 통과**한다
+- **Given** `/recipes`
 - **When** `홈`·`레시피`·`기록`·`더보기` 링크를 잰다
-- **Then** 넷 다 `width`가 `90px`, `height`가 `44px`다. **이 스펙이 그것을 바꾸지 않는다**
+- **Then** 넷 다 `width`가 `90px`, `height`가 `48px`다
 - **검증** e2e `e2e/touch-targets.spec.ts`
+
+> **갱신 (2026-09-15).** 처음에는 `90×44px`이었고 「이 스펙이 그것을 바꾸지 않는다」였다.
+> `readability` 스펙이 탭 라벨을 12→14px로 키우면서 `py-3`의 콘텐츠 높이가 늘어 **48px이 됐다.**
+> **44px 규약은 계속 만족하며 오히려 커졌다** — 줄이지 않고 값을 확정한다.
 
 ### 경계값
 

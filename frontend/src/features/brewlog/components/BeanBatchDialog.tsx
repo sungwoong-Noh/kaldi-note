@@ -121,7 +121,7 @@ export function BeanBatchDialog({
         aria-labelledby="bean-batch-title"
         className="flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto rounded-lg bg-background p-4"
       >
-        <h2 id="bean-batch-title" className="text-base font-semibold">
+        <h2 id="bean-batch-title" className="text-lg font-semibold">
           원두 등록
         </h2>
 
@@ -168,7 +168,7 @@ export function BeanBatchDialog({
               onChange={setProductName}
               error={nameErrorFor("product")}
             />
-            <label className="flex flex-col gap-1 text-sm">
+            <label className="flex flex-col gap-1 text-base">
               <span className="text-muted">배전도</span>
               <select
                 aria-label="배전도"
@@ -193,7 +193,7 @@ export function BeanBatchDialog({
           </>
         )}
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-base">
           <span className="text-muted">중량</span>
           <input
             type="number"
@@ -208,13 +208,13 @@ export function BeanBatchDialog({
             className="min-h-11 rounded-md border border-line px-2 py-1"
           />
           {mapped?.byField.weightG && (
-            <span id="bean-batch-weight-error" className="text-xs text-danger">
+            <span id="bean-batch-weight-error" className="text-sm text-danger">
               {mapped.byField.weightG}
             </span>
           )}
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-base">
           <span className="text-muted">로스팅일</span>
           <input
             type="date"
@@ -229,7 +229,7 @@ export function BeanBatchDialog({
           {mapped?.byField.roastedAt && (
             <span
               id="bean-batch-roasted-error"
-              className="text-xs text-danger"
+              className="text-sm text-danger"
             >
               {mapped.byField.roastedAt}
             </span>
@@ -237,14 +237,14 @@ export function BeanBatchDialog({
         </label>
 
         {submit.error && (
-          <p className="text-xs text-danger">{submit.error.message}</p>
+          <p className="text-sm text-danger">{submit.error.message}</p>
         )}
 
         <div className="flex justify-end gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-sm"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
           >
             취소
           </button>
@@ -252,7 +252,7 @@ export function BeanBatchDialog({
             type="button"
             disabled={submit.isPending}
             onClick={() => submit.mutate()}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-2 text-sm text-on-accent disabled:opacity-50"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-2 text-base text-on-accent disabled:opacity-50"
           >
             등록
           </button>
@@ -274,7 +274,7 @@ function SelectField({
   options: { id: number; label: string }[];
 }) {
   return (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="flex flex-col gap-1 text-base">
       <span className="text-muted">{label}</span>
       <select
         aria-label={label}
@@ -308,7 +308,7 @@ function TextField({
 }) {
   const errorId = `bean-batch-${label}-error`;
   return (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="flex flex-col gap-1 text-base">
       <span className="text-muted">{label}</span>
       <input
         aria-label={label}
@@ -318,7 +318,7 @@ function TextField({
         className="min-h-11 rounded-md border border-line px-2 py-1"
       />
       {error && (
-        <span id={errorId} className="text-xs text-danger">
+        <span id={errorId} className="text-sm text-danger">
           {error}
         </span>
       )}

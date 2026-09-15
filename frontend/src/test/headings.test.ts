@@ -32,10 +32,10 @@ describe("AC-VISUAL-13 · 화면 제목 15곳이 같은 단계를 쓴다", () =>
     expect(found).toHaveLength(15);
   });
 
-  it("모든 h1이 text-xl font-semibold다", () => {
+  it("모든 h1이 text-2xl font-semibold다", () => {
     const offenders = found.filter(
       ({ className }) =>
-        !className.includes("text-xl") || !className.includes("font-semibold"),
+        !className.includes("text-2xl") || !className.includes("font-semibold"),
     );
     expect(offenders).toEqual([]);
   });

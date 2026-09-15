@@ -43,7 +43,7 @@ export function BrewLogFields({
 }: BrewLogFieldsProps) {
   return (
     <>
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="flex flex-col gap-1 text-base">
         <span className="text-muted">내린 시각</span>
         <input
           type="datetime-local"
@@ -56,7 +56,7 @@ export function BrewLogFields({
           className="rounded-md border border-line px-2 py-1 min-h-11"
         />
         {fieldErrors?.byField.brewedAt && (
-          <span id="brew-brewed-at-error" className="text-xs text-danger">
+          <span id="brew-brewed-at-error" className="text-sm text-danger">
             {fieldErrors.byField.brewedAt}
           </span>
         )}
@@ -65,12 +65,12 @@ export function BrewLogFields({
       {beanSlot}
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-base font-semibold">그라인더</legend>
+        <legend className="text-lg font-semibold">그라인더</legend>
         {grinders.length === 0 && (
-          <p className="text-sm text-muted">등록된 그라인더가 없습니다</p>
+          <p className="text-base text-muted">등록된 그라인더가 없습니다</p>
         )}
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-1 text-sm">
+          <label className="flex items-center gap-1 text-base">
             <span className="text-muted">그라인더</span>
             <select
               aria-label="그라인더"
@@ -96,7 +96,7 @@ export function BrewLogFields({
             <button
               type="button"
               onClick={onAddGrinder}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-sm"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
             >
               + 그라인더 등록
             </button>
@@ -112,7 +112,7 @@ export function BrewLogFields({
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-base font-semibold">실측값</legend>
+        <legend className="text-lg font-semibold">실측값</legend>
         <NumberField
           label="원두량"
           value={state.actualDoseG}
@@ -159,7 +159,7 @@ export function BrewLogFields({
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-base font-semibold">평가</legend>
+        <legend className="text-lg font-semibold">평가</legend>
 
         <RatingInput value={state.rating} onChange={(v) => set("rating", v)} />
 
@@ -167,7 +167,7 @@ export function BrewLogFields({
           <button
             type="button"
             onClick={() => set("sensoryExpanded", true)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-line px-3 py-2 text-sm"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-line px-3 py-2 text-base"
           >
             맛 자세히
           </button>
@@ -175,7 +175,7 @@ export function BrewLogFields({
 
         {state.sensoryExpanded &&
           SENSORY_AXES.map(({ key, label }) => (
-            <label key={key} className="flex items-center gap-2 text-sm">
+            <label key={key} className="flex items-center gap-2 text-base">
               <span className="w-20 text-muted">{label}</span>
               <select
                 aria-label={label}
@@ -198,7 +198,7 @@ export function BrewLogFields({
             </label>
           ))}
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-base">
           <span className="text-muted">메모</span>
           <textarea
             aria-label="메모"
@@ -211,7 +211,7 @@ export function BrewLogFields({
             className="rounded-md border border-line px-2 py-1 min-h-11"
           />
           {fieldErrors?.byField.overallNote && (
-            <span id="brew-note-error" className="text-xs text-danger">
+            <span id="brew-note-error" className="text-sm text-danger">
               {fieldErrors.byField.overallNote}
             </span>
           )}
@@ -241,7 +241,7 @@ function NumberField({
   const errorId = `brew-${encodeURIComponent(label)}-error`;
 
   return (
-    <label className="flex items-center gap-2 text-sm">
+    <label className="flex items-center gap-2 text-base">
       <span className="w-20 text-muted">{label}</span>
       <input
         type="number"
@@ -254,7 +254,7 @@ function NumberField({
         className="w-32 rounded-md border border-line px-2 py-1 min-h-11"
       />
       {error && (
-        <span id={errorId} className="text-xs text-danger">
+        <span id={errorId} className="text-sm text-danger">
           {error}
         </span>
       )}

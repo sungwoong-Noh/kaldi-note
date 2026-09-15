@@ -89,6 +89,10 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 
 **글자로 쓰이는 토큰은 전부 WCAG AA(4.5:1)를 넘긴다. 최저는 `--color-muted` 라이트값의 4.74:1이다.**
 
+> **★ 위 표와 아래 대비표는 2026-09-07 시점의 값이다.** `2026-09-15-readability.md`가 라이트 모드의
+> 셋을 진하게 바꿨다 — `muted` `#545454`(7.57:1) · `line` `#b8b8b8` · `danger` `#b91c1c`(6.47:1).
+> **값의 진실 원천은 언제나 `globals.css`다**(`docs/design/2026-09-08-brand.md`).
+
 | 조합 | 대비 |
 |---|---|
 | brand / 배경 | 7.44:1 · 8.98:1 |
@@ -131,6 +135,10 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 | 카드 제목 | 16px (`text-base`) | medium | foreground |
 | 본문 | 14px (`text-sm`) | normal | foreground |
 | 라벨·보조 | 12px (`text-xs`) | normal | muted |
+
+> **★ 이 표는 2026-09-07 시점이다.** `2026-09-15-readability.md`가 다섯 단계를
+> **`36/24/18/16/14`**로 재배치했다(`text-4xl`·`text-2xl`·`text-lg`·`text-base`·`text-sm`).
+> **단계 수는 그대로 다섯이고 값만 바뀌었다.** `AC-VISUAL-05`·`15`·`16`이 새 값을 검사한다.
 
 **색은 액션에만 쓴다.** 수치는 크기와 굵기로 올리고 브라운을 칠하지 않는다 — 목록에 카드가 쌓였을 때
 갈색이 많아지면 주 액션 버튼이 묻힌다.
@@ -219,8 +227,13 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 
 - **Given** `frontend/src` 아래의 모든 `.ts`·`.tsx` 파일
 - **When** `text-` 뒤에 크기가 오는 클래스를 찾는다
-- **Then** `text-xs`·`text-sm`·`text-base`·`text-lg`·`text-xl` **다섯 개만** 나온다. 예외는 `RatingInput.tsx`의 `text-[22px]` **한 곳**이다
+- **Then** `text-sm`·`text-base`·`text-lg`·`text-2xl`·`text-4xl` **다섯 개만** 나온다. 예외는 `RatingInput.tsx`의 `text-[22px]` **한 곳**이다
 - **검증** 단위 테스트 `designTokens.test.ts`
+
+> **갱신 (2026-09-15).** 다섯 단계가 `20/18/16/14/12`에서 **`36/24/18/16/14`**로 재배치됐다.
+> **개수는 그대로 다섯이고 값만 바뀌었다.** 본문 14px·라벨 12px이 부엌에서 작았고, 주요 수치
+> 18px과 화면 제목 20px의 차이가 2px뿐이라 위계가 평평했다
+> (`docs/specs/2026-09-15-readability.md`).
 
 #### AC-VISUAL-06 · 토큰 8개가 라이트·다크 값을 모두 갖는다
 
@@ -297,19 +310,23 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 - **Then** `rgb(111, 78, 55)`이다
 - **검증** e2e `visual.spec.ts`
 
-#### AC-VISUAL-15 · 화면 제목이 20px로 렌더된다
+#### AC-VISUAL-15 · 화면 제목이 24px로 렌더된다
 
 - **Given** `/recipes`를 연다
 - **When** `h1`의 `font-size`를 읽는다
-- **Then** `20px`다
+- **Then** `24px`다
 - **검증** e2e `visual.spec.ts`
 
-#### AC-VISUAL-16 · 대표 수치가 18px로 렌더된다
+> **갱신 (2026-09-15).** `docs/specs/2026-09-15-readability.md`가 글자 5단계를 재배치했다. 제목과 섹션의 차이가 2px뿐이라 위계가 평평했다.
+
+#### AC-VISUAL-16 · 대표 수치가 36px로 렌더된다
 
 - **Given** `/recipes`를 연다 (픽스처 레시피 1건)
 - **When** 카드 대표 수치의 `font-size`를 읽는다
-- **Then** `18px`다
+- **Then** `36px`다
 - **검증** e2e `visual.spec.ts`
+
+> **갱신 (2026-09-15).** `docs/specs/2026-09-15-readability.md`가 글자 5단계를 재배치했다. 이 앱은 숫자가 주인공인데 주인공이 화면 제목보다 작았다.
 
 #### AC-VISUAL-17 · 라벨이 보조색으로 렌더된다
 

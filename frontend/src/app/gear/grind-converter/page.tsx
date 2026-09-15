@@ -39,7 +39,7 @@ export default function GrindConverterPage() {
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-6">
-      <h1 className="mb-4 text-xl font-semibold">분쇄도 환산기</h1>
+      <h1 className="mb-4 text-2xl font-semibold">분쇄도 환산기</h1>
       {children}
     </main>
   );

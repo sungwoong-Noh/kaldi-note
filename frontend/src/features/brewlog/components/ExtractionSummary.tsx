@@ -13,8 +13,8 @@ export function ExtractionSummary({ log }: { log: BrewLog }) {
 
   return (
     <section className="flex flex-col gap-2">
-      <h2 className="text-base font-semibold">추출 분석</h2>
-      <dl className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+      <h2 className="text-lg font-semibold">추출 분석</h2>
+      <dl className="flex flex-wrap gap-x-4 gap-y-1 text-base">
         <div className="flex items-center gap-1">
           <dt className="text-muted">TDS</dt>
           <dd>{log.tdsPercent} %</dd>
@@ -39,7 +39,7 @@ export function ExtractionSummary({ log }: { log: BrewLog }) {
         )}
       </dl>
       {log.diagnosis !== undefined && (
-        <p className="text-sm text-muted">
+        <p className="text-base text-muted">
           {log.diagnosis}
         </p>
       )}

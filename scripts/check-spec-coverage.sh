@@ -18,12 +18,15 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-SPEC_DIR="docs/specs"
+# 테스트가 임시 디렉터리를 가리킬 수 있게 열어 둔다. 기본값은 위 cd 뒤의 상대경로다.
+SPEC_DIR="${SPEC_DIR:-docs/specs}"
 AC_PATTERN='AC-[A-Z][A-Z0-9_]*-[0-9]+'
 
 # 테스트 코드가 있을 수 있는 경로 중 실제로 존재하는 것만 모은다
+# scripts도 포함한다 — 이 스크립트 자신의 집계 로직을 검사하는 셸 테스트가 여기 산다
+# (docs/specs/2026-09-15-readability.md의 AC-READ-19·20).
 SEARCH_PATHS=()
-for path in backend/src/test frontend/src frontend/e2e infra/scripts; do
+for path in backend/src/test frontend/src frontend/e2e infra/scripts scripts; do
   [ -d "$path" ] && SEARCH_PATHS+=("$path")
 done
 
@@ -46,7 +49,15 @@ for spec in "$SPEC_DIR"/*.md; do
   status=$(grep -m1 '^status:' "$spec" 2>/dev/null | sed 's/^status:[[:space:]]*//' | tr -d '\r' || true)
   [ -z "$status" ] && status="(미지정)"
 
-  ids=$(grep -oE "$AC_PATTERN" "$spec" 2>/dev/null | sort -u || true)
+  # 이 스펙이 소유한 AC만 센다. 소유의 표시는 `#### AC-…` 헤딩이다.
+  #
+  # 스펙이 남의 AC를 본문에서 참조하는 일이 있다 — 갱신 대상을 명시하거나 선행 스펙을
+  # 가리킬 때다. 그것까지 세면 같은 AC가 두 스펙에서 잡혀 합계가 부풀려진다.
+  #
+  # frontmatter의 id로 좁히지 않는 이유: 한 스펙이 여러 접두어를 소유한다.
+  # visibility-authorization은 AC-VIS와 AC-FOLLOW를, list-query-api는 AC-LIST·AC-BLEDIT·
+  # AC-ME를 자기 헤딩으로 정의한다. id로 걸렀다면 그것들이 통째로 누락된다.
+  ids=$(grep -oE "^#### $AC_PATTERN" "$spec" 2>/dev/null | sed 's/^#### //' | sort -u || true)
 
   if [ -z "$ids" ]; then
     case "$status" in

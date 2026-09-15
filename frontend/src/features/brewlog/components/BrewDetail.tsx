@@ -74,7 +74,7 @@ export function BrewDetail({ id }: { id: number }) {
     <Shell>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted">
+          <p className="text-base text-muted">
             {log.brewedAt.slice(0, 10)}
           </p>
           {/*
@@ -86,7 +86,7 @@ export function BrewDetail({ id }: { id: number }) {
             누르면 403 화면으로 간다. 두 갈래가 같은 크기·굵기를 갖게 해서 폴백일 때 레이아웃이
             흔들리지 않게 한다.
           */}
-          <h1 className="text-xl font-semibold">
+          <h1 className="text-2xl font-semibold">
             {recipeId !== undefined && recipe.isReady ? (
               <Link
                 href={`/recipes/${recipeId}`}
@@ -99,28 +99,28 @@ export function BrewDetail({ id }: { id: number }) {
             )}
           </h1>
           {bean.label !== "" && (
-            <dl className="flex items-center gap-1 text-sm text-muted">
+            <dl className="flex items-center gap-1 text-base text-muted">
               <dt>원두</dt>
               <dd>{bean.label}</dd>
             </dl>
           )}
         </div>
         {log.rating !== undefined && (
-          <span className="shrink-0 text-sm">
+          <span className="shrink-0 text-base">
             <span aria-hidden>★</span> {log.rating}
           </span>
         )}
       </div>
 
       {/* 대표 수치. 상세에서 정확히 하나가 18px로 뜬다. 라벨은 sr-only다. */}
-      <dl className="flex items-center gap-1 text-lg font-semibold tabular-nums">
+      <dl className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]">
         <dt className="sr-only">{lead.label}</dt>
         <dd>{lead.value}</dd>
       </dl>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-base font-semibold">실측값</h2>
-        <dl className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+        <h2 className="text-lg font-semibold">실측값</h2>
+        <dl className="flex flex-wrap gap-x-3 gap-y-1 text-base">
           {measures(log)
             .filter((entry) => entry.label !== lead.label)
             .map((entry) => (
@@ -143,7 +143,7 @@ export function BrewDetail({ id }: { id: number }) {
       */}
       {recipe.isReady && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-base font-semibold">푸어 스텝</h2>
+          <h2 className="text-lg font-semibold">푸어 스텝</h2>
           <RecipeStepList steps={recipe.steps} />
         </section>
       )}
@@ -152,8 +152,8 @@ export function BrewDetail({ id }: { id: number }) {
 
       {log.overallNote !== undefined && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-base font-semibold">메모</h2>
-          <p className="whitespace-pre-wrap text-sm">{log.overallNote}</p>
+          <h2 className="text-lg font-semibold">메모</h2>
+          <p className="whitespace-pre-wrap text-base">{log.overallNote}</p>
         </section>
       )}
 
@@ -165,14 +165,14 @@ export function BrewDetail({ id }: { id: number }) {
         <div className="flex items-center gap-2 self-start">
           <Link
             href={`/brews/${id}/edit`}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-sm"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
           >
             편집
           </Link>
           <button
             type="button"
             onClick={() => setConfirmingDelete(true)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-danger px-3 py-2 text-sm text-danger"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-danger px-3 py-2 text-base text-danger"
           >
             삭제
           </button>
@@ -231,7 +231,7 @@ function measures(log: BrewLog): { label: string; value: string }[] {
 function Measure({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-1">
-      <dt className="text-xs text-muted">{label}</dt>
+      <dt className="text-sm text-muted">{label}</dt>
       <dd>{value}</dd>
     </div>
   );

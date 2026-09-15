@@ -17,11 +17,11 @@ export function ErrorState({
 }) {
   return (
     <div className="flex flex-col items-center gap-3 py-12">
-      <p className="text-center text-sm">{errorMessageOf(error)}</p>
+      <p className="text-center text-base">{errorMessageOf(error)}</p>
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-sm"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
       >
         다시 시도
       </button>

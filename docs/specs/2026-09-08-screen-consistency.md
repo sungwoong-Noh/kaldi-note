@@ -183,12 +183,16 @@ plan: docs/plans/2026-09-08-plan-screen-consistency.md
 - **검증** 컴포넌트 테스트 `RecipeCard.test.tsx` · `BrewLogCard.test.tsx` ·
   `src/app/recipes/[id]/page.test.tsx` · `src/app/brews/[id]/page.test.tsx`
 
-#### AC-CONSIST-07 · 상세 메타줄 라벨의 렌더 크기가 12px, 색이 `--color-muted`다
+#### AC-CONSIST-07 · 상세 메타줄 라벨의 렌더 크기가 14px, 색이 `--color-muted`다
 
 - **Given** 360×800 뷰포트에서 `/recipes/12` · `/brews/2`을 연다
 - **When** 메타줄의 `dt` 요소에서 `getComputedStyle`의 `fontSize`와 `color`를 읽는다
-- **Then** `fontSize`가 `12px`이고 `color`가 `--color-muted`의 계산값과 같다
+- **Then** `fontSize`가 `14px`이고 `color`가 `--color-muted`의 계산값과 같다
 - **검증** e2e `e2e/consistency.spec.ts`
+
+> **갱신 (2026-09-15).** `docs/specs/2026-09-15-readability.md`가 글자 5단계를 재배치했다. 라벨 12px이 부엌에서 작았다.
+> **색은 토큰을 가리키므로 이 AC를 바꾸지 않는다** — `--color-muted` 값이 `#545454`로 바뀌어도
+> 조건은 그대로 성립한다.
 
 #### AC-CONSIST-08 · `RecipeDetail`의 대표 수치가 정확히 하나이고 `30.0g → 500.0g`이다
 

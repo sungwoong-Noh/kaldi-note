@@ -121,12 +121,12 @@ function Fields({
   // `내린 시각`과 `그라인더` 사이에 들어간다. 편집 화면은 여기에 잠긴 원두 표시를 넣는다.
   const beanSlot = (
     <fieldset className="flex flex-col gap-2">
-      <legend className="text-base font-semibold">원두</legend>
+      <legend className="text-lg font-semibold">원두</legend>
       {(batches.data ?? []).length === 0 && !batches.isPending && (
-        <p className="text-sm text-muted">등록된 원두가 없습니다</p>
+        <p className="text-base text-muted">등록된 원두가 없습니다</p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-1 text-sm">
+        <label className="flex items-center gap-1 text-base">
           <span className="text-muted">원두</span>
           <select
             aria-label="원두"
@@ -151,7 +151,7 @@ function Fields({
         <button
           type="button"
           onClick={() => setAddingBean(true)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-sm"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
         >
           + 원두 등록
         </button>
@@ -171,7 +171,7 @@ function Fields({
       />
 
       {save.error && (
-        <p className="text-sm text-danger">{save.error.message}</p>
+        <p className="text-base text-danger">{save.error.message}</p>
       )}
 
       <div className="flex items-center gap-2">
@@ -179,14 +179,14 @@ function Fields({
           type="button"
           disabled={save.isPending}
           onClick={() => save.mutate()}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-2 text-sm text-on-accent disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-2 text-base text-on-accent disabled:opacity-50"
         >
           기록하기
         </button>
         <button
           type="button"
           onClick={() => router.push(`/recipes/${recipe.id}`)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-4 py-2 text-sm"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-4 py-2 text-base"
         >
           취소
         </button>
@@ -249,7 +249,7 @@ function batchLabel(
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6">
-      <h1 className="text-xl font-semibold">이 레시피로 내렸다</h1>
+      <h1 className="text-2xl font-semibold">이 레시피로 내렸다</h1>
       {children}
     </main>
   );

@@ -16,9 +16,9 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
         className="block rounded-lg border border-line p-4 active:bg-surface"
       >
         <div className="flex items-start justify-between gap-2">
-          <h2 className="font-medium">{recipe.title}</h2>
+          <h2 className="text-lg font-medium">{recipe.title}</h2>
           {recipe.sourceType === "CURATED" && (
-            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-xs text-muted">
+            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-sm text-muted">
               CURATED
             </span>
           )}
@@ -26,7 +26,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
 
         <dl className="mt-2 flex flex-col gap-1">
           {/* 대표 수치. 목록에서 카드마다 정확히 하나가 18px로 뜬다. */}
-          <div className="flex items-center gap-1 text-lg font-semibold tabular-nums">
+          <div className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]">
             <dt className="sr-only">원두량</dt>
             <dd>{formatGrams(recipe.doseG)}</dd>
             <span aria-hidden>→</span>
@@ -34,7 +34,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
             <dd>{formatGrams(recipe.waterG)}</dd>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
             <div>
               <dt className="sr-only">비율</dt>
               <dd>{formatRatio(recipe.ratio)}</dd>

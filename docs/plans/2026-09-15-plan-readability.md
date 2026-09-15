@@ -240,7 +240,7 @@ git add scripts/ docs/ && git commit -m "fix(scripts): 커버리지가 각 스�
 - Consumes: `readPalettes()` · `contrastRatio()` (`src/test/tokens.ts` · `contrast.ts`)
 - Produces: 확정된 토큰 값. Task 4의 `AC-READ-15`가 `rgb(84,84,84)`를 기대한다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `src/test/contrast.test.ts` 끝에 추가:
 
@@ -300,7 +300,7 @@ describe("읽힘 — 라이트 모드의 대비", () => {
 it("AC-VISUAL-06 · AC-READ-04 · 토큰 8개가 라이트·다크 값을 모두 갖는다", () => {
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 cd frontend && pnpm test -- contrast
@@ -308,7 +308,7 @@ cd frontend && pnpm test -- contrast
 
 Expected: FAIL — `AC-READ-01`이 `#737373`을 받아 `#545454`와 다르다고 한다. 3개 실패.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `frontend/src/app/globals.css`의 `:root` 세 줄만 바꾼다:
 
@@ -322,7 +322,7 @@ Expected: FAIL — `AC-READ-01`이 `#737373`을 받아 `#545454`와 다르다고
 
 **`@media (prefers-color-scheme: dark)` 블록은 한 줄도 건드리지 않는다.**
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pnpm test -- contrast designTokens
@@ -330,7 +330,7 @@ pnpm test -- contrast designTokens
 
 Expected: PASS. 기존 `AC-VISUAL-07`(AA 4.5:1)도 통과가 유지된다 — 전부 값을 올리는 방향이다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 라이트 모드 대비를 올린다 (AC-READ 7개)"

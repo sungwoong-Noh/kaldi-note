@@ -52,7 +52,7 @@ export function GrindSettingField({
       <legend className="text-lg font-semibold">분쇄도</legend>
 
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-1 text-base">
+        <label className="flex w-full items-center gap-2 text-base">
           <span className="text-muted">그라인더</span>
           <select
             aria-label="그라인더"
@@ -62,7 +62,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="rounded-md border border-line px-2 py-1 min-h-11"
+            className="w-full rounded-md border border-line px-2 py-1 min-h-11"
           >
             <option value="">선택 안 함</option>
             {(grinders.data ?? []).map((grinder) => (
@@ -73,7 +73,7 @@ export function GrindSettingField({
           </select>
         </label>
 
-        <label className="flex items-center gap-1 text-base">
+        <label className="flex w-full items-center gap-2 text-base">
           <span className="text-muted">분쇄도 단위</span>
           <select
             aria-label="분쇄도 단위"
@@ -85,7 +85,7 @@ export function GrindSettingField({
                   : (e.target.value as GrindSettingUnit),
               )
             }
-            className="rounded-md border border-line px-2 py-1 min-h-11"
+            className="w-full rounded-md border border-line px-2 py-1 min-h-11"
           >
             <option value="">선택 안 함</option>
             {Object.entries(UNIT_LABELS).map(([code, label]) => (
@@ -96,7 +96,7 @@ export function GrindSettingField({
           </select>
         </label>
 
-        <label className="flex items-center gap-1 text-base">
+        <label className="flex w-full items-center gap-2 text-base">
           <span className="text-muted">분쇄도 값</span>
           <input
             aria-label="분쇄도 값"
@@ -108,7 +108,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="w-24 rounded-md border border-line px-2 py-1 min-h-11"
+            className="w-full rounded-md border border-line px-2 py-1 min-h-11"
           />
         </label>
       </div>

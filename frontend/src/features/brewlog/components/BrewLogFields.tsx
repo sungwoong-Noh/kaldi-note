@@ -53,7 +53,7 @@ export function BrewLogFields({
           aria-describedby={
             fieldErrors?.byField.brewedAt ? "brew-brewed-at-error" : undefined
           }
-          className="rounded-md border border-line px-2 py-1 min-h-11"
+          className="w-full rounded-md border border-line px-2 py-1 min-h-11"
         />
         {fieldErrors?.byField.brewedAt && (
           <span id="brew-brewed-at-error" className="text-sm text-danger">
@@ -70,7 +70,7 @@ export function BrewLogFields({
           <p className="text-base text-muted">등록된 그라인더가 없습니다</p>
         )}
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-1 text-base">
+          <label className="flex w-full items-center gap-2 text-base">
             <span className="text-muted">그라인더</span>
             <select
               aria-label="그라인더"
@@ -81,7 +81,7 @@ export function BrewLogFields({
                   e.target.value === "" ? null : Number(e.target.value),
                 )
               }
-              className="rounded-md border border-line px-2 py-1 min-h-11"
+              className="w-full rounded-md border border-line px-2 py-1 min-h-11"
             >
               <option value="">선택 안 함</option>
               {grinders.map((grinder) => (
@@ -186,7 +186,7 @@ export function BrewLogFields({
                     e.target.value === "" ? null : Number(e.target.value),
                   )
                 }
-                className="rounded-md border border-line px-2 py-1 min-h-11"
+                className="w-full rounded-md border border-line px-2 py-1 min-h-11"
               >
                 <option value="">선택 안 함</option>
                 {[1, 2, 3, 4, 5].map((score) => (
@@ -208,7 +208,7 @@ export function BrewLogFields({
             aria-describedby={
               fieldErrors?.byField.overallNote ? "brew-note-error" : undefined
             }
-            className="rounded-md border border-line px-2 py-1 min-h-11"
+            className="w-full rounded-md border border-line px-2 py-1 min-h-11"
           />
           {fieldErrors?.byField.overallNote && (
             <span id="brew-note-error" className="text-sm text-danger">
@@ -251,7 +251,7 @@ function NumberField({
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
         aria-describedby={error ? errorId : undefined}
-        className="w-32 rounded-md border border-line px-2 py-1 min-h-11"
+        className="w-full rounded-md border border-line px-2 py-1 min-h-11"
       />
       {error && (
         <span id={errorId} className="text-sm text-danger">

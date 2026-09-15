@@ -76,3 +76,48 @@ test.describe("구조 — 대표 수치", () => {
     });
   }
 });
+
+const FORMS = [
+  "/recipes/new",
+  "/recipes/12/edit",
+  "/brews/new?recipeId=12",
+  "/gear/grind-converter",
+] as const;
+
+test.describe("구조 — 폼", () => {
+  for (const path of FORMS) {
+    test(`AC-STRUCT-01 · ${path}의 일반 필드가 right 1종류다`, async ({
+      page,
+    }) => {
+      await installStubs(page);
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+
+      const rights = await page.evaluate(() => {
+        const out = new Set<number>();
+        for (const el of document.querySelectorAll("input, select, textarea")) {
+          // 스텝 행은 예외다 — 한 줄에 컨트롤 여럿이 들어간다.
+          if (el.closest("[data-step-row]")) continue;
+          if (el.getAttribute("type") === "checkbox") continue;
+          const rect = el.getBoundingClientRect();
+          if (rect.width === 0) continue;
+          out.add(Math.round(rect.right));
+        }
+        return [...out];
+      });
+
+      expect(rights, path).toEqual([344]);
+    });
+  }
+
+  test("AC-STRUCT-06 · 단위가 입력칸 안에 있다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/recipes/new");
+    await page.waitForLoadState("networkidle");
+
+    const input = await page.getByLabel("원두량").boundingBox();
+    const unit = await page.locator("[data-unit]").first().boundingBox();
+
+    expect(unit!.x + unit!.width).toBeLessThan(input!.x + input!.width);
+  });
+});

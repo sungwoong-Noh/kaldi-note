@@ -290,7 +290,7 @@ git add . && git commit -m "feat(web): 대표 수치를 1:비율로 통일한다
 - Consumes: 없음
 - Produces: 전폭 입력 패턴. Task 4가 그 위에 컨트롤 모양을 얹는다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 const FORMS = ["/recipes/new", "/recipes/12/edit", "/brews/new?recipeId=12", "/gear/grind-converter"];
@@ -319,28 +319,42 @@ for (const path of FORMS) {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: FAIL — 종류 수가 `10 · 13 · 4 · 2`다(2026-09-15 실측).
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 모든 일반 필드에 `w-full`을 준다. 고정 폭(`w-20`·`w-24`·`w-28`·`w-32`·`w-12`) **12곳**을 없앤다.
 단위는 입력을 `relative` 컨테이너로 감싸고 `absolute right-3`로 칸 안에 넣는다. 입력에는
 `pr-10`을 주어 글자가 단위와 겹치지 않게 한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e structure && pnpm e2e`
 Expected: PASS. `AC-TOUCH-12`(가로 스크롤)와 `AC-READ-17`이 계속 초록인지 함께 본다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 폼의 오른쪽 끝을 하나로 맞춘다 (AC-STRUCT 2개)"
 ```
 
 ---
+
+
+> **★ 막힌 곳이 셋이었다(2026-09-15).**
+>
+> 1. **정규식이 화살표 함수에서 끊겼다.** `<(select|input)((?:[^<>]|\n)*?)`로 여는 태그를 잡으려
+>    했더니 `onChange={(e) => …}`의 `>`에서 멈춰 `select` 13개에 `w-full`이 안 붙었다.
+>    **클래스 문자열 단위 치환**으로 바꿔 해결했다.
+> 2. **2열 배치가 남아 있었다.** 원두량/물량이 `flex flex-wrap`으로 나란히 있어 왼쪽 열이
+>    344에 닿지 못했다. **`flex-col`로 펴야** 전폭 한 종류가 된다.
+> 3. **부모 `label`이 콘텐츠 폭만 차지했다.** 컨트롤에 `w-full`이 있어도 부모가 좁으면 소용없다.
+>    라벨 행 3곳에 `w-full`을 줬다.
+>
+> **`data-step-row`는 Task 5의 것이지만 여기서 먼저 붙였다** — 없으면 `/recipes/12/edit`의
+> `AC-STRUCT-01`이 스텝 행 컨트롤까지 세어 통과할 수 없다.
 
 ## Task 4: 컨트롤에서 OS 기본 모양을 벗긴다
 

@@ -63,6 +63,10 @@ export function RecipeStepEditor({
           const number = index + 1;
           return (
             <li
+              // 스텝 행은 전폭 규칙의 예외다 — 한 줄에 컨트롤 여럿이 들어간다.
+              // 전폭으로 펴면 7스텝 편집이 7줄에서 28줄로 늘어난다
+              // (docs/specs/2026-09-15-structure.md).
+              data-step-row
               key={step.uid}
               aria-label={`스텝 ${number}`}
               className="flex flex-col gap-2 rounded-lg border border-line p-3"

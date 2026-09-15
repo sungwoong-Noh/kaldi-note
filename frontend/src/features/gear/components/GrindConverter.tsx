@@ -54,7 +54,7 @@ export function GrindConverter({
           aria-label="설정값"
           value={setting}
           onChange={(e) => setSetting(e.target.value)}
-          className="w-32 rounded-md border border-line px-2 py-1 min-h-11"
+          className="w-full rounded-md border border-line px-2 py-1 min-h-11"
         />
       </label>
 

@@ -25,7 +25,8 @@ const META_ROWS = [
   { path: "/recipes", text: "100°C", what: "카드 보조줄" },
   { path: "/brews", text: "2026-08-31", what: "카드 보조줄" },
   { path: "/recipes/12", text: "100°C", what: "상세 메타줄" },
-  { path: "/brews/2", text: "20.0g", what: "상세 실측값" },
+  // 「20.0g」은 비교표에도 있다(2026-09-15). 실측값에만 있는 분쇄도를 앵커로 쓴다.
+  { path: "/brews/2", text: "22", what: "상세 실측값" },
 ] as const;
 
 /** 대표 수치는 `data-lead`로 찾는다 — 텍스트로 찾으면 표현이 바뀔 때마다 깨진다. */
@@ -67,7 +68,11 @@ test.describe("일관성 — 렌더값", () => {
       await installStubs(page);
       await page.goto(path);
 
-      const label = page.getByText("물 온도", { exact: true }).first();
+      // 비교표에도 「물 온도」가 있다(2026-09-15). 비교표 밖의 라벨만 잰다.
+      const label = page
+        .getByText("물 온도", { exact: true })
+        .and(page.locator(":not([data-compare] *)"))
+        .first();
       await expect(label).toBeVisible();
 
       expect(

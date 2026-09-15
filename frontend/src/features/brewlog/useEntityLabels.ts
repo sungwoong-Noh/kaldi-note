@@ -24,11 +24,22 @@ const NAME_STALE_MS = 5 * 60 * 1000;
  * <p><b>이름과 함께 푸어 스텝도 내보낸다.</b> 같은 응답 안에 이미 들어 있어 새 요청이 늘지 않는다.
  * 못 읽었으면 빈 배열이지만, 그때는 `isReady`가 false라 화면이 스텝 절 자체를 그리지 않는다.
  */
+/** 레시피가 설계한 수치. 기록의 실측값과 나란히 놓으려고 꺼낸다. */
+export interface RecipeTargets {
+  readonly doseG: number;
+  readonly waterG: number;
+  readonly waterTempC?: number;
+  readonly totalTimeSeconds?: number;
+}
+
 export function useRecipeLabel(
   recipeId: number | undefined,
   enabled: boolean,
   onSessionLost?: () => void,
-): EntityLabel & { readonly steps: RecipeStep[] } {
+): EntityLabel & {
+  readonly steps: RecipeStep[];
+  readonly targets?: RecipeTargets;
+} {
   const recipe = useQuery({
     queryKey: ["recipe", recipeId],
     queryFn: () => fetchRecipe(recipeId as number, onSessionLost),
@@ -37,10 +48,21 @@ export function useRecipeLabel(
   });
 
   const source = combineSources([recipe], recipe.data?.title);
+  const data = recipe.data;
   return {
     label: entityLabel("recipe", source),
     isReady: source.state === "ready",
-    steps: recipe.data?.steps ?? [],
+    steps: data?.steps ?? [],
+    // 스텝과 같은 응답에 들어 있다 — 새 요청이 늘지 않는다.
+    targets:
+      data === undefined
+        ? undefined
+        : {
+            doseG: data.doseG,
+            waterG: data.waterG,
+            waterTempC: data.waterTempC,
+            totalTimeSeconds: data.totalTimeSeconds,
+          },
   };
 }
 

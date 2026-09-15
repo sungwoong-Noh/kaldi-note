@@ -587,7 +587,7 @@ git add . && git commit -m "feat(web): 푸어 스텝을 시간 축으로 그린�
 > `title`과 `steps`만 꺼내 쓰고 있다. `steps`를 더한 것과 같은 방식으로 수치를 더 내보낸다
 > (`docs/JOURNAL.md` 2026-09-03의 선례).
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-STRUCT-10 · 기록 상세에 비교표 4행이 있다", async ({ page }) => {
@@ -629,11 +629,11 @@ test("AC-STRUCT-13 · 레시피를 못 읽으면 실측값만 보여준다", asy
 > 픽스처의 기록은 레시피(30g/500g/100°C)와 아예 다른 배치(20g/300g/92°C)라,
 > **비교표가 「셋이 달랐다」를 보여주게 되어 데모로도 알맞다.**
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: FAIL — `[data-compare]`가 0개.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `useRecipeLabel`의 반환에 `doseG`·`waterG`·`waterTempC`·`totalTimeSeconds`를 더한다.
 `RecipeComparison`이 네 행을 그리고, 각 행의 실제 값 요소에 `data-diff`를 붙인다.
@@ -641,18 +641,28 @@ Expected: FAIL — `[data-compare]`가 0개.
 
 `stubs.ts`에 `recipeStatus` 옵션을 추가해 레시피 요청에 404를 돌려줄 수 있게 한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e structure && pnpm test && pnpm e2e`
 Expected: PASS 4개.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 기록이 레시피대로 내렸는지 말한다 (AC-STRUCT 4개)"
 ```
 
 ---
+
+
+> **★ 개수를 박은 AC 둘이 또 깨졌다(2026-09-15).** 컴포넌트를 하나 추가했을 뿐인데
+> `AC-READ-08`(단계별 개수)과 `AC-READ-21`(h2 13곳)이 빨개졌다. **`AC-READ-20`에서 겪은 것과
+> 같은 구조다** — 사람에게 확인받아 **둘 다 숫자를 뺐다.** 돌연변이로 검사가 살아 있는지
+> 확인했다(`h2`에 `text-3xl`을 넣으니 셋이 빨개졌다).
+>
+> **★ 같은 값이 두 곳에 생기면 e2e 앵커가 엉뚱한 것을 잡는다.** `/brews/2`에 「물 온도」와
+> 「20.0g」이 비교표에도 생기면서 `AC-CONSIST-07`이 비교표 라벨을, `AC-CONSIST-04`가 비교표
+> 값을 잡았다. 앵커를 비교표 밖으로 한정하고 실측값에만 있는 값(분쇄도)으로 바꿨다.
 
 ## Task 8: 빈 화면이 다음 행동을 제안한다
 

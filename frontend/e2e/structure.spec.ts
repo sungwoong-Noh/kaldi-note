@@ -226,3 +226,54 @@ test("AC-STRUCT-21 · select에 화살표가 그려진다", async ({ page }) => 
   expect(style.appearance).toBe("none");
   expect(style.image).toContain("svg");
 });
+
+test.describe("구조 — 기록 비교표", () => {
+  test("AC-STRUCT-10 · 기록 상세에 비교표 4행이 있다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/brews/2");
+    await page.waitForLoadState("networkidle");
+
+    const labels = await page
+      .locator("[data-compare] [data-compare-label]")
+      .allInnerTexts();
+
+    expect(labels).toEqual(["원두량", "물량", "물 온도", "추출 시간"]);
+  });
+
+  test("AC-STRUCT-11 · 값이 다를 때만 드러난다", async ({ page }) => {
+    // 픽스처를 실제로 읽고 정한 기대값이다(2026-09-15 대조).
+    //   레시피 hoffmann : dose 30.0 / water 500.0 / temp 100.0 / time 210
+    //   기록   brewLog  : dose 20.0 / water 300.0 / temp  92.0 / time 210
+    // 앞의 셋이 다르고 시간만 같다.
+    await installStubs(page);
+    await page.goto("/brews/2");
+    await page.waitForLoadState("networkidle");
+
+    const diffs = await page
+      .locator("[data-compare] [data-diff]")
+      .evaluateAll((els) => els.map((el) => el.getAttribute("data-diff")));
+
+    expect(diffs).toEqual(["true", "true", "true", "false"]);
+  });
+
+  test("AC-STRUCT-12 · 「현재 레시피와 비교」 문구가 있다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/brews/2");
+    await page.waitForLoadState("networkidle");
+
+    await expect(page.locator("[data-compare]")).toContainText(
+      "현재 레시피와 비교",
+    );
+  });
+
+  test("AC-STRUCT-13 · 레시피를 못 읽으면 실측값만 보여준다", async ({
+    page,
+  }) => {
+    await installStubs(page, { recipeStatus: 404 });
+    await page.goto("/brews/2");
+    await page.waitForLoadState("networkidle");
+
+    await expect(page.locator("[data-compare]")).toHaveCount(0);
+    await expect(page.getByText("20.0g")).toBeVisible();
+  });
+});

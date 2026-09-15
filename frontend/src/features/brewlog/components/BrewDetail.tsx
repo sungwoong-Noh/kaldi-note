@@ -19,6 +19,7 @@ import { deleteBrewLog, fetchBrewLog } from "../api";
 import { headline } from "../headline";
 import type { BrewLog } from "../schema";
 import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
+import { RecipeComparison } from "./RecipeComparison";
 import { DeleteBrewLogDialog } from "./DeleteBrewLogDialog";
 import { ExtractionSummary } from "./ExtractionSummary";
 
@@ -120,6 +121,11 @@ export function BrewDetail({ id }: { id: number }) {
         <dt className="sr-only">{lead.label}</dt>
         <dd>{lead.value}</dd>
       </dl>
+
+      {/* 레시피를 못 읽으면 그리지 않는다 — 비교할 대상이 없다(AC-STRUCT-13). */}
+      {recipe.targets !== undefined && (
+        <RecipeComparison log={log} targets={recipe.targets} />
+      )}
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">실측값</h2>

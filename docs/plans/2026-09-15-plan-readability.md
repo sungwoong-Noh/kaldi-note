@@ -671,7 +671,7 @@ git add . && git commit -m "test(web): 읽힘을 렌더로 잰다 (AC-READ 5개)
 > **앱 코드 184곳에서 글자를 키우는 변경이다.** 레이아웃이 깨지는 것이 최대 위험이고,
 > 그것은 가로 스크롤로 먼저 드러난다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `readability.spec.ts`에 추가:
 
@@ -700,7 +700,7 @@ test.describe("읽힘 — 회귀", () => {
 test(`AC-TOUCH-01 · AC-READ-18 · ${path}의 모든 타깃이 44×44 이상이다`, ...
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 ```bash
 pnpm e2e
@@ -712,12 +712,12 @@ Expected: 11개 중 일부가 FAIL일 수 있다 — 36px 수치가 360px 폭을
 
 > 앞 세션들이 반복해서 겪은 것이다 — 첫 실행에 통과하는 검사는 **비어 있는 검사와 구분되지 않는다.**
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 넘치는 화면이 있으면 그 요소에 한해 줄바꿈을 허용하거나 컨테이너에 `min-w-0`을 준다.
 **글자 크기를 되돌리지 않는다** — 그러면 이 스펙의 목적이 사라진다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 ```bash
 pnpm e2e && pnpm test && pnpm typecheck && pnpm lint && pnpm build
@@ -725,7 +725,7 @@ pnpm e2e && pnpm test && pnpm typecheck && pnpm lint && pnpm build
 
 Expected: e2e 122 + 신규 16, 단위 379 + 신규 9가 전부 PASS.
 
-- [ ] **Step 5: 기존 스펙의 AC 값을 갱신하고 커밋**
+- [x] **Step 5: 기존 스펙의 AC 값을 갱신하고 커밋**
 
 `docs/specs/2026-09-07-visual-hierarchy.md`:
 
@@ -751,11 +751,11 @@ git add . && git commit -m "feat(web): 글자를 키워도 레이아웃이 버�
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `cd frontend && pnpm e2e` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — 합계가 **760**(739 + 21)
-- [ ] `./scripts/check-spec-coverage.test.sh` 통과
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 — 단위 **389**
+- [x] `cd frontend && pnpm e2e` 통과 — e2e **138**
+- [x] `./scripts/check-spec-coverage.sh` 통과 — 스펙 **32건** · 합계 **760**(739 + 21)
+- [x] `./scripts/check-spec-coverage.test.sh` 통과
+- [x] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 3개 — **폰 실물과 실제 조명이 필요해 비차단형이다**
 
 ---

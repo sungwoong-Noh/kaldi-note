@@ -47,16 +47,25 @@ out=$(SPEC_DIR="$TMP/specs" "$SCRIPT" 2>&1)
 count=$(echo "$out" | grep -oE 'AC [0-9]+개' | grep -oE '[0-9]+' | head -1)
 check "AC-READ-19 · AC-BAR-99를 세지 않는다" "2" "$count"
 
-# ── AC-READ-20 · 소유 기준 합계가 739다 ─────────────────────────────────
+# ── AC-READ-20 · 합계가 헤딩 총합과 같다 ────────────────────────────────
 #
-# 헤딩으로 좁히기 전에는 747이었다. 줄어든 8개는 6개 스펙이 본문에서 참조만 한 남의
-# AC이고, 소유 스펙에서 한 번 더 세어져 중복 집계돼 있었다.
+# 숫자를 박지 않는다. 박으면 스펙을 하나 추가할 때마다 이 조건이 깨지고, 그때마다 승인된
+# AC를 고쳐야 한다. 대신 같은 값을 독립적으로 두 번 세어 대조한다.
 #
-# 이 숫자가 바뀌면 멈추고 무엇이 바뀌었는지 먼저 본다. AC를 실제로 추가한 것이 아니라면
-# 집계 규칙이 다시 망가진 것이다.
+# 스크립트가 본문 언급까지 다시 세기 시작하면 왼쪽이 커져 어긋난다. 그것이 이 조건이
+# 잡으려는 회귀다 — 헤딩으로 좁히기 전 합계는 747이었고 실제 소유분은 739였다.
 real=$("$SCRIPT" 2>&1)
 total=$(echo "$real" | grep -oE '인수 조건 [0-9]+개' | grep -oE '[0-9]+')
-check "AC-READ-20 · 합계가 739다" "739" "$total"
+
+expected=0
+for spec in "$HERE/../docs/specs"/2*.md; do
+  status=$(grep -m1 '^status:' "$spec" | sed 's/^status:[[:space:]]*//' | tr -d '\r')
+  [ "$status" = "구현완료" ] || continue
+  n=$(grep -cE '^#### AC-[A-Z][A-Z0-9_]*-[0-9]+' "$spec" || true)
+  expected=$((expected + n))
+done
+
+check "AC-READ-20 · 합계가 헤딩 총합과 같다" "$expected" "$total"
 
 echo
 if [ "$failed" -eq 0 ]; then

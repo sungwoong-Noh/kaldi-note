@@ -23,8 +23,10 @@ SPEC_DIR="${SPEC_DIR:-docs/specs}"
 AC_PATTERN='AC-[A-Z][A-Z0-9_]*-[0-9]+'
 
 # 테스트 코드가 있을 수 있는 경로 중 실제로 존재하는 것만 모은다
+# scripts도 포함한다 — 이 스크립트 자신의 집계 로직을 검사하는 셸 테스트가 여기 산다
+# (docs/specs/2026-09-15-readability.md의 AC-READ-19·20).
 SEARCH_PATHS=()
-for path in backend/src/test frontend/src frontend/e2e infra/scripts; do
+for path in backend/src/test frontend/src frontend/e2e infra/scripts scripts; do
   [ -d "$path" ] && SEARCH_PATHS+=("$path")
 done
 

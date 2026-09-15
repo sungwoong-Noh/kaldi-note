@@ -10,7 +10,7 @@ import { installStubs } from "./stubs";
 const BRAND_LIGHT = "rgb(111, 78, 55)";
 const BRAND_DARK = "rgb(201, 169, 138)";
 const ON_ACCENT_DARK = "rgb(23, 23, 23)";
-const MUTED_LIGHT = "rgb(115, 115, 115)";
+const MUTED_LIGHT = "rgb(84, 84, 84)";
 
 test.describe("시각 위계 — 라이트", () => {
   test("AC-VISUAL-14 · 주 액션 버튼이 브랜드 색이다", async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe("시각 위계 — 라이트", () => {
     ).toBe(BRAND_LIGHT);
   });
 
-  test("AC-VISUAL-15 · 화면 제목이 20px다", async ({ page }) => {
+  test("AC-VISUAL-15 · 화면 제목이 24px다", async ({ page }) => {
     await installStubs(page);
     await page.goto("/recipes");
 
@@ -33,11 +33,11 @@ test.describe("시각 위계 — 라이트", () => {
     await expect(heading).toBeVisible();
 
     expect(await heading.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
-      "20px",
+      "24px",
     );
   });
 
-  test("AC-VISUAL-16 · 카드 대표 수치가 18px다", async ({ page }) => {
+  test("AC-VISUAL-16 · 카드 대표 수치가 36px다", async ({ page }) => {
     await installStubs(page);
     await page.goto("/recipes");
 
@@ -46,7 +46,7 @@ test.describe("시각 위계 — 라이트", () => {
     await expect(dose).toBeVisible();
 
     expect(await dose.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
-      "18px",
+      "36px",
     );
   });
 

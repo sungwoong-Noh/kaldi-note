@@ -158,7 +158,7 @@ async function undersized(
 
 test.describe("터치 타깃 — 스윕", () => {
   for (const { path } of SCREENS) {
-    test(`AC-TOUCH-01 · ${path}의 모든 타깃이 44×44 이상이다`, async ({ page }) => {
+    test(`AC-TOUCH-01 · AC-READ-18 · ${path}의 모든 타깃이 44×44 이상이다`, async ({ page }) => {
       await installStubs(page);
       await page.goto(path);
       await page.waitForLoadState("networkidle");
@@ -188,7 +188,7 @@ test.describe("터치 타깃 — 스윕", () => {
         .getByRole("link", { name, exact: true })
         .boundingBox();
 
-      expect(box, name).toMatchObject({ width: 90, height: 44 });
+      expect(box, name).toMatchObject({ width: 90, height: 48 });
     }
   });
 });

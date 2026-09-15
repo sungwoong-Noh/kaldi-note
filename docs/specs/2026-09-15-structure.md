@@ -1,7 +1,7 @@
 ---
 id: STRUCT
 title: 구조와 폼 — 한눈에 들어오게 만든다
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-09-15-plan-structure.md
 ---
 

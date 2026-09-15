@@ -37,7 +37,7 @@ test.describe("간격·모서리 — 렌더값", () => {
     ).toBe("6px");
   });
 
-  test("AC-SPACE-11 · 빈 상태의 세로 여백이 48px다", async ({ page }) => {
+  test("AC-SPACE-11 · 빈 상태의 세로 여백이 24px다", async ({ page }) => {
     await installStubs(page);
     // 기본 스텁은 레시피 둘을 준다. 목록만 빈 페이지로 덮어쓴다. 나중에 등록한 route가 이긴다.
     // 경로를 술어로 정확히 집는다 — 글로브 `recipes?**`는 `?`가 한 글자 와일드카드라
@@ -51,8 +51,10 @@ test.describe("간격·모서리 — 렌더값", () => {
     const empty = page.getByText("레시피가 없습니다");
     await expect(empty).toBeVisible();
 
+    // 갱신(2026-09-15): structure 스펙이 빈 화면에 행동 버튼을 넣었다. 버튼이 자리를
+    // 차지하므로 문구 위아래 48px은 과하다. 스케일 안의 다음 단계인 24px로 내렸다.
     expect(await empty.evaluate((el) => getComputedStyle(el).paddingTop)).toBe(
-      "48px",
+      "24px",
     );
   });
 });

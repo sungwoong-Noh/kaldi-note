@@ -65,6 +65,8 @@ export interface Stubs {
 export interface StubOptions {
   /** 레시피 조회에 이 상태를 돌려준다. 「레시피를 못 읽는 기록」을 재현한다. */
   readonly recipeStatus?: number;
+  /** 목록을 비운다. 빈 화면을 재현한다. */
+  readonly empty?: "brewLogs" | "recipes";
 }
 
 export async function installStubs(
@@ -89,6 +91,26 @@ export async function installStubs(
       return route.fulfill({
         status: options.recipeStatus,
         json: { code: "NOT_FOUND", message: pathname, fieldErrors: [] },
+      });
+    }
+
+    const emptyPath =
+      options.empty === "brewLogs"
+        ? /^\/api\/v1\/brew-logs$/
+        : options.empty === "recipes"
+          ? /^\/api\/v1\/recipes$/
+          : undefined;
+    if (emptyPath !== undefined && emptyPath.test(pathname)) {
+      // pageOf와 같은 형태여야 한다. hasNext가 빠지면 스키마 검증에 걸린다.
+      return route.fulfill({
+        json: {
+          content: [],
+          page: 0,
+          size: 20,
+          totalElements: 0,
+          totalPages: 0,
+          hasNext: false,
+        },
       });
     }
 

@@ -46,15 +46,18 @@ export default function HomePage() {
   if (logs.length === 0) {
     return (
       <Shell>
-        <p className="py-6 text-center text-base text-muted">
-          아직 기록이 없습니다
-        </p>
-        <Link
-          href="/recipes"
-          className="flex min-h-11 min-w-11 items-center justify-center block rounded-md bg-brand py-3 text-center text-base text-on-accent"
-        >
-          레시피 보러 가기
-        </Link>
+        {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
+        <div data-empty className="flex flex-col gap-3">
+          <p className="py-6 text-center text-base text-muted">
+            아직 기록이 없습니다
+          </p>
+          <Link
+            href="/recipes"
+            className="flex min-h-11 items-center justify-center rounded-md bg-brand py-3 text-center text-base text-on-accent"
+          >
+            레시피 보러 가기
+          </Link>
+        </div>
       </Shell>
     );
   }

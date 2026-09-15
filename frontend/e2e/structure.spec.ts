@@ -277,3 +277,31 @@ test.describe("구조 — 기록 비교표", () => {
     await expect(page.getByText("20.0g")).toBeVisible();
   });
 });
+
+test.describe("구조 — 빈 화면", () => {
+  for (const path of ["/", "/brews"]) {
+    test(`AC-STRUCT-19 · ${path}의 빈 화면이 레시피로 보낸다`, async ({
+      page,
+    }) => {
+      await installStubs(page, { empty: "brewLogs" });
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+
+      const link = page.locator('[data-empty] a[href="/recipes"]');
+      await expect(link, path).toHaveCount(1);
+
+      const box = await link.boundingBox();
+      expect(box!.height, path).toBeGreaterThanOrEqual(44);
+    });
+  }
+
+  test("AC-STRUCT-20 · 빈 레시피 화면이 작성으로 보낸다", async ({ page }) => {
+    await installStubs(page, { empty: "recipes" });
+    await page.goto("/recipes");
+    await page.waitForLoadState("networkidle");
+
+    await expect(
+      page.locator('[data-empty] a[href="/recipes/new"]'),
+    ).toHaveCount(1);
+  });
+});

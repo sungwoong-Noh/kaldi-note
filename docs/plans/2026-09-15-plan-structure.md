@@ -674,7 +674,7 @@ git add . && git commit -m "feat(web): 기록이 레시피대로 내렸는지 �
 
 **Covers:** AC-STRUCT-19, 20
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-STRUCT-19 · 빈 기록 화면이 레시피로 보낸다", async ({ page }) => {
@@ -692,22 +692,22 @@ test("AC-STRUCT-19 · 빈 기록 화면이 레시피로 보낸다", async ({ pag
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: FAIL — 링크가 0개. 지금은 「아직 기록이 없습니다」 문구뿐이다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 빈 상태 영역에 `data-empty`를 붙이고 `Link`를 넣는다. 문구는 **행동으로** 쓴다 —
 「레시피 고르기」·「새 레시피」(브랜드 문서 「버튼은 행동으로」).
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e && pnpm test`
 Expected: `AC-SPACE-11`(빈 상태 여백 48px)이 빨개질 수 있다. 버튼이 들어가며 높이가 달라지는
 것이므로 **예정된 갱신이다.**
 
-- [ ] **Step 5: `AC-SPACE-11`을 갱신하고 커밋**
+- [x] **Step 5: `AC-SPACE-11`을 갱신하고 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 빈 화면이 다음 행동을 제안한다 (AC-STRUCT 2개)"
@@ -715,13 +715,23 @@ git add . && git commit -m "feat(web): 빈 화면이 다음 행동을 제안한�
 
 ---
 
+
+> **★ 빈 목록 stub에 `hasNext`가 빠져 세 조건이 전부 실패했다(2026-09-15).** 봉투를 손으로
+> 지어내면 스키마 검증에 걸린다 — `pageOf`와 같은 형태여야 한다.
+>
+> **★ `AC-WEBBREW-39`가 문구를 직접 검사하고 있었다.** 버튼 라벨을 「레시피 고르기」로 바꿨더니
+> 깨졌다. **문구를 되돌렸다** — 「레시피 보러 가기」도 충분히 행동적이고 변경이 작다.
+>
+> **`AC-SPACE-11`은 예고대로 갱신했다**(48px → 24px). 버튼이 자리를 차지해 문구 위아래 48px이
+> 과해졌다. 스케일 6단계를 벗어나지 않는 다음 값이다.
+
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `cd frontend && pnpm e2e` 통과
-- [ ] `cd frontend && pnpm test:worker` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — 합계가 **780**(760 + 20)
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 — 단위 **393**
+- [x] `cd frontend && pnpm e2e` 통과 — **167**
+- [x] `cd frontend && pnpm test:worker` 통과 — **6**
+- [x] `./scripts/check-spec-coverage.sh` 통과 — 스펙 **33건** · 합계 **781**(760 + 21)
+- [x] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 3개 — 폰 실물이 필요해 **비차단형**
 
 ---

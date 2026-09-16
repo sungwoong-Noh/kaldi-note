@@ -53,7 +53,7 @@ export default function HomePage() {
           </p>
           <Link
             href="/recipes"
-            className="flex min-h-11 items-center justify-center rounded-md bg-accent py-3 text-center text-body text-on-ink"
+            className="flex min-h-11 items-center justify-center rounded-control bg-accent py-3 text-center text-body text-on-ink"
           >
             레시피 보러 가기
           </Link>
@@ -79,7 +79,7 @@ export default function HomePage() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-6">
+    <main className="mx-auto w-full max-w-2xl px-6 py-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-page-title font-semibold">최근 기록</h1>
         <Link href="/brews" className="inline-flex min-h-11 min-w-11 items-center justify-center text-body text-ink-3">

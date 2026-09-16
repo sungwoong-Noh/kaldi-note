@@ -97,7 +97,7 @@ export function RecipeDetail({ id }: { id: number }) {
         <div className="flex items-start justify-between gap-2">
           <h1 className="text-page-title font-semibold">{recipe.title}</h1>
           {recipe.sourceType === "CURATED" && (
-            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-body-sm text-ink-3">
+            <span className="shrink-0 rounded-tag bg-surface px-2 py-1 text-body-sm text-ink-3">
               {statusLabel("source", "CURATED")}
             </span>
           )}
@@ -206,7 +206,7 @@ export function RecipeDetail({ id }: { id: number }) {
       {isMine ? (
         <Link
           href={`/brews/new?recipeId=${id}`}
-          className="flex min-h-11 min-w-11 items-center justify-center mt-6 block rounded-md bg-accent py-3 text-center text-body font-medium text-on-ink"
+          className="flex min-h-11 min-w-11 items-center justify-center mt-6 block rounded-control bg-accent py-3 text-center text-body font-medium text-on-ink"
         >
           이 레시피로 내렸다
         </Link>
@@ -220,14 +220,14 @@ export function RecipeDetail({ id }: { id: number }) {
         <div className="mt-3 flex gap-2">
           <Link
             href={`/recipes/${id}/edit`}
-            className="flex min-h-11 min-w-11 items-center justify-center flex-1 rounded-md border border-border py-3 text-center text-body font-medium"
+            className="flex min-h-11 min-w-11 items-center justify-center flex-1 rounded-control border border-border py-3 text-center text-body font-medium"
           >
             편집
           </Link>
           <button
             type="button"
             onClick={() => setConfirmingDelete(true)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-danger px-4 py-3 text-body font-medium text-danger"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-danger px-4 py-3 text-body font-medium text-danger"
           >
             삭제
           </button>
@@ -255,7 +255,7 @@ export function RecipeDetail({ id }: { id: number }) {
             type="button"
             onClick={() => fork.mutate()}
             disabled={fork.isPending}
-            className="flex min-h-11 min-w-11 items-center justify-center w-full rounded-md bg-accent py-3 text-body font-medium text-on-ink disabled:opacity-50"
+            className="flex min-h-11 min-w-11 items-center justify-center w-full rounded-control bg-accent py-3 text-body font-medium text-on-ink disabled:opacity-50"
           >
             내 레시피로 가져오기
           </button>
@@ -272,7 +272,7 @@ export function RecipeDetail({ id }: { id: number }) {
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
-  return <main className="mx-auto w-full max-w-2xl px-4 py-6">{children}</main>;
+  return <main className="mx-auto w-full max-w-2xl px-6 py-6">{children}</main>;
 }
 
 export type { Recipe };

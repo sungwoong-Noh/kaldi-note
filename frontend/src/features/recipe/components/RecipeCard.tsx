@@ -14,12 +14,12 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
     <li>
       <Link
         href={`/recipes/${recipe.id}`}
-        className="block rounded-lg border border-border p-4 active:bg-surface"
+        className="block rounded-surface border border-border p-4 active:bg-surface"
       >
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-card-title font-medium">{recipe.title}</h2>
           {recipe.sourceType === "CURATED" && (
-            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-body-sm text-ink-3">
+            <span className="shrink-0 rounded-tag bg-surface px-2 py-1 text-body-sm text-ink-3">
               {statusLabel("source", "CURATED")}
             </span>
           )}

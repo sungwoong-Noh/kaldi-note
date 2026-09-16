@@ -65,7 +65,7 @@ export default function RecipesPage() {
           </p>
           <Link
             href="/recipes/new"
-            className="flex min-h-11 items-center justify-center rounded-md bg-accent py-3 text-center text-body text-on-ink"
+            className="flex min-h-11 items-center justify-center rounded-control bg-accent py-3 text-center text-body text-on-ink"
           >
             새 레시피
           </Link>
@@ -87,7 +87,7 @@ export default function RecipesPage() {
           type="button"
           onClick={() => void fetchNextPage()}
           disabled={isFetchingNextPage}
-          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-border py-3 text-body disabled:opacity-50"
+          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-control border border-border py-3 text-body disabled:opacity-50"
         >
           더 보기
         </button>
@@ -106,12 +106,12 @@ function Shell({
   onMineOnlyChange?: (value: boolean) => void;
 }) {
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-6">
+    <main className="mx-auto w-full max-w-2xl px-6 py-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-page-title font-semibold">레시피</h1>
         <Link
           href="/recipes/new"
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-3 py-2 text-body text-on-ink"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control bg-accent px-3 py-2 text-body text-on-ink"
         >
           새 레시피
         </Link>
@@ -123,7 +123,7 @@ function Shell({
         <label className="mb-4 flex min-h-11 w-fit items-center gap-2 py-2 text-body">
           <input
             type="checkbox"
-            className="size-5 shrink-0 appearance-none rounded-md border border-border checked:border-accent checked:bg-accent"
+            className="size-5 shrink-0 appearance-none rounded-control border border-border checked:border-accent checked:bg-accent"
             checked={mineOnly ?? false}
             onChange={(e) => onMineOnlyChange(e.target.checked)}
           />

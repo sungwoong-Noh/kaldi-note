@@ -76,7 +76,7 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6">
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6">
       <h1 className="text-page-title font-semibold">레시피 편집</h1>
       {children}
     </main>

@@ -35,7 +35,7 @@ describe("간격·모서리 허용목록", () => {
     expect(offenders(negative)).toEqual([]);
   });
 
-  it("AC-SPACE-08 · shadow 클래스가 없다", () => {
+  it("AC-SPACE-08 · AC-DS2-17 · shadow가 포커스 링 외에 없다", () => {
     expect(offenders(/\bshadow(?:-[a-z0-9]+)?\b/)).toEqual([]);
   });
 });
@@ -83,7 +83,7 @@ describe("AC-SPACE-02 · 6단계가 각각 쓰인다", () => {
 });
 
 /**
- * `rounded-lg`(8px)가 남는 곳 — **면**이다.
+ * `rounded-surface`(8px)가 남는 곳 — **면**이다.
  *
  * <p>경로 구분자를 리터럴 `/`로 쓰지 않는다. `walk`가 `join`으로 만든 경로는 플랫폼 구분자를
  * 쓰므로 윈도에서 비교가 어긋난다.
@@ -102,25 +102,66 @@ function count(path: string, pattern: RegExp): number {
   return readFileSync(path, "utf8").match(pattern)?.length ?? 0;
 }
 
+/**
+ * 모서리 — 갱신(2026-09-17)
+ *
+ * <p>역할 2종(면 8px · 컨트롤 6px)에서 **4종**으로 늘었다
+ * (docs/specs/2026-09-17-design-system-v2.md). 값이 아니라 **이름**으로 쓴다 —
+ * 타입 스케일과 같은 방식이고, 그래야 「어느 역할인가」가 클래스에 남는다.
+ *
+ * | 역할 | 클래스 | px | 어디 |
+ * |---|---|---|---|
+ * | 태그 | `rounded-tag` | 3 | 배지 |
+ * | 컨트롤 | `rounded-control` | 7 | 버튼·링크·입력칸·select |
+ * | 면 | `rounded-surface` | 12 | 카드·다이얼로그 |
+ * | 원형 | `rounded-full` | — | 아바타·스피너 |
+ */
+const RADIUS = ["tag", "control", "surface", "full"] as const;
+
 describe("모서리", () => {
-  it("AC-SPACE-04 · rounded(4px)가 없다", () => {
-    // 뒤에 값이 붙지 않은 `rounded`만 잡는다. rounded-md·-lg·-full은 제외다.
-    expect(offenders(/\brounded(?![-\w])/)).toEqual([]);
+  it("AC-SPACE-04 · AC-DS2-16 · 모서리가 4종 밖을 쓰지 않는다", () => {
+    const allowed = new Set(RADIUS.map((name) => `rounded-${name}`));
+    const bad: string[] = [];
+
+    for (const path of SOURCES) {
+      for (const match of readFileSync(path, "utf8").matchAll(
+        /\brounded(?:-[a-z0-9[\]#.-]+)?/g,
+      )) {
+        if (!allowed.has(match[0])) bad.push(`${path}: ${match[0]}`);
+      }
+    }
+
+    expect(bad).toEqual([]);
   });
 
-  it("AC-SPACE-05 · 면 7곳이 rounded-lg를 쓴다", () => {
-    const missing = SURFACES.filter((path) => count(path, /\brounded-lg\b/g) < 1);
+  it("AC-SPACE-05 · 면 7곳이 rounded-surface를 쓴다", () => {
+    const missing = SURFACES.filter(
+      (path) => count(path, /\brounded-surface\b/g) < 1,
+    );
 
     expect(missing).toEqual([]);
   });
 
-  it("AC-SPACE-06 · rounded-lg가 면 밖에 없다", () => {
+  it("AC-SPACE-06 · rounded-surface가 면 밖에 없다", () => {
     const outside = SOURCES.filter(
       (path) =>
-        !SURFACES.includes(path) && count(path, /\brounded-lg\b/g) > 0,
+        !SURFACES.includes(path) && count(path, /\brounded-surface\b/g) > 0,
     );
 
     expect(outside).toEqual([]);
+  });
+
+  it("AC-DS2-16 · 4종이 각각 쓰인다", () => {
+    const used = new Set<string>();
+    for (const path of SOURCES) {
+      for (const match of readFileSync(path, "utf8").matchAll(
+        /\brounded-[a-z]+/g,
+      )) {
+        used.add(match[0]);
+      }
+    }
+
+    expect(RADIUS.filter((name) => !used.has(`rounded-${name}`))).toEqual([]);
   });
 
   it("AC-SPACE-07 · rounded-full이 아바타와 스피너 2곳뿐이다", () => {

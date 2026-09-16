@@ -182,7 +182,7 @@ function Fields({
               visibility: toVisibility(e.target.value),
             }))
           }
-          className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 min-h-11"
+          className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
         >
           {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
             <option key={code} value={code}>
@@ -206,14 +206,14 @@ function Fields({
           type="button"
           disabled={save.isPending || cleared.length > 0}
           onClick={submit}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
         >
           저장
         </button>
         <button
           type="button"
           onClick={() => router.push(`/brews/${log.id}`)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-4 py-2 text-body"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border px-4 py-2 text-body"
         >
           취소
         </button>
@@ -229,7 +229,7 @@ function toVisibility(value: string): BrewLogEditState["visibility"] {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6">
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6">
       <h1 className="text-page-title font-semibold">기록 편집</h1>
       {children}
     </main>

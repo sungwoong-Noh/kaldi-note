@@ -54,7 +54,7 @@ export function GrindConverter({
           aria-label="설정값"
           value={setting}
           onChange={(e) => setSetting(e.target.value)}
-          className="w-full min-w-0 rounded-md border border-border px-2 py-1 min-h-11"
+          className="w-full min-w-0 rounded-control border border-border px-2 py-1 min-h-11"
         />
       </label>
 
@@ -69,7 +69,7 @@ export function GrindConverter({
         type="button"
         disabled={convert.isPending}
         onClick={() => convert.mutate()}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-control bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
       >
         환산
       </button>
@@ -99,7 +99,7 @@ export function GrindConverter({
           )}
           {result.estimated && (
             <p className="text-body-sm text-ink-3">
-              <span className="mr-1 rounded-md bg-surface px-1 py-1">
+              <span className="mr-1 rounded-tag bg-surface px-1 py-1">
                 추정치
               </span>
               {result.warning}
@@ -129,7 +129,7 @@ function GrinderSelect({
         aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="min-w-0 appearance-none select-chevron pr-12 flex-1 rounded-md border border-border px-2 py-1 min-h-11"
+        className="min-w-0 appearance-none select-chevron pr-12 flex-1 rounded-control border border-border px-2 py-1 min-h-11"
       >
         <option value="">선택하세요</option>
         {grinders.map((grinder) => (

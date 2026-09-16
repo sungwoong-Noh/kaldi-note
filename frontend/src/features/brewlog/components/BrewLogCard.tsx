@@ -23,7 +23,7 @@ export function BrewLogCard({
     <li>
       <Link
         href={`/brews/${log.id}`}
-        className="block rounded-lg border border-border p-4 active:bg-surface"
+        className="block rounded-surface border border-border p-4 active:bg-surface"
       >
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-card-title font-medium">{recipeLabel}</h2>

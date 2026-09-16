@@ -106,7 +106,9 @@ test.describe("구조 — 폼", () => {
         return [...out];
       });
 
-      expect(rights, path).toEqual([344]);
+      // 갱신(2026-09-17): 화면 좌우 거터가 16→24px가 되면서 344→336이 됐다
+      // (docs/design/design_handoff_kaldi_note/README.md 「화면 좌우 거터: 모바일 24px」).
+      expect(rights, path).toEqual([336]);
     });
   }
 

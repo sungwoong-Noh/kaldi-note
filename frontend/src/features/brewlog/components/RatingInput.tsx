@@ -27,7 +27,7 @@ export function RatingInput({
           aria-label={`별점 ${star}`}
           aria-pressed={value !== null && star <= value}
           onClick={() => onChange(value === star ? null : star)}
-          className="inline-flex size-11 items-center justify-center text-[22px] leading-none"
+          className="inline-flex size-11 shrink-0 items-center justify-center text-[22px] leading-none"
         >
           <span aria-hidden="true">
             {value !== null && star <= value ? "★" : "☆"}

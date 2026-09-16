@@ -78,7 +78,7 @@ export default function MorePage() {
           <button
             type="button"
             onClick={() => void copyInviteLink(me.data.id)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center shrink-0 rounded-md border border-border px-3 py-2"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center shrink-0 rounded-control border border-border px-3 py-2"
           >
             복사
           </button>
@@ -100,7 +100,7 @@ export default function MorePage() {
         type="button"
         onClick={() => void logout()}
         disabled={loggingOut}
-        className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-border py-3 text-body disabled:opacity-50"
+        className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-control border border-border py-3 text-body disabled:opacity-50"
       >
         로그아웃
       </button>
@@ -119,7 +119,7 @@ function Row({ label, value }: { label: string; value: string }) {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-6">
+    <main className="mx-auto w-full max-w-2xl px-6 py-6">
       <h1 className="mb-4 text-page-title font-semibold">더보기</h1>
       {children}
     </main>

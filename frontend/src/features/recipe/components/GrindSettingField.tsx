@@ -48,7 +48,7 @@ export function GrindSettingField({
   );
 
   return (
-    <fieldset className="flex flex-col gap-2">
+    <fieldset className="flex min-w-0 flex-col gap-2">
       <legend className="text-card-title font-semibold">분쇄도</legend>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -62,7 +62,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 min-h-11"
+            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
           >
             <option value="">선택 안 함</option>
             {(grinders.data ?? []).map((grinder) => (
@@ -85,7 +85,7 @@ export function GrindSettingField({
                   : (e.target.value as GrindSettingUnit),
               )
             }
-            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 min-h-11"
+            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
           >
             <option value="">선택 안 함</option>
             {Object.entries(UNIT_LABELS).map(([code, label]) => (
@@ -108,7 +108,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="w-full min-w-0 rounded-md border border-border px-2 py-1 min-h-11"
+            className="w-full min-w-0 rounded-control border border-border px-2 py-1 min-h-11"
           />
         </label>
       </div>

@@ -181,14 +181,14 @@ export function BrewDetail({ id }: { id: number }) {
         <div className="flex items-center gap-2 self-start">
           <Link
             href={`/brews/${id}/edit`}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-3 py-2 text-body"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border px-3 py-2 text-body"
           >
             편집
           </Link>
           <button
             type="button"
             onClick={() => setConfirmingDelete(true)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-danger px-3 py-2 text-body text-danger"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-danger px-3 py-2 text-body text-danger"
           >
             삭제
           </button>
@@ -258,7 +258,7 @@ function Measure({ label, value }: { label: string; value: string }) {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6">
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6">
       {children}
     </main>
   );

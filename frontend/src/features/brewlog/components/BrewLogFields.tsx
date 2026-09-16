@@ -53,7 +53,7 @@ export function BrewLogFields({
           aria-describedby={
             fieldErrors?.byField.brewedAt ? "brew-brewed-at-error" : undefined
           }
-          className="w-full min-w-0 rounded-md border border-border px-2 py-1 min-h-11"
+          className="w-full min-w-0 rounded-control border border-border px-2 py-1 min-h-11"
         />
         {fieldErrors?.byField.brewedAt && (
           <span id="brew-brewed-at-error" className="text-body-sm text-danger">
@@ -64,7 +64,7 @@ export function BrewLogFields({
 
       {beanSlot}
 
-      <fieldset className="flex flex-col gap-2">
+      <fieldset className="flex min-w-0 flex-col gap-2">
         <legend className="text-card-title font-semibold">그라인더</legend>
         {grinders.length === 0 && (
           <p className="text-body text-ink-3">등록된 그라인더가 없습니다</p>
@@ -81,7 +81,7 @@ export function BrewLogFields({
                   e.target.value === "" ? null : Number(e.target.value),
                 )
               }
-              className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 min-h-11"
+              className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
             >
               <option value="">선택 안 함</option>
               {grinders.map((grinder) => (
@@ -96,7 +96,7 @@ export function BrewLogFields({
             <button
               type="button"
               onClick={onAddGrinder}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-3 py-2 text-body"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border px-3 py-2 text-body"
             >
               + 그라인더 등록
             </button>
@@ -111,7 +111,7 @@ export function BrewLogFields({
         />
       </fieldset>
 
-      <fieldset className="flex flex-col gap-2">
+      <fieldset className="flex min-w-0 flex-col gap-2">
         <legend className="text-card-title font-semibold">실측값</legend>
         <NumberField
           label="원두량"
@@ -158,7 +158,7 @@ export function BrewLogFields({
         />
       </fieldset>
 
-      <fieldset className="flex flex-col gap-2">
+      <fieldset className="flex min-w-0 flex-col gap-2">
         <legend className="text-card-title font-semibold">평가</legend>
 
         <RatingInput value={state.rating} onChange={(v) => set("rating", v)} />
@@ -167,7 +167,7 @@ export function BrewLogFields({
           <button
             type="button"
             onClick={() => set("sensoryExpanded", true)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-border px-3 py-2 text-body"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-control border border-border px-3 py-2 text-body"
           >
             맛 자세히
           </button>
@@ -186,7 +186,7 @@ export function BrewLogFields({
                     e.target.value === "" ? null : Number(e.target.value),
                   )
                 }
-                className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 min-h-11"
+                className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
               >
                 <option value="">선택 안 함</option>
                 {[1, 2, 3, 4, 5].map((score) => (
@@ -208,7 +208,7 @@ export function BrewLogFields({
             aria-describedby={
               fieldErrors?.byField.overallNote ? "brew-note-error" : undefined
             }
-            className="w-full min-w-0 rounded-md border border-border px-2 py-1 min-h-11"
+            className="w-full min-w-0 rounded-control border border-border px-2 py-1 min-h-11"
           />
           {fieldErrors?.byField.overallNote && (
             <span id="brew-note-error" className="text-body-sm text-danger">
@@ -251,7 +251,7 @@ function NumberField({
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
         aria-describedby={error ? errorId : undefined}
-        className="w-full min-w-0 rounded-md border border-border px-2 py-1 min-h-11"
+        className="w-full min-w-0 rounded-control border border-border px-2 py-1 min-h-11"
       />
       {error && (
         <span id={errorId} className="text-body-sm text-danger">

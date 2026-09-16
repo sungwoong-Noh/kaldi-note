@@ -150,7 +150,7 @@ export function RecipeForm({
           aria-label="공개 범위"
           value={state.visibility}
           onChange={(e) => patch({ visibility: e.target.value as Visibility })}
-          className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 min-h-11"
+          className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
         >
           {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
             <option key={code} value={code}>
@@ -204,14 +204,14 @@ export function RecipeForm({
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-control bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
         >
           저장
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-border px-4 py-2 text-body"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-control border border-border px-4 py-2 text-body"
         >
           취소
         </button>
@@ -244,7 +244,7 @@ function TextField({
     value,
     "aria-describedby": error ? errorId : undefined,
     onChange: (e: { target: { value: string } }) => onChange(e.target.value),
-    className: "min-h-11 rounded-md border border-border px-2 py-1 text-body",
+    className: "min-h-11 rounded-control border border-border px-2 py-1 text-body",
   };
 
   return (
@@ -294,7 +294,7 @@ function NumberField({
           onChange={(e) =>
             onChange(e.target.value === "" ? null : Number(e.target.value))
           }
-          className="w-full min-w-0 rounded-md border border-border px-2 py-1 pr-12 text-body min-h-11"
+          className="w-full min-w-0 rounded-control border border-border px-2 py-1 pr-12 text-body min-h-11"
         />
         <span
           data-unit
@@ -333,7 +333,7 @@ function SelectField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 text-body min-h-11"
+        className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 text-body min-h-11"
       >
         <option value="">선택 안 함</option>
         {options.map((option) => (

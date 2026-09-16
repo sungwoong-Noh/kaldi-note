@@ -163,7 +163,7 @@ oklch 값을 새로 정하되, **없애지 않는다.** 폼 검증 에러 스타
 
 | | 단계 | 스펙 | AC 접두사 |
 |---|---|---|---|
-| 1 | **디자인 시스템 교체** — 토큰·서체·시각 AC 갱신 | `design-system-v2` | `AC-DS2` |
+| 1 | **디자인 시스템 교체** — 토큰·서체·시각 AC 갱신 | [`2026-09-17-design-system-v2.md`](../specs/2026-09-17-design-system-v2.md) **작성됨** | `AC-DS2` |
 | 2 | **기존 16화면 리스킨** | `screen-reskin` | `AC-SKIN` |
 | 3 | 작은 기능 — 다크 토글 · 기구 관리 · 「이 값으로 기록」 · 「다시 내리기」 · 비교표 자연어 문구 | `small-features` | `AC-SMALL` |
 | 4 | 콘텐츠 채우기 (레시피 10건) | `admin-recipe-import` | `AC-IMPORT` |

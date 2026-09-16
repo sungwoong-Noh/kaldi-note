@@ -105,7 +105,7 @@ export function RecipeForm({
         onChange={(description) => patch({ description })}
       />
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-col gap-4">
         <NumberField
           label="원두량"
           suffix="g"
@@ -145,12 +145,12 @@ export function RecipeForm({
       </div>
 
       <label className="flex items-center gap-2 text-base">
-        <span className="text-muted">공개 범위</span>
+        <span className="shrink-0 text-muted">공개 범위</span>
         <select
           aria-label="공개 범위"
           value={state.visibility}
           onChange={(e) => patch({ visibility: e.target.value as Visibility })}
-          className="rounded-md border border-line px-2 py-1 min-h-11"
+          className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
         >
           {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
             <option key={code} value={code}>
@@ -160,7 +160,7 @@ export function RecipeForm({
         </select>
       </label>
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-col gap-4">
         <SelectField
           label="드리퍼"
           value={state.brewerId}
@@ -282,7 +282,9 @@ function NumberField({
       <label htmlFor={inputId} className="text-base text-muted">
         {label}
       </label>
-      <span className="flex items-baseline gap-1">
+      {/* 단위는 칸 안쪽 오른쪽에 둔다. 밖에 두면 그 자체가 또 다른 오른쪽 끝을 만든다
+          (docs/specs/2026-09-15-structure.md). 입력의 pr-12가 글자와 단위가 겹치는 것을 막는다. */}
+      <span className="relative flex w-full items-center">
         <input
           id={inputId}
           type="number"
@@ -292,11 +294,16 @@ function NumberField({
           onChange={(e) =>
             onChange(e.target.value === "" ? null : Number(e.target.value))
           }
-          className="w-24 rounded-md border border-line px-2 py-1 text-base min-h-11"
+          className="w-full min-w-0 rounded-md border border-line px-2 py-1 pr-12 text-base min-h-11"
         />
-        <span className="text-base text-muted">{suffix}</span>
-        {hint && <span className="text-base text-muted">{hint}</span>}
+        <span
+          data-unit
+          className="pointer-events-none absolute right-3 text-base text-muted"
+        >
+          {suffix}
+        </span>
       </span>
+      {hint && <span className="text-base text-muted">{hint}</span>}
       <FieldError id={errorId} message={error} />
     </div>
   );
@@ -326,7 +333,7 @@ function SelectField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="rounded-md border border-line px-2 py-1 text-base min-h-11"
+        className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 text-base min-h-11"
       >
         <option value="">선택 안 함</option>
         {options.map((option) => (

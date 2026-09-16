@@ -61,7 +61,18 @@ export interface Stubs {
  * accessToken은 메모리에만 사는데 새 탭은 그것이 없다. 앱은 세션이 없으면 `/api/auth/refresh`로
  * 복구를 한 번 시도하므로, 그 경로만 스텁하면 로그인 상태가 된다 — refresh 토큰도 DB도 필요 없다.
  */
-export async function installStubs(page: Page): Promise<Stubs> {
+/** 기본 응답을 덮어쓰는 시나리오. 없는 필드는 평소대로 동작한다. */
+export interface StubOptions {
+  /** 레시피 조회에 이 상태를 돌려준다. 「레시피를 못 읽는 기록」을 재현한다. */
+  readonly recipeStatus?: number;
+  /** 목록을 비운다. 빈 화면을 재현한다. */
+  readonly empty?: "brewLogs" | "recipes";
+}
+
+export async function installStubs(
+  page: Page,
+  options: StubOptions = {},
+): Promise<Stubs> {
   const unstubbed: string[] = [];
 
   await page.route("**/api/auth/refresh", (route: Route) =>
@@ -73,6 +84,36 @@ export async function installStubs(page: Page): Promise<Stubs> {
   await page.route("**/api/v1/**", (route: Route) => {
     const url = route.request().url();
     const { pathname } = new URL(url);
+    if (
+      options.recipeStatus !== undefined &&
+      /^\/api\/v1\/recipes\/\d+$/.test(pathname)
+    ) {
+      return route.fulfill({
+        status: options.recipeStatus,
+        json: { code: "NOT_FOUND", message: pathname, fieldErrors: [] },
+      });
+    }
+
+    const emptyPath =
+      options.empty === "brewLogs"
+        ? /^\/api\/v1\/brew-logs$/
+        : options.empty === "recipes"
+          ? /^\/api\/v1\/recipes$/
+          : undefined;
+    if (emptyPath !== undefined && emptyPath.test(pathname)) {
+      // pageOf와 같은 형태여야 한다. hasNext가 빠지면 스키마 검증에 걸린다.
+      return route.fulfill({
+        json: {
+          content: [],
+          page: 0,
+          size: 20,
+          totalElements: 0,
+          totalPages: 0,
+          hasNext: false,
+        },
+      });
+    }
+
     const matched = HANDLERS.find(([pattern]) => pattern.test(pathname));
     if (matched === undefined) {
       unstubbed.push(url);

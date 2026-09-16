@@ -48,13 +48,13 @@ export function GrindConverter({
       />
 
       <label className="flex items-center gap-2 text-base">
-        <span className="w-28 text-muted">설정값</span>
+        <span className="w-28 shrink-0 text-muted">설정값</span>
         <input
           type="number"
           aria-label="설정값"
           value={setting}
           onChange={(e) => setSetting(e.target.value)}
-          className="w-32 rounded-md border border-line px-2 py-1 min-h-11"
+          className="w-full min-w-0 rounded-md border border-line px-2 py-1 min-h-11"
         />
       </label>
 
@@ -124,12 +124,12 @@ function GrinderSelect({
 }) {
   return (
     <label className="flex items-center gap-2 text-base">
-      <span className="w-28 text-muted">{label}</span>
+      <span className="w-28 shrink-0 text-muted">{label}</span>
       <select
         aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="flex-1 rounded-md border border-line px-2 py-1 min-h-11"
+        className="min-w-0 appearance-none select-chevron pr-12 flex-1 rounded-md border border-line px-2 py-1 min-h-11"
       >
         <option value="">선택하세요</option>
         {grinders.map((grinder) => (

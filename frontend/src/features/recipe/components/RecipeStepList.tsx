@@ -32,8 +32,17 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
 
   const ordered = [...steps].sort((a, b) => a.stepOrder - b.stepOrder);
 
+  /*
+   * 시간 축 타임라인 — docs/specs/2026-09-15-structure.md
+   *
+   * 푸어 스텝은 진짜 시간 시퀀스다(0:00 → 0:15 → 0:45). 구분선만 있으면 그것이 시퀀스로
+   * 읽히지 않는다. 시간 열 오른쪽에 세로선을 그어 시간이 흐른다는 것을 보여준다.
+   *
+   * 편집 화면(RecipeStepEditor)은 이 컴포넌트를 쓰지 않는다 — 순서를 바꾸는 일이라 축이
+   * 방해가 된다(AC-STRUCT-09).
+   */
   return (
-    <ol className="flex flex-col">
+    <ol data-timeline-axis className="flex flex-col">
       {ordered.map((step) => {
         const showCumulative =
           isPouring(step) && step.cumulativeWaterG !== undefined;
@@ -43,7 +52,7 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
             // 스텝 응답에 id가 없다. stepOrder가 레시피 안에서 UNIQUE한 식별자다.
             // 배열 인덱스를 쓰면 순서가 바뀔 때 확실한 버그가 된다.
             key={step.stepOrder}
-            className="flex gap-3 border-t border-line py-3 first:border-t-0"
+            className="flex gap-3 py-3"
           >
             <span
               data-testid="step-start"
@@ -51,6 +60,10 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
             >
               {formatDuration(step.startAtSeconds)}
             </span>
+
+            {/* 축. 행마다 그어 이어 붙인다 — absolute로 그리면 임의값 위치가 필요하고,
+                그건 AC-SPACE-03(임의값 간격 0곳)에 걸린다. */}
+            <span aria-hidden className="w-px shrink-0 self-stretch bg-line" />
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-baseline gap-x-2">

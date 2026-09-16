@@ -19,19 +19,18 @@ const MUTED_LIGHT = "rgb(84, 84, 84)";
  * <p><b>`/recipes/12`는 hoffmann이다</b>(30.0g → 500.0g · 1:16.7 · 100°C). kasuya는 id 3이다 —
  * `e2e/stubs.ts`의 핸들러 순서가 그렇게 정한다. 지어낸 값으로 쓰면 셀렉터가 빗나간다.
  */
+// 갱신(2026-09-15): structure 스펙이 대표 수치를 1:비율로 통일하면서 `1:16.7`이 메타줄에서
+// 대표 자리로 올라갔다. 메타줄 앵커를 거기 남은 값으로 바꾼다.
 const META_ROWS = [
-  { path: "/recipes", text: "1:16.7", what: "카드 보조줄" },
+  { path: "/recipes", text: "100°C", what: "카드 보조줄" },
   { path: "/brews", text: "2026-08-31", what: "카드 보조줄" },
-  { path: "/recipes/12", text: "1:16.7", what: "상세 메타줄" },
-  { path: "/brews/2", text: "20.0g", what: "상세 실측값" },
+  { path: "/recipes/12", text: "100°C", what: "상세 메타줄" },
+  // 「20.0g」은 비교표에도 있다(2026-09-15). 실측값에만 있는 분쇄도를 앵커로 쓴다.
+  { path: "/brews/2", text: "22", what: "상세 실측값" },
 ] as const;
 
-const LEADS = [
-  { path: "/recipes", text: "30.0g" },
-  { path: "/brews", text: "1:15.0" },
-  { path: "/recipes/12", text: "30.0g" },
-  { path: "/brews/2", text: "1:15.0" },
-] as const;
+/** 대표 수치는 `data-lead`로 찾는다 — 텍스트로 찾으면 표현이 바뀔 때마다 깨진다. */
+const LEAD_PATHS = ["/recipes", "/brews", "/recipes/12", "/brews/2"] as const;
 
 /** `text`를 담은 요소에서 위로 올라가 `className`에 `token`을 가진 첫 조상. */
 function ancestorWith(
@@ -62,14 +61,21 @@ test.describe("일관성 — 렌더값", () => {
     });
   }
 
-  for (const path of ["/recipes/12", "/brews/2"] as const) {
+  // 화면마다 메타줄에 남은 라벨이 다르다(2026-09-15). `/brews/2`의 원두량·물량·물 온도·
+  // 추출 시간은 비교표로 옮겨갔고 분쇄도만 실측값에 남는다.
+  const META_LABELS = [
+    { path: "/recipes/12", label: "물 온도" },
+    { path: "/brews/2", label: "분쇄도" },
+  ] as const;
+
+  for (const { path, label: labelText } of META_LABELS) {
     test(`AC-CONSIST-07 · ${path}의 메타줄 라벨이 14px muted다`, async ({
       page,
     }) => {
       await installStubs(page);
       await page.goto(path);
 
-      const label = page.getByText("물 온도", { exact: true }).first();
+      const label = page.getByText(labelText, { exact: true }).first();
       await expect(label).toBeVisible();
 
       expect(
@@ -89,14 +95,14 @@ test.describe("일관성 — 렌더값", () => {
    * `body` 규칙을 지우거나 어느 조상에 `font-variant-numeric: normal`을 걸면 여기가 빨개진다.
    * 대표 수치에 클래스가 붙어 있는지는 `AC-CONSIST-08`·`09`가 따로 본다.
    */
-  for (const { path, text } of LEADS) {
+  for (const path of LEAD_PATHS) {
     test(`AC-CONSIST-14 · ${path}의 대표 수치가 tabular-nums로 그려진다`, async ({
       page,
     }) => {
       await installStubs(page);
       await page.goto(path);
 
-      const lead = ancestorWith(page, text, "tabular-nums");
+      const lead = page.locator("[data-lead]").first();
       await expect(lead).toBeAttached();
 
       expect(

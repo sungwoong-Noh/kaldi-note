@@ -44,7 +44,7 @@ export function BrewLogFields({
   return (
     <>
       <label className="flex flex-col gap-1 text-base">
-        <span className="text-muted">내린 시각</span>
+        <span className="shrink-0 text-muted">내린 시각</span>
         <input
           type="datetime-local"
           aria-label="내린 시각"
@@ -53,7 +53,7 @@ export function BrewLogFields({
           aria-describedby={
             fieldErrors?.byField.brewedAt ? "brew-brewed-at-error" : undefined
           }
-          className="rounded-md border border-line px-2 py-1 min-h-11"
+          className="w-full min-w-0 rounded-md border border-line px-2 py-1 min-h-11"
         />
         {fieldErrors?.byField.brewedAt && (
           <span id="brew-brewed-at-error" className="text-sm text-danger">
@@ -70,8 +70,8 @@ export function BrewLogFields({
           <p className="text-base text-muted">등록된 그라인더가 없습니다</p>
         )}
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-1 text-base">
-            <span className="text-muted">그라인더</span>
+          <label className="flex w-full items-center gap-2 text-base">
+            <span className="shrink-0 text-muted">그라인더</span>
             <select
               aria-label="그라인더"
               value={state.userGrinderId ?? ""}
@@ -81,7 +81,7 @@ export function BrewLogFields({
                   e.target.value === "" ? null : Number(e.target.value),
                 )
               }
-              className="rounded-md border border-line px-2 py-1 min-h-11"
+              className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
             >
               <option value="">선택 안 함</option>
               {grinders.map((grinder) => (
@@ -176,7 +176,7 @@ export function BrewLogFields({
         {state.sensoryExpanded &&
           SENSORY_AXES.map(({ key, label }) => (
             <label key={key} className="flex items-center gap-2 text-base">
-              <span className="w-20 text-muted">{label}</span>
+              <span className="w-20 shrink-0 text-muted">{label}</span>
               <select
                 aria-label={label}
                 value={state[key] ?? ""}
@@ -186,7 +186,7 @@ export function BrewLogFields({
                     e.target.value === "" ? null : Number(e.target.value),
                   )
                 }
-                className="rounded-md border border-line px-2 py-1 min-h-11"
+                className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
               >
                 <option value="">선택 안 함</option>
                 {[1, 2, 3, 4, 5].map((score) => (
@@ -199,7 +199,7 @@ export function BrewLogFields({
           ))}
 
         <label className="flex flex-col gap-1 text-base">
-          <span className="text-muted">메모</span>
+          <span className="shrink-0 text-muted">메모</span>
           <textarea
             aria-label="메모"
             value={state.overallNote}
@@ -208,7 +208,7 @@ export function BrewLogFields({
             aria-describedby={
               fieldErrors?.byField.overallNote ? "brew-note-error" : undefined
             }
-            className="rounded-md border border-line px-2 py-1 min-h-11"
+            className="w-full min-w-0 rounded-md border border-line px-2 py-1 min-h-11"
           />
           {fieldErrors?.byField.overallNote && (
             <span id="brew-note-error" className="text-sm text-danger">
@@ -242,7 +242,7 @@ function NumberField({
 
   return (
     <label className="flex items-center gap-2 text-base">
-      <span className="w-20 text-muted">{label}</span>
+      <span className="w-20 shrink-0 text-muted">{label}</span>
       <input
         type="number"
         aria-label={label}
@@ -251,7 +251,7 @@ function NumberField({
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
         aria-describedby={error ? errorId : undefined}
-        className="w-32 rounded-md border border-line px-2 py-1 min-h-11"
+        className="w-full min-w-0 rounded-md border border-line px-2 py-1 min-h-11"
       />
       {error && (
         <span id={errorId} className="text-sm text-danger">

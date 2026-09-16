@@ -126,8 +126,8 @@ function Fields({
         <p className="text-base text-muted">등록된 원두가 없습니다</p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-1 text-base">
-          <span className="text-muted">원두</span>
+        <label className="flex w-full items-center gap-2 text-base">
+          <span className="shrink-0 text-muted">원두</span>
           <select
             aria-label="원두"
             value={state.beanBatchId ?? ""}
@@ -137,7 +137,7 @@ function Fields({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="rounded-md border border-line px-2 py-1 min-h-11"
+            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
           >
             <option value="">선택 안 함</option>
             {(batches.data ?? []).map((batch) => (

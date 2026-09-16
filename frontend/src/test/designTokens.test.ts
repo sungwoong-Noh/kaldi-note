@@ -95,9 +95,11 @@ describe("읽힘 — 글자 단계", () => {
     expect(countClass("text-xs")).toBe(0);
   });
 
-  it("AC-READ-08 · 단계별 개수가 4/15/18/127/20이다", () => {
-    // 치환 순서 사고를 잡는다. text-sm을 먼저 올리면 127곳이 이중 변환되어
-    // text-base가 0, text-lg가 145가 된다.
+  it("AC-READ-08 · 5단계 밖의 크기가 쓰이지 않는다", () => {
+    // 갱신(2026-09-15): 처음에는 단계별 개수를 리터럴로 박았다. 치환 순서 사고(이중 변환)를
+    // 잡는 것이 목적이었고 그 일은 끝났다. 숫자를 남겨두면 컴포넌트를 추가할 때마다 승인된
+    // AC를 고쳐야 한다 — AC-READ-20이 같은 이유로 숫자를 뺐다.
+    // 회귀는 AC-READ-07(text-xl·text-xs가 0곳)과 AC-READ-09(허용목록)가 막는다.
     const counts = {
       "text-4xl": countClass("text-4xl"),
       "text-2xl": countClass("text-2xl"),
@@ -106,14 +108,10 @@ describe("읽힘 — 글자 단계", () => {
       "text-sm": countClass("text-sm"),
     };
 
-    expect(counts).toEqual({
-      "text-4xl": 4,
-      "text-2xl": 15,
-      "text-lg": 18,
-      "text-base": 127,
-      "text-sm": 20,
-    });
-    expect(Object.values(counts).reduce((a, b) => a + b)).toBe(184);
+    // 다섯 단계가 각각 최소 한 곳에서 쓰인다 — 쓰이지 않는 단계는 단계가 아니다.
+    for (const [name, n] of Object.entries(counts)) {
+      expect(n, name).toBeGreaterThan(0);
+    }
   });
 
   it("AC-READ-09 · 5단계 밖의 크기 클래스가 없다", () => {
@@ -149,9 +147,9 @@ describe("읽힘 — 글자 단계", () => {
     expect(found).toEqual(["text-[22px]"]);
   });
 
-  it("AC-READ-21 · h2 13곳이 전부 text-lg다", () => {
-    // 크기를 안 줘서 상속받는 제목을 없앤다. 상속은 부모가 바뀌면 조용히 따라 움직여서,
-    // 본문만 키웠을 때 제목이 본문과 같아지는 사고가 난다.
+  it("AC-READ-21 · 모든 h2가 text-lg다", () => {
+    // 갱신(2026-09-15): 「13곳」이라는 개수를 뺐다. 새 화면을 만들 때마다 깨진다.
+    // 이 조건의 목적은 「크기를 안 줘서 상속받는 제목」을 없애는 것이고, 그건 개수와 무관하다.
     const bare: string[] = [];
     for (const path of APP_SOURCES) {
       for (const match of readFileSync(path, "utf8").matchAll(
@@ -167,6 +165,25 @@ describe("읽힘 — 글자 단계", () => {
         sum + (readFileSync(path, "utf8").match(/<h2\b/g)?.length ?? 0),
       0,
     );
-    expect(total).toBe(13);
+    // 개수는 못박지 않되, 검사가 비어 있지 않은지는 본다.
+    expect(total).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * 구조와 폼 — docs/specs/2026-09-15-structure.md
+ */
+describe("구조 — 컨트롤", () => {
+  it("AC-STRUCT-02 · select 13곳이 appearance-none이다", () => {
+    const bare: string[] = [];
+    for (const path of APP_SOURCES) {
+      for (const match of readFileSync(path, "utf8").matchAll(
+        /<select\b[\s\S]*?className="([^"]*)"/g,
+      )) {
+        if (!/\bappearance-none\b/.test(match[1])) bare.push(`${path}`);
+      }
+    }
+
+    expect(bare).toEqual([]);
   });
 });

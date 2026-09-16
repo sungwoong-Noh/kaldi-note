@@ -41,8 +41,8 @@ test.describe("시각 위계 — 라이트", () => {
     await installStubs(page);
     await page.goto("/recipes");
 
-    // 목록 첫 카드는 hoffmannSummary다 — 30.0g → 500.0g.
-    const dose = page.getByText("30.0g").first();
+    // 갱신(2026-09-15): 대표 수치가 1:비율이 됐다. data-lead로 찾는다.
+    const dose = page.locator("[data-lead]").first();
     await expect(dose).toBeVisible();
 
     expect(await dose.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
@@ -54,10 +54,11 @@ test.describe("시각 위계 — 라이트", () => {
     await installStubs(page);
     await page.goto("/recipes");
 
-    const ratio = page.getByText("1:16.7").first();
-    await expect(ratio).toBeVisible();
+    // 갱신(2026-09-15): 「1:16.7」이 대표 수치로 올라갔다. 보조줄에 남은 값을 잰다.
+    const meta = page.getByText("100°C").first();
+    await expect(meta).toBeVisible();
 
-    expect(await ratio.evaluate((el) => getComputedStyle(el).color)).toBe(
+    expect(await meta.evaluate((el) => getComputedStyle(el).color)).toBe(
       MUTED_LIGHT,
     );
   });

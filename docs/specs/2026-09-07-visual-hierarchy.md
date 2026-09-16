@@ -251,12 +251,16 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 
 ### 정상 동작 — 컴포넌트
 
-#### AC-VISUAL-08 · 레시피 카드의 대표 수치는 도즈와 물이다
+#### AC-VISUAL-08 · 레시피 카드의 대표 수치는 비율이다
 
 - **Given** `doseG: 20`, `waterG: 300`, `ratio: 15`인 `RecipeSummary`
 - **When** `RecipeCard`를 렌더한다
-- **Then** `20.0g → 300.0g`를 담은 요소가 `text-lg`와 `font-semibold`를 갖는다
+- **Then** **`1:15.0`**을 담은 요소가 대표 수치 단계와 `font-semibold`를 갖고 `data-lead`가 붙어 있다
 - **검증** 단위 테스트 `RecipeCard.test.tsx`
+
+> **갱신 (2026-09-15).** `2026-09-15-structure.md`가 레시피와 기록의 대표 수치를 **`1:비율`로
+> 통일**했다. 절대량(`20.0g → 300.0g`)은 바로 아래 메타줄로 내려갔다. 비율은 배치 크기에
+> 독립적이라 다른 레시피와 바로 비교된다.
 
 #### AC-VISUAL-09 · 로그 카드는 브루 비율을 대표 수치로 쓴다
 

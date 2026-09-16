@@ -58,9 +58,18 @@ export default function RecipesPage() {
   if (recipes.length === 0) {
     return (
       <Shell mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
-        <p className="py-12 text-center text-base text-muted">
-          레시피가 없습니다
-        </p>
+        {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
+        <div data-empty className="flex flex-col gap-3">
+          <p className="py-6 text-center text-base text-muted">
+            레시피가 없습니다
+          </p>
+          <Link
+            href="/recipes/new"
+            className="flex min-h-11 items-center justify-center rounded-md bg-brand py-3 text-center text-base text-on-accent"
+          >
+            새 레시피
+          </Link>
+        </div>
       </Shell>
     );
   }
@@ -108,11 +117,13 @@ function Shell({
         </Link>
       </div>
 
+      {/* 체크박스 모양은 20×20이고 탭 영역은 라벨 전체가 받는다. 네이티브 사각형 자체를
+          44px로 키우면 거대한 빈 상자가 된다(docs/specs/2026-09-15-structure.md). */}
       {onMineOnlyChange && (
-        <label className="mb-4 flex items-center gap-2 text-base">
+        <label className="mb-4 flex min-h-11 w-fit items-center gap-2 py-2 text-base">
           <input
             type="checkbox"
-            className="size-11"
+            className="size-5 shrink-0 appearance-none rounded-md border border-line checked:border-brand checked:bg-brand"
             checked={mineOnly ?? false}
             onChange={(e) => onMineOnlyChange(e.target.checked)}
           />

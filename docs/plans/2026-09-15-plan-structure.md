@@ -59,8 +59,8 @@
 
 ```
 frontend/src/
-  features/brewlog/statusLabel.ts           신규 — enum → 한글
-  features/brewlog/statusLabel.test.ts      신규 — AC-STRUCT-15
+  lib/statusLabel.ts                        신규 — enum → 한글 (features 교차 import를 피해 lib에 둔다)
+  lib/statusLabel.test.ts                   신규 — AC-STRUCT-15·16
   features/brewlog/components/
     ExtractionSummary.tsx                   수정 — 한글 적용
     BrewDetail.tsx                          수정 — 대표 수치·비교표
@@ -85,7 +85,7 @@ frontend/e2e/
 ## Task 1: 영어 상태값을 없앤다
 
 **Files:**
-- Create: `src/features/brewlog/statusLabel.ts` · `statusLabel.test.ts`
+- Create: `src/lib/statusLabel.ts` · `statusLabel.test.ts`
 - Modify: `src/features/brewlog/components/ExtractionSummary.tsx`
 - Modify: `src/features/recipe/components/RecipeCard.tsx` · `RecipeDetail.tsx`
 - Test: `e2e/structure.spec.ts` (신규)
@@ -98,7 +98,7 @@ frontend/e2e/
 
 > **왜 먼저 하나.** 가장 닫힌 변경이다. 순수 함수 하나와 그것을 부르는 곳 넷이 전부다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `src/features/brewlog/statusLabel.test.ts`:
 
@@ -128,12 +128,12 @@ describe("상태값 한글", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test -- statusLabel`
 Expected: FAIL — `statusLabel` 모듈이 없어 import 오류.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```ts
 /** 백엔드 enum을 화면 문구로 바꾼다. enum 자체는 바꾸지 않는다. */
@@ -160,7 +160,7 @@ export function statusLabel(kind: StatusKind, value: string): string {
 `{log.extractionZone}` → `{statusLabel("extraction", log.extractionZone)}`.
 `RecipeCard.tsx`·`RecipeDetail.tsx`의 `CURATED` 배지 텍스트 → `{statusLabel("source", "CURATED")}`.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- statusLabel`
 Expected: PASS, 2 tests.
@@ -181,13 +181,22 @@ test("AC-STRUCT-14 · 화면에 영어 상태값이 하나도 없다", async ({ 
 });
 ```
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 영어 상태값을 한글로 바꾼다 (AC-STRUCT 3개)"
 ```
 
 ---
+
+
+> **★ `features/`가 아니라 `lib/`에 둔다(2026-09-15 수정).** 처음에 `features/brewlog/`에 만들었더니
+> `recipe`의 컴포넌트가 그것을 import하게 됐다. `frontend/CLAUDE.md`가 **「`features/` 끼리는 서로
+> import 하지 않는다」**고 못박고 있다.
+>
+> **★ 예고하지 못한 AC가 하나 깨졌다 — `AC-WEB-20`.** 「`CURATED`가 화면에 있다」로 문자열을
+> 직접 검사하고 있었다. 배지가 붙는다는 조건 자체는 그대로이므로 검사 문자열만 「기본 제공」으로
+> 갱신하고 이유를 그 AC 자리에 남겼다.
 
 ## Task 2: 대표 수치를 `1:비율`로 통일한다
 
@@ -207,7 +216,7 @@ git add . && git commit -m "feat(web): 영어 상태값을 한글로 바꾼다 (
 > 「검사가 비어 있는 것」과 구분되지 않으므로 돌연변이로 확인한다** — 기록 대표 수치를
 > `30.0g → 500.0g` 형태로 잠시 바꿔 빨개지는지 본다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-STRUCT-17 · 레시피 대표 수치가 1:비율이다", async ({ page }) => {
@@ -225,21 +234,21 @@ test("AC-STRUCT-17 · 레시피 대표 수치가 1:비율이다", async ({ page 
 `RecipeCard`·`RecipeDetail`·`BrewLogCard`·`BrewDetail`의 대표 수치 요소에 `data-lead` 속성을
 붙인다 — 36px 클래스로 찾으면 스타일이 바뀔 때마다 셀렉터가 깨진다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: FAIL — `30.0g → 500.0g`이 나온다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 대표 수치를 `1:{ratio}` 형태로 바꾸고, 기존 `도즈 → 물`은 바로 아래 메타줄로 옮긴다.
 **메타줄에 이미 있으면 중복을 만들지 않는다**(`AC-CONSIST-11`의 정신).
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e structure && pnpm test && pnpm e2e`
 Expected: `AC-VISUAL-08`·`AC-CONSIST-08`이 빨개진다. **예정된 갱신이다** — 다음 스텝에서 고친다.
 
-- [ ] **Step 5: 기존 AC 2건을 갱신하고 커밋**
+- [x] **Step 5: 기존 AC 2건을 갱신하고 커밋**
 
 | AC | 고칠 값 | 남길 이유 |
 |---|---|---|
@@ -251,6 +260,21 @@ git add . && git commit -m "feat(web): 대표 수치를 1:비율로 통일한다
 ```
 
 ---
+
+
+> **★ 파급이 계획보다 컸다(2026-09-15).** 대표 수치 하나를 바꿨을 뿐인데 **기존 AC 7건**이
+> 깨졌다. 계획이 예고한 것은 `AC-VISUAL-08`·`AC-CONSIST-08` 둘뿐이었다.
+>
+> | AC | 왜 깨졌나 |
+> |---|---|
+> | `AC-CONSIST-05` | 메타줄 라벨 목록이 `[비율·물 온도·총 시간]` → `[원두량·물량·물 온도·총 시간]` |
+> | `AC-CONSIST-06` | 라벨 순서가 바뀜(어휘는 동일) |
+> | `AC-CONSIST-04` · `14` | e2e가 `1:16.7`을 앵커로 메타줄을 찾고 있었다 |
+> | `AC-READ-08` | `text-sm` 20 → 21 (메타줄에 `dt`가 하나 늘었다) |
+> | `AC-VISUAL-16` · `17` | e2e가 `30.0g`·`1:16.7`을 텍스트로 찾고 있었다 |
+>
+> **교훈: 대표 수치를 텍스트로 찾는 셀렉터가 e2e 곳곳에 있었다.** 전부 `[data-lead]`로 바꿨다 —
+> 앞으로 표현이 바뀌어도 깨지지 않는다.
 
 ## Task 3: 폼의 오른쪽 끝을 하나로 맞춘다
 
@@ -266,7 +290,7 @@ git add . && git commit -m "feat(web): 대표 수치를 1:비율로 통일한다
 - Consumes: 없음
 - Produces: 전폭 입력 패턴. Task 4가 그 위에 컨트롤 모양을 얹는다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 const FORMS = ["/recipes/new", "/recipes/12/edit", "/brews/new?recipeId=12", "/gear/grind-converter"];
@@ -295,28 +319,42 @@ for (const path of FORMS) {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: FAIL — 종류 수가 `10 · 13 · 4 · 2`다(2026-09-15 실측).
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 모든 일반 필드에 `w-full`을 준다. 고정 폭(`w-20`·`w-24`·`w-28`·`w-32`·`w-12`) **12곳**을 없앤다.
 단위는 입력을 `relative` 컨테이너로 감싸고 `absolute right-3`로 칸 안에 넣는다. 입력에는
 `pr-10`을 주어 글자가 단위와 겹치지 않게 한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e structure && pnpm e2e`
 Expected: PASS. `AC-TOUCH-12`(가로 스크롤)와 `AC-READ-17`이 계속 초록인지 함께 본다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 폼의 오른쪽 끝을 하나로 맞춘다 (AC-STRUCT 2개)"
 ```
 
 ---
+
+
+> **★ 막힌 곳이 셋이었다(2026-09-15).**
+>
+> 1. **정규식이 화살표 함수에서 끊겼다.** `<(select|input)((?:[^<>]|\n)*?)`로 여는 태그를 잡으려
+>    했더니 `onChange={(e) => …}`의 `>`에서 멈춰 `select` 13개에 `w-full`이 안 붙었다.
+>    **클래스 문자열 단위 치환**으로 바꿔 해결했다.
+> 2. **2열 배치가 남아 있었다.** 원두량/물량이 `flex flex-wrap`으로 나란히 있어 왼쪽 열이
+>    344에 닿지 못했다. **`flex-col`로 펴야** 전폭 한 종류가 된다.
+> 3. **부모 `label`이 콘텐츠 폭만 차지했다.** 컨트롤에 `w-full`이 있어도 부모가 좁으면 소용없다.
+>    라벨 행 3곳에 `w-full`을 줬다.
+>
+> **`data-step-row`는 Task 5의 것이지만 여기서 먼저 붙였다** — 없으면 `/recipes/12/edit`의
+> `AC-STRUCT-01`이 스텝 행 컨트롤까지 세어 통과할 수 없다.
 
 ## Task 4: 컨트롤에서 OS 기본 모양을 벗긴다
 
@@ -332,7 +370,7 @@ git add . && git commit -m "feat(web): 폼의 오른쪽 끝을 하나로 맞춘�
 
 > **터치 타깃을 잃기 쉬운 태스크다.** `AC-TOUCH-01`·`06`·`09`가 이 변경을 감시한다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 // designTokens.test.ts
@@ -362,30 +400,42 @@ test("AC-STRUCT-04 · 체크박스가 20×20에 탭 44×44다", async ({ page })
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: FAIL — `appearance-none`이 0곳이고, 체크박스가 44×44(네이티브가 규약 때문에 커진 상태)다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `select`: `appearance-none min-h-11 w-full rounded-md border border-line bg-background pr-9` +
 배경 이미지나 `absolute` 아이콘으로 화살표를 그린다.
 체크박스: `appearance-none h-5 w-5 rounded-md border border-line checked:bg-brand` +
 감싸는 `label`에 `min-h-11 min-w-11 flex items-center gap-2`.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test && pnpm e2e`
 Expected: PASS. **`AC-TOUCH-06`이 44×44를 기대하는데 입력 자체는 20×20이 된다** — 그 AC의
 대상을 감싼 `label`로 옮기고 갱신 이유를 남긴다. **승인된 AC 변경이므로 사람에게 먼저 보고한다.**
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 컨트롤에서 OS 기본 모양을 벗긴다 (AC-STRUCT 3개)"
 ```
 
 ---
+
+
+> **★ `AC-TOUCH-06`과 스윕이 예고대로 걸렸고, 사람에게 확인받아 갱신했다(2026-09-15).**
+> 입력이 20×20이 되면서 두 조건이 깨졌다. **탭 영역(감싼 `label`)을 재는 쪽으로 바꿨다** —
+> 사람이 실제로 누르는 것을 재는 게 맞고, 라벨 글자까지 탭 영역이 되어 오히려 넓어졌다.
+> 스윕 판정도 「라벨에 감싸인 컨트롤은 그 라벨을 잰다」로 고쳤고, 라벨을 20px로 줄여
+> **둘 다 빨개지는 것을 확인**했다.
+>
+> **`pr-9`가 `AC-SPACE-01`에 걸렸다.** 간격 6단계(`1·2·3·4·6·12`) 밖이라 `pr-12`로 바꿨다.
+>
+> **JSX 표현식 자리에 주석과 요소를 같이 둘 수 없다.** `{cond && ( {/* */} <label> )}`가
+> 구문 오류가 나서 주석을 조건 밖으로 옮겼다.
 
 ## Task 5: 스텝 행의 열을 고정한다
 
@@ -395,7 +445,7 @@ git add . && git commit -m "feat(web): 컨트롤에서 OS 기본 모양을 벗�
 
 **Covers:** AC-STRUCT-05
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-STRUCT-05 · 스텝 행의 열 위치가 행마다 같다", async ({ page }) => {
@@ -420,22 +470,22 @@ test("AC-STRUCT-05 · 스텝 행의 열 위치가 행마다 같다", async ({ pa
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: 스텝 행에 `data-step-row`가 없어 배열이 비고 `toHaveLength(1)`이 깨진다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 스텝 행 컨테이너에 `data-step-row`를 붙이고, 열 폭을 `grid-cols-[4rem_5rem_5rem_1fr]`처럼
 고정한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e structure`
 Expected: PASS. **Task 3의 `AC-STRUCT-01`이 `data-step-row`로 스텝 행을 제외하므로 함께 초록인지
 확인한다.**
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 스텝 행의 열을 고정한다 (AC-STRUCT 1개)"
@@ -457,7 +507,7 @@ git add . && git commit -m "feat(web): 스텝 행의 열을 고정한다 (AC-STR
 
 > **이 스펙의 기억될 화면이다.** 대담함을 여기 한 곳에만 쓴다 — 나머지는 조용히 둔다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-STRUCT-07 · 읽기 2곳의 스텝에 시간 축이 있다", async ({ page }) => {
@@ -477,18 +527,18 @@ test("AC-STRUCT-09 · 편집 화면에는 타임라인이 없다", async ({ page
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: FAIL — `AC-STRUCT-07`이 0개를 찾는다. **`AC-STRUCT-09`는 처음부터 통과한다**(타임라인이
 아직 없으니 당연하다). Step 4에서 돌연변이로 확인한다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `RecipeStepList`에 시간 열(고정 폭)과 세로선을 넣는다. 세로선은 `border-l border-line`을 쓴
 컨테이너 하나이고 거기에 `data-timeline-axis`를 붙인다. **`RecipeStepEditor`는 이 컴포넌트를
 쓰지 않으므로 편집 화면은 자동으로 제외된다.**
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e structure`
 Expected: PASS 3개.
@@ -496,13 +546,27 @@ Expected: PASS 3개.
 **`AC-STRUCT-09`를 돌연변이로 확인한다** — `RecipeStepEditor`에 `data-timeline-axis`를 잠시
 붙여 빨개지는지 보고 되돌린다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 푸어 스텝을 시간 축으로 그린다 (AC-STRUCT 3개)"
 ```
 
 ---
+
+
+> **★ 스크린샷으로 회귀 둘을 잡았다(2026-09-15). 테스트는 전부 초록이었다.**
+>
+> 1. **라벨이 두 줄로 깨졌다** — 「공개 범 / 위」, 「그라인 / 더」. 라벨 행을 `w-full`로 만들면서
+>    라벨 글자가 눌렸다. `shrink-0`을 주니 이번엔 `w-full` 입력이 부모를 넘쳐 `right`가 360(화면
+>    끝)이 됐다. **flex 안의 `w-full`은 `min-width:auto` 때문에 줄어들지 못한다** — `min-w-0`이 답이다.
+> 2. **`select` 화살표가 아예 없었다.** `appearance-none`은 걸렸는데 `backgroundImage`가 `none`이다.
+>    **Tailwind가 `bg-[url('data:image/svg+xml;…')]`를 생성하지 못한다** — data URI의 따옴표와
+>    괄호를 파서가 처리하지 못한다. `globals.css`의 `.select-chevron`으로 옮기고
+>    **`AC-STRUCT-21`을 새로 만들어 렌더를 검사**하게 했다. `AC-STRUCT-02`는 `appearance-none`만
+>    봐서 이것을 놓쳤다.
+>
+> **교훈: 「클래스가 붙었다」와 「그려진다」는 다르다.** 소스 검사만 믿으면 안 된다.
 
 ## Task 7: 기록이 「레시피대로 내렸나」를 말하게 한다
 
@@ -523,7 +587,7 @@ git add . && git commit -m "feat(web): 푸어 스텝을 시간 축으로 그린�
 > `title`과 `steps`만 꺼내 쓰고 있다. `steps`를 더한 것과 같은 방식으로 수치를 더 내보낸다
 > (`docs/JOURNAL.md` 2026-09-03의 선례).
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-STRUCT-10 · 기록 상세에 비교표 4행이 있다", async ({ page }) => {
@@ -565,11 +629,11 @@ test("AC-STRUCT-13 · 레시피를 못 읽으면 실측값만 보여준다", asy
 > 픽스처의 기록은 레시피(30g/500g/100°C)와 아예 다른 배치(20g/300g/92°C)라,
 > **비교표가 「셋이 달랐다」를 보여주게 되어 데모로도 알맞다.**
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: FAIL — `[data-compare]`가 0개.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `useRecipeLabel`의 반환에 `doseG`·`waterG`·`waterTempC`·`totalTimeSeconds`를 더한다.
 `RecipeComparison`이 네 행을 그리고, 각 행의 실제 값 요소에 `data-diff`를 붙인다.
@@ -577,18 +641,28 @@ Expected: FAIL — `[data-compare]`가 0개.
 
 `stubs.ts`에 `recipeStatus` 옵션을 추가해 레시피 요청에 404를 돌려줄 수 있게 한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e structure && pnpm test && pnpm e2e`
 Expected: PASS 4개.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 기록이 레시피대로 내렸는지 말한다 (AC-STRUCT 4개)"
 ```
 
 ---
+
+
+> **★ 개수를 박은 AC 둘이 또 깨졌다(2026-09-15).** 컴포넌트를 하나 추가했을 뿐인데
+> `AC-READ-08`(단계별 개수)과 `AC-READ-21`(h2 13곳)이 빨개졌다. **`AC-READ-20`에서 겪은 것과
+> 같은 구조다** — 사람에게 확인받아 **둘 다 숫자를 뺐다.** 돌연변이로 검사가 살아 있는지
+> 확인했다(`h2`에 `text-3xl`을 넣으니 셋이 빨개졌다).
+>
+> **★ 같은 값이 두 곳에 생기면 e2e 앵커가 엉뚱한 것을 잡는다.** `/brews/2`에 「물 온도」와
+> 「20.0g」이 비교표에도 생기면서 `AC-CONSIST-07`이 비교표 라벨을, `AC-CONSIST-04`가 비교표
+> 값을 잡았다. 앵커를 비교표 밖으로 한정하고 실측값에만 있는 값(분쇄도)으로 바꿨다.
 
 ## Task 8: 빈 화면이 다음 행동을 제안한다
 
@@ -600,7 +674,7 @@ git add . && git commit -m "feat(web): 기록이 레시피대로 내렸는지 �
 
 **Covers:** AC-STRUCT-19, 20
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-STRUCT-19 · 빈 기록 화면이 레시피로 보낸다", async ({ page }) => {
@@ -618,22 +692,22 @@ test("AC-STRUCT-19 · 빈 기록 화면이 레시피로 보낸다", async ({ pag
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Expected: FAIL — 링크가 0개. 지금은 「아직 기록이 없습니다」 문구뿐이다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 빈 상태 영역에 `data-empty`를 붙이고 `Link`를 넣는다. 문구는 **행동으로** 쓴다 —
 「레시피 고르기」·「새 레시피」(브랜드 문서 「버튼은 행동으로」).
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e && pnpm test`
 Expected: `AC-SPACE-11`(빈 상태 여백 48px)이 빨개질 수 있다. 버튼이 들어가며 높이가 달라지는
 것이므로 **예정된 갱신이다.**
 
-- [ ] **Step 5: `AC-SPACE-11`을 갱신하고 커밋**
+- [x] **Step 5: `AC-SPACE-11`을 갱신하고 커밋**
 
 ```bash
 git add . && git commit -m "feat(web): 빈 화면이 다음 행동을 제안한다 (AC-STRUCT 2개)"
@@ -641,13 +715,23 @@ git add . && git commit -m "feat(web): 빈 화면이 다음 행동을 제안한�
 
 ---
 
+
+> **★ 빈 목록 stub에 `hasNext`가 빠져 세 조건이 전부 실패했다(2026-09-15).** 봉투를 손으로
+> 지어내면 스키마 검증에 걸린다 — `pageOf`와 같은 형태여야 한다.
+>
+> **★ `AC-WEBBREW-39`가 문구를 직접 검사하고 있었다.** 버튼 라벨을 「레시피 고르기」로 바꿨더니
+> 깨졌다. **문구를 되돌렸다** — 「레시피 보러 가기」도 충분히 행동적이고 변경이 작다.
+>
+> **`AC-SPACE-11`은 예고대로 갱신했다**(48px → 24px). 버튼이 자리를 차지해 문구 위아래 48px이
+> 과해졌다. 스케일 6단계를 벗어나지 않는 다음 값이다.
+
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `cd frontend && pnpm e2e` 통과
-- [ ] `cd frontend && pnpm test:worker` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — 합계가 **780**(760 + 20)
-- [ ] 스펙의 `status`를 `구현완료`로 변경
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과 — 단위 **393**
+- [x] `cd frontend && pnpm e2e` 통과 — **167**
+- [x] `cd frontend && pnpm test:worker` 통과 — **6**
+- [x] `./scripts/check-spec-coverage.sh` 통과 — 스펙 **33건** · 합계 **781**(760 + 21)
+- [x] 스펙의 `status`를 `구현완료`로 변경
 - [ ] 스펙 「수동 확인」 3개 — 폰 실물이 필요해 **비차단형**
 
 ---

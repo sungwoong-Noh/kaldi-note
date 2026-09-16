@@ -168,10 +168,14 @@ plan: docs/plans/2026-09-08-plan-screen-consistency.md
 
 #### AC-CONSIST-05 · `RecipeDetail`의 메타줄 라벨이 화면에 보인다
 
-- **Given** `ratio: 15`, `waterTempC: 92`, `totalTimeSeconds: 210`인 레시피 상세
-- **When** `screen.getByText("비율")` · `getByText("물 온도")` · `getByText("총 시간")`을 부른다
-- **Then** 셋 다 존재하고, 각 요소에 `sr-only` 클래스가 없다
+- **Given** `doseG: 30`, `waterG: 500`, `waterTempC: 100`, `totalTimeSeconds: 210`인 레시피 상세
+- **When** `screen.getByText`로 **「원두량」·「물량」·「물 온도」·「총 시간」**을 찾는다
+- **Then** 넷 다 존재하고, 각 요소에 `sr-only` 클래스가 없다
 - **검증** 컴포넌트 테스트 `src/app/recipes/[id]/page.test.tsx`
+
+> **갱신 (2026-09-15).** 「비율」이 대표 수치로 올라가 `sr-only`가 됐고, 그 자리에 절대량
+> 라벨 둘이 내려왔다(`2026-09-15-structure.md`). **메타줄 라벨이 보여야 한다는 조건 자체는
+> 그대로다** — 검사하는 라벨 목록만 바뀌었다.
 
 #### AC-CONSIST-06 · 라벨 어휘표 10줄이 그대로 렌더된다
 
@@ -194,12 +198,14 @@ plan: docs/plans/2026-09-08-plan-screen-consistency.md
 > **색은 토큰을 가리키므로 이 AC를 바꾸지 않는다** — `--color-muted` 값이 `#545454`로 바뀌어도
 > 조건은 그대로 성립한다.
 
-#### AC-CONSIST-08 · `RecipeDetail`의 대표 수치가 정확히 하나이고 `30.0g → 500.0g`이다
+#### AC-CONSIST-08 · `RecipeDetail`의 대표 수치가 정확히 하나이고 `1:16.7`이다
 
-- **Given** `doseG: 30`, `waterG: 500`인 레시피 상세 — `src/test/fixtures.ts`의 `hoffmann`이다
-- **When** `text-lg`·`font-semibold`·`tabular-nums`를 모두 가진 요소를 센다
-- **Then** 정확히 1개이고, 그 텍스트가 `30.0g → 500.0g`이며, 그 안의 `dt`는 `sr-only`다
+- **Given** `ratio: 16.7`인 레시피 상세 — `src/test/fixtures.ts`의 `hoffmann`이다
+- **When** 대표 수치 단계·`font-semibold`·`tabular-nums`를 모두 가진 요소를 센다
+- **Then** 정확히 1개이고, 그 텍스트가 **`비율1:16.7`**이며, 그 안의 `dt`는 `sr-only`다
 - **검증** 컴포넌트 테스트 `src/app/recipes/[id]/page.test.tsx`
+
+> **갱신 (2026-09-15).** 대표 수치가 `1:비율`로 통일됐다(`2026-09-15-structure.md`).
 
 #### AC-CONSIST-09 · `BrewDetail`의 대표 수치가 정확히 하나이고 `1:15.0`이다
 

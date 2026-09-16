@@ -19,6 +19,7 @@ import { deleteBrewLog, fetchBrewLog } from "../api";
 import { headline } from "../headline";
 import type { BrewLog } from "../schema";
 import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
+import { RecipeComparison } from "./RecipeComparison";
 import { DeleteBrewLogDialog } from "./DeleteBrewLogDialog";
 import { ExtractionSummary } from "./ExtractionSummary";
 
@@ -113,16 +114,31 @@ export function BrewDetail({ id }: { id: number }) {
       </div>
 
       {/* 대표 수치. 상세에서 정확히 하나가 18px로 뜬다. 라벨은 sr-only다. */}
-      <dl className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]">
+      <dl
+        data-lead
+        className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]"
+      >
         <dt className="sr-only">{lead.label}</dt>
         <dd>{lead.value}</dd>
       </dl>
+
+      {/* 레시피를 못 읽으면 그리지 않는다 — 비교할 대상이 없다(AC-STRUCT-13). */}
+      {recipe.targets !== undefined && (
+        <RecipeComparison log={log} targets={recipe.targets} />
+      )}
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">실측값</h2>
         <dl className="flex flex-wrap gap-x-3 gap-y-1 text-base">
           {measures(log)
             .filter((entry) => entry.label !== lead.label)
+            // 비교표가 그린 항목은 여기서 뺀다 — 같은 값을 두 번 보여주지 않는다.
+            // 비교표를 못 그리는 경우(레시피를 못 읽음)에는 전부 남는다(AC-STRUCT-13).
+            .filter(
+              (entry) =>
+                recipe.targets === undefined ||
+                !COMPARED_LABELS.has(entry.label),
+            )
             .map((entry) => (
               <Measure
                 key={entry.label}
@@ -199,6 +215,9 @@ export function BrewDetail({ id }: { id: number }) {
  *
  * <p><b>대표로 올라간 항목은 부르는 쪽에서 뺀다.</b> 「복사」가 아니라 「이동」이다.
  */
+/** 비교표가 담당하는 항목. 실측값 절에서 중복으로 그리지 않는다. */
+const COMPARED_LABELS = new Set(["원두량", "물량", "물 온도", "추출 시간"]);
+
 function measures(log: BrewLog): { label: string; value: string }[] {
   const entries = [
     { label: "원두량", value: formatGrams(log.actualDoseG) },

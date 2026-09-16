@@ -54,11 +54,11 @@ export function UserGrinderDialog({
         aria-labelledby="user-grinder-title"
         className="flex w-full max-w-sm flex-col gap-4 rounded-lg bg-paper p-4"
       >
-        <h2 id="user-grinder-title" className="text-lg font-semibold">
+        <h2 id="user-grinder-title" className="text-card-title font-semibold">
           그라인더 등록
         </h2>
 
-        <label className="flex flex-col gap-1 text-base">
+        <label className="flex flex-col gap-1 text-body">
           <span className="shrink-0 text-ink-3">모델</span>
           <select
             aria-label="모델"
@@ -79,7 +79,7 @@ export function UserGrinderDialog({
           </select>
         </label>
 
-        <label className="flex flex-col gap-1 text-base">
+        <label className="flex flex-col gap-1 text-body">
           <span className="shrink-0 text-ink-3">별명</span>
           <input
             aria-label="별명"
@@ -95,7 +95,7 @@ export function UserGrinderDialog({
           {fieldErrors?.byField.nickname && (
             <span
               id="user-grinder-nickname-error"
-              className="text-sm text-danger"
+              className="text-body-sm text-danger"
             >
               {fieldErrors.byField.nickname}
             </span>
@@ -103,14 +103,14 @@ export function UserGrinderDialog({
         </label>
 
         {create.error && !fieldErrors?.byField.nickname && (
-          <p className="text-sm text-danger">{create.error.message}</p>
+          <p className="text-body-sm text-danger">{create.error.message}</p>
         )}
 
         <div className="flex justify-end gap-2">
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-3 py-2 text-base"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-3 py-2 text-body"
           >
             취소
           </button>
@@ -120,7 +120,7 @@ export function UserGrinderDialog({
             onClick={() => {
               if (grinderModelId !== null) create.mutate(grinderModelId);
             }}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-3 py-2 text-base text-on-ink disabled:opacity-50"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-3 py-2 text-body text-on-ink disabled:opacity-50"
           >
             등록
           </button>

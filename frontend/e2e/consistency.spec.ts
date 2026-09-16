@@ -69,7 +69,7 @@ test.describe("일관성 — 렌더값", () => {
   ] as const;
 
   for (const { path, label: labelText } of META_LABELS) {
-    test(`AC-CONSIST-07 · ${path}의 메타줄 라벨이 14px ink-3다`, async ({
+    test(`AC-CONSIST-07 · ${path}의 메타줄 라벨이 13px ink-3다`, async ({
       page,
     }) => {
       await installStubs(page);
@@ -80,7 +80,7 @@ test.describe("일관성 — 렌더값", () => {
 
       expect(
         await label.evaluate((el) => getComputedStyle(el).fontSize),
-      ).toBe("14px");
+      ).toBe("13px");
       expect(await label.evaluate((el) => getComputedStyle(el).color)).toBe(
         await tokenColor(page, "ink-3"),
       );

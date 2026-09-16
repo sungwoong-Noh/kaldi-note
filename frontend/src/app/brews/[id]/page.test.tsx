@@ -75,7 +75,7 @@ beforeEach(() => {
 
 /** 대표 수치는 세 클래스를 모두 가진 요소다. 하나라도 빠지면 잡히지 않는다. */
 function leadElements(): Element[] {
-  return [...document.querySelectorAll(".text-4xl.font-semibold.tabular-nums")];
+  return [...document.querySelectorAll(".text-metric-hero.font-semibold.tabular-nums")];
 }
 
 /** 비율 없는 로그. `JSON.stringify`가 `undefined` 키를 지우므로 응답에서 통째로 빠진다. */
@@ -115,7 +115,7 @@ describe("BrewDetailPage", () => {
     const headings = screen.getAllByRole("heading", { level: 1 });
 
     expect(headings).toHaveLength(1);
-    expect(headings[0].className).toContain("text-2xl");
+    expect(headings[0].className).toContain("text-page-title");
     expect(headings[0].className).toContain("font-semibold");
   });
 
@@ -136,7 +136,7 @@ describe("BrewDetailPage", () => {
     const headings = screen.getAllByRole("heading", { level: 1 });
 
     expect(headings).toHaveLength(1);
-    expect(headings[0].className).toContain("text-2xl");
+    expect(headings[0].className).toContain("text-page-title");
     expect(headings[0].className).toContain("font-semibold");
     expect(headings[0].querySelector("a")).toBeNull();
   });

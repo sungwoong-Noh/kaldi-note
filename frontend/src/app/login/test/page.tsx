@@ -55,7 +55,7 @@ export default function TestLoginPage() {
 
   return (
     <main className="flex flex-col gap-4 px-4 py-6">
-      <h1 className="text-2xl font-semibold">테스트 로그인</h1>
+      <h1 className="text-page-title font-semibold">테스트 로그인</h1>
       <p className="text-ink-3">
         OAuth 없이 세션을 발급합니다. 시크릿은 저장되지 않습니다.
       </p>
@@ -112,7 +112,7 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-base text-ink-3">
+      <span className="text-body text-ink-3">
         {label}
       </span>
       <input

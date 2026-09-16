@@ -66,12 +66,12 @@ export default function MorePage() {
       <div className="flex items-center justify-between gap-3 border-b border-border py-4">
         <div className="min-w-0">
           <p className="font-medium">내 초대 링크</p>
-          <p className="truncate text-base text-ink-3">
+          <p className="truncate text-body text-ink-3">
             {`/u/${me.data.id}`}
           </p>
         </div>
         {copied ? (
-          <span className="shrink-0 text-base text-ink-3">
+          <span className="shrink-0 text-body text-ink-3">
             복사했습니다
           </span>
         ) : (
@@ -89,7 +89,7 @@ export default function MorePage() {
         <li>
           <Link
             href="/gear/grind-converter"
-            className="flex min-h-11 min-w-11 items-center justify-center block py-3 text-base underline-offset-4 hover:underline"
+            className="flex min-h-11 min-w-11 items-center justify-center block py-3 text-body underline-offset-4 hover:underline"
           >
             분쇄도 환산기
           </Link>
@@ -100,7 +100,7 @@ export default function MorePage() {
         type="button"
         onClick={() => void logout()}
         disabled={loggingOut}
-        className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-border py-3 text-base disabled:opacity-50"
+        className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-border py-3 text-body disabled:opacity-50"
       >
         로그아웃
       </button>
@@ -111,8 +111,8 @@ export default function MorePage() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-base text-ink-3">{label}</dt>
-      <dd className="text-base">{value}</dd>
+      <dt className="text-body text-ink-3">{label}</dt>
+      <dd className="text-body">{value}</dd>
     </div>
   );
 }
@@ -120,7 +120,7 @@ function Row({ label, value }: { label: string; value: string }) {
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-6">
-      <h1 className="mb-4 text-2xl font-semibold">더보기</h1>
+      <h1 className="mb-4 text-page-title font-semibold">더보기</h1>
       {children}
     </main>
   );

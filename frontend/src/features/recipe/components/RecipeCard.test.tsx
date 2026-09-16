@@ -15,7 +15,7 @@ describe("레시피 카드", () => {
     // 절대량(20.0g → 300.0g)은 바로 아래 메타줄로 내려갔다.
     const line = screen.getByText("1:15.0").parentElement;
 
-    expect(line).toHaveClass("text-4xl", "font-semibold");
+    expect(line).toHaveClass("text-metric-hero", "font-semibold");
     expect(line).toHaveAttribute("data-lead");
   });
 

@@ -26,10 +26,10 @@ export function DeleteRecipeDialog({
         aria-labelledby="delete-recipe-title"
         className="flex w-full max-w-sm flex-col gap-4 rounded-lg bg-paper p-4"
       >
-        <h2 id="delete-recipe-title" className="text-lg font-semibold">
+        <h2 id="delete-recipe-title" className="text-card-title font-semibold">
           레시피를 삭제할까요?
         </h2>
-        <p className="text-base text-ink-3">
+        <p className="text-body text-ink-3">
           {title} — 되돌릴 수 없습니다.
         </p>
 
@@ -37,7 +37,7 @@ export function DeleteRecipeDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-3 py-2 text-base"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-3 py-2 text-body"
           >
             취소
           </button>
@@ -45,7 +45,7 @@ export function DeleteRecipeDialog({
             type="button"
             onClick={onConfirm}
             disabled={deleting}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-danger px-3 py-2 text-base text-on-ink disabled:opacity-50"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-danger px-3 py-2 text-body text-on-ink disabled:opacity-50"
           >
             삭제합니다
           </button>

@@ -69,7 +69,7 @@ export function RecipeDetail({ id }: { id: number }) {
     ) {
       return (
         <Shell>
-          <p className="py-12 text-center text-base text-ink-3">
+          <p className="py-12 text-center text-body text-ink-3">
             레시피를 찾을 수 없습니다
           </p>
         </Shell>
@@ -95,16 +95,16 @@ export function RecipeDetail({ id }: { id: number }) {
     <Shell>
       <header>
         <div className="flex items-start justify-between gap-2">
-          <h1 className="text-2xl font-semibold">{recipe.title}</h1>
+          <h1 className="text-page-title font-semibold">{recipe.title}</h1>
           {recipe.sourceType === "CURATED" && (
-            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-sm text-ink-3">
+            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-body-sm text-ink-3">
               {statusLabel("source", "CURATED")}
             </span>
           )}
         </div>
 
         {recipe.authorName && (
-          <p className="mt-1 text-base text-ink-3">
+          <p className="mt-1 text-body text-ink-3">
             {recipe.sourceUrl ? (
               <a
                 href={recipe.sourceUrl}
@@ -121,7 +121,7 @@ export function RecipeDetail({ id }: { id: number }) {
         )}
 
         {recipe.description && (
-          <p className="mt-3 text-base text-ink-3">
+          <p className="mt-3 text-body text-ink-3">
             {recipe.description}
           </p>
         )}
@@ -136,41 +136,41 @@ export function RecipeDetail({ id }: { id: number }) {
             36px 숫자 옆에 14px 라벨을 붙이면 대표 수치가 깎인다. */}
         <div
           data-lead
-          className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]"
+          className="flex items-center gap-1 text-metric-hero font-semibold tabular-nums tracking-[-0.02em]"
         >
           <dt className="sr-only">비율</dt>
           <dd>{formatRatio(recipe.ratio)}</dd>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-base">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-body">
           <div className="flex items-center gap-1">
-            <dt className="text-sm text-ink-3">원두량</dt>
-            <dd>{formatGrams(recipe.doseG)}</dd>
+            <dt className="text-body-sm text-ink-3">원두량</dt>
+            <dd className="text-metric">{formatGrams(recipe.doseG)}</dd>
           </div>
 
           <div className="flex items-center gap-1">
-            <dt className="text-sm text-ink-3">물량</dt>
-            <dd>{formatGrams(recipe.waterG)}</dd>
+            <dt className="text-body-sm text-ink-3">물량</dt>
+            <dd className="text-metric">{formatGrams(recipe.waterG)}</dd>
           </div>
 
           {recipe.waterTempC !== undefined && (
             <div className="flex items-center gap-1">
-              <dt className="text-sm text-ink-3">물 온도</dt>
-              <dd>{formatTemperature(recipe.waterTempC)}</dd>
+              <dt className="text-body-sm text-ink-3">물 온도</dt>
+              <dd className="text-metric">{formatTemperature(recipe.waterTempC)}</dd>
             </div>
           )}
 
           {recipe.totalTimeSeconds !== undefined && (
             <div className="flex items-center gap-1">
-              <dt className="text-sm text-ink-3">총 시간</dt>
-              <dd>{formatDuration(recipe.totalTimeSeconds)}</dd>
+              <dt className="text-body-sm text-ink-3">총 시간</dt>
+              <dd className="text-metric">{formatDuration(recipe.totalTimeSeconds)}</dd>
             </div>
           )}
         </div>
       </dl>
 
       {(brewer || filter) && (
-        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-base text-ink-3">
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-body text-ink-3">
           {brewer && <span>{`${brewer.brand} ${brewer.name}`}</span>}
           {filter && <span>{filter.name}</span>}
         </div>
@@ -178,8 +178,8 @@ export function RecipeDetail({ id }: { id: number }) {
 
       {recipe.grindSettingValue !== undefined && (
         <section className="mt-4">
-          <h2 className="text-lg font-medium">분쇄도</h2>
-          <p className="mt-1 text-base text-ink-3">
+          <h2 className="text-card-title font-medium">분쇄도</h2>
+          <p className="mt-1 text-body text-ink-3">
             {recipe.grindSettingValue}
             {recipe.grindSettingUnit === "CLICK" && "클릭"}
             {recipe.grindSettingUnit === "NUMBER" && "눈금"}
@@ -187,7 +187,7 @@ export function RecipeDetail({ id }: { id: number }) {
             {recipe.grindMicronEstimated !== undefined && (
               <span className="ml-2 text-ink-3">
                 약 {recipe.grindMicronEstimated}µm{" "}
-                <span className="text-sm">(추정치)</span>
+                <span className="text-body-sm">(추정치)</span>
               </span>
             )}
           </p>
@@ -195,7 +195,7 @@ export function RecipeDetail({ id }: { id: number }) {
       )}
 
       <section className="mt-6">
-        <h2 className="mb-2 text-lg font-medium">푸어 스텝</h2>
+        <h2 className="mb-2 text-card-title font-medium">푸어 스텝</h2>
         <RecipeStepList steps={recipe.steps} />
       </section>
 
@@ -206,12 +206,12 @@ export function RecipeDetail({ id }: { id: number }) {
       {isMine ? (
         <Link
           href={`/brews/new?recipeId=${id}`}
-          className="flex min-h-11 min-w-11 items-center justify-center mt-6 block rounded-md bg-accent py-3 text-center text-base font-medium text-on-ink"
+          className="flex min-h-11 min-w-11 items-center justify-center mt-6 block rounded-md bg-accent py-3 text-center text-body font-medium text-on-ink"
         >
           이 레시피로 내렸다
         </Link>
       ) : (
-        <p className="mt-6 text-center text-base text-ink-3">
+        <p className="mt-6 text-center text-body text-ink-3">
           포크한 뒤 기록할 수 있습니다
         </p>
       )}
@@ -220,14 +220,14 @@ export function RecipeDetail({ id }: { id: number }) {
         <div className="mt-3 flex gap-2">
           <Link
             href={`/recipes/${id}/edit`}
-            className="flex min-h-11 min-w-11 items-center justify-center flex-1 rounded-md border border-border py-3 text-center text-base font-medium"
+            className="flex min-h-11 min-w-11 items-center justify-center flex-1 rounded-md border border-border py-3 text-center text-body font-medium"
           >
             편집
           </Link>
           <button
             type="button"
             onClick={() => setConfirmingDelete(true)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-danger px-4 py-3 text-base font-medium text-danger"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-danger px-4 py-3 text-body font-medium text-danger"
           >
             삭제
           </button>
@@ -235,7 +235,7 @@ export function RecipeDetail({ id }: { id: number }) {
       )}
 
       {isMine && remove.error && (
-        <p className="mt-2 text-center text-base text-danger">
+        <p className="mt-2 text-center text-body text-danger">
           {errorMessageOf(remove.error)}
         </p>
       )}
@@ -255,13 +255,13 @@ export function RecipeDetail({ id }: { id: number }) {
             type="button"
             onClick={() => fork.mutate()}
             disabled={fork.isPending}
-            className="flex min-h-11 min-w-11 items-center justify-center w-full rounded-md bg-accent py-3 text-base font-medium text-on-ink disabled:opacity-50"
+            className="flex min-h-11 min-w-11 items-center justify-center w-full rounded-md bg-accent py-3 text-body font-medium text-on-ink disabled:opacity-50"
           >
             내 레시피로 가져오기
           </button>
 
           {fork.error && (
-            <p className="mt-2 text-center text-base text-danger">
+            <p className="mt-2 text-center text-body text-danger">
               {errorMessageOf(fork.error)}
             </p>
           )}

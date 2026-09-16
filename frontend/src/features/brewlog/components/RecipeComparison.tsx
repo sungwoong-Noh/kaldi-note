@@ -70,12 +70,12 @@ export function RecipeComparison({
   return (
     <section data-compare className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold">레시피대로 내렸나</h2>
-        <span className="text-sm text-ink-3">현재 레시피와 비교</span>
+        <h2 className="text-card-title font-semibold">레시피대로 내렸나</h2>
+        <span className="text-body-sm text-ink-3">현재 레시피와 비교</span>
       </div>
 
       <dl className="flex flex-col gap-1">
-        <div className="flex items-baseline gap-3 text-sm text-ink-3">
+        <div className="flex items-baseline gap-3 text-body-sm text-ink-3">
           <dt className="sr-only">항목</dt>
           <dd className="flex-1" />
           <dd className="w-20 text-right">레시피</dd>
@@ -85,7 +85,7 @@ export function RecipeComparison({
         {rows.map((row) => (
           <div
             key={row.label}
-            className="flex items-baseline gap-3 border-t border-border py-2 text-base"
+            className="flex items-baseline gap-3 border-t border-border py-2 text-body"
           >
             <dt data-compare-label className="flex-1">
               {row.label}

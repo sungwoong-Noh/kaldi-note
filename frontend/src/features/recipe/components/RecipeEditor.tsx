@@ -44,7 +44,7 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
     if (recipe.error instanceof ApiError && recipe.error.code === "NOT_FOUND") {
       return (
         <Shell>
-          <p className="py-12 text-center text-base text-ink-3">
+          <p className="py-12 text-center text-body text-ink-3">
             레시피를 찾을 수 없습니다
           </p>
         </Shell>
@@ -77,7 +77,7 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6">
-      <h1 className="text-2xl font-semibold">레시피 편집</h1>
+      <h1 className="text-page-title font-semibold">레시피 편집</h1>
       {children}
     </main>
   );

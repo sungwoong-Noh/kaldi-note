@@ -60,12 +60,12 @@ export default function RecipesPage() {
       <Shell mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
         {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
         <div data-empty className="flex flex-col gap-3">
-          <p className="py-6 text-center text-base text-ink-3">
+          <p className="py-6 text-center text-body text-ink-3">
             레시피가 없습니다
           </p>
           <Link
             href="/recipes/new"
-            className="flex min-h-11 items-center justify-center rounded-md bg-accent py-3 text-center text-base text-on-ink"
+            className="flex min-h-11 items-center justify-center rounded-md bg-accent py-3 text-center text-body text-on-ink"
           >
             새 레시피
           </Link>
@@ -87,7 +87,7 @@ export default function RecipesPage() {
           type="button"
           onClick={() => void fetchNextPage()}
           disabled={isFetchingNextPage}
-          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-border py-3 text-base disabled:opacity-50"
+          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-border py-3 text-body disabled:opacity-50"
         >
           더 보기
         </button>
@@ -108,10 +108,10 @@ function Shell({
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-6">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">레시피</h1>
+        <h1 className="text-page-title font-semibold">레시피</h1>
         <Link
           href="/recipes/new"
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-3 py-2 text-base text-on-ink"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-3 py-2 text-body text-on-ink"
         >
           새 레시피
         </Link>
@@ -120,7 +120,7 @@ function Shell({
       {/* 체크박스 모양은 20×20이고 탭 영역은 라벨 전체가 받는다. 네이티브 사각형 자체를
           44px로 키우면 거대한 빈 상자가 된다(docs/specs/2026-09-15-structure.md). */}
       {onMineOnlyChange && (
-        <label className="mb-4 flex min-h-11 w-fit items-center gap-2 py-2 text-base">
+        <label className="mb-4 flex min-h-11 w-fit items-center gap-2 py-2 text-body">
           <input
             type="checkbox"
             className="size-5 shrink-0 appearance-none rounded-md border border-border checked:border-accent checked:bg-accent"

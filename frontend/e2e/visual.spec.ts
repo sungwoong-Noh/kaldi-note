@@ -23,7 +23,7 @@ test.describe("시각 위계 — 라이트", () => {
     ).toBe(await tokenColor(page, "accent"));
   });
 
-  test("AC-VISUAL-15 · 화면 제목이 24px다", async ({ page }) => {
+  test("AC-VISUAL-15 · 화면 제목이 27px다", async ({ page }) => {
     await installStubs(page);
     await page.goto("/recipes");
 
@@ -31,7 +31,7 @@ test.describe("시각 위계 — 라이트", () => {
     await expect(heading).toBeVisible();
 
     expect(await heading.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
-      "24px",
+      "27px",
     );
   });
 
@@ -46,6 +46,21 @@ test.describe("시각 위계 — 라이트", () => {
     expect(await dose.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
       "36px",
     );
+  });
+
+  test("AC-DS2-14 · 대표 수치가 Mono로 렌더된다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/recipes");
+
+    const lead = page.locator("[data-lead]").first();
+    await expect(lead).toBeVisible();
+
+    // 계측되는 값은 언제나 Mono다. 자릿수가 어긋나면 목록에서 값이 흔들린다 —
+    // 그것이 Mono를 쓰는 유일한 이유다(docs/specs/2026-09-17-design-system-v2.md).
+    const family = await lead.evaluate((el) => getComputedStyle(el).fontFamily);
+    const first = family.split(",")[0].trim().replace(/^["']|["']$/g, "");
+
+    expect(first).toBe("IBM Plex Mono");
   });
 
   test("AC-VISUAL-17 · 보조줄이 ink-3 색이다", async ({ page }) => {

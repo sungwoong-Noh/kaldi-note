@@ -47,7 +47,7 @@ export function GrindConverter({
         onChange={setSourceId}
       />
 
-      <label className="flex items-center gap-2 text-base">
+      <label className="flex items-center gap-2 text-body">
         <span className="w-28 shrink-0 text-ink-3">설정값</span>
         <input
           type="number"
@@ -69,19 +69,19 @@ export function GrindConverter({
         type="button"
         disabled={convert.isPending}
         onClick={() => convert.mutate()}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md bg-accent px-4 py-2 text-base text-on-ink disabled:opacity-50"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
       >
         환산
       </button>
 
       {convert.error && (
-        <p role="alert" className="text-base text-danger">
+        <p role="alert" className="text-body text-danger">
           {errorMessageOf(convert.error)}
         </p>
       )}
 
       {result && (
-        <dl className="flex flex-col gap-2 border-t border-border pt-4 text-base">
+        <dl className="flex flex-col gap-2 border-t border-border pt-4 text-body">
           <div className="flex items-baseline justify-between gap-3">
             <dt className="text-ink-3">입자 크기</dt>
             <dd>{result.micron} µm</dd>
@@ -92,13 +92,13 @@ export function GrindConverter({
               <dd>
                 {result.targetSetting}
                 {result.targetOutOfRange && (
-                  <span className="ml-2 text-sm text-danger">범위 밖</span>
+                  <span className="ml-2 text-body-sm text-danger">범위 밖</span>
                 )}
               </dd>
             </div>
           )}
           {result.estimated && (
-            <p className="text-sm text-ink-3">
+            <p className="text-body-sm text-ink-3">
               <span className="mr-1 rounded-md bg-surface px-1 py-1">
                 추정치
               </span>
@@ -123,7 +123,7 @@ function GrinderSelect({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="flex items-center gap-2 text-base">
+    <label className="flex items-center gap-2 text-body">
       <span className="w-28 shrink-0 text-ink-3">{label}</span>
       <select
         aria-label={label}

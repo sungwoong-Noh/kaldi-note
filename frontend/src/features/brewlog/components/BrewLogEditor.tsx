@@ -156,7 +156,7 @@ function Fields({
         beanSlot={
           // 레시피와 원두는 PATCH DTO에 없어 서버가 무시한다. 값만 보여준다.
           // id 숫자로 보여주면 무엇으로 내렸는지 화면만 봐서는 알 수 없어 이름을 따로 읽는다.
-          <dl className="flex flex-wrap gap-x-4 text-base">
+          <dl className="flex flex-wrap gap-x-4 text-body">
             <div className="flex items-center gap-1">
               <dt className="text-ink-3">레시피</dt>
               <dd>{recipe.label}</dd>
@@ -171,7 +171,7 @@ function Fields({
         }
       />
 
-      <label className="flex items-center gap-2 text-base">
+      <label className="flex items-center gap-2 text-body">
         <span className="w-20 shrink-0 text-ink-3">공개 범위</span>
         <select
           aria-label="공개 범위"
@@ -193,7 +193,7 @@ function Fields({
       </label>
 
       {save.error !== null && (
-        <div role="alert" className="flex flex-col gap-1 text-base text-danger">
+        <div role="alert" className="flex flex-col gap-1 text-body text-danger">
           <p>{errorMessageOf(save.error)}</p>
           {fieldErrors.unmapped.map((line) => (
             <p key={line}>{line}</p>
@@ -206,14 +206,14 @@ function Fields({
           type="button"
           disabled={save.isPending || cleared.length > 0}
           onClick={submit}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-4 py-2 text-base text-on-ink disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
         >
           저장
         </button>
         <button
           type="button"
           onClick={() => router.push(`/brews/${log.id}`)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-4 py-2 text-base"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-4 py-2 text-body"
         >
           취소
         </button>
@@ -230,7 +230,7 @@ function toVisibility(value: string): BrewLogEditState["visibility"] {
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6">
-      <h1 className="text-2xl font-semibold">기록 편집</h1>
+      <h1 className="text-page-title font-semibold">기록 편집</h1>
       {children}
     </main>
   );

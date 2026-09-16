@@ -49,10 +49,10 @@ export function GrindSettingField({
 
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="text-lg font-semibold">분쇄도</legend>
+      <legend className="text-card-title font-semibold">분쇄도</legend>
 
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex w-full items-center gap-2 text-base">
+        <label className="flex w-full items-center gap-2 text-body">
           <span className="shrink-0 text-ink-3">그라인더</span>
           <select
             aria-label="그라인더"
@@ -73,7 +73,7 @@ export function GrindSettingField({
           </select>
         </label>
 
-        <label className="flex w-full items-center gap-2 text-base">
+        <label className="flex w-full items-center gap-2 text-body">
           <span className="shrink-0 text-ink-3">분쇄도 단위</span>
           <select
             aria-label="분쇄도 단위"
@@ -96,7 +96,7 @@ export function GrindSettingField({
           </select>
         </label>
 
-        <label className="flex w-full items-center gap-2 text-base">
+        <label className="flex w-full items-center gap-2 text-body">
           <span className="shrink-0 text-ink-3">분쇄도 값</span>
           <input
             aria-label="분쇄도 값"
@@ -149,7 +149,7 @@ function MicronPreview({
       error.status === 422
         ? "이 그라인더는 환산 정보가 없습니다"
         : error.message;
-    return <p className="text-base text-ink-3">{message}</p>;
+    return <p className="text-body text-ink-3">{message}</p>;
   }
 
   if (micron === undefined) return null;
@@ -159,7 +159,7 @@ function MicronPreview({
 
 function Estimate({ micron }: { micron: number }) {
   return (
-    <p className="text-base text-ink-3">
+    <p className="text-body text-ink-3">
       약 {micron} µm <span className="shrink-0 text-ink-3">(추정치)</span>
     </p>
   );

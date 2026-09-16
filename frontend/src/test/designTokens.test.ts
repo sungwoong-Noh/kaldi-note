@@ -68,127 +68,19 @@ describe("허용목록", () => {
     );
   });
 
-  it("AC-VISUAL-05 · 허용된 글자 크기 다섯 개만 쓴다", () => {
-    // text-는 크기뿐 아니라 색(text-ink-3)과 정렬(text-center)에도 쓰인다.
-    // RatingInput의 text-[22px]는 별 아이콘 크기라 글자 위계와 무관하다.
-    // 임의값 색(text-[#...])은 크기가 아니므로 여기서 보지 않는다. AC-VISUAL-04가 맡는다.
-    //
-    // 갱신(2026-09-15): 다섯 단계가 20/18/16/14/12에서 36/24/18/16/14로 재배치됐다.
-    // 개수는 그대로 다섯이고 값만 바뀌었다(docs/specs/2026-09-15-readability.md).
-    //
-    // 갱신(2026-09-17): 색 이름을 더 이상 **여기 적지 않는다.** 옛 이름(muted·brand·
-    // foreground…)이 리터럴로 박혀 있어서, 토큰이 바뀌자 `text-ink-3`가 크기로 오인됐다.
-    // TOKEN_NAMES에서 만들면 다음에 토큰이 바뀌어도 이 줄은 그대로다.
-    const colors = [...TOKEN_NAMES].join("|");
-    const sizes = new RegExp(
-      `\\btext-(?!4xl\\b|2xl\\b|lg\\b|base\\b|sm\\b|\\[22px\\]|\\[#|(?:${colors})\\b|center\\b|left\\b|right\\b)[a-z0-9[\\]-]+`,
-    );
-    expect(offenders(sizes)).toEqual([]);
-  });
 });
 
 /**
- * 읽힘 — docs/specs/2026-09-15-readability.md
- *
- * <p>`SOURCES`는 테스트 파일을 포함한다. `*.test.tsx`가 클래스 문자열을 `toHaveClass` 인자로
+ * `SOURCES`는 테스트 파일을 포함한다. `*.test.tsx`가 클래스 문자열을 `toHaveClass` 인자로
  * 담고 있어 세면 개수가 어긋난다. `src/app/login/test/page.tsx`는 경로에 `/test/`가 있지만
  * 앱 코드이므로 파일명 끝으로 거른다.
+ *
+ * <p>갱신(2026-09-17): 글자 크기 관련 검사는 `typography.test.ts`로 옮겼다
+ * (AC-VISUAL-05 · AC-READ-07~10 · AC-READ-21). 타입 스케일이 6단계로 재편되면서
+ * 두 파일이 같은 것을 다르게 검사하고 있었다.
  */
 const APP_SOURCES = SOURCES.filter((path) => !/\.test\.tsx?$/.test(path));
 
-function countClass(name: string): number {
-  const pattern = new RegExp(`\\b${name}\\b`, "g");
-  return APP_SOURCES.reduce(
-    (sum, path) =>
-      sum + (readFileSync(path, "utf8").match(pattern)?.length ?? 0),
-    0,
-  );
-}
-
-describe("읽힘 — 글자 단계", () => {
-  it("AC-READ-07 · text-xl과 text-xs가 0곳이다", () => {
-    expect(countClass("text-xl")).toBe(0);
-    expect(countClass("text-xs")).toBe(0);
-  });
-
-  it("AC-READ-08 · 5단계 밖의 크기가 쓰이지 않는다", () => {
-    // 갱신(2026-09-15): 처음에는 단계별 개수를 리터럴로 박았다. 치환 순서 사고(이중 변환)를
-    // 잡는 것이 목적이었고 그 일은 끝났다. 숫자를 남겨두면 컴포넌트를 추가할 때마다 승인된
-    // AC를 고쳐야 한다 — AC-READ-20이 같은 이유로 숫자를 뺐다.
-    // 회귀는 AC-READ-07(text-xl·text-xs가 0곳)과 AC-READ-09(허용목록)가 막는다.
-    const counts = {
-      "text-4xl": countClass("text-4xl"),
-      "text-2xl": countClass("text-2xl"),
-      "text-lg": countClass("text-lg"),
-      "text-base": countClass("text-base"),
-      "text-sm": countClass("text-sm"),
-    };
-
-    // 다섯 단계가 각각 최소 한 곳에서 쓰인다 — 쓰이지 않는 단계는 단계가 아니다.
-    for (const [name, n] of Object.entries(counts)) {
-      expect(n, name).toBeGreaterThan(0);
-    }
-  });
-
-  it("AC-READ-09 · 5단계 밖의 크기 클래스가 없다", () => {
-    const allowed = new Set([
-      "text-4xl",
-      "text-2xl",
-      "text-lg",
-      "text-base",
-      "text-sm",
-    ]);
-    const found = new Set<string>();
-    for (const path of APP_SOURCES) {
-      for (const match of readFileSync(path, "utf8").matchAll(
-        /\btext-(?:xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|6xl)\b/g,
-      )) {
-        found.add(match[0]);
-      }
-    }
-
-    expect([...found].filter((name) => !allowed.has(name))).toEqual([]);
-  });
-
-  it("AC-READ-10 · 임의값 크기가 별 아이콘 1곳뿐이다", () => {
-    const found: string[] = [];
-    for (const path of APP_SOURCES) {
-      for (const match of readFileSync(path, "utf8").matchAll(
-        /\btext-\[\d+px\]/g,
-      )) {
-        found.push(match[0]);
-      }
-    }
-
-    expect(found).toEqual(["text-[22px]"]);
-  });
-
-  it("AC-READ-21 · 모든 h2가 text-lg다", () => {
-    // 갱신(2026-09-15): 「13곳」이라는 개수를 뺐다. 새 화면을 만들 때마다 깨진다.
-    // 이 조건의 목적은 「크기를 안 줘서 상속받는 제목」을 없애는 것이고, 그건 개수와 무관하다.
-    const bare: string[] = [];
-    for (const path of APP_SOURCES) {
-      for (const match of readFileSync(path, "utf8").matchAll(
-        /<h2\s+[^>]*className="([^"]*)"/g,
-      )) {
-        if (!/\btext-lg\b/.test(match[1])) bare.push(`${path}: ${match[1]}`);
-      }
-    }
-    expect(bare).toEqual([]);
-
-    const total = APP_SOURCES.reduce(
-      (sum, path) =>
-        sum + (readFileSync(path, "utf8").match(/<h2\b/g)?.length ?? 0),
-      0,
-    );
-    // 개수는 못박지 않되, 검사가 비어 있지 않은지는 본다.
-    expect(total).toBeGreaterThan(0);
-  });
-});
-
-/**
- * 구조와 폼 — docs/specs/2026-09-15-structure.md
- */
 describe("구조 — 컨트롤", () => {
   it("AC-STRUCT-02 · select 13곳이 appearance-none이다", () => {
     const bare: string[] = [];

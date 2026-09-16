@@ -82,7 +82,7 @@ export function RecipeForm({
       }}
     >
       {error !== null && error !== undefined && (
-        <div role="alert" className="flex flex-col gap-1 text-base text-danger">
+        <div role="alert" className="flex flex-col gap-1 text-body text-danger">
           <p>{errorMessageOf(error)}</p>
           {fieldErrors.unmapped.map((line) => (
             <p key={line}>{line}</p>
@@ -144,7 +144,7 @@ export function RecipeForm({
         />
       </div>
 
-      <label className="flex items-center gap-2 text-base">
+      <label className="flex items-center gap-2 text-body">
         <span className="shrink-0 text-ink-3">공개 범위</span>
         <select
           aria-label="공개 범위"
@@ -204,14 +204,14 @@ export function RecipeForm({
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md bg-accent px-4 py-2 text-base text-on-ink disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
         >
           저장
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-border px-4 py-2 text-base"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-border px-4 py-2 text-body"
         >
           취소
         </button>
@@ -244,12 +244,12 @@ function TextField({
     value,
     "aria-describedby": error ? errorId : undefined,
     onChange: (e: { target: { value: string } }) => onChange(e.target.value),
-    className: "min-h-11 rounded-md border border-border px-2 py-1 text-base",
+    className: "min-h-11 rounded-md border border-border px-2 py-1 text-body",
   };
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-base text-ink-3">
+      <label htmlFor={inputId} className="text-body text-ink-3">
         {label}
       </label>
       {multiline ? <textarea {...shared} rows={3} /> : <input {...shared} />}
@@ -279,7 +279,7 @@ function NumberField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-base text-ink-3">
+      <label htmlFor={inputId} className="text-body text-ink-3">
         {label}
       </label>
       {/* 단위는 칸 안쪽 오른쪽에 둔다. 밖에 두면 그 자체가 또 다른 오른쪽 끝을 만든다
@@ -294,16 +294,16 @@ function NumberField({
           onChange={(e) =>
             onChange(e.target.value === "" ? null : Number(e.target.value))
           }
-          className="w-full min-w-0 rounded-md border border-border px-2 py-1 pr-12 text-base min-h-11"
+          className="w-full min-w-0 rounded-md border border-border px-2 py-1 pr-12 text-body min-h-11"
         />
         <span
           data-unit
-          className="pointer-events-none absolute right-3 text-base text-ink-3"
+          className="pointer-events-none absolute right-3 text-body text-ink-3"
         >
           {suffix}
         </span>
       </span>
-      {hint && <span className="text-base text-ink-3">{hint}</span>}
+      {hint && <span className="text-body text-ink-3">{hint}</span>}
       <FieldError id={errorId} message={error} />
     </div>
   );
@@ -324,7 +324,7 @@ function SelectField({
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-base text-ink-3">
+      <label htmlFor={inputId} className="text-body text-ink-3">
         {label}
       </label>
       <select
@@ -333,7 +333,7 @@ function SelectField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 text-base min-h-11"
+        className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 text-body min-h-11"
       >
         <option value="">선택 안 함</option>
         {options.map((option) => (
@@ -349,7 +349,7 @@ function SelectField({
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={id} className="whitespace-pre-line text-base text-danger">
+    <p id={id} className="whitespace-pre-line text-body text-danger">
       {message}
     </p>
   );

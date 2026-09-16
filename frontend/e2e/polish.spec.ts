@@ -1,19 +1,22 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import type { Page, Route } from "@playwright/test";
 import { installStubs } from "./stubs";
 import { brewLogPage, hoffmann } from "../src/test/fixtures";
 
-/** 브라우저가 따옴표를 정규화하므로 이름 단위로 순서를 본다. */
-const FONT_STACK = [
-  "system-ui",
-  "-apple-system",
-  "Segoe UI",
-  "Roboto",
-  "Apple SD Gothic Neo",
-  "Noto Sans KR",
-  "Malgun Gothic",
-  "sans-serif",
-];
+/**
+ * 기대 스택을 **`globals.css`에서 읽는다.** 브라우저가 따옴표를 정규화하므로 이름 단위로 순서를 본다.
+ *
+ * <p>갱신(2026-09-17): 목록을 여기 베껴 적고 있었다. 서체가 IBM Plex로 바뀌자 이 상수만
+ * 옛 값으로 남아 깨졌다 — 검사하려던 것은 「어떤 폰트인가」가 아니라
+ * **「globals.css가 정한 스택이 body에 실제로 적용되는가」**다.
+ */
+const FONT_STACK = readFileSync(join("src", "app", "globals.css"), "utf8")
+  .match(/--font-sans:\s*([^;]+);/)?.[1]
+  .split(",")
+  .map((name) => name.trim().replace(/^["']|["']$/g, ""))
+  .filter((name) => name.length > 0) as string[];
 
 test.describe("폰트", () => {
   test("AC-POLISH-01 · 지정한 폰트 스택이 적용된다", async ({ page }) => {

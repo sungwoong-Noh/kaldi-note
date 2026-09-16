@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 /*
+ * 서체. face가 192개라 여기 두지 않고 분리했다 —
+ * `scripts/sync-fonts.mjs`가 만들고, 손으로 고치지 않는다.
+ */
+@import "./fonts.css";
+
+/*
  * 색 토큰 15개 — Clean Ledger (docs/specs/2026-09-17-design-system-v2.md)
  *
  * ★ 값의 원천은 docs/design/design_handoff_kaldi_note/README.md다.
@@ -64,13 +70,17 @@
   --color-danger: var(--danger);
 
   /*
-   * 서체는 T3에서 IBM Plex로 바뀐다. 그때까지 system-ui를 유지한다
-   * (docs/plans/2026-09-17-plan-design-system-v2.md Task 3).
+   * 서술은 Sans, **계측되는 값은 Mono**로 쓴다. 숫자가 늘 같은 폭이라 기록끼리 비교가 쉬워지는
+   * 것이 이 선택의 이유다(docs/design/design_handoff_kaldi_note/README.md).
+   *
+   * 폰트가 도착하기 전과 도착하지 못했을 때를 위해 뒤에 기존 스택을 그대로 남긴다.
+   * `@font-face`가 전부 `font-display: swap`이므로 글자는 먼저 보인다.
    */
   --font-sans:
-    system-ui, -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo",
-    "Noto Sans KR", "Malgun Gothic", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    "IBM Plex Sans KR", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  --font-mono:
+    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @media (prefers-color-scheme: dark) {

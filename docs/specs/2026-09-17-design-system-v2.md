@@ -154,10 +154,23 @@ plan: docs/plans/2026-09-17-plan-design-system-v2.md
 
 | 폰트 | 웨이트 | 근거 |
 |---|---|---|
-| Sans KR | **400 · 500 · 600** | body/caption 400 · subtitle 500 · 제목류 600 |
+| Sans KR | **400 · 600** | body·body-sm·caption 400 · 제목류(display~card-title) 600 |
 | Mono | **400 · 500** | metric·label 500, 일부 400 |
 
 기존은 **0 바이트**였다. 웨이트 하나가 늘 때마다 한글 조각 전체가 한 벌 더 붙는다.
+
+> **갱신(2026-09-17): Sans 500을 뺐다.** 처음에는 핸드오프의 `subtitle 17/500`을 보고 셋을
+> 넣으려 했으나, **확정한 타입 스케일 10단계에 Sans 500을 쓰는 단계가 없다** — 17px이
+> `card-title`(18px/600)로 흡수됐기 때문이다. 실측으로 웨이트당 크기를 재보고 결정했다.
+>
+> | 웨이트 | 조각 | 크기 |
+> |---|---|---|
+> | Sans 400 | 94개 | 1,292 KB |
+> | Sans 500 | 94개 | 1,356 KB ← **뺀다** |
+> | Sans 600 | 94개 | 1,356 KB |
+> | Mono latin 400+500 | 4개 | 32 KB |
+>
+> 쓰지 않는 굵기 하나가 **1.36 MB**다.
 
 ## 기존 AC 갱신
 
@@ -264,7 +277,7 @@ plan: docs/plans/2026-09-17-plan-design-system-v2.md
 
 - **Given** `globals.css`의 `@font-face` 선언 전부
 - **When** `font-family`와 `font-weight` 쌍을 모은다
-- **Then** Sans KR은 **400·500·600**, Mono는 **400·500**뿐이다
+- **Then** Sans KR은 **400·600**, Mono는 **400·500**뿐이다
 
 > 웨이트 하나가 늘면 한글 조각 전체가 한 벌 더 붙는다. 쓰지 않는 굵기를 실어 나르지 않는다.
 

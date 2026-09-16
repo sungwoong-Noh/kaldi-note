@@ -101,7 +101,7 @@ frontend/
 > **이 태스크가 1번인 이유.** `contrast.ts`는 hex만 읽는다. 토큰을 oklch로 바꾼 뒤에
 > 파서를 고치면, 그 사이의 모든 대비 AC가 **아무것도 검사하지 않은 채 통과**한다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 // src/test/oklch.test.ts
@@ -129,17 +129,24 @@ describe("oklch 대비 계산기", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인** (`pnpm test oklch`)
-- [ ] **Step 3: `src/test/oklch.ts` 구현**
+- [x] **Step 2: 테스트 실행 — 실패 확인** (`pnpm test oklch`)
+- [x] **Step 3: `src/test/oklch.ts` 구현**
 
   oklch → oklab → linear sRGB → 상대휘도. 변환 계수는 표준 공식을 쓴다.
   **검증 방법:** 기존 hex 값 `#545454`(7.57:1)·`#b91c1c`(6.47:1)로 계산기를 맞춰본다 —
   이 둘은 `docs/specs/2026-09-15-readability.md`가 못박은 값이라 정답이 있다.
 
-- [ ] **Step 4: 통과 확인**
-- [ ] **Step 5: `contrast.ts`가 `oklch.ts`를 쓰도록 교체.** hex 경로는 남겨둔다 —
+- [x] **Step 4: 통과 확인**
+- [x] **Step 5: 대비 계산을 두 색 표현이 공유하도록 분리.** hex 경로는 남겨뒀다 —
       T2에서 기존 테스트가 아직 hex를 읽는 동안 필요하다.
-- [ ] **Step 6: `pnpm test` 전체 초록 확인 후 커밋**
+
+  > **계획과 달라진 점(2026-09-17).** 계획은 「`contrast.ts`가 `oklch.ts`를 쓰도록」이라고
+  > 적었으나 의존 방향을 반대로 했다. `oklch.ts`가 **휘도**만 만들고 `contrast.ts`의
+  > 새 `ratioOf(lumA, lumB)`가 **비율**을 만든다. 대비 공식은 색 표현과 무관하므로
+  > 이쪽이 순환 의존 없이 두 경로가 같은 공식을 쓰게 한다.
+  > 덕분에 `oklch.test.ts`가 **oklch 경로와 hex 경로를 교차검증**할 수 있다 —
+  > 서로를 부르지 않으므로 둘이 같은 답을 내면 변환 계수가 맞다는 뜻이 된다.
+- [x] **Step 6: `pnpm test` 전체 초록 확인 후 커밋**
 
 ---
 

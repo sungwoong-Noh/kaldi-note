@@ -26,7 +26,9 @@ test.describe("폰트", () => {
     const family = await page.evaluate(
       () => getComputedStyle(document.body).fontFamily,
     );
-    const names = family.split(",").map((n) => n.trim().replace(/^["']|["']$/g, ""));
+    const names = family
+      .split(",")
+      .map((n) => n.trim().replace(/^["']|["']$/g, ""));
     expect(names).toEqual(FONT_STACK);
   });
 
@@ -56,16 +58,22 @@ test.describe("로딩 표시", () => {
 
     await page.goto("/");
 
-    await expect(page.getByRole("status", { name: "불러오는 중" })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "불러오는 중" }),
+    ).toBeVisible();
   });
 
-  test("AC-POLISH-09 · 레시피 상세에서 느린 응답이면 뜬다", async ({ page }) => {
+  test("AC-POLISH-09 · 레시피 상세에서 느린 응답이면 뜬다", async ({
+    page,
+  }) => {
     await installStubs(page);
     await delay(page, "**/api/v1/recipes/2", 1500, hoffmann);
 
     await page.goto("/recipes/2");
 
-    await expect(page.getByRole("status", { name: "불러오는 중" })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "불러오는 중" }),
+    ).toBeVisible();
   });
 });
 

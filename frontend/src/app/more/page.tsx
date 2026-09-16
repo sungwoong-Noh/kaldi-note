@@ -9,6 +9,7 @@ import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useMe } from "@/features/user/queries";
 import { clearRecipeCache } from "@/lib/offline-cache";
 import { clearSession } from "@/lib/session";
+import { Button } from "@/components/ui";
 
 export default function MorePage() {
   const router = useRouter();
@@ -66,22 +67,12 @@ export default function MorePage() {
       <div className="flex items-center justify-between gap-3 border-b border-border py-4">
         <div className="min-w-0">
           <p className="font-medium">내 초대 링크</p>
-          <p className="truncate text-body text-ink-3">
-            {`/u/${me.data.id}`}
-          </p>
+          <p className="truncate text-body text-ink-3">{`/u/${me.data.id}`}</p>
         </div>
         {copied ? (
-          <span className="shrink-0 text-body text-ink-3">
-            복사했습니다
-          </span>
+          <span className="shrink-0 text-body text-ink-3">복사했습니다</span>
         ) : (
-          <button
-            type="button"
-            onClick={() => void copyInviteLink(me.data.id)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center shrink-0 rounded-control border border-border px-3 py-2"
-          >
-            복사
-          </button>
+          <Button onClick={() => void copyInviteLink(me.data.id)}>복사</Button>
         )}
       </div>
 
@@ -96,14 +87,9 @@ export default function MorePage() {
         </li>
       </ul>
 
-      <button
-        type="button"
-        onClick={() => void logout()}
-        disabled={loggingOut}
-        className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-control border border-border py-3 text-body disabled:opacity-50"
-      >
+      <Button onClick={() => void logout()} disabled={loggingOut} block>
         로그아웃
-      </button>
+      </Button>
     </Shell>
   );
 }

@@ -16,9 +16,7 @@ export interface Oklch {
 
 /** `oklch(0.50 0.18 28)` → `{ L: 0.5, C: 0.18, h: 28 }`. 공백은 몇 개든 된다. */
 export function parseOklch(value: string): Oklch {
-  const match = value.match(
-    /^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)$/,
-  );
+  const match = value.match(/^oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*\)$/);
   if (match === null) {
     throw new Error(`oklch 형식이 아니다: ${value}`);
   }

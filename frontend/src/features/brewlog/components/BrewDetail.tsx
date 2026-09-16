@@ -22,6 +22,7 @@ import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
 import { RecipeComparison } from "./RecipeComparison";
 import { DeleteBrewLogDialog } from "./DeleteBrewLogDialog";
 import { ExtractionSummary } from "./ExtractionSummary";
+import { Button, ButtonLink } from "@/components/ui";
 
 export function BrewDetail({ id }: { id: number }) {
   const router = useRouter();
@@ -75,9 +76,7 @@ export function BrewDetail({ id }: { id: number }) {
     <Shell>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <p className="text-body text-ink-3">
-            {log.brewedAt.slice(0, 10)}
-          </p>
+          <p className="text-body text-ink-3">{log.brewedAt.slice(0, 10)}</p>
           {/*
             화면 제목이다. **`h1`은 언제나 그리고 링크만 조건부로 한다** — 조건부로 사라지면
             제목 없는 화면이 생기고, 스크린리더 사용자가 「지금 무엇을 보고 있는가」를 제목
@@ -179,19 +178,8 @@ export function BrewDetail({ id }: { id: number }) {
       */}
       {isMine && (
         <div className="flex items-center gap-2 self-start">
-          <Link
-            href={`/brews/${id}/edit`}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border px-3 py-2 text-body"
-          >
-            편집
-          </Link>
-          <button
-            type="button"
-            onClick={() => setConfirmingDelete(true)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-danger px-3 py-2 text-body text-danger"
-          >
-            삭제
-          </button>
+          <ButtonLink href={`/brews/${id}/edit`}>편집</ButtonLink>
+          <Button onClick={() => setConfirmingDelete(true)}>삭제</Button>
         </div>
       )}
 

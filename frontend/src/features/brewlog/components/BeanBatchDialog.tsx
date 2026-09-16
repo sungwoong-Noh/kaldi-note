@@ -13,6 +13,7 @@ import { createBeanBatch } from "@/features/inventory/api";
 import type { BeanBatch } from "@/features/inventory/schema";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
+import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /** 스펙 「원두 등록 모달」이 정한 네 가지. 서버 enum의 `DARK`는 이번 화면에 두지 않는다. */
 const ROAST_LEVELS: RoastLevel[] = [
@@ -174,7 +175,7 @@ export function BeanBatchDialog({
                 aria-label="배전도"
                 value={roastLevel}
                 onChange={(e) => setRoastLevel(e.target.value as RoastLevel)}
-                className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-control border border-border px-2 py-1"
+                className={controlClass(SELECT_EXTRA)}
               >
                 <option value="">선택 안 함</option>
                 {ROAST_LEVELS.map((level) => (
@@ -205,10 +206,13 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.weightG ? "bean-batch-weight-error" : undefined
             }
-            className="w-full min-h-11 rounded-control border border-border px-2 py-1"
+            className={controlClass()}
           />
           {mapped?.byField.weightG && (
-            <span id="bean-batch-weight-error" className="text-body-sm text-danger">
+            <span
+              id="bean-batch-weight-error"
+              className="text-body-sm text-danger"
+            >
               {mapped.byField.weightG}
             </span>
           )}
@@ -224,7 +228,7 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.roastedAt ? "bean-batch-roasted-error" : undefined
             }
-            className="w-full min-h-11 rounded-control border border-border px-2 py-1"
+            className={controlClass()}
           />
           {mapped?.byField.roastedAt && (
             <span
@@ -241,21 +245,14 @@ export function BeanBatchDialog({
         )}
 
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border px-3 py-2 text-body"
-          >
-            취소
-          </button>
-          <button
-            type="button"
+          <Button onClick={onCancel}>취소</Button>
+          <Button
             disabled={submit.isPending}
             onClick={() => submit.mutate()}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control bg-accent px-3 py-2 text-body text-on-ink disabled:opacity-50"
+            variant="primary"
           >
             등록
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -282,7 +279,7 @@ function SelectField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-control border border-border px-2 py-1"
+        className={controlClass(SELECT_EXTRA)}
       >
         <option value="">새로 만들기</option>
         {options.map((option) => (
@@ -315,7 +312,7 @@ function TextField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-describedby={error ? errorId : undefined}
-        className="w-full min-h-11 rounded-control border border-border px-2 py-1"
+        className={controlClass()}
       />
       {error && (
         <span id={errorId} className="text-body-sm text-danger">

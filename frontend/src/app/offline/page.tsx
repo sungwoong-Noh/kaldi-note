@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { type CachedRecipe, readCachedRecipes } from "@/lib/offline-cache";
+import { controlClass } from "@/components/ui";
 
 /**
  * 네트워크가 없을 때 여는 화면.
@@ -26,16 +27,14 @@ export default function OfflinePage() {
 
       {recipes !== null &&
         (recipes.length === 0 ? (
-          <p className="text-ink-3">
-            저장된 레시피가 없습니다
-          </p>
+          <p className="text-ink-3">저장된 레시피가 없습니다</p>
         ) : (
           <ul className="flex flex-col">
             {recipes.map((recipe) => (
               <li key={recipe.id}>
                 <Link
                   href={`/recipes/${recipe.id}`}
-                  className="flex min-h-11 min-w-11 items-center justify-center block rounded-control px-2 py-3 hover:bg-surface dark:hover:bg-accent"
+                  className={controlClass("flex min-w-11 items-center justify-center block py-3 hover:bg-surface dark:hover:bg-accent")}
                 >
                   {recipe.title}
                 </Link>

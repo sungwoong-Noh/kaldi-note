@@ -63,7 +63,10 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
 
             {/* 축. 행마다 그어 이어 붙인다 — absolute로 그리면 임의값 위치가 필요하고,
                 그건 AC-SPACE-03(임의값 간격 0곳)에 걸린다. */}
-            <span aria-hidden className="w-px shrink-0 self-stretch bg-border" />
+            <span
+              aria-hidden
+              className="w-px shrink-0 self-stretch bg-border"
+            />
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-baseline gap-x-2">
@@ -88,9 +91,7 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
               </div>
 
               {step.note && (
-                <p className="mt-1 text-body text-ink-3">
-                  {step.note}
-                </p>
+                <p className="mt-1 text-body text-ink-3">{step.note}</p>
               )}
             </div>
           </li>

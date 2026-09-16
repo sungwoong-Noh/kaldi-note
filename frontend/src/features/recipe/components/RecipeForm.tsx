@@ -15,6 +15,7 @@ import {
 } from "../formState";
 import { GrindSettingField } from "./GrindSettingField";
 import { RecipeStepEditor } from "./RecipeStepEditor";
+import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 const VISIBILITY_LABELS: Record<Visibility, string> = {
   PRIVATE: "나만 보기",
@@ -150,7 +151,7 @@ export function RecipeForm({
           aria-label="공개 범위"
           value={state.visibility}
           onChange={(e) => patch({ visibility: e.target.value as Visibility })}
-          className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
+          className={controlClass(SELECT_EXTRA)}
         >
           {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
             <option key={code} value={code}>
@@ -201,20 +202,10 @@ export function RecipeForm({
       />
 
       <div className="flex items-center gap-2">
-        <button
-          type="submit"
-          disabled={submitting}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-control bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
-        >
+        <Button type="submit" disabled={submitting} variant="primary">
           저장
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-control border border-border px-4 py-2 text-body"
-        >
-          취소
-        </button>
+        </Button>
+        <Button onClick={onCancel}>취소</Button>
       </div>
     </form>
   );
@@ -244,7 +235,8 @@ function TextField({
     value,
     "aria-describedby": error ? errorId : undefined,
     onChange: (e: { target: { value: string } }) => onChange(e.target.value),
-    className: "min-h-11 rounded-control border border-border px-2 py-1 text-body",
+    className:
+      "min-h-11 rounded-control border border-border px-2 py-1 text-body",
   };
 
   return (
@@ -294,7 +286,7 @@ function NumberField({
           onChange={(e) =>
             onChange(e.target.value === "" ? null : Number(e.target.value))
           }
-          className="w-full min-w-0 rounded-control border border-border px-2 py-1 pr-12 text-body min-h-11"
+          className={controlClass("pr-12 text-body")}
         />
         <span
           data-unit
@@ -333,7 +325,7 @@ function SelectField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 text-body min-h-11"
+        className={controlClass(`${SELECT_EXTRA} text-body`)}
       >
         <option value="">선택 안 함</option>
         {options.map((option) => (

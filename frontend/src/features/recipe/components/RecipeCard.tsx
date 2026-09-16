@@ -48,14 +48,18 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
             {recipe.waterTempC !== undefined && (
               <div>
                 <dt className="sr-only">물 온도</dt>
-                <dd className="text-metric">{formatTemperature(recipe.waterTempC)}</dd>
+                <dd className="text-metric">
+                  {formatTemperature(recipe.waterTempC)}
+                </dd>
               </div>
             )}
 
             {recipe.totalTimeSeconds !== undefined && (
               <div>
                 <dt className="sr-only">총 시간</dt>
-                <dd className="text-metric">{formatDuration(recipe.totalTimeSeconds)}</dd>
+                <dd className="text-metric">
+                  {formatDuration(recipe.totalTimeSeconds)}
+                </dd>
               </div>
             )}
           </div>

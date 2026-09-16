@@ -11,9 +11,17 @@ import { oklchLuminance, parseOklch } from "./oklch";
  */
 describe("oklch 대비 계산기", () => {
   it("AC-DS2-05 · oklch 문자열을 L·C·h로 파싱한다", () => {
-    expect(parseOklch("oklch(0.72 0.15 28)")).toEqual({ L: 0.72, C: 0.15, h: 28 });
+    expect(parseOklch("oklch(0.72 0.15 28)")).toEqual({
+      L: 0.72,
+      C: 0.15,
+      h: 28,
+    });
     // 공백이 여럿이거나 소수점이 없는 hue도 같은 결과여야 한다.
-    expect(parseOklch("oklch(0.5  0.18  28)")).toEqual({ L: 0.5, C: 0.18, h: 28 });
+    expect(parseOklch("oklch(0.5  0.18  28)")).toEqual({
+      L: 0.5,
+      C: 0.18,
+      h: 28,
+    });
   });
 
   it("AC-DS2-05 · oklch 휘도가 같은 색의 hex 휘도와 일치한다", () => {

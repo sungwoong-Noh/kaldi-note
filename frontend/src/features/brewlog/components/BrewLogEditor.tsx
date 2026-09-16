@@ -21,6 +21,7 @@ import {
 import type { BrewLog } from "../schema";
 import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
 import { BrewLogFields } from "./BrewLogFields";
+import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /** 스펙이 정한 문구다. 값을 바꾸거나 기록을 지우는 것 말고는 길이 없다. */
 const CLEAR_MESSAGE = "값을 지울 수 없습니다. 고치거나 기록을 삭제하세요";
@@ -182,7 +183,7 @@ function Fields({
               visibility: toVisibility(e.target.value),
             }))
           }
-          className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
+          className={controlClass(SELECT_EXTRA)}
         >
           {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
             <option key={code} value={code}>
@@ -202,21 +203,14 @@ function Fields({
       )}
 
       <div className="flex items-center gap-2">
-        <button
-          type="button"
+        <Button
           disabled={save.isPending || cleared.length > 0}
           onClick={submit}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
+          variant="primary"
         >
           저장
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push(`/brews/${log.id}`)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border px-4 py-2 text-body"
-        >
-          취소
-        </button>
+        </Button>
+        <Button onClick={() => router.push(`/brews/${log.id}`)}>취소</Button>
       </div>
     </div>
   );

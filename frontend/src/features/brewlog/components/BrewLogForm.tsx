@@ -24,6 +24,7 @@ import {
 import { BeanBatchDialog } from "./BeanBatchDialog";
 import { BrewLogFields } from "./BrewLogFields";
 import { UserGrinderDialog } from "./UserGrinderDialog";
+import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /**
  * 로그 작성 화면.
@@ -137,7 +138,7 @@ function Fields({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
+            className={controlClass(SELECT_EXTRA)}
           >
             <option value="">선택 안 함</option>
             {(batches.data ?? []).map((batch) => (
@@ -148,13 +149,7 @@ function Fields({
           </select>
         </label>
 
-        <button
-          type="button"
-          onClick={() => setAddingBean(true)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border px-3 py-2 text-body"
-        >
-          + 원두 등록
-        </button>
+        <Button onClick={() => setAddingBean(true)}>+ 원두 등록</Button>
       </div>
     </fieldset>
   );
@@ -175,21 +170,16 @@ function Fields({
       )}
 
       <div className="flex items-center gap-2">
-        <button
-          type="button"
+        <Button
           disabled={save.isPending}
           onClick={() => save.mutate()}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
+          variant="primary"
         >
           기록하기
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push(`/recipes/${recipe.id}`)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border px-4 py-2 text-body"
-        >
+        </Button>
+        <Button onClick={() => router.push(`/recipes/${recipe.id}`)}>
           취소
-        </button>
+        </Button>
       </div>
 
       {addingGrinder && (

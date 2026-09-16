@@ -34,6 +34,8 @@ describe("LoadingState", () => {
       vi.advanceTimersByTime(200);
     });
 
-    expect(screen.getByRole("status", { name: "불러오는 중" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("status", { name: "불러오는 중" }),
+    ).toBeInTheDocument();
   });
 });

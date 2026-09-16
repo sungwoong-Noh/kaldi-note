@@ -1,12 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import {
-  useCallback,
-  useEffect,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { refreshSession } from "@/lib/refresh";
 import {
   hasAccessToken,

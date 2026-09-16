@@ -58,7 +58,10 @@ test.describe("시각 위계 — 라이트", () => {
     // 계측되는 값은 언제나 Mono다. 자릿수가 어긋나면 목록에서 값이 흔들린다 —
     // 그것이 Mono를 쓰는 유일한 이유다(docs/specs/2026-09-17-design-system-v2.md).
     const family = await lead.evaluate((el) => getComputedStyle(el).fontFamily);
-    const first = family.split(",")[0].trim().replace(/^["']|["']$/g, "");
+    const first = family
+      .split(",")[0]
+      .trim()
+      .replace(/^["']|["']$/g, "");
 
     expect(first).toBe("IBM Plex Mono");
   });

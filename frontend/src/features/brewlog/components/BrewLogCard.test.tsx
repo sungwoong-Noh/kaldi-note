@@ -59,9 +59,9 @@ describe("브루잉 로그 카드", () => {
     for (const log of [withRatio, withoutRatio]) {
       const { container, unmount } = renderCard(log);
 
-      expect(container.querySelectorAll(".text-metric-hero.font-semibold")).toHaveLength(
-        1,
-      );
+      expect(
+        container.querySelectorAll(".text-metric-hero.font-semibold"),
+      ).toHaveLength(1);
 
       unmount();
     }

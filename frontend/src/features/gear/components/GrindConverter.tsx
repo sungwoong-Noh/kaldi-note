@@ -5,6 +5,7 @@ import { useState } from "react";
 import { errorMessageOf } from "@/components/ErrorState";
 import { convertGrind } from "../api";
 import type { GrinderModel } from "../schema";
+import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /**
  * 마스터 그라인더끼리 분쇄도를 환산한다.
@@ -54,7 +55,7 @@ export function GrindConverter({
           aria-label="설정값"
           value={setting}
           onChange={(e) => setSetting(e.target.value)}
-          className="w-full min-w-0 rounded-control border border-border px-2 py-1 min-h-11"
+          className={controlClass()}
         />
       </label>
 
@@ -65,14 +66,13 @@ export function GrindConverter({
         onChange={setTargetId}
       />
 
-      <button
-        type="button"
+      <Button
         disabled={convert.isPending}
         onClick={() => convert.mutate()}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-control bg-accent px-4 py-2 text-body text-on-ink disabled:opacity-50"
+        variant="primary"
       >
         환산
-      </button>
+      </Button>
 
       {convert.error && (
         <p role="alert" className="text-body text-danger">
@@ -129,7 +129,7 @@ function GrinderSelect({
         aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="min-w-0 appearance-none select-chevron pr-12 flex-1 rounded-control border border-border px-2 py-1 min-h-11"
+        className={controlClass(`${SELECT_EXTRA} flex-1`)}
       >
         <option value="">선택하세요</option>
         {grinders.map((grinder) => (

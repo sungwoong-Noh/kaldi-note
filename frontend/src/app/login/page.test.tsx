@@ -71,8 +71,9 @@ describe("LoginPage", () => {
     );
 
     const href =
-      screen.getByRole("link", { name: "구글로 로그인" }).getAttribute("href") ??
-      "";
+      screen
+        .getByRole("link", { name: "구글로 로그인" })
+        .getAttribute("href") ?? "";
     const url = new URL(href);
 
     expect(url.origin + url.pathname).toBe(
@@ -91,8 +92,9 @@ describe("LoginPage", () => {
     render(await LoginPage({ searchParams: Promise.resolve({}) }));
 
     const href =
-      screen.getByRole("link", { name: "구글로 로그인" }).getAttribute("href") ??
-      "";
+      screen
+        .getByRole("link", { name: "구글로 로그인" })
+        .getAttribute("href") ?? "";
 
     expect(new URL(href).searchParams.get("state")).toBe("/recipes");
   });
@@ -105,8 +107,9 @@ describe("LoginPage", () => {
     );
 
     const href =
-      screen.getByRole("link", { name: "구글로 로그인" }).getAttribute("href") ??
-      "";
+      screen
+        .getByRole("link", { name: "구글로 로그인" })
+        .getAttribute("href") ?? "";
 
     expect(new URL(href).searchParams.get("state")).toBe("/recipes");
     expect(href).not.toContain("evil.example");

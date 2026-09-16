@@ -78,9 +78,9 @@ test.describe("일관성 — 렌더값", () => {
       const label = page.getByText(labelText, { exact: true }).first();
       await expect(label).toBeVisible();
 
-      expect(
-        await label.evaluate((el) => getComputedStyle(el).fontSize),
-      ).toBe("13px");
+      expect(await label.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
+        "13px",
+      );
       expect(await label.evaluate((el) => getComputedStyle(el).color)).toBe(
         await tokenColor(page, "ink-3"),
       );

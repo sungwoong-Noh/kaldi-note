@@ -8,6 +8,7 @@ import { useRequireSession } from "@/features/auth/useRequireSession";
 import { fetchBrewLogPage } from "@/features/brewlog/api";
 import { BrewLogCard } from "@/features/brewlog/components/BrewLogCard";
 import { useRecipeLabels } from "@/features/brewlog/useRecipeLabels";
+import { ButtonLink } from "@/components/ui";
 
 /** 홈에 세우는 최근 기록 수. 스크롤 없이 한눈에 들어오는 만큼만 둔다. */
 const RECENT_SIZE = 3;
@@ -51,12 +52,9 @@ export default function HomePage() {
           <p className="py-6 text-center text-body text-ink-3">
             아직 기록이 없습니다
           </p>
-          <Link
-            href="/recipes"
-            className="flex min-h-11 items-center justify-center rounded-control bg-accent py-3 text-center text-body text-on-ink"
-          >
+          <ButtonLink href="/recipes" variant="primary">
             레시피 보러 가기
-          </Link>
+          </ButtonLink>
         </div>
       </Shell>
     );
@@ -82,7 +80,10 @@ function Shell({ children }: { children: React.ReactNode }) {
     <main className="mx-auto w-full max-w-2xl px-6 py-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-page-title font-semibold">최근 기록</h1>
-        <Link href="/brews" className="inline-flex min-h-11 min-w-11 items-center justify-center text-body text-ink-3">
+        <Link
+          href="/brews"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center text-body text-ink-3"
+        >
           전체 보기
         </Link>
       </div>

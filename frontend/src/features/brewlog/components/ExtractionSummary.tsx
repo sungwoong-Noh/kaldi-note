@@ -40,9 +40,7 @@ export function ExtractionSummary({ log }: { log: BrewLog }) {
         )}
       </dl>
       {log.diagnosis !== undefined && (
-        <p className="text-body text-ink-3">
-          {log.diagnosis}
-        </p>
+        <p className="text-body text-ink-3">{log.diagnosis}</p>
       )}
     </section>
   );

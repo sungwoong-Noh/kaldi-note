@@ -4,6 +4,7 @@ import { useGrindPreview, useGrinders } from "@/features/gear/queries";
 import { ApiError } from "@/lib/api-client";
 import { useDebounced } from "@/lib/useDebounced";
 import type { GrindSettingUnit } from "../formState";
+import { SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /** 타이핑이 멈춘 뒤 환산을 부르기까지 기다리는 시간. */
 const PREVIEW_DEBOUNCE_MS = 400;
@@ -62,7 +63,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
+            className={controlClass(SELECT_EXTRA)}
           >
             <option value="">선택 안 함</option>
             {(grinders.data ?? []).map((grinder) => (
@@ -85,7 +86,7 @@ export function GrindSettingField({
                   : (e.target.value as GrindSettingUnit),
               )
             }
-            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
+            className={controlClass(SELECT_EXTRA)}
           >
             <option value="">선택 안 함</option>
             {Object.entries(UNIT_LABELS).map(([code, label]) => (
@@ -108,7 +109,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="w-full min-w-0 rounded-control border border-border px-2 py-1 min-h-11"
+            className={controlClass()}
           />
         </label>
       </div>

@@ -7,6 +7,7 @@ import { useGrinders } from "@/features/gear/queries";
 import type { UserGrinder } from "@/features/gear/schema";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
+import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /**
  * 내 그라인더 등록 모달.
@@ -68,7 +69,7 @@ export function UserGrinderDialog({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-control border border-border px-2 py-1"
+            className={controlClass(SELECT_EXTRA)}
           >
             <option value="">선택 안 함</option>
             {(grinders.data ?? []).map((model) => (
@@ -90,7 +91,7 @@ export function UserGrinderDialog({
                 ? "user-grinder-nickname-error"
                 : undefined
             }
-            className="w-full min-h-11 rounded-control border border-border px-2 py-1"
+            className={controlClass()}
           />
           {fieldErrors?.byField.nickname && (
             <span
@@ -107,23 +108,16 @@ export function UserGrinderDialog({
         )}
 
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border px-3 py-2 text-body"
-          >
-            취소
-          </button>
-          <button
-            type="button"
+          <Button onClick={onCancel}>취소</Button>
+          <Button
             disabled={grinderModelId === null || create.isPending}
             onClick={() => {
               if (grinderModelId !== null) create.mutate(grinderModelId);
             }}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control bg-accent px-3 py-2 text-body text-on-ink disabled:opacity-50"
+            variant="primary"
           >
             등록
-          </button>
+          </Button>
         </div>
       </div>
     </div>

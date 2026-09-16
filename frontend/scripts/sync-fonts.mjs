@@ -15,7 +15,14 @@
  *
  * <p>사용법: `node scripts/sync-fonts.mjs`
  */
-import { copyFile, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { join } from "node:path";
 
 const PKG = "node_modules/@fontsource";
@@ -30,7 +37,11 @@ const OUT_CSS = "src/app/fonts.css";
  */
 const WANTED = [
   { pkg: "ibm-plex-sans-kr", weights: ["400", "600"] },
-  { pkg: "ibm-plex-mono", weights: ["400", "500"], subsets: ["latin", "latin-ext"] },
+  {
+    pkg: "ibm-plex-mono",
+    weights: ["400", "500"],
+    subsets: ["latin", "latin-ext"],
+  },
 ];
 
 /** 주석 한 줄 + 그 뒤의 `@font-face { … }`를 통째로 뽑는다. */
@@ -58,7 +69,9 @@ for (const { pkg, weights, subsets } of WANTED) {
       if (woff2.includes("-korean-")) continue;
 
       if (subsets !== undefined) {
-        const stem = woff2.replace(`${pkg}-`, "").replace(`-${weight}-normal.woff2`, "");
+        const stem = woff2
+          .replace(`${pkg}-`, "")
+          .replace(`-${weight}-normal.woff2`, "");
         if (!subsets.includes(stem)) continue;
       }
 

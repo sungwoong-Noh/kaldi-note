@@ -51,8 +51,12 @@ describe("읽힘 — 대비의 하한", () => {
   it("AC-READ-01 · 보조 텍스트의 대비가 4.72:1 이상이다", () => {
     // 라이트 4.7295 · 다크 6.6329 (2026-09-17 실측). 라이트가 AA(4.5)를 겨우 넘는다 —
     // 이 하한을 더 낮추면 원래 문제(「라이트만 유독 흐리다」)로 돌아간다.
-    expect(ratioOf(lum(light, "ink-3"), lum(light, "paper"))).toBeGreaterThanOrEqual(4.72);
-    expect(ratioOf(lum(dark, "ink-3"), lum(dark, "paper"))).toBeGreaterThanOrEqual(4.72);
+    expect(
+      ratioOf(lum(light, "ink-3"), lum(light, "paper")),
+    ).toBeGreaterThanOrEqual(4.72);
+    expect(
+      ratioOf(lum(dark, "ink-3"), lum(dark, "paper")),
+    ).toBeGreaterThanOrEqual(4.72);
   });
 
   it("AC-READ-02 · 테두리가 배경과 구분된다", () => {
@@ -67,8 +71,12 @@ describe("읽힘 — 대비의 하한", () => {
      * 체계다), **이것이 폰에서 실제로 보이는지는 자동 테스트가 답할 수 없다.**
      * 계획의 수동 확인 항목으로 올려두었다 — 안 보이면 디자인 쪽에 되돌린다.
      */
-    expect(ratioOf(lum(light, "border"), lum(light, "paper"))).toBeGreaterThanOrEqual(1.35);
-    expect(ratioOf(lum(dark, "border"), lum(dark, "paper"))).toBeGreaterThanOrEqual(1.35);
+    expect(
+      ratioOf(lum(light, "border"), lum(light, "paper")),
+    ).toBeGreaterThanOrEqual(1.35);
+    expect(
+      ratioOf(lum(dark, "border"), lum(dark, "paper")),
+    ).toBeGreaterThanOrEqual(1.35);
   });
 
   it("AC-READ-03 · AC-DS2-03 · 오류색이 보조 텍스트보다 잘 보인다", () => {

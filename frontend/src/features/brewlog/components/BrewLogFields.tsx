@@ -4,6 +4,7 @@ import type { UserGrinder } from "@/features/gear/schema";
 import type { mapFieldErrors } from "@/lib/fieldErrors";
 import type { BrewLogFormState } from "../formState";
 import { RatingInput } from "./RatingInput";
+import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /** 5축 관능 평가. 접혀 있을 때는 그리지 않으므로 요청 본문에도 담기지 않는다. */
 const SENSORY_AXES = [
@@ -53,7 +54,7 @@ export function BrewLogFields({
           aria-describedby={
             fieldErrors?.byField.brewedAt ? "brew-brewed-at-error" : undefined
           }
-          className="w-full min-w-0 rounded-control border border-border px-2 py-1 min-h-11"
+          className={controlClass()}
         />
         {fieldErrors?.byField.brewedAt && (
           <span id="brew-brewed-at-error" className="text-body-sm text-danger">
@@ -81,7 +82,7 @@ export function BrewLogFields({
                   e.target.value === "" ? null : Number(e.target.value),
                 )
               }
-              className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
+              className={controlClass(SELECT_EXTRA)}
             >
               <option value="">선택 안 함</option>
               {grinders.map((grinder) => (
@@ -93,13 +94,7 @@ export function BrewLogFields({
           </label>
 
           {onAddGrinder && (
-            <button
-              type="button"
-              onClick={onAddGrinder}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border px-3 py-2 text-body"
-            >
-              + 그라인더 등록
-            </button>
+            <Button onClick={onAddGrinder}>+ 그라인더 등록</Button>
           )}
         </div>
 
@@ -164,13 +159,9 @@ export function BrewLogFields({
         <RatingInput value={state.rating} onChange={(v) => set("rating", v)} />
 
         {!state.sensoryExpanded && (
-          <button
-            type="button"
-            onClick={() => set("sensoryExpanded", true)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-control border border-border px-3 py-2 text-body"
-          >
+          <Button onClick={() => set("sensoryExpanded", true)}>
             맛 자세히
-          </button>
+          </Button>
         )}
 
         {state.sensoryExpanded &&
@@ -186,7 +177,7 @@ export function BrewLogFields({
                     e.target.value === "" ? null : Number(e.target.value),
                   )
                 }
-                className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-control border border-border px-2 py-1 min-h-11"
+                className={controlClass(SELECT_EXTRA)}
               >
                 <option value="">선택 안 함</option>
                 {[1, 2, 3, 4, 5].map((score) => (
@@ -208,7 +199,7 @@ export function BrewLogFields({
             aria-describedby={
               fieldErrors?.byField.overallNote ? "brew-note-error" : undefined
             }
-            className="w-full min-w-0 rounded-control border border-border px-2 py-1 min-h-11"
+            className={controlClass()}
           />
           {fieldErrors?.byField.overallNote && (
             <span id="brew-note-error" className="text-body-sm text-danger">
@@ -251,7 +242,7 @@ function NumberField({
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
         aria-describedby={error ? errorId : undefined}
-        className="w-full min-w-0 rounded-control border border-border px-2 py-1 min-h-11"
+        className={controlClass()}
       />
       {error && (
         <span id={errorId} className="text-body-sm text-danger">

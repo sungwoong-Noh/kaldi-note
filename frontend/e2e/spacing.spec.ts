@@ -16,7 +16,9 @@ import { installStubs } from "./stubs";
  */
 
 test.describe("간격·모서리 — 렌더값", () => {
-  test("AC-SPACE-09 · 카드가 padding 16px · radius 12px다", async ({ page }) => {
+  test("AC-SPACE-09 · 카드가 padding 16px · radius 12px다", async ({
+    page,
+  }) => {
     await installStubs(page);
     await page.goto("/recipes");
 

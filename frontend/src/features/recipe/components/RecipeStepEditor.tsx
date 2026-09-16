@@ -12,6 +12,7 @@ import {
   type EditableStep,
   type StepType,
 } from "../stepSequence";
+import { Button, controlClass } from "@/components/ui";
 
 const STEP_TYPE_LABELS: Record<StepType, string> = {
   BLOOM: "블룸",
@@ -176,14 +177,11 @@ export function RecipeStepEditor({
         })}
       </ol>
 
-      <button
-        type="button"
+      <Button
         disabled={atLimit}
-        onClick={() => onChange(appendStep(steps))}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-control border border-border px-3 py-2 text-body disabled:opacity-40"
-      >
+        onClick={() => onChange(appendStep(steps))}>
         스텝 추가
-      </button>
+      </Button>
     </section>
   );
 }
@@ -256,7 +254,7 @@ function NumberField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="w-20 rounded-control border border-border px-2 py-1 text-body min-h-11"
+        className={controlClass("w-20 text-body")}
       />
       <span className="text-body text-ink-3">{suffix}</span>
       {hint && <span className="text-body text-ink-3">{hint}</span>}

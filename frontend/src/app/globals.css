@@ -79,8 +79,7 @@
   --font-sans:
     "IBM Plex Sans KR", system-ui, -apple-system, "Segoe UI", Roboto,
     "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
-  --font-mono:
-    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /*
    * 타입 스케일 — 서술 4 + 수치 2

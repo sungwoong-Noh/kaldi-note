@@ -1,4 +1,5 @@
 "use client";
+import { Button, controlClass } from "@/components/ui";
 
 /**
  * 로그 삭제 확인 대화상자.
@@ -23,26 +24,21 @@ export function DeleteBrewLogDialog({
         aria-labelledby="delete-brew-log-title"
         className="flex w-full max-w-sm flex-col gap-4 rounded-surface bg-paper p-4"
       >
-        <h2 id="delete-brew-log-title" className="text-card-title font-semibold">
+        <h2
+          id="delete-brew-log-title"
+          className="text-card-title font-semibold"
+        >
           이 기록을 삭제할까요?
         </h2>
-        <p className="text-body text-ink-3">
-          내린 기록은 되살릴 수 없습니다.
-        </p>
+        <p className="text-body text-ink-3">내린 기록은 되살릴 수 없습니다.</p>
 
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control border border-border px-3 py-2 text-body"
-          >
-            취소
-          </button>
+          <Button onClick={onCancel}>취소</Button>
           <button
             type="button"
             onClick={onConfirm}
             disabled={deleting}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-control bg-danger px-3 py-2 text-body text-on-ink disabled:opacity-50"
+            className={controlClass("inline-flex min-w-11 items-center justify-center bg-danger px-3 py-2 text-body text-on-ink disabled:opacity-50")}
           >
             삭제합니다
           </button>

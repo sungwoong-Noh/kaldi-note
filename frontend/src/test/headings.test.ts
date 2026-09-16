@@ -35,7 +35,8 @@ describe("AC-VISUAL-13 · 화면 제목 15곳이 같은 단계를 쓴다", () =>
   it("모든 h1이 text-page-title font-semibold다", () => {
     const offenders = found.filter(
       ({ className }) =>
-        !className.includes("text-page-title") || !className.includes("font-semibold"),
+        !className.includes("text-page-title") ||
+        !className.includes("font-semibold"),
     );
     expect(offenders).toEqual([]);
   });

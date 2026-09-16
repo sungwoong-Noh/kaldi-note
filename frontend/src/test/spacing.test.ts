@@ -89,6 +89,9 @@ describe("AC-SPACE-02 · 6단계가 각각 쓰인다", () => {
  * 쓰므로 윈도에서 비교가 어긋난다.
  */
 const SURFACES = [
+  // 갱신(2026-09-17): 카드 프리미티브가 생겼다. 새 화면은 이것을 쓰고,
+  // 아래 목록은 아직 옮기지 않은 곳들이다(리스킨에서 줄어든다).
+  ["src", "components", "ui", "Surface.tsx"],
   ["src", "features", "recipe", "components", "RecipeCard.tsx"],
   ["src", "features", "brewlog", "components", "BrewLogCard.tsx"],
   ["src", "features", "brewlog", "components", "BeanBatchDialog.tsx"],

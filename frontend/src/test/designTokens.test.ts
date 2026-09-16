@@ -67,7 +67,6 @@ describe("허용목록", () => {
       [],
     );
   });
-
 });
 
 /**
@@ -82,13 +81,22 @@ describe("허용목록", () => {
 const APP_SOURCES = SOURCES.filter((path) => !/\.test\.tsx?$/.test(path));
 
 describe("구조 — 컨트롤", () => {
-  it("AC-STRUCT-02 · select 13곳이 appearance-none이다", () => {
+  it("AC-STRUCT-02 · 모든 select가 기본 화살표를 벗고 우리 것을 쓴다", () => {
+    /*
+     * 갱신(2026-09-17): `className`에 `appearance-none`이 리터럴로 있는지 보던 검사다.
+     * 스타일이 `controlClass(SELECT_EXTRA)`로 옮겨가면서 문자열이 소스에 없어졌다 —
+     * **조건이 깨진 것이 아니라 값이 한 곳으로 모인 것**이라 검사를 그쪽으로 맞춘다.
+     *
+     * 렌더 결과는 e2e가 본다(`AC-STRUCT-03`이 select의 높이를 실제로 잰다).
+     */
     const bare: string[] = [];
     for (const path of APP_SOURCES) {
-      for (const match of readFileSync(path, "utf8").matchAll(
-        /<select\b[\s\S]*?className="([^"]*)"/g,
-      )) {
-        if (!/\bappearance-none\b/.test(match[1])) bare.push(`${path}`);
+      const source = readFileSync(path, "utf8");
+      for (const match of source.matchAll(/<select\b[\s\S]*?className=(\S)/g)) {
+        const head = source.slice(match.index, match.index + 400);
+        const ok =
+          /\bappearance-none\b/.test(head) || /\bSELECT_EXTRA\b/.test(head);
+        if (!ok) bare.push(path);
       }
     }
 

@@ -1,5 +1,6 @@
 import { googleAuthorizeUrl } from "@/features/auth/google";
 import { kakaoAuthorizeUrl, safeNextPath } from "@/features/auth/kakao";
+import { controlClass } from "@/components/ui";
 
 /**
  * 카카오 인가 페이지로 보낸다.
@@ -26,14 +27,14 @@ export default async function LoginPage({
 
       <a
         href={kakaoAuthorizeUrl(next)}
-        className="flex min-h-11 min-w-11 items-center justify-center w-full max-w-xs rounded-control bg-[#FEE500] px-4 py-3 text-center font-medium text-[#191600]"
+        className={controlClass("flex min-w-11 items-center justify-center max-w-xs bg-[#FEE500] px-4 py-3 text-center font-medium text-[#191600]")}
       >
         카카오로 로그인
       </a>
 
       <a
         href={googleAuthorizeUrl(next)}
-        className="flex min-h-11 min-w-11 items-center justify-center w-full max-w-xs rounded-control border border-border px-4 py-3 text-center font-medium"
+        className={controlClass("flex min-w-11 items-center justify-center max-w-xs px-4 py-3 text-center font-medium")}
       >
         구글로 로그인
       </a>

@@ -60,12 +60,12 @@ export default function RecipesPage() {
       <Shell mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
         {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
         <div data-empty className="flex flex-col gap-3">
-          <p className="py-6 text-center text-base text-muted">
+          <p className="py-6 text-center text-base text-ink-3">
             레시피가 없습니다
           </p>
           <Link
             href="/recipes/new"
-            className="flex min-h-11 items-center justify-center rounded-md bg-brand py-3 text-center text-base text-on-accent"
+            className="flex min-h-11 items-center justify-center rounded-md bg-accent py-3 text-center text-base text-on-ink"
           >
             새 레시피
           </Link>
@@ -87,7 +87,7 @@ export default function RecipesPage() {
           type="button"
           onClick={() => void fetchNextPage()}
           disabled={isFetchingNextPage}
-          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-line py-3 text-base disabled:opacity-50"
+          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-border py-3 text-base disabled:opacity-50"
         >
           더 보기
         </button>
@@ -111,7 +111,7 @@ function Shell({
         <h1 className="text-2xl font-semibold">레시피</h1>
         <Link
           href="/recipes/new"
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-2 text-base text-on-accent"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-3 py-2 text-base text-on-ink"
         >
           새 레시피
         </Link>
@@ -123,7 +123,7 @@ function Shell({
         <label className="mb-4 flex min-h-11 w-fit items-center gap-2 py-2 text-base">
           <input
             type="checkbox"
-            className="size-5 shrink-0 appearance-none rounded-md border border-line checked:border-brand checked:bg-brand"
+            className="size-5 shrink-0 appearance-none rounded-md border border-border checked:border-accent checked:bg-accent"
             checked={mineOnly ?? false}
             onChange={(e) => onMineOnlyChange(e.target.checked)}
           />

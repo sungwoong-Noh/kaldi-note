@@ -119,7 +119,7 @@ export function BeanBatchDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="bean-batch-title"
-        className="flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto rounded-lg bg-background p-4"
+        className="flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto rounded-lg bg-paper p-4"
       >
         <h2 id="bean-batch-title" className="text-lg font-semibold">
           원두 등록
@@ -169,12 +169,12 @@ export function BeanBatchDialog({
               error={nameErrorFor("product")}
             />
             <label className="flex flex-col gap-1 text-base">
-              <span className="shrink-0 text-muted">배전도</span>
+              <span className="shrink-0 text-ink-3">배전도</span>
               <select
                 aria-label="배전도"
                 value={roastLevel}
                 onChange={(e) => setRoastLevel(e.target.value as RoastLevel)}
-                className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-md border border-line px-2 py-1"
+                className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-md border border-border px-2 py-1"
               >
                 <option value="">선택 안 함</option>
                 {ROAST_LEVELS.map((level) => (
@@ -194,7 +194,7 @@ export function BeanBatchDialog({
         )}
 
         <label className="flex flex-col gap-1 text-base">
-          <span className="shrink-0 text-muted">중량</span>
+          <span className="shrink-0 text-ink-3">중량</span>
           <input
             type="number"
             aria-label="중량"
@@ -205,7 +205,7 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.weightG ? "bean-batch-weight-error" : undefined
             }
-            className="w-full min-h-11 rounded-md border border-line px-2 py-1"
+            className="w-full min-h-11 rounded-md border border-border px-2 py-1"
           />
           {mapped?.byField.weightG && (
             <span id="bean-batch-weight-error" className="text-sm text-danger">
@@ -215,7 +215,7 @@ export function BeanBatchDialog({
         </label>
 
         <label className="flex flex-col gap-1 text-base">
-          <span className="shrink-0 text-muted">로스팅일</span>
+          <span className="shrink-0 text-ink-3">로스팅일</span>
           <input
             type="date"
             aria-label="로스팅일"
@@ -224,7 +224,7 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.roastedAt ? "bean-batch-roasted-error" : undefined
             }
-            className="w-full min-h-11 rounded-md border border-line px-2 py-1"
+            className="w-full min-h-11 rounded-md border border-border px-2 py-1"
           />
           {mapped?.byField.roastedAt && (
             <span
@@ -244,7 +244,7 @@ export function BeanBatchDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-3 py-2 text-base"
           >
             취소
           </button>
@@ -252,7 +252,7 @@ export function BeanBatchDialog({
             type="button"
             disabled={submit.isPending}
             onClick={() => submit.mutate()}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-2 text-base text-on-accent disabled:opacity-50"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-3 py-2 text-base text-on-ink disabled:opacity-50"
           >
             등록
           </button>
@@ -275,14 +275,14 @@ function SelectField({
 }) {
   return (
     <label className="flex flex-col gap-1 text-base">
-      <span className="shrink-0 text-muted">{label}</span>
+      <span className="shrink-0 text-ink-3">{label}</span>
       <select
         aria-label={label}
         value={value ?? ""}
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-md border border-line px-2 py-1"
+        className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-md border border-border px-2 py-1"
       >
         <option value="">새로 만들기</option>
         {options.map((option) => (
@@ -309,13 +309,13 @@ function TextField({
   const errorId = `bean-batch-${label}-error`;
   return (
     <label className="flex flex-col gap-1 text-base">
-      <span className="shrink-0 text-muted">{label}</span>
+      <span className="shrink-0 text-ink-3">{label}</span>
       <input
         aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-describedby={error ? errorId : undefined}
-        className="w-full min-h-11 rounded-md border border-line px-2 py-1"
+        className="w-full min-h-11 rounded-md border border-border px-2 py-1"
       />
       {error && (
         <span id={errorId} className="text-sm text-danger">

@@ -75,7 +75,7 @@ export function BrewDetail({ id }: { id: number }) {
     <Shell>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <p className="text-base text-muted">
+          <p className="text-base text-ink-3">
             {log.brewedAt.slice(0, 10)}
           </p>
           {/*
@@ -100,7 +100,7 @@ export function BrewDetail({ id }: { id: number }) {
             )}
           </h1>
           {bean.label !== "" && (
-            <dl className="flex items-center gap-1 text-base text-muted">
+            <dl className="flex items-center gap-1 text-base text-ink-3">
               <dt>원두</dt>
               <dd>{bean.label}</dd>
             </dl>
@@ -181,7 +181,7 @@ export function BrewDetail({ id }: { id: number }) {
         <div className="flex items-center gap-2 self-start">
           <Link
             href={`/brews/${id}/edit`}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-3 py-2 text-base"
           >
             편집
           </Link>
@@ -250,7 +250,7 @@ function measures(log: BrewLog): { label: string; value: string }[] {
 function Measure({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-1">
-      <dt className="text-sm text-muted">{label}</dt>
+      <dt className="text-sm text-ink-3">{label}</dt>
       <dd>{value}</dd>
     </div>
   );

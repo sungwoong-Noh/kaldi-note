@@ -23,20 +23,24 @@ const CORNER_RATIO = 12 / 64;
 const GLYPH_RATIO = 40 / 64;
 
 /**
- * 바탕색은 `globals.css`의 `--brand`를 **읽어서** 쓴다. 베껴 적으면 토큰을 고쳐도
+ * 바탕색은 `globals.css`의 `--accent`를 **읽어서** 쓴다. 베껴 적으면 토큰을 고쳐도
  * 아이콘만 옛 색으로 남는다(docs/design/2026-09-08-brand.md).
  *
- * <p>라이트 값을 쓴다 — 진한 브라운 위에 흰 글자가 7.44:1이다. 다크 값(`#c9a98a`)은
- * 밝아서 흰 글자가 2.20:1로 읽히지 않는다.
+ * <p>라이트 값을 쓴다 — 진한 브라운 위에 흰 글자가 8.66:1이다. 다크 값은 밝아서
+ * 흰 글자가 2.53:1로 읽히지 않는다.
+ *
+ * <p>갱신(2026-09-17): 토큰 이름이 `--brand`에서 `--accent`로, 형식이 hex에서 oklch로
+ * 바뀌었다(docs/specs/2026-09-17-design-system-v2.md). SVG를 Chromium이 렌더하므로
+ * oklch를 그대로 `fill`에 넣어도 된다.
  */
 const GLOBALS_CSS = new URL("../src/app/globals.css", import.meta.url);
 const css = await readFile(GLOBALS_CSS, "utf8");
 const brand = css
   .slice(0, css.indexOf("@media (prefers-color-scheme: dark)"))
-  .match(/--brand:\s*(#[0-9a-fA-F]{6})\s*;/)?.[1];
+  .match(/--accent:\s*(oklch\([^)]+\))\s*;/)?.[1];
 
-if (!brand) throw new Error("globals.css의 :root에서 --brand를 찾지 못했다");
-console.log(`바탕색 ${brand} (globals.css의 --brand)`);
+if (!brand) throw new Error("globals.css의 :root에서 --accent를 찾지 못했다");
+console.log(`바탕색 ${brand} (globals.css의 --accent)`);
 
 /**
  * @param {number} size 캔버스 한 변

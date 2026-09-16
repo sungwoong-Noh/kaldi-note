@@ -14,10 +14,14 @@ const manifest = {
   start_url: "/",
   display: "standalone",
   // 스플래시 바탕. 앱 배경과 같아야 렌더 직후 색이 튀지 않는다.
-  background_color: "#ffffff",
-  // 상단바·상태바 색. globals.css의 --brand 라이트 값과 같다.
+  //
+  // ★ globals.css의 --paper 라이트 값을 sRGB로 옮긴 것이다. 매니페스트는 JSON이라
+  //   CSS 변수를 쓸 수 없어 여기 박혀 있다 — **토큰을 고치면 이 두 줄도 함께 고친다.**
+  //   (.select-chevron의 stroke 색이 같은 이유로 globals.css에 박혀 있다.)
+  background_color: "#fdfcf9",
+  // 상단바·상태바 색. globals.css의 --accent 라이트 값과 같다.
   // 매니페스트는 값을 하나만 가지므로 다크에서도 이 브라운이 쓰인다.
-  theme_color: "#6f4e37",
+  theme_color: "#684231",
   icons: [
     {
       src: "/icons/icon-192.png",

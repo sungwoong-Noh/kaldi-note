@@ -1,40 +1,71 @@
 @import "tailwindcss";
 
+/*
+ * 색 토큰 15개 — Clean Ledger (docs/specs/2026-09-17-design-system-v2.md)
+ *
+ * ★ 값의 원천은 docs/design/design_handoff_kaldi_note/README.md다.
+ *   어긋나면 그쪽이 옳다. 이 파일은 그것을 CSS로 옮긴 것이고,
+ *   테스트(src/test/tokens.ts)는 표가 아니라 **이 파일을 읽는다.**
+ *
+ * 중립색은 아주 옅은 따뜻한 기미(hue 60~85, chroma ≤ 0.015)만 갖고,
+ * 유채색은 에스프레소 계열 하나뿐이다. 그라디언트와 그림자는 쓰지 않는다 —
+ * 층은 1px 보더와 면의 명도 차이로만 만든다.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* 면 — paper > surface > sunken 순으로 가라앉는다 */
+  --paper: oklch(0.99 0.004 85);
+  --surface: oklch(0.97 0.006 85);
+  --sunken: oklch(0.93 0.008 80);
+  /* 라이트에서 「올라온 면」은 종이 그대로다. 다크에서만 따로 값을 갖는다. */
+  --raised: oklch(0.99 0.004 85);
+
+  /* 선 */
+  --border: oklch(0.88 0.008 75);
+  --divider: oklch(0.92 0.008 78);
+  --divider-strong: oklch(0.89 0.008 78);
+
+  /* 글자 */
+  --ink: oklch(0.22 0.015 60);
+  --ink-2: oklch(0.38 0.015 60);
+  --ink-3: oklch(0.55 0.02 70);
+  /* ink 배경 위 글자. primary 버튼이 이 조합이다. */
+  --on-ink: oklch(0.97 0.004 85);
+
+  /* 강조 — 에스프레소 한 색 */
+  --accent: oklch(0.42 0.06 45);
+  --accent-soft: oklch(0.62 0.05 50);
+  --accent-wash: oklch(0.95 0.02 50);
 
   /*
-   * 의미색. 강조는 액션에만 쓴다 — 수치는 크기로 올린다(docs/specs/2026-09-07-visual-hierarchy.md).
+   * 오류. **핸드오프에 없어 2026-09-17에 계산으로 정했다.**
    *
-   * danger가 muted보다 흐리면 「고쳐야 할 것」이 「안 읽어도 되는 것」보다 안 보인다.
-   * 둘의 대비를 6.47:1 / 7.57:1로 잡아 위계를 맞췄다(docs/specs/2026-09-15-readability.md).
+   * 없애면 「고쳐야 할 것」이 「안 읽어도 되는 것」보다 안 보인다
+   * (docs/specs/2026-09-15-readability.md). paper 위 6.40:1으로 ink-3(4.73:1)보다 진하고,
+   * accent(hue 45 · C 0.06)와는 chroma 3배 · hue 17도 차이로 구분된다.
    */
-  --brand: #6f4e37;
-  --on-accent: #ffffff;
-  --danger: #b91c1c;
-  --muted: #545454;
-
-  /*
-   * 표면색. 글자가 아니라 4.5:1 기준의 대상이 아니다.
-   * line은 1.48:1이라 사실상 보이지 않았다 — 카드 경계가 구조를 만들려면 보여야 한다.
-   */
-  --line: #b8b8b8;
-  --surface: #f5f5f5;
+  --danger: oklch(0.5 0.18 28);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-brand: var(--brand);
-  --color-on-accent: var(--on-accent);
-  --color-danger: var(--danger);
-  --color-muted: var(--muted);
-  --color-line: var(--line);
+  --color-paper: var(--paper);
   --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-raised: var(--raised);
+  --color-border: var(--border);
+  --color-divider: var(--divider);
+  --color-divider-strong: var(--divider-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-on-ink: var(--on-ink);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-wash: var(--accent-wash);
+  --color-danger: var(--danger);
+
   /*
-   * 웹폰트를 받지 않는다. 부엌에서 폰으로, 느린 회선에서 쓰는 것이 주 환경이라
-   * 0바이트·즉시 렌더가 실질 이득이 크다(docs/specs/2026-09-05-polish.md).
+   * 서체는 T3에서 IBM Plex로 바뀐다. 그때까지 system-ui를 유지한다
+   * (docs/plans/2026-09-17-plan-design-system-v2.md Task 3).
    */
   --font-sans:
     system-ui, -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo",
@@ -44,23 +75,36 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --paper: oklch(0.17 0.008 60);
+    --surface: oklch(0.21 0.009 60);
+    /* 도출: 라이트에서 sunken은 paper보다 가라앉는다. 다크에서도 같은 방향으로 어둡게. */
+    --sunken: oklch(0.13 0.008 60);
+    --raised: oklch(0.23 0.014 60);
 
-    /* 밝은 브라운 위에는 흰 글자가 2.20:1로 미달이라 on-accent가 검정으로 뒤집힌다. */
-    --brand: #c9a98a;
-    --on-accent: #171717;
-    --danger: #f87171;
-    --muted: #a1a1a1;
+    --border: oklch(0.29 0.01 60);
+    --divider: oklch(0.26 0.012 60);
+    /* 도출: 라이트에서 divider-strong이 divider보다 진하다. 다크에서 진함은 밝음이다. */
+    --divider-strong: oklch(0.33 0.012 60);
 
-    --line: #404040;
-    --surface: #262626;
+    --ink: oklch(0.95 0.005 85);
+    --ink-2: oklch(0.82 0.008 78);
+    --ink-3: oklch(0.68 0.01 70);
+    /* 다크에서는 ink가 밝으므로 그 위 글자가 뒤집힌다 — 핸드오프의 「primary 반전」. */
+    --on-ink: oklch(0.2 0.015 60);
+
+    --accent: oklch(0.72 0.07 55);
+    /* 도출: 라이트에서 accent-soft가 accent보다 밝다(0.42→0.62). 다크에서도 위로. */
+    --accent-soft: oklch(0.8 0.05 55);
+    /* 도출: wash는 배경이다. 라이트에서 paper 근처였듯 다크에서도 paper 근처로. */
+    --accent-wash: oklch(0.26 0.03 50);
+
+    --danger: oklch(0.72 0.15 28);
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-sans);
   /* 이 앱은 숫자가 주인공이다. 자릿수가 정렬돼야 목록에서 값이 흔들리지 않는다. */
   font-variant-numeric: tabular-nums;
@@ -74,11 +118,11 @@ body {
  * Tailwind 임의값(`bg-[url('data:...')]`)으로는 생성되지 않는다 — data URI의 따옴표와
  * 괄호를 파서가 처리하지 못해 `background-image: none`이 된다(2026-09-15 실측).
  *
- * ★ stroke 색이 --color-muted와 같은 값이다. SVG data URI 안에는 CSS 변수를 넣을 수 없어
+ * ★ stroke 색이 --ink-3를 sRGB로 옮긴 값이다. SVG data URI 안에는 CSS 변수를 넣을 수 없어
  *   여기 두 곳에 박혀 있다. **토큰을 고치면 이 두 줄도 함께 고친다.**
  */
 .select-chevron {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%23545454' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%23797065' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   background-position: right 0.75rem center;
   background-repeat: no-repeat;
   background-size: 12px 8px;
@@ -86,6 +130,6 @@ body {
 
 @media (prefers-color-scheme: dark) {
   .select-chevron {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%23a1a1a1' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%239c9792' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   }
 }

@@ -56,7 +56,7 @@ export default function TestLoginPage() {
   return (
     <main className="flex flex-col gap-4 px-4 py-6">
       <h1 className="text-2xl font-semibold">테스트 로그인</h1>
-      <p className="text-muted">
+      <p className="text-ink-3">
         OAuth 없이 세션을 발급합니다. 시크릿은 저장되지 않습니다.
       </p>
 
@@ -82,7 +82,7 @@ export default function TestLoginPage() {
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-3 text-on-accent disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-4 py-3 text-on-ink disabled:opacity-50"
         >
           테스트 로그인
         </button>
@@ -112,7 +112,7 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-base text-muted">
+      <span className="text-base text-ink-3">
         {label}
       </span>
       <input
@@ -120,7 +120,7 @@ function Field({
         inputMode={inputMode}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="min-h-11 rounded-md border border-line px-3 py-2"
+        className="min-h-11 rounded-md border border-border px-3 py-2"
       />
     </label>
   );

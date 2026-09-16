@@ -123,11 +123,11 @@ function Fields({
     <fieldset className="flex flex-col gap-2">
       <legend className="text-lg font-semibold">원두</legend>
       {(batches.data ?? []).length === 0 && !batches.isPending && (
-        <p className="text-base text-muted">등록된 원두가 없습니다</p>
+        <p className="text-base text-ink-3">등록된 원두가 없습니다</p>
       )}
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex w-full items-center gap-2 text-base">
-          <span className="shrink-0 text-muted">원두</span>
+          <span className="shrink-0 text-ink-3">원두</span>
           <select
             aria-label="원두"
             value={state.beanBatchId ?? ""}
@@ -137,7 +137,7 @@ function Fields({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
+            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 min-h-11"
           >
             <option value="">선택 안 함</option>
             {(batches.data ?? []).map((batch) => (
@@ -151,7 +151,7 @@ function Fields({
         <button
           type="button"
           onClick={() => setAddingBean(true)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-3 py-2 text-base"
         >
           + 원두 등록
         </button>
@@ -179,14 +179,14 @@ function Fields({
           type="button"
           disabled={save.isPending}
           onClick={() => save.mutate()}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-2 text-base text-on-accent disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-4 py-2 text-base text-on-ink disabled:opacity-50"
         >
           기록하기
         </button>
         <button
           type="button"
           onClick={() => router.push(`/recipes/${recipe.id}`)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-4 py-2 text-base"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-4 py-2 text-base"
         >
           취소
         </button>

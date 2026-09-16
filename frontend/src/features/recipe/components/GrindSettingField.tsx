@@ -53,7 +53,7 @@ export function GrindSettingField({
 
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex w-full items-center gap-2 text-base">
-          <span className="shrink-0 text-muted">그라인더</span>
+          <span className="shrink-0 text-ink-3">그라인더</span>
           <select
             aria-label="그라인더"
             value={grinderModelId ?? ""}
@@ -62,7 +62,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
+            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 min-h-11"
           >
             <option value="">선택 안 함</option>
             {(grinders.data ?? []).map((grinder) => (
@@ -74,7 +74,7 @@ export function GrindSettingField({
         </label>
 
         <label className="flex w-full items-center gap-2 text-base">
-          <span className="shrink-0 text-muted">분쇄도 단위</span>
+          <span className="shrink-0 text-ink-3">분쇄도 단위</span>
           <select
             aria-label="분쇄도 단위"
             value={unit ?? ""}
@@ -85,7 +85,7 @@ export function GrindSettingField({
                   : (e.target.value as GrindSettingUnit),
               )
             }
-            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
+            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 min-h-11"
           >
             <option value="">선택 안 함</option>
             {Object.entries(UNIT_LABELS).map(([code, label]) => (
@@ -97,7 +97,7 @@ export function GrindSettingField({
         </label>
 
         <label className="flex w-full items-center gap-2 text-base">
-          <span className="shrink-0 text-muted">분쇄도 값</span>
+          <span className="shrink-0 text-ink-3">분쇄도 값</span>
           <input
             aria-label="분쇄도 값"
             type="number"
@@ -108,7 +108,7 @@ export function GrindSettingField({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="w-full min-w-0 rounded-md border border-line px-2 py-1 min-h-11"
+            className="w-full min-w-0 rounded-md border border-border px-2 py-1 min-h-11"
           />
         </label>
       </div>
@@ -149,7 +149,7 @@ function MicronPreview({
       error.status === 422
         ? "이 그라인더는 환산 정보가 없습니다"
         : error.message;
-    return <p className="text-base text-muted">{message}</p>;
+    return <p className="text-base text-ink-3">{message}</p>;
   }
 
   if (micron === undefined) return null;
@@ -159,8 +159,8 @@ function MicronPreview({
 
 function Estimate({ micron }: { micron: number }) {
   return (
-    <p className="text-base text-muted">
-      약 {micron} µm <span className="shrink-0 text-muted">(추정치)</span>
+    <p className="text-base text-ink-3">
+      약 {micron} µm <span className="shrink-0 text-ink-3">(추정치)</span>
     </p>
   );
 }

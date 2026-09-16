@@ -41,7 +41,7 @@ export function UserProfile({ id }: { id: number }) {
   if (profile.error) {
     return (
       <Shell>
-        <p className="text-muted">
+        <p className="text-ink-3">
           사용자를 찾을 수 없습니다
         </p>
       </Shell>
@@ -63,7 +63,7 @@ export function UserProfile({ id }: { id: number }) {
       </div>
 
       {isMe ? (
-        <p className="text-muted">나</p>
+        <p className="text-ink-3">나</p>
       ) : (
         status.isSuccess && <FollowSection id={id} status={status.data} />
       )}
@@ -81,12 +81,12 @@ function FollowSection({ id, status }: { id: number; status: FollowStatus }) {
         type="button"
         disabled={toggle.isPending}
         onClick={() => toggle.mutate({ follow: !status.following })}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-3 text-on-accent disabled:opacity-50"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-4 py-3 text-on-ink disabled:opacity-50"
       >
         {status.following ? "팔로우 취소" : "팔로우"}
       </button>
       {notice !== null && (
-        <p className="text-muted">{notice}</p>
+        <p className="text-ink-3">{notice}</p>
       )}
       {toggle.error !== null && (
         <p className="text-danger">{toggle.error.message}</p>

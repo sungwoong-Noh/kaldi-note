@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { SCREENS } from "./screens";
 import { installStubs } from "./stubs";
+import { tokenColor } from "./tokenColor";
 
 /**
  * 읽힘 — docs/specs/2026-09-15-readability.md
@@ -80,7 +81,7 @@ test.describe("읽힘 — 렌더된 크기", () => {
       });
 
     expect(style.size).toBe("14px");
-    expect(style.color).toBe("rgb(84, 84, 84)");
+    expect(style.color).toBe(await tokenColor(page, "ink-3"));
   });
 });
 

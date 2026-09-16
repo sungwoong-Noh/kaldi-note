@@ -38,9 +38,13 @@ test.describe("매니페스트", () => {
     const manifest = await (await request.get("/manifest.json")).json();
     // 2026-09-08에 theme_color를 #ffffff에서 브랜드 브라운으로 바꿨다.
     // 이유는 docs/design/2026-09-08-brand.md와 이 AC의 갱신 노트에 있다.
-    expect(manifest.theme_color).toBe("#6f4e37");
+    //
+    // 갱신(2026-09-17): 토큰이 Clean Ledger로 바뀌며 두 값이 따라 움직였다.
+    // --accent는 oklch(0.42 0.06 45), --paper는 oklch(0.99 0.004 85)이고
+    // 아래는 그것을 sRGB로 옮긴 값이다.
+    expect(manifest.theme_color).toBe("#684231");
     // 스플래시는 앱 배경과 같아야 렌더 직후 색이 튀지 않는다.
-    expect(manifest.background_color).toBe("#ffffff");
+    expect(manifest.background_color).toBe("#fdfcf9");
   });
 
   test("AC-PWA-05 · 아이콘 3장이 실제로 열린다", async ({ request }) => {

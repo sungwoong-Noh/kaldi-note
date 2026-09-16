@@ -23,12 +23,22 @@ function offenders(pattern: RegExp): string[] {
 }
 
 describe("디자인 토큰", () => {
-  it("AC-VISUAL-06 · AC-READ-04 · 토큰 8개가 라이트·다크 값을 모두 갖는다", () => {
+  it("AC-VISUAL-06 · AC-READ-04 · AC-DS2-01 · 토큰 15개가 라이트·다크 값을 모두 갖는다", () => {
     const { light, dark } = readPalettes();
     const expected = [...TOKEN_NAMES].sort();
 
     expect(Object.keys(light).sort()).toEqual(expected);
     expect(Object.keys(dark).sort()).toEqual(expected);
+  });
+
+  it("AC-DS2-02 · 모든 색 토큰이 oklch로 정의된다", () => {
+    // hex가 남아 있으면 대비 계산이 옛 경로로 새어 나간다.
+    const { light, dark } = readPalettes();
+    const notOklch = Object.entries({ ...light, ...dark })
+      .filter(([, value]) => !value.startsWith("oklch("))
+      .map(([name, value]) => `${name}: ${value}`);
+
+    expect(notOklch).toEqual([]);
   });
 });
 
@@ -38,7 +48,7 @@ describe("허용목록", () => {
   });
 
   it("AC-VISUAL-02 · 팔레트 색 클래스가 없다", () => {
-    // 다이얼로그 배경막 bg-black/40만 예외다. border-black/10은 예외가 아니라 border-line으로 옮긴다.
+    // 다이얼로그 배경막 bg-black/40만 예외다. border-black/10은 예외가 아니라 border-border으로 옮긴다.
     // `bg-black\b`로 쓰면 `/`가 단어 경계라 배경막까지 잡힌다 — 14개 경우로 확인했다.
     const palette =
       /\b(?:text|bg|border|ring)-(?:neutral-|red-|white\b)|\b(?:text|border|ring)-black\b|\bbg-black(?![/\w])/;
@@ -59,14 +69,20 @@ describe("허용목록", () => {
   });
 
   it("AC-VISUAL-05 · 허용된 글자 크기 다섯 개만 쓴다", () => {
-    // text-는 크기뿐 아니라 색(text-muted)과 정렬(text-center)에도 쓰인다.
+    // text-는 크기뿐 아니라 색(text-ink-3)과 정렬(text-center)에도 쓰인다.
     // RatingInput의 text-[22px]는 별 아이콘 크기라 글자 위계와 무관하다.
     // 임의값 색(text-[#...])은 크기가 아니므로 여기서 보지 않는다. AC-VISUAL-04가 맡는다.
     //
     // 갱신(2026-09-15): 다섯 단계가 20/18/16/14/12에서 36/24/18/16/14로 재배치됐다.
     // 개수는 그대로 다섯이고 값만 바뀌었다(docs/specs/2026-09-15-readability.md).
-    const sizes =
-      /\btext-(?!4xl\b|2xl\b|lg\b|base\b|sm\b|\[22px\]|\[#|muted\b|brand\b|danger\b|foreground\b|background\b|on-accent\b|center\b|left\b|right\b)[a-z0-9[\]-]+/;
+    //
+    // 갱신(2026-09-17): 색 이름을 더 이상 **여기 적지 않는다.** 옛 이름(muted·brand·
+    // foreground…)이 리터럴로 박혀 있어서, 토큰이 바뀌자 `text-ink-3`가 크기로 오인됐다.
+    // TOKEN_NAMES에서 만들면 다음에 토큰이 바뀌어도 이 줄은 그대로다.
+    const colors = [...TOKEN_NAMES].join("|");
+    const sizes = new RegExp(
+      `\\btext-(?!4xl\\b|2xl\\b|lg\\b|base\\b|sm\\b|\\[22px\\]|\\[#|(?:${colors})\\b|center\\b|left\\b|right\\b)[a-z0-9[\\]-]+`,
+    );
     expect(offenders(sizes)).toEqual([]);
   });
 });

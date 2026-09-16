@@ -21,7 +21,7 @@ export function ErrorState({
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-3 py-2 text-base"
       >
         다시 시도
       </button>

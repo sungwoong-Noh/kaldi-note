@@ -54,12 +54,12 @@ export default function BrewsPage() {
       <Shell>
         {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
         <div data-empty className="flex flex-col gap-3">
-          <p className="py-6 text-center text-base text-muted">
+          <p className="py-6 text-center text-base text-ink-3">
             아직 기록이 없습니다
           </p>
           <Link
             href="/recipes"
-            className="flex min-h-11 items-center justify-center rounded-md bg-brand py-3 text-center text-base text-on-accent"
+            className="flex min-h-11 items-center justify-center rounded-md bg-accent py-3 text-center text-base text-on-ink"
           >
             레시피 보러 가기
           </Link>
@@ -85,7 +85,7 @@ export default function BrewsPage() {
           type="button"
           onClick={() => void fetchNextPage()}
           disabled={isFetchingNextPage}
-          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-line py-3 text-base disabled:opacity-50"
+          className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-border py-3 text-base disabled:opacity-50"
         >
           더 보기
         </button>
@@ -99,7 +99,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     <main className="mx-auto w-full max-w-2xl px-4 py-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">브루잉 로그</h1>
-        <Link href="/recipes" className="inline-flex min-h-11 min-w-11 items-center justify-center text-base text-muted">
+        <Link href="/recipes" className="inline-flex min-h-11 min-w-11 items-center justify-center text-base text-ink-3">
           레시피
         </Link>
       </div>

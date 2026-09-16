@@ -48,7 +48,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="주요 화면"
-      className="mt-auto sticky bottom-0 z-10 grid grid-cols-4 border-t border-line bg-background"
+      className="mt-auto sticky bottom-0 z-10 grid grid-cols-4 border-t border-border bg-paper"
     >
       {TABS.map((tab) => {
         const active = isActive(tab.href, pathname);
@@ -57,7 +57,7 @@ export function BottomNav() {
             key={tab.href}
             href={tab.href}
             aria-current={active ? "page" : undefined}
-            className={`py-3 text-center text-base ${active ? "font-semibold text-brand" : "text-muted"}`}
+            className={`py-3 text-center text-base ${active ? "font-semibold text-accent" : "text-ink-3"}`}
           >
             {tab.label}
           </Link>

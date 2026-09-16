@@ -14,12 +14,12 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
     <li>
       <Link
         href={`/recipes/${recipe.id}`}
-        className="block rounded-lg border border-line p-4 active:bg-surface"
+        className="block rounded-lg border border-border p-4 active:bg-surface"
       >
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-lg font-medium">{recipe.title}</h2>
           {recipe.sourceType === "CURATED" && (
-            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-sm text-muted">
+            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-sm text-ink-3">
               {statusLabel("source", "CURATED")}
             </span>
           )}
@@ -36,7 +36,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
             <dd>{formatRatio(recipe.ratio)}</dd>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-3">
             <div className="flex items-center gap-1">
               <dt className="sr-only">원두량</dt>
               <dd>{formatGrams(recipe.doseG)}</dd>

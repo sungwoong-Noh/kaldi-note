@@ -23,12 +23,12 @@ export function BrewLogCard({
     <li>
       <Link
         href={`/brews/${log.id}`}
-        className="block rounded-lg border border-line p-4 active:bg-surface"
+        className="block rounded-lg border border-border p-4 active:bg-surface"
       >
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-lg font-medium">{recipeLabel}</h2>
           {log.rating !== undefined && (
-            <span className="shrink-0 text-base text-muted">
+            <span className="shrink-0 text-base text-ink-3">
               <span aria-hidden>★</span> {formatRating(log.rating)}
             </span>
           )}
@@ -43,7 +43,7 @@ export function BrewLogCard({
             <dd>{lead.value}</dd>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-3">
             {summaryEntries(log, lead.label).map((entry) => (
               <div key={entry.label} className="flex items-center gap-1">
                 <dt className="sr-only">{entry.label}</dt>

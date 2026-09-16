@@ -158,12 +158,12 @@ function Fields({
           // id 숫자로 보여주면 무엇으로 내렸는지 화면만 봐서는 알 수 없어 이름을 따로 읽는다.
           <dl className="flex flex-wrap gap-x-4 text-base">
             <div className="flex items-center gap-1">
-              <dt className="text-muted">레시피</dt>
+              <dt className="text-ink-3">레시피</dt>
               <dd>{recipe.label}</dd>
             </div>
             {state.beanBatchId !== null && (
               <div className="flex items-center gap-1">
-                <dt className="text-muted">원두</dt>
+                <dt className="text-ink-3">원두</dt>
                 <dd>{bean.label}</dd>
               </div>
             )}
@@ -172,7 +172,7 @@ function Fields({
       />
 
       <label className="flex items-center gap-2 text-base">
-        <span className="w-20 shrink-0 text-muted">공개 범위</span>
+        <span className="w-20 shrink-0 text-ink-3">공개 범위</span>
         <select
           aria-label="공개 범위"
           value={state.visibility}
@@ -182,7 +182,7 @@ function Fields({
               visibility: toVisibility(e.target.value),
             }))
           }
-          className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
+          className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-border px-2 py-1 min-h-11"
         >
           {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
             <option key={code} value={code}>
@@ -206,14 +206,14 @@ function Fields({
           type="button"
           disabled={save.isPending || cleared.length > 0}
           onClick={submit}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-2 text-base text-on-accent disabled:opacity-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-accent px-4 py-2 text-base text-on-ink disabled:opacity-50"
         >
           저장
         </button>
         <button
           type="button"
           onClick={() => router.push(`/brews/${log.id}`)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-4 py-2 text-base"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-border px-4 py-2 text-base"
         >
           취소
         </button>

@@ -42,3 +42,6 @@ Thumbs.db
 .vscode/
 *.iml
 *.swp
+
+# 스크린샷 확인용 임시 디렉터리
+.shots/

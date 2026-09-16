@@ -206,7 +206,8 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.weightG ? "bean-batch-weight-error" : undefined
             }
-            className={controlClass()}
+            aria-invalid={mapped ? true : undefined}
+            className={controlClass("", Boolean(mapped))}
           />
           {mapped?.byField.weightG && (
             <span
@@ -228,7 +229,8 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.roastedAt ? "bean-batch-roasted-error" : undefined
             }
-            className={controlClass()}
+            aria-invalid={mapped ? true : undefined}
+            className={controlClass("", Boolean(mapped))}
           />
           {mapped?.byField.roastedAt && (
             <span
@@ -312,7 +314,8 @@ function TextField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-describedby={error ? errorId : undefined}
-        className={controlClass()}
+        aria-invalid={error ? true : undefined}
+        className={controlClass("", Boolean(error))}
       />
       {error && (
         <span id={errorId} className="text-body-sm text-danger">

@@ -234,9 +234,9 @@ function TextField({
     id: inputId,
     value,
     "aria-describedby": error ? errorId : undefined,
+    "aria-invalid": error ? true : undefined,
     onChange: (e: { target: { value: string } }) => onChange(e.target.value),
-    className:
-      "min-h-11 rounded-control border border-border px-2 py-1 text-body",
+    className: controlClass("text-body", Boolean(error)),
   };
 
   return (
@@ -283,10 +283,11 @@ function NumberField({
           step={step}
           value={value ?? ""}
           aria-describedby={error ? errorId : undefined}
+        aria-invalid={error ? true : undefined}
           onChange={(e) =>
             onChange(e.target.value === "" ? null : Number(e.target.value))
           }
-          className={controlClass("pr-12 text-body")}
+          className={controlClass("pr-12 text-body", Boolean(error))}
         />
         <span
           data-unit

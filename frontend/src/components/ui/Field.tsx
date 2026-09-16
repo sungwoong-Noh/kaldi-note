@@ -10,6 +10,14 @@ const CONTROL =
   "w-full min-w-0 min-h-11 rounded-control border border-border px-2 py-1";
 
 /**
+ * 오류 상태의 테두리.
+ *
+ * <p><b>문구만으로는 부족하다.</b> 지금까지는 입력칸 아래에 빨간 글자만 떴고 칸 자체는
+ * 그대로여서, 무엇이 틀렸는지 눈으로 찾아야 했다.
+ */
+const INVALID = "border-danger";
+
+/**
  * 컨트롤 스타일의 단일 출처.
  *
  * <p><b>화면이 아직 `Input`·`Select` 컴포넌트를 쓰지 못할 때를 위한 문이다.</b>
@@ -20,8 +28,8 @@ const CONTROL =
  *
  * @param extra 그 자리에만 필요한 클래스(예: `select`의 화살표 자리)
  */
-export function controlClass(extra = ""): string {
-  return `${CONTROL} ${extra}`.trim();
+export function controlClass(extra = "", invalid = false): string {
+  return `${CONTROL} ${invalid ? INVALID : ""} ${extra}`.replace(/\s+/g, " ").trim();
 }
 
 /** `select`는 OS 기본 화살표를 벗기고 우리가 그린다. */
@@ -67,7 +75,14 @@ export function Input({
       <span className="relative flex min-w-0 items-center">
         <input
           aria-label={label}
-          className={controlClass(`${unit !== undefined ? "pr-12" : ""} ${className}`)}
+          // `aria-invalid="false"`가 아니라 **부재**여야 한다 — 보조기술이
+          // 「검증된 적 없음」과 「통과」를 구분한다.
+          aria-invalid={error !== undefined ? true : undefined}
+          aria-describedby={error !== undefined ? errorId : undefined}
+          className={controlClass(
+            `${unit !== undefined ? "pr-12" : ""} ${className}`,
+            error !== undefined,
+          )}
           {...rest}
         />
         {unit !== undefined && (
@@ -105,7 +120,12 @@ export function Select({
       */}
       <select
         aria-label={label}
-        className={controlClass(`${SELECT_EXTRA} ${className}`)}
+        aria-invalid={error !== undefined ? true : undefined}
+        aria-describedby={error !== undefined ? errorId : undefined}
+        className={controlClass(
+          `${SELECT_EXTRA} ${className}`,
+          error !== undefined,
+        )}
         {...rest}
       >
         {options.map((option) => (

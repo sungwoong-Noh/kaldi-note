@@ -90,8 +90,10 @@ describe("UI 프리미티브", () => {
      */
     const bad: string[] = [];
     for (const path of OUTSIDE) {
+      // `className="…"`(JSX)와 `className: "…"`(props 객체) 둘 다 본다.
+      // 객체 형태를 빠뜨려 RecipeForm의 shared가 리터럴로 남아 있었다(2026-09-17).
       for (const match of readFileSync(path, "utf8").matchAll(
-        /className="([^"]*)"/g,
+        /className[:=]\s*"([^"]*)"/g,
       )) {
         const cls = match[1];
         if (/\bmin-h-11\b/.test(cls) && /\brounded-control\b/.test(cls)) {
@@ -112,5 +114,38 @@ describe("UI 프리미티브", () => {
     const { container } = render(<MetricRow label="비율" value="1:16.7" />);
     expect(container.querySelector("dt")?.textContent).toBe("비율");
     expect(container.querySelector("dd")?.textContent).toBe("1:16.7");
+  });
+
+  it("AC-DS2-22 · 오류 상태 입력의 보더가 danger다", () => {
+    // 지금은 입력칸이 그대로고 문구만 아래에 뜬다. 그래서 무엇이 틀렸는지 눈으로 찾게 된다.
+    render(<Input label="원두량" error="숫자를 입력하세요" />);
+    expect(screen.getByLabelText("원두량").className).toMatch(/\bborder-danger\b/);
+  });
+
+  it("AC-DS2-23 · 오류 상태 입력에 aria-invalid가 붙는다", () => {
+    render(<Input label="원두량" error="숫자를 입력하세요" />);
+    const input = screen.getByLabelText("원두량");
+
+    // 색만 바꾸면 스크린리더 사용자와 색각 이상 사용자에게는 아무 변화가 없다.
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    expect(input.getAttribute("aria-describedby")).toBe(
+      screen.getByText("숫자를 입력하세요").id,
+    );
+  });
+
+  it("AC-DS2-24 · 오류가 없으면 aria-invalid가 붙지 않는다", () => {
+    render(<Input label="원두량" />);
+    // "false"가 아니라 부재여야 한다 — 보조기술이 「검증된 적 없음」과 「통과」를 구분한다.
+    expect(screen.getByLabelText("원두량").hasAttribute("aria-invalid")).toBe(
+      false,
+    );
+  });
+
+  it("AC-DS2-22 · AC-DS2-23 · Select도 같게 동작한다", () => {
+    render(<Select label="드리퍼" options={[]} error="선택하세요" />);
+    const select = screen.getByLabelText("드리퍼");
+
+    expect(select.className).toMatch(/\bborder-danger\b/);
+    expect(select.getAttribute("aria-invalid")).toBe("true");
   });
 });

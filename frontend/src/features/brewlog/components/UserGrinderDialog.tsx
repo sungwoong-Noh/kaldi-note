@@ -91,7 +91,8 @@ export function UserGrinderDialog({
                 ? "user-grinder-nickname-error"
                 : undefined
             }
-            className={controlClass()}
+            aria-invalid={fieldErrors?.byField.nickname ? true : undefined}
+            className={controlClass("", Boolean(fieldErrors?.byField.nickname))}
           />
           {fieldErrors?.byField.nickname && (
             <span

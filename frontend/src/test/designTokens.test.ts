@@ -43,11 +43,11 @@ describe("디자인 토큰", () => {
 });
 
 describe("허용목록", () => {
-  it("AC-VISUAL-01 · 앰버 클래스가 없다", () => {
+  it("AC-VISUAL-01 · AC-DS2-26 · 앰버 클래스가 없다", () => {
     expect(offenders(/\b(?:text|bg|border|ring)-amber-/)).toEqual([]);
   });
 
-  it("AC-VISUAL-02 · 팔레트 색 클래스가 없다", () => {
+  it("AC-VISUAL-02 · AC-DS2-26 · 팔레트 색 클래스가 없다", () => {
     // 다이얼로그 배경막 bg-black/40만 예외다. border-black/10은 예외가 아니라 border-border으로 옮긴다.
     // `bg-black\b`로 쓰면 `/`가 단어 경계라 배경막까지 잡힌다 — 14개 경우로 확인했다.
     const palette =
@@ -59,7 +59,7 @@ describe("허용목록", () => {
     expect(offenders(/\bdark:(?:text|bg|border|ring)-/)).toEqual([]);
   });
 
-  it("AC-VISUAL-04 · 임의값 색이 없다", () => {
+  it("AC-VISUAL-04 · AC-DS2-26 · 임의값 색이 없다", () => {
     // 카카오 로그인 버튼의 #FEE500·#191600은 카카오 디자인 가이드가 강제하는 브랜드 색이라
     // 우리 토큰으로 칠할 수 없다. 파일이 아니라 그 두 리터럴만 면제한다 — 파일째 빼면
     // 로그인 화면에 아무 색이나 새로 들어온다.

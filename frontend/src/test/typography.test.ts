@@ -132,4 +132,16 @@ describe("타입 스케일", () => {
     expect(bare).toEqual([]);
     expect(total).toBeGreaterThan(0);
   });
+
+  it("AC-DS2-25 · 기존 data-* 훅이 남아 있다", () => {
+    /*
+     * 테스트가 이 훅으로 화면을 잡는다. 리스킨 중 지우면 AC 여러 개가 **조용히** 깨진다 —
+     * 셀렉터가 아무것도 못 찾으면 단정이 통과해버리는 경우가 있기 때문이다.
+     */
+    const all = APP_SOURCES.map((path) => readFileSync(path, "utf8")).join("");
+
+    for (const hook of ["data-lead", "data-compare", "data-diff", "data-empty"]) {
+      expect(all.includes(hook), hook).toBe(true);
+    }
+  });
 });

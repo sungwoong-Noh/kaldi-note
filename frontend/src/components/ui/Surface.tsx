@@ -40,21 +40,33 @@ export function Badge({
 }
 
 /**
- * 라벨-값 한 줄. 기록의 기본 단위다.
+ * 라벨-값 한 줄 — **원장 행**이다.
  *
  * <p>값은 **Mono**로 쓴다 — 자릿수가 정렬돼야 목록에서 값이 흔들리지 않는다.
+ *
+ * <p>위쪽 1px 선이 행을 나눈다(docs/specs/2026-09-17-screen-reskin.md). 카드 테두리로
+ * 항목을 감싸는 대신 선 하나로 나누는 것이 이 디자인의 어휘다 — 여러 항목이 이어질 때
+ * 테두리가 겹쳐 두꺼워지지 않는다.
+ *
+ * @param bare 선을 그리지 않는다. 히어로 안쪽처럼 이미 구분된 자리에서 쓴다.
  */
 export function MetricRow({
   label,
   value,
+  bare = false,
   className = "",
 }: {
   label: string;
   value: ReactNode;
+  bare?: boolean;
   className?: string;
 }) {
   return (
-    <div className={`flex items-center gap-1 ${className}`.trim()}>
+    <div
+      className={`flex items-center justify-between gap-3 ${bare ? "" : "border-t border-divider py-3"} ${className}`
+        .replace(/\s+/g, " ")
+        .trim()}
+    >
       <dt className="text-body-sm text-ink-3">{label}</dt>
       <dd className="text-metric">{value}</dd>
     </div>

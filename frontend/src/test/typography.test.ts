@@ -32,6 +32,8 @@ const SCALE = [
   "body-sm",
   "metric-hero",
   "metric",
+  // 갱신(2026-09-17): 리스킨이 히어로·아이브로우를 들이며 label에 자리가 생겼다.
+  "label",
 ] as const;
 
 /**
@@ -41,7 +43,7 @@ const SCALE = [
  * **크기가 아니므로 이 AC의 대상이 아니다** — `AC-VISUAL-04`가 그 둘을 소유한다.
  */
 const NOT_A_SIZE =
-  /^text-(?:\[#|ink|ink-2|ink-3|on-ink|paper|surface|sunken|raised|border|divider|divider-strong|accent|accent-soft|accent-wash|danger|center|left|right|start|end|nowrap|balance|pretty|wrap|ellipsis|clip)/;
+  /^text-(?:\[#|ink|ink-2|ink-3|on-ink|paper|surface|sunken|raised|border|divider|divider-strong|accent|accent-soft|accent-wash|danger|hero|on-hero|on-hero-dim|hero-line|center|left|right|start|end|nowrap|balance|pretty|wrap|ellipsis|clip)/;
 
 function classNames(): Map<string, string[]> {
   const found = new Map<string, string[]>();

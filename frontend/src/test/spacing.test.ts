@@ -92,6 +92,8 @@ const SURFACES = [
   // 갱신(2026-09-17): 카드 프리미티브가 생겼다. 새 화면은 이것을 쓰고,
   // 아래 목록은 아직 옮기지 않은 곳들이다(리스킨에서 줄어든다).
   ["src", "components", "ui", "Surface.tsx"],
+  // 갱신(2026-09-17): 히어로도 면이다 — 대표 수치를 담는 어두운 판.
+  ["src", "components", "ui", "Hero.tsx"],
   ["src", "features", "recipe", "components", "RecipeCard.tsx"],
   ["src", "features", "brewlog", "components", "BrewLogCard.tsx"],
   ["src", "features", "brewlog", "components", "BeanBatchDialog.tsx"],

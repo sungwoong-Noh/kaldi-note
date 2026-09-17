@@ -2,7 +2,17 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { Badge, Button, Card, Input, MetricRow, Select } from "@/components/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  Eyebrow,
+  Hero,
+  Input,
+  MetricRow,
+  Select,
+  Shell,
+} from "@/components/ui";
 
 /**
  * UI 프리미티브 — docs/specs/2026-09-17-design-system-v2.md
@@ -116,6 +126,21 @@ describe("UI 프리미티브", () => {
     expect(container.querySelector("dd")?.textContent).toBe("1:16.7");
   });
 
+  it("AC-SKIN-07 · MetricRow가 원장 행이다 — 위쪽 구분선을 갖는다", () => {
+    const { container } = render(<MetricRow label="원두량" value="30.0g" />);
+    expect(container.firstElementChild?.className).toMatch(
+      /\bborder-t\b.*\bborder-divider\b/,
+    );
+  });
+
+  it("AC-SKIN-07 · bare면 선을 그리지 않는다", () => {
+    // 히어로 안쪽처럼 이미 구분된 자리에서 쓴다.
+    const { container } = render(
+      <MetricRow label="원두량" value="30.0g" bare />,
+    );
+    expect(container.firstElementChild?.className).not.toMatch(/\bborder-t\b/);
+  });
+
   it("AC-DS2-22 · 오류 상태 입력의 보더가 danger다", () => {
     // 지금은 입력칸이 그대로고 문구만 아래에 뜬다. 그래서 무엇이 틀렸는지 눈으로 찾게 된다.
     render(<Input label="원두량" error="숫자를 입력하세요" />);
@@ -147,5 +172,35 @@ describe("UI 프리미티브", () => {
 
     expect(select.className).toMatch(/\bborder-danger\b/);
     expect(select.getAttribute("aria-invalid")).toBe("true");
+  });
+
+  it("AC-SKIN-06 · Hero와 Eyebrow가 프리미티브로 있다", () => {
+    for (const [name, component] of Object.entries({ Hero, Eyebrow, Shell })) {
+      expect(typeof component, name).toBe("function");
+    }
+  });
+
+  it("AC-SKIN-03 · Hero가 data-hero를 단다", () => {
+    // 화면의 대표 수치가 이 안에 들어간다. e2e가 data-lead의 조상에서 이것을 찾는다.
+    const { container } = render(
+      <Hero eyebrow="RATIO" lead="1:16.7">
+        <MetricRow label="원두" value="30.0g" />
+      </Hero>,
+    );
+    expect(container.querySelector("[data-hero]")).not.toBeNull();
+  });
+
+  it("AC-SKIN-05 · Eyebrow가 data-eyebrow를 단다", () => {
+    const { container } = render(<Eyebrow>CURATED</Eyebrow>);
+    const el = container.querySelector("[data-eyebrow]");
+    expect(el).not.toBeNull();
+    expect(el?.textContent).toBe("CURATED");
+  });
+
+  it("AC-SKIN-01 · Shell이 화면 공통 컨테이너를 낸다", () => {
+    const { container } = render(<Shell><p>본문</p></Shell>);
+    const main = container.querySelector("main");
+    expect(main?.className).toMatch(/\bmax-w-2xl\b/);
+    expect(main?.className).toMatch(/\bpx-6\b/);
   });
 });

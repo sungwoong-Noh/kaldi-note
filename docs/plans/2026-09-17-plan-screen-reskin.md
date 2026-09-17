@@ -64,13 +64,26 @@ frontend/src/components/ui/
 
 **Covers:** AC-SKIN-01(일부), AC-SKIN-06, AC-SKIN-07
 
-- [ ] **Step 1: 실패하는 테스트** — `Hero`·`Eyebrow`·`Shell` import가 없어 실패한다
-- [ ] **Step 2: 실패 확인**
-- [ ] **Step 3: 구현.** `Hero`는 `data-hero`를, `Eyebrow`는 `data-eyebrow`를 단다.
+- [x] **Step 1: 실패하는 테스트** — `Hero`·`Eyebrow`·`Shell` import가 없어 실패한다
+- [x] **Step 2: 실패 확인**
+- [x] **Step 3: 구현.** `Hero`는 `data-hero`를, `Eyebrow`는 `data-eyebrow`를 단다.
       히어로 배경은 **모드와 무관하게 어두운 블록**이므로 `--ink` 계열 리터럴이 아니라
       전용 토큰(`--hero`)을 `globals.css`에 더한다 — 라이트·다크 양쪽에서 같은 값이다
-- [ ] **Step 4: `MetricRow`에 `border-top: 1px solid var(--divider)`**
-- [ ] **Step 5: 통과 확인 + 커밋**
+- [x] **Step 4: `MetricRow`에 `border-top: 1px solid var(--divider)`**
+- [x] **Step 5: 통과 확인 + 커밋**
+
+
+**계획과 달라진 점(2026-09-17).**
+
+- **`text-label`을 되살렸다.** `design-system-v2`에서 「쓸 자리가 없다」며 뺐던 단계인데,
+  아이브로우가 정확히 그 자리다. 타입 스케일이 6 → **7단계**가 됐다.
+- **히어로 토큰 4개를 새로 만들었다**(`--hero`·`--on-hero`·`--hero-line`·`--on-hero-dim`).
+  **라이트·다크 양쪽에서 같은 값**이다 — 모드에 따라 뒤집히면 「판 위의 수치」라는 구조 자체가
+  사라지기 때문이다. 그래서 다크 블록 두 곳에 다시 적지 않는다.
+- **`MetricRow`에 `bare`를 더했다.** 히어로 안쪽은 이미 구분선이 있어 행마다 선을 또 그으면
+  겹친다.
+- `p-5`(20px)가 간격 6단계 밖이라 `p-6`(24px)으로 맞췄다. 목업의 히어로 padding이
+  20–26px 범위였다.
 
 ## Task 2: Shell·Card 이관
 

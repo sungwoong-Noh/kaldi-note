@@ -20,19 +20,20 @@ test.describe("다크 모드 토글", () => {
       page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 
     const before = await bg();
-    await page.getByRole("button", { name: "다크 모드로 전환" }).click();
+    const sw = page.getByRole("switch", { name: "다크 모드" });
+    await expect(sw).toHaveAttribute("aria-checked", "false");
+
+    await sw.click();
     const after = await bg();
 
     expect(after).not.toBe(before);
-    await expect(
-      page.getByRole("button", { name: "라이트 모드로 전환" }),
-    ).toBeVisible();
+    await expect(sw).toHaveAttribute("aria-checked", "true");
   });
 
   test("AC-THEME-05 · 새로고침 후에도 선택이 유지된다", async ({ page }) => {
     await installStubs(page);
     await page.goto("/more");
-    await page.getByRole("button", { name: "다크 모드로 전환" }).click();
+    await page.getByRole("switch", { name: "다크 모드" }).click();
 
     const darkBg = await page.evaluate(
       () => getComputedStyle(document.body).backgroundColor,
@@ -40,6 +41,11 @@ test.describe("다크 모드 토글", () => {
 
     await page.reload();
     await page.waitForLoadState("networkidle");
+
+    // 새로고침 후에도 스위치가 켜진 상태로 보여야 한다.
+    await expect(
+      page.getByRole("switch", { name: "다크 모드" }),
+    ).toHaveAttribute("aria-checked", "true");
 
     const stored = await page.evaluate(
       (key) => localStorage.getItem(key),

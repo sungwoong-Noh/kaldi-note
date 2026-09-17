@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui";
 import { readStoredTheme, writeStoredTheme, type Theme } from "@/lib/theme";
 
 /**
@@ -32,25 +31,53 @@ function currentTheme(): Theme {
  *
  * <p>3번째 상태("시스템 따르기")는 없다. 저장된 선택이 없는 것 자체가 "아직 고르지 않음"이고,
  * 그동안은 미디어쿼리가 그대로 이긴다(`globals.css`).
+ *
+ * <p><b>설정 행 + 스위치다, 액션 버튼이 아니다.</b> 처음엔 "다크 모드로 전환"이라는 텍스트
+ * 버튼으로 만들었는데 — 라벨이 행위(누르면 될 것)를 말하지 현재 상태를 안 보여줬고,
+ * `role="switch"`도 없어 스크린리더가 "켜짐/꺼짐"을 전달하지 못했다. 라벨을 설정 이름
+ * ("다크 모드")으로 고정하고 상태는 `aria-checked`와 스위치 위치로만 전달한다.
  */
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>(() => currentTheme());
+  const on = theme === "dark";
 
   function toggle() {
-    const next: Theme = theme === "dark" ? "light" : "dark";
+    const next: Theme = on ? "light" : "dark";
     setTheme(next);
     writeStoredTheme(next);
     document.documentElement.dataset.theme = next;
   }
 
   return (
-    <Button
-      variant="secondary"
-      block
-      onClick={toggle}
-      className="justify-start"
+    // 스위치 트랙 자체는 24px지만, 행 전체(min-h-11)가 누르는 영역이다 —
+    // 손가락으로 정확히 작은 트랙만 노려 누르게 하지 않는다.
+    <div
+      data-theme-row
+      className="flex min-h-11 w-full items-center justify-between gap-3 py-2 text-body"
     >
-      {theme === "dark" ? "라이트 모드로 전환" : "다크 모드로 전환"}
-    </Button>
+      <span id="theme-toggle-label">다크 모드</span>
+      {/*
+        버튼 자체가 44×44 히트 영역이다 — 눈에 보이는 트랙(24px)만 44px로 키우면
+        거대한 알약 모양이 된다(RecipesPage의 체크박스와 같은 이유,
+        docs/specs/2026-09-15-structure.md). 트랙·손잡이는 안쪽 장식용 span이다.
+      */}
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        aria-labelledby="theme-toggle-label"
+        onClick={toggle}
+        className="flex h-11 w-11 shrink-0 items-center justify-center"
+      >
+        <span
+          aria-hidden
+          className={`relative inline-flex h-6 w-11 items-center rounded-full border border-border transition-colors ${on ? "bg-accent" : "bg-sunken"}`}
+        >
+          <span
+            className={`inline-block size-5 rounded-full bg-paper transition-transform ${on ? "translate-x-5" : "translate-x-0.5"}`}
+          />
+        </span>
+      </button>
+    </div>
   );
 }

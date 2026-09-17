@@ -1,0 +1,18 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html",        "x": 0,    "y": 0,   "w": 390,  "h": 1180, "title": "랜딩 (비로그인)" },
+    { "file": "DailyRecipe.dc.html", "x": 450,  "y": 0,   "w": 390,  "h": 1080, "title": "오늘의 레시피" },
+    { "file": "BrewNew.dc.html",     "x": 900,  "y": 0,   "w": 390,  "h": 1400, "title": "기록 작성" },
+    { "file": "GearCatalog.dc.html", "x": 1350, "y": 0,   "w": 390,  "h": 1240, "title": "장비 카탈로그" },
+    { "file": "GearDetail.dc.html",  "x": 1800, "y": 0,   "w": 390,  "h": 1160, "title": "장비 상세 (제휴)" },
+    { "file": "AdminImport.dc.html", "x": 2250, "y": 0,   "w": 390,  "h": 1320, "title": "관리자 — 레시피 가져오기" },
+    { "file": "RecipeWeb.dc.html",   "x": 0,    "y": 1520, "w": 1440, "h": 900,  "title": "레시피 상세 — 웹" }
+  ],
+  "annotations": [
+    { "id": "note-scope", "x": 0, "y": -150, "w": 560, "text": "kaldi note — 아직 디자인이 없던 신규 화면 7개\n\n기존 Clean Ledger 토큰 그대로: oklch 15토큰 · IBM Plex Sans KR/Mono · 타입 6단계 · radius 4종(tag 3 / control 7 / surface 12 / full)\n수치는 전부 Mono, 서술은 Sans." },
+    { "id": "note-affiliate", "x": 1800, "y": -150, "w": 390, "text": "공정위 고지는 콘텐츠 첫 부분에 온다 — 링크 주변 표기로는 부족하다는 개정 심사지침 때문. 제휴 링크가 있는 화면마다 상단에 둔다." },
+    { "id": "note-import", "x": 2250, "y": -150, "w": 390, "text": "파싱은 수치만 가져온다. 설명 문장은 저작권이 있어 직접 쓴다.\n확신이 낮은 필드(온도·시간)는 danger 테두리로 표시하고 원문을 나란히 보여준다." },
+    { "id": "note-web", "x": 1520, "y": 1520, "w": 400, "text": "검색 유입의 주 착지점.\n좌측 원장 + 우측 420px 사이드, 1100px 이하에서 한 컬럼으로 접힌다." }
+  ],
+  "launch": { "view": "canvas" }
+}

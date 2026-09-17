@@ -7,4 +7,7 @@ export {
   SELECT_EXTRA,
   type Option,
 } from "./Field";
-export { Badge, Card, MetricRow } from "./Surface";
+export { Eyebrow } from "./Eyebrow";
+export { Hero } from "./Hero";
+export { Shell } from "./Shell";
+export { Badge, Card, cardClass, MetricRow } from "./Surface";

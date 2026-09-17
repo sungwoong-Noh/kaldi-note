@@ -83,24 +83,15 @@ describe("AC-SPACE-02 · 6단계가 각각 쓰인다", () => {
 });
 
 /**
- * `rounded-surface`(8px)가 남는 곳 — **면**이다.
+ * 갱신(2026-09-17): 면 목록을 없앴다.
  *
- * <p>경로 구분자를 리터럴 `/`로 쓰지 않는다. `walk`가 `join`으로 만든 경로는 플랫폼 구분자를
- * 쓰므로 윈도에서 비교가 어긋난다.
+ * <p>예전에는 「`rounded-surface`를 쓰는 파일 7곳」을 리터럴로 들고 있었다. 리스킨이
+ * 그 7곳을 `Card`·`cardClass`로 걷어내면서 목록이 통째로 빈다 —
+ * **조건이 깨진 것이 아니라 값이 한 곳으로 모인 것**이다.
+ *
+ * <p>이제 「면이 프리미티브를 쓰는가」는 `reskin.test.ts`의 `AC-SKIN-02`가 본다.
+ * 여기 남은 것은 모서리 4종의 경계뿐이다.
  */
-const SURFACES = [
-  // 갱신(2026-09-17): 카드 프리미티브가 생겼다. 새 화면은 이것을 쓰고,
-  // 아래 목록은 아직 옮기지 않은 곳들이다(리스킨에서 줄어든다).
-  ["src", "components", "ui", "Surface.tsx"],
-  ["src", "features", "recipe", "components", "RecipeCard.tsx"],
-  ["src", "features", "brewlog", "components", "BrewLogCard.tsx"],
-  ["src", "features", "brewlog", "components", "BeanBatchDialog.tsx"],
-  ["src", "features", "brewlog", "components", "UserGrinderDialog.tsx"],
-  ["src", "features", "recipe", "components", "DeleteRecipeDialog.tsx"],
-  ["src", "features", "brewlog", "components", "DeleteBrewLogDialog.tsx"],
-  ["src", "features", "recipe", "components", "RecipeStepEditor.tsx"],
-].map((parts) => parts.join(sep));
-
 function count(path: string, pattern: RegExp): number {
   return readFileSync(path, "utf8").match(pattern)?.length ?? 0;
 }
@@ -137,18 +128,23 @@ describe("모서리", () => {
     expect(bad).toEqual([]);
   });
 
-  it("AC-SPACE-05 · 면 7곳이 rounded-surface를 쓴다", () => {
-    const missing = SURFACES.filter(
-      (path) => count(path, /\brounded-surface\b/g) < 1,
-    );
+  it("AC-SPACE-05 · AC-SKIN-02 · 면 스타일이 프리미티브에만 있다", () => {
+    // 갱신(2026-09-17): 「면 7곳」 목록에서 「프리미티브 한 곳」으로 뒤집혔다.
+    const owners = SOURCES.filter(
+      (path) => count(path, /\brounded-surface\b/g) > 0,
+    ).map((path) => path.split(sep).slice(-2).join(sep));
 
-    expect(missing).toEqual([]);
+    expect(owners.sort()).toEqual([
+      join("ui", "Hero.tsx"),
+      join("ui", "Surface.tsx"),
+    ]);
   });
 
-  it("AC-SPACE-06 · rounded-surface가 면 밖에 없다", () => {
+  it("AC-SPACE-06 · rounded-surface가 프리미티브 밖에 없다", () => {
+    const uiDir = join("src", "components", "ui");
     const outside = SOURCES.filter(
       (path) =>
-        !SURFACES.includes(path) && count(path, /\brounded-surface\b/g) > 0,
+        !path.startsWith(uiDir) && count(path, /\brounded-surface\b/g) > 0,
     );
 
     expect(outside).toEqual([]);

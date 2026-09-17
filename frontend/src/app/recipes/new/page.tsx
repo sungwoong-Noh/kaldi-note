@@ -6,6 +6,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { createRecipe } from "@/features/recipe/api";
 import { RecipeForm } from "@/features/recipe/components/RecipeForm";
+import { Shell } from "@/components/ui";
 import {
   emptyFormState,
   type RecipeRequestBody,
@@ -26,14 +27,14 @@ export default function RecipeNewPage() {
 
   if (!ready) {
     return (
-      <Shell>
+      <Screen>
         <LoadingState />
-      </Shell>
+      </Screen>
     );
   }
 
   return (
-    <Shell>
+    <Screen>
       <RecipeForm
         initial={emptyFormState()}
         submitting={create.isPending}
@@ -42,15 +43,15 @@ export default function RecipeNewPage() {
         onCancel={() => router.push("/recipes")}
         onSessionLost={onSessionLost}
       />
-    </Shell>
+    </Screen>
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6">
+    <Shell stack>
       <h1 className="text-page-title font-semibold">새 레시피</h1>
       {children}
-    </main>
+    </Shell>
   );
 }

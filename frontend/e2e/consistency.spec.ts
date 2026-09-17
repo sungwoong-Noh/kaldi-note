@@ -24,7 +24,12 @@ import { tokenColor } from "./tokenColor";
 const META_ROWS = [
   { path: "/recipes", text: "100°C", what: "카드 보조줄" },
   { path: "/brews", text: "2026-08-31", what: "카드 보조줄" },
-  { path: "/recipes/12", text: "100°C", what: "상세 메타줄" },
+  /*
+   * 갱신(2026-09-17): `/recipes/12`의 상세 메타줄은 히어로 판 안으로 들어가면서
+   * 한 줄 나열이 아니라 **2열 그리드**가 됐다(`gap-x-4`). 판 안의 격자는 이 조건이
+   * 보려던 「메타줄의 가로 간격」과 다른 것이므로 목록에서 뺀다 —
+   * 히어로 안의 간격은 `AC-SKIN-03`이 구조로 본다.
+   */
   // 「20.0g」은 비교표에도 있다(2026-09-15). 실측값에만 있는 분쇄도를 앵커로 쓴다.
   { path: "/brews/2", text: "22", what: "상세 실측값" },
 ] as const;
@@ -63,8 +68,12 @@ test.describe("일관성 — 렌더값", () => {
 
   // 화면마다 메타줄에 남은 라벨이 다르다(2026-09-15). `/brews/2`의 원두량·물량·물 온도·
   // 추출 시간은 비교표로 옮겨갔고 분쇄도만 실측값에 남는다.
+  /*
+   * 갱신(2026-09-17): 히어로 판 안의 라벨은 `on-hero-dim`이다 — 어두운 판 위에서
+   * `ink-3`는 읽히지 않는다. 판 밖 라벨만 `ink-3`를 지킨다.
+   */
   const META_LABELS = [
-    { path: "/recipes/12", label: "물 온도" },
+    { path: "/recipes/12", label: "기본 제공" },
     { path: "/brews/2", label: "분쇄도" },
   ] as const;
 

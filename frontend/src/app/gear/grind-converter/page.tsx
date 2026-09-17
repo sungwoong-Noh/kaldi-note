@@ -5,6 +5,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { GrindConverter } from "@/features/gear/components/GrindConverter";
 import { useGrinders } from "@/features/gear/queries";
+import { Shell } from "@/components/ui";
 
 export default function GrindConverterPage() {
   const { ready, onSessionLost } = useRequireSession();
@@ -12,35 +13,35 @@ export default function GrindConverterPage() {
 
   if (!ready || grinders.isPending) {
     return (
-      <Shell>
+      <Screen>
         <LoadingState />
-      </Shell>
+      </Screen>
     );
   }
 
   if (grinders.error) {
     return (
-      <Shell>
+      <Screen>
         <ErrorState
           error={grinders.error}
           onRetry={() => void grinders.refetch()}
         />
-      </Shell>
+      </Screen>
     );
   }
 
   return (
-    <Shell>
+    <Screen>
       <GrindConverter grinders={grinders.data} onSessionLost={onSessionLost} />
-    </Shell>
+    </Screen>
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-6">
+    <Shell>
       <h1 className="mb-4 text-page-title font-semibold">분쇄도 환산기</h1>
       {children}
-    </main>
+    </Shell>
   );
 }

@@ -41,7 +41,7 @@ test.describe("읽힘 — 렌더된 크기", () => {
     expect(size).toBe("36px");
   });
 
-  test("AC-READ-13 · 대표 수치의 굵기가 600, 자간이 -0.72px다", async ({
+  test("AC-READ-13 · 대표 수치의 굵기가 500, 자간이 -1.44px다", async ({
     page,
   }) => {
     await installStubs(page);
@@ -59,8 +59,10 @@ test.describe("읽힘 — 렌더된 크기", () => {
       });
 
     // 36px × -0.02em = -0.72px
-    expect(style.weight).toBe("600");
-    expect(style.tracking).toBe("-0.72px");
+    expect(style.weight).toBe("500");
+    // 갱신(2026-09-17): 핸드오프가 metric-hero를 「Mono 36 / 500 / −4%」로 정의한다.
+    // 36 × -0.04 = -1.44px.
+    expect(style.tracking).toBe("-1.44px");
   });
 
   test("AC-READ-14 · 본문이 15px로 렌더된다", async ({ page }) => {
@@ -78,9 +80,14 @@ test.describe("읽힘 — 렌더된 크기", () => {
     await installStubs(page);
     await page.goto("/recipes/12");
 
-    // 「비율」은 대표 수치의 sr-only 라벨이 됐다. 메타줄에 남은 라벨을 잰다(2026-09-15).
+    /*
+     * 갱신(2026-09-17): 「물 온도」가 히어로 판 안으로 들어가면서 색이 `on-hero-dim`이 됐다.
+     * 이 조건이 보는 것은 **판 밖의 보조 라벨**이므로 대상을 CURATED 배지로 옮긴다 —
+     * 어두운 판 위에서 `ink-3`를 요구하면 읽히지 않는 것을 요구하게 된다.
+     */
     const style = await page
-      .getByText("물 온도", { exact: true })
+      .getByText("기본 제공", { exact: true })
+      .first()
       .evaluate((el) => {
         const computed = getComputedStyle(el);
         return { size: computed.fontSize, color: computed.color };

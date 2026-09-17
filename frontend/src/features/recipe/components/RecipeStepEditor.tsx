@@ -12,7 +12,7 @@ import {
   type EditableStep,
   type StepType,
 } from "../stepSequence";
-import { Button, controlClass } from "@/components/ui";
+import { Button, cardClass, controlClass } from "@/components/ui";
 
 const STEP_TYPE_LABELS: Record<StepType, string> = {
   BLOOM: "블룸",
@@ -70,7 +70,7 @@ export function RecipeStepEditor({
               data-step-row
               key={step.uid}
               aria-label={`스텝 ${number}`}
-              className="flex flex-col gap-2 rounded-surface border border-border p-3"
+              className={cardClass("flex flex-col gap-2", { pad: "tight" })}
             >
               <div className="flex items-center gap-2">
                 <span className="text-body font-medium text-ink-3">

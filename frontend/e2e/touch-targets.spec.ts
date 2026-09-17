@@ -168,7 +168,7 @@ async function undersized(
 
 test.describe("터치 타깃 — 스윕", () => {
   for (const { path } of SCREENS) {
-    test(`AC-TOUCH-01 · AC-READ-18 · ${path}의 모든 타깃이 44×44 이상이다`, async ({
+    test(`AC-TOUCH-01 · AC-READ-18 · AC-SKIN-09 · ${path}의 모든 타깃이 44×44 이상이다`, async ({
       page,
     }) => {
       await installStubs(page);

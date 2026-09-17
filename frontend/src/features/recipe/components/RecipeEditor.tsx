@@ -9,6 +9,7 @@ import { ApiError } from "@/lib/api-client";
 import { fetchRecipe, updateRecipe } from "../api";
 import { fromRecipe, type RecipeRequestBody } from "../formState";
 import { RecipeForm } from "./RecipeForm";
+import { Shell } from "@/components/ui";
 
 export function RecipeEditor({ id: recipeId }: { id: number }) {
   const router = useRouter();
@@ -33,9 +34,9 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
 
   if (!ready || recipe.isPending) {
     return (
-      <Shell>
+      <Screen>
         <LoadingState />
-      </Shell>
+      </Screen>
     );
   }
 
@@ -43,25 +44,25 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
     // 없는 레시피는 되돌릴 수 없다. "다시 시도"를 줘도 같은 404가 온다.
     if (recipe.error instanceof ApiError && recipe.error.code === "NOT_FOUND") {
       return (
-        <Shell>
+        <Screen>
           <p className="py-12 text-center text-body text-ink-3">
             레시피를 찾을 수 없습니다
           </p>
-        </Shell>
+        </Screen>
       );
     }
     return (
-      <Shell>
+      <Screen>
         <ErrorState
           error={recipe.error}
           onRetry={() => void recipe.refetch()}
         />
-      </Shell>
+      </Screen>
     );
   }
 
   return (
-    <Shell>
+    <Screen>
       <RecipeForm
         initial={fromRecipe(recipe.data)}
         submitting={update.isPending}
@@ -70,15 +71,15 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
         onCancel={() => router.push(`/recipes/${recipeId}`)}
         onSessionLost={onSessionLost}
       />
-    </Shell>
+    </Screen>
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6">
+    <Shell stack>
       <h1 className="text-page-title font-semibold">레시피 편집</h1>
       {children}
-    </main>
+    </Shell>
   );
 }

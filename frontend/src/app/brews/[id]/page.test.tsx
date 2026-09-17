@@ -74,12 +74,19 @@ beforeEach(() => {
 });
 
 /** 대표 수치는 세 클래스를 모두 가진 요소다. 하나라도 빠지면 잡히지 않는다. */
+/**
+ * 갱신(2026-09-17): 클래스 조합으로 찾던 것을 `data-lead`로 바꿨다.
+ * 히어로 도입으로 클래스가 달라졌고, 스타일이 바뀔 때마다 셀렉터가 깨지는 것이
+ * 이 훅이 존재하는 이유다.
+ */
 function leadElements(): Element[] {
-  return [
-    ...document.querySelectorAll(
-      ".text-metric-hero.font-semibold.tabular-nums",
-    ),
-  ];
+  return [...document.querySelectorAll("[data-lead]")];
+}
+
+/** 대표 수치의 라벨. 히어로에서는 아이브로우가 그 역할을 한다. */
+function leadLabel(lead: Element): string | null | undefined {
+  return lead.closest("[data-hero]")?.querySelector("[data-eyebrow]")
+    ?.textContent;
 }
 
 /** 비율 없는 로그. `JSON.stringify`가 `undefined` 키를 지우므로 응답에서 통째로 빠진다. */
@@ -153,8 +160,9 @@ describe("BrewDetailPage", () => {
     const leads = leadElements();
 
     expect(leads).toHaveLength(1);
-    expect(leads[0].textContent).toBe("비율1:15.0");
-    expect(leads[0].querySelector("dt")?.className).toContain("sr-only");
+    // 갱신(2026-09-17): 라벨이 sr-only dt에서 보이는 아이브로우가 됐다.
+    expect(leads[0].textContent).toBe("1:15.0");
+    expect(leadLabel(leads[0])).toBe("비율");
   });
 
   it("AC-CONSIST-10 · 비율이 없으면 물 온도가 대표로 승격한다", async () => {
@@ -167,7 +175,8 @@ describe("BrewDetailPage", () => {
     const leads = leadElements();
 
     expect(leads).toHaveLength(1);
-    expect(leads[0].textContent).toBe("물 온도92°C");
+    expect(leads[0].textContent).toBe("92°C");
+    expect(leadLabel(leads[0])).toBe("물 온도");
   });
 
   it("AC-CONSIST-11 · 대표로 올린 비율은 실측값에 없다", async () => {
@@ -194,9 +203,11 @@ describe("BrewDetailPage", () => {
     await renderDetail();
     await screen.findByText("실측값");
 
-    const labels = [...document.querySelectorAll("dt")].map(
-      (dt) => dt.textContent,
-    );
+    // 갱신(2026-09-17): 대표 수치의 라벨은 이제 dt가 아니라 아이브로우다.
+    const labels = [
+      ...document.querySelectorAll("dt"),
+      ...document.querySelectorAll("[data-eyebrow]"),
+    ].map((el) => el.textContent);
 
     // 순서가 아니라 어휘를 본다. Task 3에서 `비율`이 대표로 올라가며 자리가 바뀐다.
     expect(labels).toEqual(

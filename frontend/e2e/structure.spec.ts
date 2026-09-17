@@ -57,8 +57,16 @@ test.describe("구조 — 대표 수치", () => {
       await page.goto(path);
       await page.waitForLoadState("networkidle");
 
-      // sr-only 라벨이 innerText에 섞이므로 값(dd)만 읽는다.
-      const text = await page.locator("[data-lead] dd").first().innerText();
+      /*
+       * 갱신(2026-09-17): 히어로 도입으로 대표 수치가 `dl > dd`에서 판 위의 값 하나가 됐다.
+       * 라벨은 아이브로우가 판 밖에서 맡으므로 `data-lead`의 텍스트가 곧 값이다.
+       * 목록 카드는 아직 `dd` 구조라 둘 다 받는다.
+       */
+      const lead = page.locator("[data-lead]").first();
+      const dd = lead.locator("dd");
+      const text = (await dd.count()) > 0
+        ? await dd.first().innerText()
+        : await lead.innerText();
 
       expect(text, path).toMatch(/^1:\d+\.\d$/);
       expect(text, path).not.toContain("→");
@@ -73,8 +81,16 @@ test.describe("구조 — 대표 수치", () => {
       await page.goto(path);
       await page.waitForLoadState("networkidle");
 
-      // sr-only 라벨이 innerText에 섞이므로 값(dd)만 읽는다.
-      const text = await page.locator("[data-lead] dd").first().innerText();
+      /*
+       * 갱신(2026-09-17): 히어로 도입으로 대표 수치가 `dl > dd`에서 판 위의 값 하나가 됐다.
+       * 라벨은 아이브로우가 판 밖에서 맡으므로 `data-lead`의 텍스트가 곧 값이다.
+       * 목록 카드는 아직 `dd` 구조라 둘 다 받는다.
+       */
+      const lead = page.locator("[data-lead]").first();
+      const dd = lead.locator("dd");
+      const text = (await dd.count()) > 0
+        ? await dd.first().innerText()
+        : await lead.innerText();
 
       expect(text, path).toMatch(/^1:\d+\.\d$/);
     });

@@ -45,3 +45,7 @@ Thumbs.db
 
 # 스크린샷 확인용 임시 디렉터리
 .shots/
+
+# 디자인 캔버스 빌드 산출물 — .dc.html 원본과 canvas.json에서 재생성된다
+docs/design/screens-v2/kaldi-note-new-screens.html
+__pycache__/

@@ -132,7 +132,7 @@ describe("RecipeDetailPage", () => {
     expect(screen.queryByText("분쇄도")).not.toBeInTheDocument();
   });
 
-  it("분쇄도가 있으면 추정치 표기와 함께 보여준다", async () => {
+  it("AC-SKIN-11 · 분쇄도가 있으면 추정치 표기와 함께 보여준다", async () => {
     // AC-WEB-18은 "없으면 안 보인다"만 본다. 이 테스트가 없으면 영역을 아예 만들지
     // 않아도 AC-WEB-18이 통과해버린다 — 부재 검증을 헛되지 않게 하는 짝이다.
     server.use(

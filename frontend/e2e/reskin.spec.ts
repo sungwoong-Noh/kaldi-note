@@ -80,4 +80,40 @@ test.describe("리스킨 — 히어로", () => {
     expect(style.transform).toBe("uppercase");
     expect(style.spacing).toBeGreaterThan(0);
   });
+
+  /**
+   * 16화면 스윕 — 리스킨이 무엇도 부수지 않았는지 본다.
+   *
+   * <p>`touch-targets.spec.ts`가 이미 같은 스윕을 돌지만 그쪽은 「44px」이 주제다.
+   * 여기서는 **리스킨이 건드린 화면 전부**를 한 번에 지나가며 가로 스크롤과
+   * 서버 문구 보존을 함께 본다.
+   */
+  const ALL_SCREENS = [
+    "/",
+    "/recipes",
+    "/recipes/12",
+    "/recipes/new",
+    "/recipes/12/edit",
+    "/brews",
+    "/brews/2",
+    "/brews/new?recipeId=12",
+    "/brews/2/edit",
+    "/gear/grind-converter",
+    "/more",
+  ] as const;
+
+  for (const path of ALL_SCREENS) {
+    test(`AC-SKIN-10 · ${path}에 가로 스크롤이 없다`, async ({ page }) => {
+      await installStubs(page);
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+
+      const width = await page.evaluate(
+        () => document.documentElement.scrollWidth,
+      );
+
+      expect(width, path).toBeLessThanOrEqual(360);
+    });
+  }
+
 });

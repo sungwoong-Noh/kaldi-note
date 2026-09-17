@@ -9,6 +9,11 @@ import type { ReactNode } from "react";
  *
  * <p>배경은 라이트·다크 양쪽에서 같다(`--hero`). 모드에 따라 뒤집히면
  * 「판 위의 수치」라는 구조 자체가 사라진다.
+ *
+ * <p><b>테두리가 필요한 이유:</b> 라이트에서는 판이 배경과 16.86:1로 또렷하지만
+ * 다크에서는 `paper`(0.17)와 판(0.22)이 **1.1:1**이라 사실상 안 보인다(2026-09-17 실측).
+ * 배경 명도만으로는 두 모드를 다 만족시킬 수 없어 `hero-line` 테두리로 윤곽을 준다 —
+ * 다크 배경 대비 1.62:1로 판이 드러나고, 라이트에서는 이미 또렷한 판의 안쪽 경계가 된다.
  */
 export function Hero({
   eyebrow,
@@ -29,7 +34,7 @@ export function Hero({
   return (
     <div
       data-hero
-      className={`flex flex-col gap-3 rounded-surface bg-hero p-6 ${className}`.trim()}
+      className={`flex flex-col gap-3 rounded-surface border border-hero-line bg-hero p-6 ${className}`.trim()}
     >
       <span
         data-eyebrow
@@ -39,7 +44,7 @@ export function Hero({
       </span>
 
       <div className="flex items-baseline gap-2">
-        <span data-lead className="text-metric-hero text-on-hero">
+        <span data-lead className="text-metric-hero font-medium text-on-hero">
           {lead}
         </span>
         {leadUnit !== undefined && (

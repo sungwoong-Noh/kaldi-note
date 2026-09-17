@@ -82,21 +82,32 @@ export function MetricRow({
   label,
   value,
   bare = false,
+  tone = "default",
   className = "",
 }: {
   label: string;
   value: ReactNode;
   bare?: boolean;
+  /** `hero`는 어두운 판 위에서 쓴다 — 판은 모드와 무관하게 어두우므로 글자색도 고정이다. */
+  tone?: "default" | "hero";
   className?: string;
 }) {
+  const onHero = tone === "hero";
+  // 히어로 안에서는 행마다 선을 또 그으면 판의 구분선과 겹친다.
+  const divider = bare || onHero ? "" : "border-t border-divider py-3";
+
   return (
     <div
-      className={`flex items-center justify-between gap-3 ${bare ? "" : "border-t border-divider py-3"} ${className}`
+      className={`flex items-center justify-between gap-3 ${divider} ${onHero ? "py-1" : ""} ${className}`
         .replace(/\s+/g, " ")
         .trim()}
     >
-      <dt className="text-body-sm text-ink-3">{label}</dt>
-      <dd className="text-metric">{value}</dd>
+      <dt className={onHero ? "text-body-sm text-on-hero-dim" : "text-body-sm text-ink-3"}>
+        {label}
+      </dt>
+      <dd className={onHero ? "text-metric text-on-hero" : "text-metric"}>
+        {value}
+      </dd>
     </div>
   );
 }

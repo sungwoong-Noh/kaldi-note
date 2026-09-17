@@ -20,7 +20,7 @@ import type { Recipe } from "../schema";
 import { DeleteRecipeDialog } from "./DeleteRecipeDialog";
 import { RecipeStepList } from "./RecipeStepList";
 import { statusLabel } from "@/lib/statusLabel";
-import { Button, ButtonLink, Shell } from "@/components/ui";
+import { Button, ButtonLink, Hero, MetricRow, Shell } from "@/components/ui";
 
 export function RecipeDetail({ id }: { id: number }) {
   const router = useRouter();
@@ -129,47 +129,38 @@ export function RecipeDetail({ id }: { id: number }) {
         dl의 직계 자식은 dt·dd 또는 그것을 감싼 div만 허용된다. span을 그대로 두면
         파서가 교정하면서 서버 HTML과 클라이언트 트리가 어긋날 수 있다.
       */}
-      <dl className="mt-4 flex flex-col gap-1">
-        {/* 대표 수치. 상세에서 정확히 하나가 36px로 뜬다. 라벨은 sr-only다 —
-            36px 숫자 옆에 14px 라벨을 붙이면 대표 수치가 깎인다. */}
-        <div
-          data-lead
-          className="flex items-center gap-1 text-metric-hero font-semibold tabular-nums tracking-[-0.02em]"
-        >
-          <dt className="sr-only">비율</dt>
-          <dd>{formatRatio(recipe.ratio)}</dd>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-body">
-          <div className="flex items-center gap-1">
-            <dt className="text-body-sm text-ink-3">원두량</dt>
-            <dd className="text-metric">{formatGrams(recipe.doseG)}</dd>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <dt className="text-body-sm text-ink-3">물량</dt>
-            <dd className="text-metric">{formatGrams(recipe.waterG)}</dd>
-          </div>
-
+      {/*
+        대표 수치는 히어로 판 위에 올린다 — docs/specs/2026-09-17-screen-reskin.md
+        아이브로우가 라벨 역할을 하므로 sr-only dt가 따로 필요없다.
+      */}
+      <Hero eyebrow="비율" lead={formatRatio(recipe.ratio)} className="mt-4">
+        <dl className="grid grid-cols-2 gap-x-4">
+          <MetricRow
+            label="원두량"
+            value={formatGrams(recipe.doseG)}
+            tone="hero"
+          />
+          <MetricRow
+            label="물량"
+            value={formatGrams(recipe.waterG)}
+            tone="hero"
+          />
           {recipe.waterTempC !== undefined && (
-            <div className="flex items-center gap-1">
-              <dt className="text-body-sm text-ink-3">물 온도</dt>
-              <dd className="text-metric">
-                {formatTemperature(recipe.waterTempC)}
-              </dd>
-            </div>
+            <MetricRow
+              label="물 온도"
+              value={formatTemperature(recipe.waterTempC)}
+              tone="hero"
+            />
           )}
-
           {recipe.totalTimeSeconds !== undefined && (
-            <div className="flex items-center gap-1">
-              <dt className="text-body-sm text-ink-3">총 시간</dt>
-              <dd className="text-metric">
-                {formatDuration(recipe.totalTimeSeconds)}
-              </dd>
-            </div>
+            <MetricRow
+              label="총 시간"
+              value={formatDuration(recipe.totalTimeSeconds)}
+              tone="hero"
+            />
           )}
-        </div>
-      </dl>
+        </dl>
+      </Hero>
 
       {(brewer || filter) && (
         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-body text-ink-3">

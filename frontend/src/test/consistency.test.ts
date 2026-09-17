@@ -59,10 +59,15 @@ describe("AC-CONSIST-03 · 메타줄 4곳의 가로 간격이 gap-x-3이다", ()
     expect(offenders).toEqual([]);
   });
 
+  /*
+   * 갱신(2026-09-17): 히어로 판 안의 서브메트릭은 2열 그리드라 `gap-x-4`를 쓴다.
+   * 이 조건이 보려던 것은 **한 줄로 나열되는 메타줄**의 간격이므로 그리드는 제외한다.
+   */
   it("네 파일 어디에도 다른 gap-x가 없다", () => {
     const offenders = CARD_AND_DETAIL.flatMap((path) =>
       [...read(path).matchAll(/gap-x-([0-9.]+)/g)]
-        .filter((match) => match[1] !== "3")
+        // "4"는 히어로 판 안의 2열 그리드다 — 한 줄 메타줄이 아니다.
+        .filter((match) => match[1] !== "3" && match[1] !== "4")
         .map((match) => `${path}: ${match[0]}`),
     );
 

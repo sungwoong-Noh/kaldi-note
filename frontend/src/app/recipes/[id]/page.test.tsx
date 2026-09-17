@@ -69,12 +69,13 @@ beforeEach(() => {
  * 대표 수치는 세 클래스를 **모두** 가진 요소다. 하나라도 빠지면 잡히지 않는다.
  * 클래스 이름을 틀렸는지까지는 잡지 못한다 — 그것은 e2e가 잰다.
  */
+/**
+ * 갱신(2026-09-17): 클래스 조합으로 찾던 것을 `data-lead`로 바꿨다.
+ * 히어로 도입으로 클래스가 달라졌고, 스타일이 바뀔 때마다 셀렉터가 깨지는 것이
+ * 이 훅이 존재하는 이유다.
+ */
 function leadElements(): Element[] {
-  return [
-    ...document.querySelectorAll(
-      ".text-metric-hero.font-semibold.tabular-nums",
-    ),
-  ];
+  return [...document.querySelectorAll("[data-lead]")];
 }
 
 describe("RecipeDetailPage", () => {
@@ -87,8 +88,14 @@ describe("RecipeDetailPage", () => {
     expect(leads).toHaveLength(1);
     // 갱신(2026-09-15): structure 스펙이 대표 수치를 1:비율로 통일했다.
     // 이 파일의 픽스처는 hoffmann이라 ratio 16.7이다.
-    expect(leads[0].textContent).toBe("비율1:16.7");
-    expect(leads[0].querySelector("dt")?.className).toContain("sr-only");
+    //
+    // 갱신(2026-09-17): 히어로 도입으로 라벨이 sr-only dt에서 **보이는 아이브로우**가 됐다
+    // — 목업이 10px Mono 대문자로 쓴다. `data-lead`는 이제 값만 담는다.
+    expect(leads[0].textContent).toBe("1:16.7");
+    expect(
+      leads[0].closest("[data-hero]")?.querySelector("[data-eyebrow]")
+        ?.textContent,
+    ).toBe("비율");
   });
 
   it("AC-CONSIST-05 · 상세 메타줄의 라벨이 화면에 보인다", async () => {

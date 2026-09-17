@@ -22,7 +22,7 @@ import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
 import { RecipeComparison } from "./RecipeComparison";
 import { DeleteBrewLogDialog } from "./DeleteBrewLogDialog";
 import { ExtractionSummary } from "./ExtractionSummary";
-import { Button, ButtonLink, Shell } from "@/components/ui";
+import { Button, ButtonLink, Hero, Shell } from "@/components/ui";
 
 export function BrewDetail({ id }: { id: number }) {
   const router = useRouter();
@@ -112,14 +112,11 @@ export function BrewDetail({ id }: { id: number }) {
         )}
       </div>
 
-      {/* 대표 수치. 상세에서 정확히 하나가 18px로 뜬다. 라벨은 sr-only다. */}
-      <dl
-        data-lead
-        className="flex items-center gap-1 text-metric-hero font-semibold tabular-nums tracking-[-0.02em]"
-      >
-        <dt className="sr-only">{lead.label}</dt>
-        <dd>{lead.value}</dd>
-      </dl>
+      {/*
+        대표 수치는 히어로 판 위에 올린다 — docs/specs/2026-09-17-screen-reskin.md
+        아이브로우가 라벨 역할을 하므로 sr-only dt가 따로 필요없다.
+      */}
+      <Hero eyebrow={lead.label} lead={lead.value} />
 
       {/* 레시피를 못 읽으면 그리지 않는다 — 비교할 대상이 없다(AC-STRUCT-13). */}
       {recipe.targets !== undefined && (

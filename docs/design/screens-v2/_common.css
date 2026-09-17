@@ -1,0 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+:root{
+  --paper:oklch(0.99 0.004 85); --surface:oklch(0.97 0.006 85); --sunken:oklch(0.93 0.008 80);
+  --border:oklch(0.88 0.008 75); --divider:oklch(0.92 0.008 78); --divider-strong:oklch(0.89 0.008 78);
+  --ink:oklch(0.22 0.015 60); --ink-2:oklch(0.38 0.015 60); --ink-3:oklch(0.55 0.02 70);
+  --on-ink:oklch(0.97 0.004 85); --accent:oklch(0.42 0.06 45); --accent-soft:oklch(0.62 0.05 50);
+  --accent-wash:oklch(0.95 0.02 50); --danger:oklch(0.5 0.18 28);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans KR",system-ui,sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:oklch(0.34 0.06 45)}

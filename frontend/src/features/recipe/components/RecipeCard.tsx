@@ -14,12 +14,12 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
     <li>
       <Link
         href={`/recipes/${recipe.id}`}
-        className="block rounded-lg border border-line p-4 active:bg-surface"
+        className="block rounded-surface border border-border p-4 active:bg-surface"
       >
         <div className="flex items-start justify-between gap-2">
-          <h2 className="text-lg font-medium">{recipe.title}</h2>
+          <h2 className="text-card-title font-medium">{recipe.title}</h2>
           {recipe.sourceType === "CURATED" && (
-            <span className="shrink-0 rounded-md bg-surface px-2 py-1 text-sm text-muted">
+            <span className="shrink-0 rounded-tag bg-surface px-2 py-1 text-body-sm text-ink-3">
               {statusLabel("source", "CURATED")}
             </span>
           )}
@@ -30,32 +30,36 @@ export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
               비율은 배치 크기에 독립적이라 다른 레시피와 바로 비교된다. */}
           <div
             data-lead
-            className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]"
+            className="flex items-center gap-1 text-metric-hero font-semibold tabular-nums tracking-[-0.02em]"
           >
             <dt className="sr-only">비율</dt>
             <dd>{formatRatio(recipe.ratio)}</dd>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-metric text-ink-3">
             <div className="flex items-center gap-1">
               <dt className="sr-only">원두량</dt>
-              <dd>{formatGrams(recipe.doseG)}</dd>
+              <dd className="text-metric">{formatGrams(recipe.doseG)}</dd>
               <span aria-hidden>→</span>
               <dt className="sr-only">물량</dt>
-              <dd>{formatGrams(recipe.waterG)}</dd>
+              <dd className="text-metric">{formatGrams(recipe.waterG)}</dd>
             </div>
 
             {recipe.waterTempC !== undefined && (
               <div>
                 <dt className="sr-only">물 온도</dt>
-                <dd>{formatTemperature(recipe.waterTempC)}</dd>
+                <dd className="text-metric">
+                  {formatTemperature(recipe.waterTempC)}
+                </dd>
               </div>
             )}
 
             {recipe.totalTimeSeconds !== undefined && (
               <div>
                 <dt className="sr-only">총 시간</dt>
-                <dd>{formatDuration(recipe.totalTimeSeconds)}</dd>
+                <dd className="text-metric">
+                  {formatDuration(recipe.totalTimeSeconds)}
+                </dd>
               </div>
             )}
           </div>

@@ -22,6 +22,7 @@ import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
 import { RecipeComparison } from "./RecipeComparison";
 import { DeleteBrewLogDialog } from "./DeleteBrewLogDialog";
 import { ExtractionSummary } from "./ExtractionSummary";
+import { Button, ButtonLink } from "@/components/ui";
 
 export function BrewDetail({ id }: { id: number }) {
   const router = useRouter();
@@ -75,9 +76,7 @@ export function BrewDetail({ id }: { id: number }) {
     <Shell>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <p className="text-base text-muted">
-            {log.brewedAt.slice(0, 10)}
-          </p>
+          <p className="text-body text-ink-3">{log.brewedAt.slice(0, 10)}</p>
           {/*
             화면 제목이다. **`h1`은 언제나 그리고 링크만 조건부로 한다** — 조건부로 사라지면
             제목 없는 화면이 생기고, 스크린리더 사용자가 「지금 무엇을 보고 있는가」를 제목
@@ -87,7 +86,7 @@ export function BrewDetail({ id }: { id: number }) {
             누르면 403 화면으로 간다. 두 갈래가 같은 크기·굵기를 갖게 해서 폴백일 때 레이아웃이
             흔들리지 않게 한다.
           */}
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-page-title font-semibold">
             {recipeId !== undefined && recipe.isReady ? (
               <Link
                 href={`/recipes/${recipeId}`}
@@ -100,14 +99,14 @@ export function BrewDetail({ id }: { id: number }) {
             )}
           </h1>
           {bean.label !== "" && (
-            <dl className="flex items-center gap-1 text-base text-muted">
+            <dl className="flex items-center gap-1 text-body text-ink-3">
               <dt>원두</dt>
               <dd>{bean.label}</dd>
             </dl>
           )}
         </div>
         {log.rating !== undefined && (
-          <span className="shrink-0 text-base">
+          <span className="shrink-0 text-body">
             <span aria-hidden>★</span> {log.rating}
           </span>
         )}
@@ -116,7 +115,7 @@ export function BrewDetail({ id }: { id: number }) {
       {/* 대표 수치. 상세에서 정확히 하나가 18px로 뜬다. 라벨은 sr-only다. */}
       <dl
         data-lead
-        className="flex items-center gap-1 text-4xl font-semibold tabular-nums tracking-[-0.02em]"
+        className="flex items-center gap-1 text-metric-hero font-semibold tabular-nums tracking-[-0.02em]"
       >
         <dt className="sr-only">{lead.label}</dt>
         <dd>{lead.value}</dd>
@@ -128,8 +127,8 @@ export function BrewDetail({ id }: { id: number }) {
       )}
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">실측값</h2>
-        <dl className="flex flex-wrap gap-x-3 gap-y-1 text-base">
+        <h2 className="text-card-title font-semibold">실측값</h2>
+        <dl className="flex flex-wrap gap-x-3 gap-y-1 text-body">
           {measures(log)
             .filter((entry) => entry.label !== lead.label)
             // 비교표가 그린 항목은 여기서 뺀다 — 같은 값을 두 번 보여주지 않는다.
@@ -159,7 +158,7 @@ export function BrewDetail({ id }: { id: number }) {
       */}
       {recipe.isReady && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">푸어 스텝</h2>
+          <h2 className="text-card-title font-semibold">푸어 스텝</h2>
           <RecipeStepList steps={recipe.steps} />
         </section>
       )}
@@ -168,8 +167,8 @@ export function BrewDetail({ id }: { id: number }) {
 
       {log.overallNote !== undefined && (
         <section className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">메모</h2>
-          <p className="whitespace-pre-wrap text-base">{log.overallNote}</p>
+          <h2 className="text-card-title font-semibold">메모</h2>
+          <p className="whitespace-pre-wrap text-body">{log.overallNote}</p>
         </section>
       )}
 
@@ -179,19 +178,8 @@ export function BrewDetail({ id }: { id: number }) {
       */}
       {isMine && (
         <div className="flex items-center gap-2 self-start">
-          <Link
-            href={`/brews/${id}/edit`}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
-          >
-            편집
-          </Link>
-          <button
-            type="button"
-            onClick={() => setConfirmingDelete(true)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-danger px-3 py-2 text-base text-danger"
-          >
-            삭제
-          </button>
+          <ButtonLink href={`/brews/${id}/edit`}>편집</ButtonLink>
+          <Button onClick={() => setConfirmingDelete(true)}>삭제</Button>
         </div>
       )}
 
@@ -250,7 +238,7 @@ function measures(log: BrewLog): { label: string; value: string }[] {
 function Measure({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-1">
-      <dt className="text-sm text-muted">{label}</dt>
+      <dt className="text-body-sm text-ink-3">{label}</dt>
       <dd>{value}</dd>
     </div>
   );
@@ -258,7 +246,7 @@ function Measure({ label, value }: { label: string; value: string }) {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6">
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6">
       {children}
     </main>
   );

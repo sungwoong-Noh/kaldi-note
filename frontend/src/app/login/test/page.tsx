@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { setAccessToken } from "@/lib/session";
+import { Button, controlClass } from "@/components/ui";
 
 /**
  * 테스트 로그인 화면. **인증 우회의 입구다** — docs/specs/2026-09-05-test-login.md를 읽는다.
@@ -55,8 +56,8 @@ export default function TestLoginPage() {
 
   return (
     <main className="flex flex-col gap-4 px-4 py-6">
-      <h1 className="text-2xl font-semibold">테스트 로그인</h1>
-      <p className="text-muted">
+      <h1 className="text-page-title font-semibold">테스트 로그인</h1>
+      <p className="text-ink-3">
         OAuth 없이 세션을 발급합니다. 시크릿은 저장되지 않습니다.
       </p>
 
@@ -79,18 +80,12 @@ export default function TestLoginPage() {
         <Field label="핸들" value={handle} onChange={setHandle} />
         <Field label="닉네임" value={nickname} onChange={setNickname} />
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-3 text-on-accent disabled:opacity-50"
-        >
+        <Button type="submit" disabled={pending} variant="primary">
           테스트 로그인
-        </button>
+        </Button>
 
         {failed && (
-          <p className="text-danger">
-            테스트 로그인을 쓸 수 없습니다
-          </p>
+          <p className="text-danger">테스트 로그인을 쓸 수 없습니다</p>
         )}
       </form>
     </main>
@@ -112,15 +107,13 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-base text-muted">
-        {label}
-      </span>
+      <span className="text-body text-ink-3">{label}</span>
       <input
         type={type}
         inputMode={inputMode}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="min-h-11 rounded-md border border-line px-3 py-2"
+        className={controlClass("px-3 py-2")}
       />
     </label>
   );

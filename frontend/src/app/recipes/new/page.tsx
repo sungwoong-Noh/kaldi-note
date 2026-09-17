@@ -48,8 +48,8 @@ export default function RecipeNewPage() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6">
-      <h1 className="text-2xl font-semibold">새 레시피</h1>
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6">
+      <h1 className="text-page-title font-semibold">새 레시피</h1>
       {children}
     </main>
   );

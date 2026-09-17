@@ -9,6 +9,7 @@ import {
   useToggleFollow,
 } from "@/features/user/queries";
 import { LoadingState } from "@/components/LoadingState";
+import { Button } from "@/components/ui";
 
 /** 상태 넷을 문구 하나로 접는다. 화면이 boolean 셋을 직접 읽으면 조합을 빠뜨린다. */
 function noticeFor(status: FollowStatus): string | null {
@@ -41,9 +42,7 @@ export function UserProfile({ id }: { id: number }) {
   if (profile.error) {
     return (
       <Shell>
-        <p className="text-muted">
-          사용자를 찾을 수 없습니다
-        </p>
+        <p className="text-ink-3">사용자를 찾을 수 없습니다</p>
       </Shell>
     );
   }
@@ -59,11 +58,13 @@ export function UserProfile({ id }: { id: number }) {
             className="size-16 rounded-full object-cover"
           />
         )}
-        <h1 className="text-2xl font-semibold">{profile.data.nickname}</h1>
+        <h1 className="text-page-title font-semibold">
+          {profile.data.nickname}
+        </h1>
       </div>
 
       {isMe ? (
-        <p className="text-muted">나</p>
+        <p className="text-ink-3">나</p>
       ) : (
         status.isSuccess && <FollowSection id={id} status={status.data} />
       )}
@@ -77,17 +78,14 @@ function FollowSection({ id, status }: { id: number; status: FollowStatus }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <button
-        type="button"
+      <Button
         disabled={toggle.isPending}
         onClick={() => toggle.mutate({ follow: !status.following })}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-3 text-on-accent disabled:opacity-50"
+        variant="primary"
       >
         {status.following ? "팔로우 취소" : "팔로우"}
-      </button>
-      {notice !== null && (
-        <p className="text-muted">{notice}</p>
-      )}
+      </Button>
+      {notice !== null && <p className="text-ink-3">{notice}</p>}
       {toggle.error !== null && (
         <p className="text-danger">{toggle.error.message}</p>
       )}

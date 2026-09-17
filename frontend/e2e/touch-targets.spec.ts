@@ -20,7 +20,9 @@ test.describe("터치 타깃 — 입력 요소", () => {
     expect(box?.height).toBe(TOUCH_TARGET_PX);
   });
 
-  test("AC-TOUCH-09 · 「공개 범위」 select의 높이가 44px다", async ({ page }) => {
+  test("AC-TOUCH-09 · 「공개 범위」 select의 높이가 44px다", async ({
+    page,
+  }) => {
     await installStubs(page);
     // 공개 범위는 BrewLogEditor(편집)에만 있다. 작성 폼(/brews/new)에는 없다.
     await page.goto("/brews/2/edit");
@@ -96,7 +98,9 @@ test.describe("터치 타깃 — 아이콘 버튼", () => {
     }
   });
 
-  test("AC-TOUCH-06 · 「내 레시피만」의 탭 영역이 44×44다", async ({ page }) => {
+  test("AC-TOUCH-06 · 「내 레시피만」의 탭 영역이 44×44다", async ({
+    page,
+  }) => {
     await installStubs(page);
     await page.goto("/recipes");
 
@@ -164,7 +168,9 @@ async function undersized(
 
 test.describe("터치 타깃 — 스윕", () => {
   for (const { path } of SCREENS) {
-    test(`AC-TOUCH-01 · AC-READ-18 · ${path}의 모든 타깃이 44×44 이상이다`, async ({ page }) => {
+    test(`AC-TOUCH-01 · AC-READ-18 · ${path}의 모든 타깃이 44×44 이상이다`, async ({
+      page,
+    }) => {
       await installStubs(page);
       await page.goto(path);
       await page.waitForLoadState("networkidle");
@@ -185,7 +191,9 @@ test.describe("터치 타깃 — 스윕", () => {
     });
   }
 
-  test("AC-TOUCH-10 · BottomNav 탭 4개가 90×44 그대로다", async ({ page }) => {
+  test("AC-TOUCH-10 · BottomNav 탭 4개가 90×49.5로 44px을 넘는다", async ({
+    page,
+  }) => {
     await installStubs(page);
     await page.goto("/recipes");
 
@@ -194,15 +202,25 @@ test.describe("터치 타깃 — 스윕", () => {
         .getByRole("link", { name, exact: true })
         .boundingBox();
 
-      expect(box, name).toMatchObject({ width: 90, height: 48 });
+      // 갱신(2026-09-17): 라벨이 14→13px로 작아졌지만 body-sm의 행간(1.6)이 늘어
+      // 오히려 48→49.5px가 됐다. 44px 하한은 그대로 지킨다.
+      expect(box, name).toMatchObject({ width: 90, height: 49.5 });
     }
   });
 });
 
 test.describe("터치 타깃 — 다이얼로그", () => {
   const CASES = [
-    { path: "/brews/new?recipeId=12", open: "+ 원두 등록", what: "BeanBatchDialog" },
-    { path: "/brews/new?recipeId=12", open: "+ 그라인더 등록", what: "UserGrinderDialog" },
+    {
+      path: "/brews/new?recipeId=12",
+      open: "+ 원두 등록",
+      what: "BeanBatchDialog",
+    },
+    {
+      path: "/brews/new?recipeId=12",
+      open: "+ 그라인더 등록",
+      what: "UserGrinderDialog",
+    },
     // /recipes/12는 hoffmann이고 ownerUserId가 없어 삭제 버튼이 없다. /recipes/3이 내 것이다.
     { path: "/recipes/3", open: "삭제", what: "DeleteRecipeDialog" },
     { path: "/brews/2", open: "삭제", what: "DeleteBrewLogDialog" },

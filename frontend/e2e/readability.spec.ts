@@ -1,6 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { SCREENS } from "./screens";
 import { installStubs } from "./stubs";
+import { tokenColor } from "./tokenColor";
+
+/*
+ * 갱신(2026-09-17): 타입 스케일이 Clean Ledger 6단계로 재편됐다.
+ * 화면 제목 24→27 · 본문 16→15 · 라벨 14→13
+ * (docs/specs/2026-09-17-design-system-v2.md 「타입 스케일」).
+ */
 
 /**
  * 읽힘 — docs/specs/2026-09-15-readability.md
@@ -10,7 +17,7 @@ import { installStubs } from "./stubs";
  */
 
 test.describe("읽힘 — 렌더된 크기", () => {
-  test("AC-READ-11 · 화면 제목이 24px로 렌더된다", async ({ page }) => {
+  test("AC-READ-11 · 화면 제목이 27px로 렌더된다", async ({ page }) => {
     await installStubs(page);
     await page.goto("/recipes");
 
@@ -18,7 +25,7 @@ test.describe("읽힘 — 렌더된 크기", () => {
       .locator("h1")
       .evaluate((el) => getComputedStyle(el).fontSize);
 
-    expect(size).toBe("24px");
+    expect(size).toBe("27px");
   });
 
   test("AC-READ-12 · 대표 수치가 36px로 렌더된다", async ({ page }) => {
@@ -56,7 +63,7 @@ test.describe("읽힘 — 렌더된 크기", () => {
     expect(style.tracking).toBe("-0.72px");
   });
 
-  test("AC-READ-14 · 본문이 16px로 렌더된다", async ({ page }) => {
+  test("AC-READ-14 · 본문이 15px로 렌더된다", async ({ page }) => {
     await installStubs(page);
     await page.goto("/recipes/12");
 
@@ -64,10 +71,10 @@ test.describe("읽힘 — 렌더된 크기", () => {
       .getByText("중심에서 바깥으로 나선을 그려")
       .evaluate((el) => getComputedStyle(el).fontSize);
 
-    expect(size).toBe("16px");
+    expect(size).toBe("15px");
   });
 
-  test("AC-READ-15 · 라벨이 14px이고 보조색으로 렌더된다", async ({ page }) => {
+  test("AC-READ-15 · 라벨이 13px이고 보조색으로 렌더된다", async ({ page }) => {
     await installStubs(page);
     await page.goto("/recipes/12");
 
@@ -79,8 +86,8 @@ test.describe("읽힘 — 렌더된 크기", () => {
         return { size: computed.fontSize, color: computed.color };
       });
 
-    expect(style.size).toBe("14px");
-    expect(style.color).toBe("rgb(84, 84, 84)");
+    expect(style.size).toBe("13px");
+    expect(style.color).toBe(await tokenColor(page, "ink-3"));
   });
 });
 

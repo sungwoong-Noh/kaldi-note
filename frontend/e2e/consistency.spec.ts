@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { installStubs } from "./stubs";
+import { tokenColor } from "./tokenColor";
 
 /**
  * 화면 간 일관성의 렌더 검사.
@@ -10,8 +11,7 @@ import { installStubs } from "./stubs";
  * <p><b>이 스위트가 첫 실행에 전부 통과하는 것이 정상이다.</b> 고칠 것을 찾는 그물이 아니다.
  */
 
-/** globals.css의 --color-muted를 브라우저가 정규화한 값. visual.spec.ts와 같다. */
-const MUTED_LIGHT = "rgb(84, 84, 84)";
+// 갱신(2026-09-17): 리터럴 색을 버리고 `tokenColor`로 기준을 만든다. visual.spec.ts와 같다.
 
 /**
  * 스텁이 주는 것만 쓴다.
@@ -69,7 +69,7 @@ test.describe("일관성 — 렌더값", () => {
   ] as const;
 
   for (const { path, label: labelText } of META_LABELS) {
-    test(`AC-CONSIST-07 · ${path}의 메타줄 라벨이 14px muted다`, async ({
+    test(`AC-CONSIST-07 · ${path}의 메타줄 라벨이 13px ink-3다`, async ({
       page,
     }) => {
       await installStubs(page);
@@ -78,11 +78,11 @@ test.describe("일관성 — 렌더값", () => {
       const label = page.getByText(labelText, { exact: true }).first();
       await expect(label).toBeVisible();
 
-      expect(
-        await label.evaluate((el) => getComputedStyle(el).fontSize),
-      ).toBe("14px");
+      expect(await label.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
+        "13px",
+      );
       expect(await label.evaluate((el) => getComputedStyle(el).color)).toBe(
-        MUTED_LIGHT,
+        await tokenColor(page, "ink-3"),
       );
     });
   }

@@ -24,6 +24,7 @@ import {
 import { BeanBatchDialog } from "./BeanBatchDialog";
 import { BrewLogFields } from "./BrewLogFields";
 import { UserGrinderDialog } from "./UserGrinderDialog";
+import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /**
  * 로그 작성 화면.
@@ -120,14 +121,14 @@ function Fields({
 
   // `내린 시각`과 `그라인더` 사이에 들어간다. 편집 화면은 여기에 잠긴 원두 표시를 넣는다.
   const beanSlot = (
-    <fieldset className="flex flex-col gap-2">
-      <legend className="text-lg font-semibold">원두</legend>
+    <fieldset className="flex min-w-0 flex-col gap-2">
+      <legend className="text-card-title font-semibold">원두</legend>
       {(batches.data ?? []).length === 0 && !batches.isPending && (
-        <p className="text-base text-muted">등록된 원두가 없습니다</p>
+        <p className="text-body text-ink-3">등록된 원두가 없습니다</p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex w-full items-center gap-2 text-base">
-          <span className="shrink-0 text-muted">원두</span>
+        <label className="flex w-full items-center gap-2 text-body">
+          <span className="shrink-0 text-ink-3">원두</span>
           <select
             aria-label="원두"
             value={state.beanBatchId ?? ""}
@@ -137,7 +138,7 @@ function Fields({
                 e.target.value === "" ? null : Number(e.target.value),
               )
             }
-            className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
+            className={controlClass(SELECT_EXTRA)}
           >
             <option value="">선택 안 함</option>
             {(batches.data ?? []).map((batch) => (
@@ -148,13 +149,7 @@ function Fields({
           </select>
         </label>
 
-        <button
-          type="button"
-          onClick={() => setAddingBean(true)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
-        >
-          + 원두 등록
-        </button>
+        <Button onClick={() => setAddingBean(true)}>+ 원두 등록</Button>
       </div>
     </fieldset>
   );
@@ -171,25 +166,20 @@ function Fields({
       />
 
       {save.error && (
-        <p className="text-base text-danger">{save.error.message}</p>
+        <p className="text-body text-danger">{save.error.message}</p>
       )}
 
       <div className="flex items-center gap-2">
-        <button
-          type="button"
+        <Button
           disabled={save.isPending}
           onClick={() => save.mutate()}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-4 py-2 text-base text-on-accent disabled:opacity-50"
+          variant="primary"
         >
           기록하기
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push(`/recipes/${recipe.id}`)}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-4 py-2 text-base"
-        >
+        </Button>
+        <Button onClick={() => router.push(`/recipes/${recipe.id}`)}>
           취소
-        </button>
+        </Button>
       </div>
 
       {addingGrinder && (
@@ -248,8 +238,8 @@ function batchLabel(
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6">
-      <h1 className="text-2xl font-semibold">이 레시피로 내렸다</h1>
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6">
+      <h1 className="text-page-title font-semibold">이 레시피로 내렸다</h1>
       {children}
     </main>
   );

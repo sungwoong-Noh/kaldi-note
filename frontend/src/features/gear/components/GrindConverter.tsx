@@ -5,6 +5,7 @@ import { useState } from "react";
 import { errorMessageOf } from "@/components/ErrorState";
 import { convertGrind } from "../api";
 import type { GrinderModel } from "../schema";
+import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /**
  * 마스터 그라인더끼리 분쇄도를 환산한다.
@@ -47,14 +48,14 @@ export function GrindConverter({
         onChange={setSourceId}
       />
 
-      <label className="flex items-center gap-2 text-base">
-        <span className="w-28 shrink-0 text-muted">설정값</span>
+      <label className="flex items-center gap-2 text-body">
+        <span className="w-28 shrink-0 text-ink-3">설정값</span>
         <input
           type="number"
           aria-label="설정값"
           value={setting}
           onChange={(e) => setSetting(e.target.value)}
-          className="w-full min-w-0 rounded-md border border-line px-2 py-1 min-h-11"
+          className={controlClass()}
         />
       </label>
 
@@ -65,41 +66,40 @@ export function GrindConverter({
         onChange={setTargetId}
       />
 
-      <button
-        type="button"
+      <Button
         disabled={convert.isPending}
         onClick={() => convert.mutate()}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md bg-brand px-4 py-2 text-base text-on-accent disabled:opacity-50"
+        variant="primary"
       >
         환산
-      </button>
+      </Button>
 
       {convert.error && (
-        <p role="alert" className="text-base text-danger">
+        <p role="alert" className="text-body text-danger">
           {errorMessageOf(convert.error)}
         </p>
       )}
 
       {result && (
-        <dl className="flex flex-col gap-2 border-t border-line pt-4 text-base">
+        <dl className="flex flex-col gap-2 border-t border-border pt-4 text-body">
           <div className="flex items-baseline justify-between gap-3">
-            <dt className="text-muted">입자 크기</dt>
+            <dt className="text-ink-3">입자 크기</dt>
             <dd>{result.micron} µm</dd>
           </div>
           {result.targetSetting !== undefined && (
             <div className="flex items-baseline justify-between gap-3">
-              <dt className="text-muted">대상 설정값</dt>
+              <dt className="text-ink-3">대상 설정값</dt>
               <dd>
                 {result.targetSetting}
                 {result.targetOutOfRange && (
-                  <span className="ml-2 text-sm text-danger">범위 밖</span>
+                  <span className="ml-2 text-body-sm text-danger">범위 밖</span>
                 )}
               </dd>
             </div>
           )}
           {result.estimated && (
-            <p className="text-sm text-muted">
-              <span className="mr-1 rounded-md bg-surface px-1 py-1">
+            <p className="text-body-sm text-ink-3">
+              <span className="mr-1 rounded-tag bg-surface px-1 py-1">
                 추정치
               </span>
               {result.warning}
@@ -123,13 +123,13 @@ function GrinderSelect({
   onChange: (value: string) => void;
 }) {
   return (
-    <label className="flex items-center gap-2 text-base">
-      <span className="w-28 shrink-0 text-muted">{label}</span>
+    <label className="flex items-center gap-2 text-body">
+      <span className="w-28 shrink-0 text-ink-3">{label}</span>
       <select
         aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="min-w-0 appearance-none select-chevron pr-12 flex-1 rounded-md border border-line px-2 py-1 min-h-11"
+        className={controlClass(`${SELECT_EXTRA} flex-1`)}
       >
         <option value="">선택하세요</option>
         {grinders.map((grinder) => (

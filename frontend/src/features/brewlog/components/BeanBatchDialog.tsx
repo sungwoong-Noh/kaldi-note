@@ -13,6 +13,7 @@ import { createBeanBatch } from "@/features/inventory/api";
 import type { BeanBatch } from "@/features/inventory/schema";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
+import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /** 스펙 「원두 등록 모달」이 정한 네 가지. 서버 enum의 `DARK`는 이번 화면에 두지 않는다. */
 const ROAST_LEVELS: RoastLevel[] = [
@@ -119,9 +120,9 @@ export function BeanBatchDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="bean-batch-title"
-        className="flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto rounded-lg bg-background p-4"
+        className="flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto rounded-surface bg-paper p-4"
       >
-        <h2 id="bean-batch-title" className="text-lg font-semibold">
+        <h2 id="bean-batch-title" className="text-card-title font-semibold">
           원두 등록
         </h2>
 
@@ -168,13 +169,13 @@ export function BeanBatchDialog({
               onChange={setProductName}
               error={nameErrorFor("product")}
             />
-            <label className="flex flex-col gap-1 text-base">
-              <span className="shrink-0 text-muted">배전도</span>
+            <label className="flex flex-col gap-1 text-body">
+              <span className="shrink-0 text-ink-3">배전도</span>
               <select
                 aria-label="배전도"
                 value={roastLevel}
                 onChange={(e) => setRoastLevel(e.target.value as RoastLevel)}
-                className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-md border border-line px-2 py-1"
+                className={controlClass(SELECT_EXTRA)}
               >
                 <option value="">선택 안 함</option>
                 {ROAST_LEVELS.map((level) => (
@@ -193,8 +194,8 @@ export function BeanBatchDialog({
           </>
         )}
 
-        <label className="flex flex-col gap-1 text-base">
-          <span className="shrink-0 text-muted">중량</span>
+        <label className="flex flex-col gap-1 text-body">
+          <span className="shrink-0 text-ink-3">중량</span>
           <input
             type="number"
             aria-label="중량"
@@ -205,17 +206,21 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.weightG ? "bean-batch-weight-error" : undefined
             }
-            className="w-full min-h-11 rounded-md border border-line px-2 py-1"
+            aria-invalid={mapped ? true : undefined}
+            className={controlClass("", Boolean(mapped))}
           />
           {mapped?.byField.weightG && (
-            <span id="bean-batch-weight-error" className="text-sm text-danger">
+            <span
+              id="bean-batch-weight-error"
+              className="text-body-sm text-danger"
+            >
               {mapped.byField.weightG}
             </span>
           )}
         </label>
 
-        <label className="flex flex-col gap-1 text-base">
-          <span className="shrink-0 text-muted">로스팅일</span>
+        <label className="flex flex-col gap-1 text-body">
+          <span className="shrink-0 text-ink-3">로스팅일</span>
           <input
             type="date"
             aria-label="로스팅일"
@@ -224,12 +229,13 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.roastedAt ? "bean-batch-roasted-error" : undefined
             }
-            className="w-full min-h-11 rounded-md border border-line px-2 py-1"
+            aria-invalid={mapped ? true : undefined}
+            className={controlClass("", Boolean(mapped))}
           />
           {mapped?.byField.roastedAt && (
             <span
               id="bean-batch-roasted-error"
-              className="text-sm text-danger"
+              className="text-body-sm text-danger"
             >
               {mapped.byField.roastedAt}
             </span>
@@ -237,25 +243,18 @@ export function BeanBatchDialog({
         </label>
 
         {submit.error && (
-          <p className="text-sm text-danger">{submit.error.message}</p>
+          <p className="text-body-sm text-danger">{submit.error.message}</p>
         )}
 
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
-          >
-            취소
-          </button>
-          <button
-            type="button"
+          <Button onClick={onCancel}>취소</Button>
+          <Button
             disabled={submit.isPending}
             onClick={() => submit.mutate()}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md bg-brand px-3 py-2 text-base text-on-accent disabled:opacity-50"
+            variant="primary"
           >
             등록
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -274,15 +273,15 @@ function SelectField({
   options: { id: number; label: string }[];
 }) {
   return (
-    <label className="flex flex-col gap-1 text-base">
-      <span className="shrink-0 text-muted">{label}</span>
+    <label className="flex flex-col gap-1 text-body">
+      <span className="shrink-0 text-ink-3">{label}</span>
       <select
         aria-label={label}
         value={value ?? ""}
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
-        className="min-w-0 appearance-none select-chevron pr-12 w-full min-h-11 rounded-md border border-line px-2 py-1"
+        className={controlClass(SELECT_EXTRA)}
       >
         <option value="">새로 만들기</option>
         {options.map((option) => (
@@ -308,17 +307,18 @@ function TextField({
 }) {
   const errorId = `bean-batch-${label}-error`;
   return (
-    <label className="flex flex-col gap-1 text-base">
-      <span className="shrink-0 text-muted">{label}</span>
+    <label className="flex flex-col gap-1 text-body">
+      <span className="shrink-0 text-ink-3">{label}</span>
       <input
         aria-label={label}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-describedby={error ? errorId : undefined}
-        className="w-full min-h-11 rounded-md border border-line px-2 py-1"
+        aria-invalid={error ? true : undefined}
+        className={controlClass("", Boolean(error))}
       />
       {error && (
-        <span id={errorId} className="text-sm text-danger">
+        <span id={errorId} className="text-body-sm text-danger">
           {error}
         </span>
       )}

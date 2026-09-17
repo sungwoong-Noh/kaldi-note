@@ -91,7 +91,10 @@ describe("useRequireSession", () => {
   it("AC-PWA-14 · refresh가 401이면 로그인으로 보낸다", async () => {
     pathname = "/recipes/2";
     server.use(
-      http.post("/api/auth/refresh", () => new HttpResponse(null, { status: 401 })),
+      http.post(
+        "/api/auth/refresh",
+        () => new HttpResponse(null, { status: 401 }),
+      ),
     );
 
     render(<Guarded />);

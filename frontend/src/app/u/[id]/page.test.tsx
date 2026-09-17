@@ -173,7 +173,10 @@ describe("UserProfilePage", () => {
   it("AC-WEBFOLLOW-18 · 로그인하지 않았으면 로그인으로 보낸다", async () => {
     clearSession();
     server.use(
-      http.post("/api/auth/refresh", () => new HttpResponse(null, { status: 401 })),
+      http.post(
+        "/api/auth/refresh",
+        () => new HttpResponse(null, { status: 401 }),
+      ),
     );
 
     await renderProfile(12);

@@ -7,6 +7,23 @@ plan: docs/plans/2026-09-09-plan-spacing-system.md
 
 # 간격·모서리 체계 스펙
 
+> ## ★ 2026-09-17 갱신 — 모서리가 4종이 되고 거터가 24px가 됐다
+>
+> | AC | 그때 | 지금 |
+> |---|---|---|
+> | `AC-SPACE-01`·`02` | 6단계 `4·8·12·16·24·48` | **그대로** — 32px은 쓸 자리가 없어 넣지 않았다 |
+> | `AC-SPACE-04`·`05`·`06` | 역할 2종 (면 `rounded-lg` 8px · 컨트롤 `rounded-md` 6px) | **역할 4종, 이름으로** — `rounded-tag`(3) · `rounded-control`(7) · `rounded-surface`(12) · `rounded-full` |
+> | `AC-SPACE-08` | `shadow` 0곳 | **0곳 + 포커스 링만 예외** |
+> | 화면 좌우 거터 | 16px (`px-4`) | **24px** (`px-6`) |
+>
+> **모서리를 값이 아니라 이름으로 쓴다.** 원래 문제가 「`rounded`(4px)와 `rounded-md`(6px)가
+> 32곳씩 같은 무게로 쓰이는데 둘의 차이를 폰에서 구분할 수 없다」였다 —
+> 이름으로 쓰면 **어느 역할인지가 클래스에 남는다.**
+>
+> **거터를 8px 움직였더니 가려져 있던 버그 둘이 드러났다.** `fieldset` 5곳이 브라우저 기본
+> `min-width: min-content` 때문에 부모를 넘고 있었고(`AC-STRUCT-01`이 우연히 통과했다),
+> 별점 버튼이 flex 안에서 42.4px로 압축돼 있었다.
+
 > 2026-09-09 `/interview`로 확정. 작성 규칙은 [`docs/conventions/workflow.md`](../conventions/workflow.md).
 > **모든 인수 조건은 자동화된 테스트로 옮길 수 있어야 한다.**
 

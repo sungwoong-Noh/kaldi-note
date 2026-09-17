@@ -29,11 +29,14 @@ describe("POST /api/auth/test-login (BFF)", () => {
     let seenHeader: string | null = null;
     let seenBody: unknown = null;
     server.use(
-      http.post("http://localhost:8080/api/v1/auth/login/test", async ({ request }) => {
-        seenHeader = request.headers.get("X-Test-Login-Secret");
-        seenBody = await request.json();
-        return HttpResponse.json(loginPayload);
-      }),
+      http.post(
+        "http://localhost:8080/api/v1/auth/login/test",
+        async ({ request }) => {
+          seenHeader = request.headers.get("X-Test-Login-Secret");
+          seenBody = await request.json();
+          return HttpResponse.json(loginPayload);
+        },
+      ),
     );
 
     await POST(testLoginRequest({ secret: SECRET_32, userId: 12 }));

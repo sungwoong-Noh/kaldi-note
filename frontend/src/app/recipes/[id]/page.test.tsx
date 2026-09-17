@@ -70,7 +70,11 @@ beforeEach(() => {
  * 클래스 이름을 틀렸는지까지는 잡지 못한다 — 그것은 e2e가 잰다.
  */
 function leadElements(): Element[] {
-  return [...document.querySelectorAll(".text-4xl.font-semibold.tabular-nums")];
+  return [
+    ...document.querySelectorAll(
+      ".text-metric-hero.font-semibold.tabular-nums",
+    ),
+  ];
 }
 
 describe("RecipeDetailPage", () => {

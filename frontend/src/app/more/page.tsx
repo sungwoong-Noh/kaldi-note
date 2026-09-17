@@ -9,6 +9,7 @@ import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useMe } from "@/features/user/queries";
 import { clearRecipeCache } from "@/lib/offline-cache";
 import { clearSession } from "@/lib/session";
+import { Button } from "@/components/ui";
 
 export default function MorePage() {
   const router = useRouter();
@@ -55,7 +56,7 @@ export default function MorePage() {
 
   return (
     <Shell>
-      <dl className="flex flex-col gap-3 border-b border-line pb-4">
+      <dl className="flex flex-col gap-3 border-b border-border pb-4">
         <Row label="닉네임" value={me.data.nickname} />
         {me.data.email !== undefined && (
           <Row label="이메일" value={me.data.email} />
@@ -63,25 +64,15 @@ export default function MorePage() {
         <Row label="가입일" value={me.data.createdAt.slice(0, 10)} />
       </dl>
 
-      <div className="flex items-center justify-between gap-3 border-b border-line py-4">
+      <div className="flex items-center justify-between gap-3 border-b border-border py-4">
         <div className="min-w-0">
           <p className="font-medium">내 초대 링크</p>
-          <p className="truncate text-base text-muted">
-            {`/u/${me.data.id}`}
-          </p>
+          <p className="truncate text-body text-ink-3">{`/u/${me.data.id}`}</p>
         </div>
         {copied ? (
-          <span className="shrink-0 text-base text-muted">
-            복사했습니다
-          </span>
+          <span className="shrink-0 text-body text-ink-3">복사했습니다</span>
         ) : (
-          <button
-            type="button"
-            onClick={() => void copyInviteLink(me.data.id)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center shrink-0 rounded-md border border-line px-3 py-2"
-          >
-            복사
-          </button>
+          <Button onClick={() => void copyInviteLink(me.data.id)}>복사</Button>
         )}
       </div>
 
@@ -89,21 +80,16 @@ export default function MorePage() {
         <li>
           <Link
             href="/gear/grind-converter"
-            className="flex min-h-11 min-w-11 items-center justify-center block py-3 text-base underline-offset-4 hover:underline"
+            className="flex min-h-11 min-w-11 items-center justify-center block py-3 text-body underline-offset-4 hover:underline"
           >
             분쇄도 환산기
           </Link>
         </li>
       </ul>
 
-      <button
-        type="button"
-        onClick={() => void logout()}
-        disabled={loggingOut}
-        className="flex min-h-11 min-w-11 items-center justify-center mt-4 w-full rounded-md border border-line py-3 text-base disabled:opacity-50"
-      >
+      <Button onClick={() => void logout()} disabled={loggingOut} block>
         로그아웃
-      </button>
+      </Button>
     </Shell>
   );
 }
@@ -111,16 +97,16 @@ export default function MorePage() {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-base text-muted">{label}</dt>
-      <dd className="text-base">{value}</dd>
+      <dt className="text-body text-ink-3">{label}</dt>
+      <dd className="text-body">{value}</dd>
     </div>
   );
 }
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-6">
-      <h1 className="mb-4 text-2xl font-semibold">더보기</h1>
+    <main className="mx-auto w-full max-w-2xl px-6 py-6">
+      <h1 className="mb-4 text-page-title font-semibold">더보기</h1>
       {children}
     </main>
   );

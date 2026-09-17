@@ -24,7 +24,7 @@ function isPouring(step: RecipeStep): boolean {
 export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
   if (steps.length === 0) {
     return (
-      <p className="py-6 text-center text-base text-muted">
+      <p className="py-6 text-center text-body text-ink-3">
         등록된 스텝이 없습니다
       </p>
     );
@@ -56,41 +56,42 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
           >
             <span
               data-testid="step-start"
-              className="w-12 shrink-0 pt-1 font-mono text-base tabular-nums text-muted"
+              className="w-12 shrink-0 pt-1 font-mono text-body tabular-nums text-ink-3"
             >
               {formatDuration(step.startAtSeconds)}
             </span>
 
             {/* 축. 행마다 그어 이어 붙인다 — absolute로 그리면 임의값 위치가 필요하고,
                 그건 AC-SPACE-03(임의값 간격 0곳)에 걸린다. */}
-            <span aria-hidden className="w-px shrink-0 self-stretch bg-line" />
+            <span
+              aria-hidden
+              className="w-px shrink-0 self-stretch bg-border"
+            />
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-baseline gap-x-2">
                 <span className="font-medium">{STEP_LABEL[step.stepType]}</span>
 
                 {step.waterG !== undefined && (
-                  <span className="text-base">
+                  <span className="text-body">
                     {formatCumulativeGrams(step.waterG)}
                   </span>
                 )}
 
                 {showCumulative && (
-                  <span className="text-base text-muted">
+                  <span className="text-body text-ink-3">
                     누적{" "}
                     {formatCumulativeGrams(step.cumulativeWaterG as number)}
                   </span>
                 )}
 
-                <span className="text-base text-muted">
+                <span className="text-body text-ink-3">
                   {step.durationSeconds}초
                 </span>
               </div>
 
               {step.note && (
-                <p className="mt-1 text-base text-muted">
-                  {step.note}
-                </p>
+                <p className="mt-1 text-body text-ink-3">{step.note}</p>
               )}
             </div>
           </li>

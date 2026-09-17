@@ -2,6 +2,12 @@ import { expect, test } from "@playwright/test";
 import { pageOf } from "../src/test/fixtures";
 import { installStubs } from "./stubs";
 
+/*
+ * 갱신(2026-09-17): 모서리가 역할 2종에서 4종으로 늘었다.
+ * 면 8→12px(rounded-surface) · 컨트롤 6→7px(rounded-control)
+ * (docs/specs/2026-09-17-design-system-v2.md).
+ */
+
 /**
  * 간격·모서리의 렌더 검사.
  *
@@ -10,7 +16,9 @@ import { installStubs } from "./stubs";
  */
 
 test.describe("간격·모서리 — 렌더값", () => {
-  test("AC-SPACE-09 · 카드가 padding 16px · radius 8px다", async ({ page }) => {
+  test("AC-SPACE-09 · 카드가 padding 16px · radius 12px다", async ({
+    page,
+  }) => {
     await installStubs(page);
     await page.goto("/recipes");
 
@@ -22,10 +30,10 @@ test.describe("간격·모서리 — 렌더값", () => {
       return { pad: style.paddingTop, radius: style.borderTopLeftRadius };
     });
 
-    expect(box).toEqual({ pad: "16px", radius: "8px" });
+    expect(box).toEqual({ pad: "16px", radius: "12px" });
   });
 
-  test("AC-SPACE-10 · 버튼이 radius 6px다", async ({ page }) => {
+  test("AC-SPACE-10 · 버튼이 radius 7px다", async ({ page }) => {
     await installStubs(page);
     await page.goto("/recipes");
 
@@ -34,7 +42,7 @@ test.describe("간격·모서리 — 렌더값", () => {
 
     expect(
       await button.evaluate((el) => getComputedStyle(el).borderTopLeftRadius),
-    ).toBe("6px");
+    ).toBe("7px");
   });
 
   test("AC-SPACE-11 · 빈 상태의 세로 여백이 24px다", async ({ page }) => {

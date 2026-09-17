@@ -4,6 +4,7 @@ import type { UserGrinder } from "@/features/gear/schema";
 import type { mapFieldErrors } from "@/lib/fieldErrors";
 import type { BrewLogFormState } from "../formState";
 import { RatingInput } from "./RatingInput";
+import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /** 5축 관능 평가. 접혀 있을 때는 그리지 않으므로 요청 본문에도 담기지 않는다. */
 const SENSORY_AXES = [
@@ -43,8 +44,8 @@ export function BrewLogFields({
 }: BrewLogFieldsProps) {
   return (
     <>
-      <label className="flex flex-col gap-1 text-base">
-        <span className="shrink-0 text-muted">내린 시각</span>
+      <label className="flex flex-col gap-1 text-body">
+        <span className="shrink-0 text-ink-3">내린 시각</span>
         <input
           type="datetime-local"
           aria-label="내린 시각"
@@ -53,10 +54,11 @@ export function BrewLogFields({
           aria-describedby={
             fieldErrors?.byField.brewedAt ? "brew-brewed-at-error" : undefined
           }
-          className="w-full min-w-0 rounded-md border border-line px-2 py-1 min-h-11"
+          aria-invalid={fieldErrors ? true : undefined}
+          className={controlClass("", Boolean(fieldErrors))}
         />
         {fieldErrors?.byField.brewedAt && (
-          <span id="brew-brewed-at-error" className="text-sm text-danger">
+          <span id="brew-brewed-at-error" className="text-body-sm text-danger">
             {fieldErrors.byField.brewedAt}
           </span>
         )}
@@ -64,14 +66,14 @@ export function BrewLogFields({
 
       {beanSlot}
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-lg font-semibold">그라인더</legend>
+      <fieldset className="flex min-w-0 flex-col gap-2">
+        <legend className="text-card-title font-semibold">그라인더</legend>
         {grinders.length === 0 && (
-          <p className="text-base text-muted">등록된 그라인더가 없습니다</p>
+          <p className="text-body text-ink-3">등록된 그라인더가 없습니다</p>
         )}
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex w-full items-center gap-2 text-base">
-            <span className="shrink-0 text-muted">그라인더</span>
+          <label className="flex w-full items-center gap-2 text-body">
+            <span className="shrink-0 text-ink-3">그라인더</span>
             <select
               aria-label="그라인더"
               value={state.userGrinderId ?? ""}
@@ -81,7 +83,7 @@ export function BrewLogFields({
                   e.target.value === "" ? null : Number(e.target.value),
                 )
               }
-              className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
+              className={controlClass(SELECT_EXTRA)}
             >
               <option value="">선택 안 함</option>
               {grinders.map((grinder) => (
@@ -93,13 +95,7 @@ export function BrewLogFields({
           </label>
 
           {onAddGrinder && (
-            <button
-              type="button"
-              onClick={onAddGrinder}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-line px-3 py-2 text-base"
-            >
-              + 그라인더 등록
-            </button>
+            <Button onClick={onAddGrinder}>+ 그라인더 등록</Button>
           )}
         </div>
 
@@ -111,8 +107,8 @@ export function BrewLogFields({
         />
       </fieldset>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-lg font-semibold">실측값</legend>
+      <fieldset className="flex min-w-0 flex-col gap-2">
+        <legend className="text-card-title font-semibold">실측값</legend>
         <NumberField
           label="원두량"
           value={state.actualDoseG}
@@ -158,25 +154,21 @@ export function BrewLogFields({
         />
       </fieldset>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-lg font-semibold">평가</legend>
+      <fieldset className="flex min-w-0 flex-col gap-2">
+        <legend className="text-card-title font-semibold">평가</legend>
 
         <RatingInput value={state.rating} onChange={(v) => set("rating", v)} />
 
         {!state.sensoryExpanded && (
-          <button
-            type="button"
-            onClick={() => set("sensoryExpanded", true)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center self-start rounded-md border border-line px-3 py-2 text-base"
-          >
+          <Button onClick={() => set("sensoryExpanded", true)}>
             맛 자세히
-          </button>
+          </Button>
         )}
 
         {state.sensoryExpanded &&
           SENSORY_AXES.map(({ key, label }) => (
-            <label key={key} className="flex items-center gap-2 text-base">
-              <span className="w-20 shrink-0 text-muted">{label}</span>
+            <label key={key} className="flex items-center gap-2 text-body">
+              <span className="w-20 shrink-0 text-ink-3">{label}</span>
               <select
                 aria-label={label}
                 value={state[key] ?? ""}
@@ -186,7 +178,7 @@ export function BrewLogFields({
                     e.target.value === "" ? null : Number(e.target.value),
                   )
                 }
-                className="min-w-0 appearance-none select-chevron pr-12 w-full rounded-md border border-line px-2 py-1 min-h-11"
+                className={controlClass(SELECT_EXTRA)}
               >
                 <option value="">선택 안 함</option>
                 {[1, 2, 3, 4, 5].map((score) => (
@@ -198,8 +190,8 @@ export function BrewLogFields({
             </label>
           ))}
 
-        <label className="flex flex-col gap-1 text-base">
-          <span className="shrink-0 text-muted">메모</span>
+        <label className="flex flex-col gap-1 text-body">
+          <span className="shrink-0 text-ink-3">메모</span>
           <textarea
             aria-label="메모"
             value={state.overallNote}
@@ -208,10 +200,11 @@ export function BrewLogFields({
             aria-describedby={
               fieldErrors?.byField.overallNote ? "brew-note-error" : undefined
             }
-            className="w-full min-w-0 rounded-md border border-line px-2 py-1 min-h-11"
+            aria-invalid={fieldErrors ? true : undefined}
+            className={controlClass("", Boolean(fieldErrors))}
           />
           {fieldErrors?.byField.overallNote && (
-            <span id="brew-note-error" className="text-sm text-danger">
+            <span id="brew-note-error" className="text-body-sm text-danger">
               {fieldErrors.byField.overallNote}
             </span>
           )}
@@ -241,8 +234,8 @@ function NumberField({
   const errorId = `brew-${encodeURIComponent(label)}-error`;
 
   return (
-    <label className="flex items-center gap-2 text-base">
-      <span className="w-20 shrink-0 text-muted">{label}</span>
+    <label className="flex items-center gap-2 text-body">
+      <span className="w-20 shrink-0 text-ink-3">{label}</span>
       <input
         type="number"
         aria-label={label}
@@ -251,10 +244,11 @@ function NumberField({
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
         aria-describedby={error ? errorId : undefined}
-        className="w-full min-w-0 rounded-md border border-line px-2 py-1 min-h-11"
+        aria-invalid={error ? true : undefined}
+        className={controlClass("", Boolean(error))}
       />
       {error && (
-        <span id={errorId} className="text-sm text-danger">
+        <span id={errorId} className="text-body-sm text-danger">
           {error}
         </span>
       )}

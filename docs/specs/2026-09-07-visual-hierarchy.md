@@ -7,6 +7,24 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 
 # 시각 위계 정비 스펙
 
+> ## ★ 2026-09-17 갱신 — Clean Ledger로 값이 바뀌었다
+>
+> 디자인 핸드오프를 채택하면서(`docs/design/2026-09-16-product-direction.md` 결정 15)
+> **이 스펙의 값이 바뀌었다. 조건의 뜻은 그대로다.**
+>
+> | AC | 그때 | 지금 |
+> |---|---|---|
+> | `AC-VISUAL-05` | 크기 5개 `36/24/18/16/14` | **이름 기반 6단계** — `page-title`(27) · `card-title`(18) · `body`(15) · `body-sm`(13) · `metric-hero`(36 Mono) · `metric`(14 Mono) |
+> | `AC-VISUAL-06` | 토큰 **8개** | 토큰 **15개** (oklch) |
+> | `AC-VISUAL-07` | hex 대비 AA | **oklch** 대비 AA |
+> | `AC-VISUAL-15` | 화면 제목 24px | **27px** |
+> | `AC-VISUAL-14`·`17`·`18` | 리터럴 `rgb(...)` 비교 | `e2e/tokenColor.ts`가 **같은 페이지에서 기준값을 만든다** — 브라우저가 oklch를 `lab(...)`으로 돌려주기 때문 |
+>
+> **「대표 수치 하나를 36px로」는 살아남았다.** 다만 Sans에서 **Mono**로 바뀌었다 —
+> 자릿수가 정렬돼야 목록에서 값이 흔들리지 않는다.
+>
+> 새 값의 근거는 `docs/specs/2026-09-17-design-system-v2.md`에 있다.
+
 > 2026-09-07 `/interview`로 확정. 작성 규칙은 [`docs/conventions/workflow.md`](../conventions/workflow.md).
 > **모든 인수 조건은 자동화된 테스트로 옮길 수 있어야 한다.**
 

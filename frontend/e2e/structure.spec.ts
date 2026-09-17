@@ -50,7 +50,9 @@ test.describe("구조 — 상태값", () => {
 test.describe("구조 — 대표 수치", () => {
   // 36px 클래스로 찾지 않는다. 스타일이 바뀔 때마다 셀렉터가 깨진다.
   for (const path of ["/recipes", "/recipes/12"]) {
-    test(`AC-STRUCT-17 · ${path}의 대표 수치가 1:비율이다`, async ({ page }) => {
+    test(`AC-STRUCT-17 · ${path}의 대표 수치가 1:비율이다`, async ({
+      page,
+    }) => {
       await installStubs(page);
       await page.goto(path);
       await page.waitForLoadState("networkidle");
@@ -64,7 +66,9 @@ test.describe("구조 — 대표 수치", () => {
   }
 
   for (const path of ["/brews", "/brews/2"]) {
-    test(`AC-STRUCT-18 · ${path}의 대표 수치가 1:비율이다`, async ({ page }) => {
+    test(`AC-STRUCT-18 · ${path}의 대표 수치가 1:비율이다`, async ({
+      page,
+    }) => {
       await installStubs(page);
       await page.goto(path);
       await page.waitForLoadState("networkidle");
@@ -106,7 +110,9 @@ test.describe("구조 — 폼", () => {
         return [...out];
       });
 
-      expect(rights, path).toEqual([344]);
+      // 갱신(2026-09-17): 화면 좌우 거터가 16→24px가 되면서 344→336이 됐다
+      // (docs/design/design_handoff_kaldi_note/README.md 「화면 좌우 거터: 모바일 24px」).
+      expect(rights, path).toEqual([336]);
     });
   }
 
@@ -256,7 +262,9 @@ test.describe("구조 — 기록 비교표", () => {
     expect(diffs).toEqual(["true", "true", "true", "false"]);
   });
 
-  test("AC-STRUCT-12 · 「현재 레시피와 비교」 문구가 있다", async ({ page }) => {
+  test("AC-STRUCT-12 · 「현재 레시피와 비교」 문구가 있다", async ({
+    page,
+  }) => {
     await installStubs(page);
     await page.goto("/brews/2");
     await page.waitForLoadState("networkidle");

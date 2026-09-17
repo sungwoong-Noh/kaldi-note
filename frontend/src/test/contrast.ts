@@ -10,7 +10,16 @@ export function luminance(hex: string): number {
   return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 }
 
-export function contrastRatio(a: string, b: string): number {
-  const [high, low] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+/**
+ * 휘도 두 개의 대비. 색 표현과 무관하므로 hex·oklch 양쪽이 이것을 공유한다.
+ *
+ * <p>oklch 휘도는 `oklch.ts`의 `oklchLuminance`가 만든다.
+ */
+export function ratioOf(lumA: number, lumB: number): number {
+  const [high, low] = [lumA, lumB].sort((x, y) => y - x);
   return (high + 0.05) / (low + 0.05);
+}
+
+export function contrastRatio(a: string, b: string): number {
+  return ratioOf(luminance(a), luminance(b));
 }

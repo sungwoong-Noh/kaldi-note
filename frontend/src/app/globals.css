@@ -143,8 +143,18 @@
   line-height: 1.3;
 }
 
+/*
+ * 다크 값 — docs/specs/2026-09-17-dark-mode-toggle.md
+ *
+ * ★ 3단 구조다. **이 파일 안에서만 값이 두 곳에 산다 — 하나를 고치면 반드시 둘 다 고친다.**
+ *
+ *   1. 시스템이 다크 + 사용자가 라이트를 강제하지 않음 → 미디어쿼리가 이긴다
+ *      (`:not([data-theme="light"])`로 가드해 토글의 라이트 강제를 덮어쓰지 않는다)
+ *   2. 사용자가 토글로 다크를 강제 → `:root[data-theme="dark"]`가 미디어쿼리 유무와
+ *      무관하게 이긴다(시스템이 라이트여도 다크가 나온다)
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --paper: oklch(0.17 0.008 60);
     --surface: oklch(0.21 0.009 60);
     /* 도출: 라이트에서 sunken은 paper보다 가라앉는다. 다크에서도 같은 방향으로 어둡게. */
@@ -170,6 +180,33 @@
 
     --danger: oklch(0.72 0.15 28);
   }
+}
+
+:root[data-theme="dark"] {
+    --paper: oklch(0.17 0.008 60);
+    --surface: oklch(0.21 0.009 60);
+    /* 도출: 라이트에서 sunken은 paper보다 가라앉는다. 다크에서도 같은 방향으로 어둡게. */
+    --sunken: oklch(0.13 0.008 60);
+    --raised: oklch(0.23 0.014 60);
+
+    --border: oklch(0.29 0.01 60);
+    --divider: oklch(0.26 0.012 60);
+    /* 도출: 라이트에서 divider-strong이 divider보다 진하다. 다크에서 진함은 밝음이다. */
+    --divider-strong: oklch(0.33 0.012 60);
+
+    --ink: oklch(0.95 0.005 85);
+    --ink-2: oklch(0.82 0.008 78);
+    --ink-3: oklch(0.68 0.01 70);
+    /* 다크에서는 ink가 밝으므로 그 위 글자가 뒤집힌다 — 핸드오프의 「primary 반전」. */
+    --on-ink: oklch(0.2 0.015 60);
+
+    --accent: oklch(0.72 0.07 55);
+    /* 도출: 라이트에서 accent-soft가 accent보다 밝다(0.42→0.62). 다크에서도 위로. */
+    --accent-soft: oklch(0.8 0.05 55);
+    /* 도출: wash는 배경이다. 라이트에서 paper 근처였듯 다크에서도 paper 근처로. */
+    --accent-wash: oklch(0.26 0.03 50);
+
+    --danger: oklch(0.72 0.15 28);
 }
 
 body {
@@ -199,7 +236,13 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"])
   .select-chevron {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%239c9792' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   }
 }
+
+:root[data-theme="dark"]
+  .select-chevron {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%239c9792' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  }

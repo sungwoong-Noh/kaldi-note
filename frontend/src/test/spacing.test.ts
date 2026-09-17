@@ -167,14 +167,21 @@ describe("모서리", () => {
     expect(RADIUS.filter((name) => !used.has(`rounded-${name}`))).toEqual([]);
   });
 
-  it("AC-SPACE-07 · rounded-full이 아바타와 스피너 2곳뿐이다", () => {
+  it("AC-SPACE-07 · rounded-full이 원형 자리 4곳뿐이다", () => {
+    /*
+     * 갱신(2026-09-17): 다크 모드 토글이 늘며 2곳 → 4곳이 됐다. 핸드오프 README도
+     * radius 999(rounded-full)를 "아바타·**토글**·프로그레스"로 못박아뒀다 —
+     * 스위치 트랙과 손잡이가 각각 하나씩, 두 번 쓰인다.
+     */
     const found = SOURCES.flatMap((path) =>
       Array(count(path, /\brounded-full\b/g)).fill(path),
     );
 
-    expect(found).toHaveLength(2);
+    expect(found).toHaveLength(4);
     expect(found.map((path) => path.split(sep).pop()).sort()).toEqual([
       "LoadingState.tsx",
+      "ThemeToggle.tsx",
+      "ThemeToggle.tsx",
       "UserProfile.tsx",
     ]);
   });

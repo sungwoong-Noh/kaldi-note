@@ -20,7 +20,7 @@ import type { Recipe } from "../schema";
 import { DeleteRecipeDialog } from "./DeleteRecipeDialog";
 import { RecipeStepList } from "./RecipeStepList";
 import { statusLabel } from "@/lib/statusLabel";
-import { Button, ButtonLink } from "@/components/ui";
+import { Button, ButtonLink, Shell } from "@/components/ui";
 
 export function RecipeDetail({ id }: { id: number }) {
   const router = useRouter();
@@ -55,9 +55,9 @@ export function RecipeDetail({ id }: { id: number }) {
 
   if (!ready || recipeQuery.isPending) {
     return (
-      <Shell>
+      <Screen>
         <LoadingState />
-      </Shell>
+      </Screen>
     );
   }
 
@@ -68,20 +68,20 @@ export function RecipeDetail({ id }: { id: number }) {
       recipeQuery.error.code === "NOT_FOUND"
     ) {
       return (
-        <Shell>
+        <Screen>
           <p className="py-12 text-center text-body text-ink-3">
             레시피를 찾을 수 없습니다
           </p>
-        </Shell>
+        </Screen>
       );
     }
     return (
-      <Shell>
+      <Screen>
         <ErrorState
           error={recipeQuery.error}
           onRetry={() => void recipeQuery.refetch()}
         />
-      </Shell>
+      </Screen>
     );
   }
 
@@ -92,7 +92,7 @@ export function RecipeDetail({ id }: { id: number }) {
   const isMine = me.data !== undefined && recipe.ownerUserId === me.data.id;
 
   return (
-    <Shell>
+    <Screen>
       <header>
         <div className="flex items-start justify-between gap-2">
           <h1 className="text-page-title font-semibold">{recipe.title}</h1>
@@ -255,12 +255,12 @@ export function RecipeDetail({ id }: { id: number }) {
           )}
         </div>
       )}
-    </Shell>
+    </Screen>
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
-  return <main className="mx-auto w-full max-w-2xl px-6 py-6">{children}</main>;
+function Screen({ children }: { children: React.ReactNode }) {
+  return <Shell>{children}</Shell>;
 }
 
 export type { Recipe };

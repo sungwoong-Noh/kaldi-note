@@ -8,7 +8,7 @@ import { useRequireSession } from "@/features/auth/useRequireSession";
 import { BREW_LOG_PAGE_SIZE, fetchBrewLogPage } from "@/features/brewlog/api";
 import { BrewLogCard } from "@/features/brewlog/components/BrewLogCard";
 import { useRecipeLabels } from "@/features/brewlog/useRecipeLabels";
-import { Button, ButtonLink } from "@/components/ui";
+import { Button, ButtonLink, Shell } from "@/components/ui";
 
 export default function BrewsPage() {
   const { ready, onSessionLost } = useRequireSession();
@@ -36,23 +36,23 @@ export default function BrewsPage() {
 
   if (!ready || isPending) {
     return (
-      <Shell>
+      <Screen>
         <LoadingState />
-      </Shell>
+      </Screen>
     );
   }
 
   if (error) {
     return (
-      <Shell>
+      <Screen>
         <ErrorState error={error} onRetry={() => void refetch()} />
-      </Shell>
+      </Screen>
     );
   }
 
   if (logs.length === 0) {
     return (
-      <Shell>
+      <Screen>
         {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
         <div data-empty className="flex flex-col gap-3">
           <p className="py-6 text-center text-body text-ink-3">
@@ -62,12 +62,12 @@ export default function BrewsPage() {
             레시피 보러 가기
           </ButtonLink>
         </div>
-      </Shell>
+      </Screen>
     );
   }
 
   return (
-    <Shell>
+    <Screen>
       <ul className="flex flex-col gap-3">
         {logs.map((log) => (
           <BrewLogCard
@@ -87,13 +87,13 @@ export default function BrewsPage() {
           더 보기
         </Button>
       )}
-    </Shell>
+    </Screen>
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-6">
+    <Shell>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-page-title font-semibold">브루잉 로그</h1>
         <Link
@@ -104,6 +104,6 @@ function Shell({ children }: { children: React.ReactNode }) {
         </Link>
       </div>
       {children}
-    </main>
+    </Shell>
   );
 }

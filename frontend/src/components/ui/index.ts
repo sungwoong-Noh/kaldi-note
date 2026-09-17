@@ -10,4 +10,4 @@ export {
 export { Eyebrow } from "./Eyebrow";
 export { Hero } from "./Hero";
 export { Shell } from "./Shell";
-export { Badge, Card, MetricRow } from "./Surface";
+export { Badge, Card, cardClass, MetricRow } from "./Surface";

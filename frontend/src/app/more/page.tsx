@@ -9,7 +9,7 @@ import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useMe } from "@/features/user/queries";
 import { clearRecipeCache } from "@/lib/offline-cache";
 import { clearSession } from "@/lib/session";
-import { Button } from "@/components/ui";
+import { Button, Shell } from "@/components/ui";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function MorePage() {
@@ -41,22 +41,22 @@ export default function MorePage() {
 
   if (!ready || me.isPending) {
     return (
-      <Shell>
+      <Screen>
         <LoadingState />
-      </Shell>
+      </Screen>
     );
   }
 
   if (me.error) {
     return (
-      <Shell>
+      <Screen>
         <ErrorState error={me.error} onRetry={() => void me.refetch()} />
-      </Shell>
+      </Screen>
     );
   }
 
   return (
-    <Shell>
+    <Screen>
       <dl className="flex flex-col gap-3 border-b border-border pb-4">
         <Row label="닉네임" value={me.data.nickname} />
         {me.data.email !== undefined && (
@@ -93,7 +93,7 @@ export default function MorePage() {
       <Button onClick={() => void logout()} disabled={loggingOut} block>
         로그아웃
       </Button>
-    </Shell>
+    </Screen>
   );
 }
 
@@ -106,11 +106,11 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-6">
+    <Shell>
       <h1 className="mb-4 text-page-title font-semibold">더보기</h1>
       {children}
-    </main>
+    </Shell>
   );
 }

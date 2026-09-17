@@ -22,7 +22,7 @@ import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
 import { RecipeComparison } from "./RecipeComparison";
 import { DeleteBrewLogDialog } from "./DeleteBrewLogDialog";
 import { ExtractionSummary } from "./ExtractionSummary";
-import { Button, ButtonLink } from "@/components/ui";
+import { Button, ButtonLink, Shell } from "@/components/ui";
 
 export function BrewDetail({ id }: { id: number }) {
   const router = useRouter();
@@ -51,20 +51,20 @@ export function BrewDetail({ id }: { id: number }) {
 
   if (!ready || logQuery.isPending) {
     return (
-      <Shell>
+      <Screen>
         <LoadingState />
-      </Shell>
+      </Screen>
     );
   }
 
   if (logQuery.error) {
     return (
-      <Shell>
+      <Screen>
         <ErrorState
           error={logQuery.error}
           onRetry={() => void logQuery.refetch()}
         />
-      </Shell>
+      </Screen>
     );
   }
 
@@ -73,7 +73,7 @@ export function BrewDetail({ id }: { id: number }) {
   const lead = headline(log);
 
   return (
-    <Shell>
+    <Screen>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <p className="text-body text-ink-3">{log.brewedAt.slice(0, 10)}</p>
@@ -190,7 +190,7 @@ export function BrewDetail({ id }: { id: number }) {
           onCancel={() => setConfirmingDelete(false)}
         />
       )}
-    </Shell>
+    </Screen>
   );
 }
 
@@ -244,10 +244,10 @@ function Measure({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6">
+    <Shell stack>
       {children}
-    </main>
+    </Shell>
   );
 }

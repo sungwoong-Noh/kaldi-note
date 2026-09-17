@@ -1,20 +1,48 @@
 import type { ReactNode } from "react";
 
-/** 카드·다이얼로그의 면. 그림자를 쓰지 않으므로 층은 보더와 면의 명도 차이로만 만든다. */
+/**
+ * 면 스타일의 단일 출처.
+ *
+ * <p><b>`Card` 컴포넌트를 쓸 수 없는 자리를 위한 문이다.</b> 목록 카드는 `<Link>`라
+ * 감싸면 클릭 영역이 패딩 밖으로 새고, 다이얼로그는 `role`·`aria-modal`을 직접 들고 있다.
+ * `controlClass`와 같은 이유·같은 모양이다.
+ */
+export function cardClass(
+  extra = "",
+  { tone = "outlined", pad = "normal" }: CardTone = {},
+): string {
+  const surface = tone === "raised" ? "bg-paper" : "border border-border";
+  const padding = pad === "tight" ? "p-3" : "p-4";
+  return `rounded-surface ${surface} ${padding} ${extra}`
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+interface CardTone {
+  tone?: "outlined" | "raised";
+  pad?: "normal" | "tight";
+}
+
+/**
+ * 카드·다이얼로그의 면. 그림자를 쓰지 않으므로 층은 보더와 면의 명도 차이로만 만든다.
+ *
+ * @param tone `outlined`는 배경 위의 카드라 테두리로 경계를 만든다.
+ *   `raised`는 배경막 위에 뜨는 다이얼로그라 **불투명한 면 자체가 경계**이고,
+ *   테두리를 더하면 어두운 배경막과 겹쳐 이중선이 된다.
+ * @param pad `tight`는 카드 안의 카드(스텝 행)용이다. 같은 여백이면 중첩이 안 읽힌다.
+ */
 export function Card({
   children,
+  tone = "outlined",
+  pad = "normal",
   className = "",
 }: {
   children: ReactNode;
+  tone?: "outlined" | "raised";
+  pad?: "normal" | "tight";
   className?: string;
 }) {
-  return (
-    <div
-      className={`rounded-surface border border-border p-4 ${className}`.trim()}
-    >
-      {children}
-    </div>
-  );
+  return <div className={cardClass(className, { tone, pad })}>{children}</div>;
 }
 
 /** 배지. 강조(`accent`)는 CURATED처럼 출처를 밝히는 자리에만 쓴다. */

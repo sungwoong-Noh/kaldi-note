@@ -7,7 +7,7 @@ import { useGrinders } from "@/features/gear/queries";
 import type { UserGrinder } from "@/features/gear/schema";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
-import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
+import { Button, SELECT_EXTRA, cardClass, controlClass } from "@/components/ui";
 
 /**
  * 내 그라인더 등록 모달.
@@ -53,7 +53,7 @@ export function UserGrinderDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="user-grinder-title"
-        className="flex w-full max-w-sm flex-col gap-4 rounded-surface bg-paper p-4"
+        className={cardClass("flex w-full max-w-sm flex-col gap-4", { tone: "raised" })}
       >
         <h2 id="user-grinder-title" className="text-card-title font-semibold">
           그라인더 등록

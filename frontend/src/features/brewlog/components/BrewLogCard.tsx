@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatDuration, formatRatio, formatTemperature } from "@/lib/format";
 import { headline } from "../headline";
 import type { BrewLogSummary } from "../schema";
+import { cardClass } from "@/components/ui";
 
 /**
  * 목록의 한 항목. 카드 전체가 링크라 탭 타깃이 크다 — 부엌에서 폰으로 쓰는 환경을 전제한다.
@@ -23,7 +24,7 @@ export function BrewLogCard({
     <li>
       <Link
         href={`/brews/${log.id}`}
-        className="block rounded-surface border border-border p-4 active:bg-surface"
+        className={cardClass("block active:bg-surface")}
       >
         <div className="flex items-start justify-between gap-2">
           <h2 className="text-card-title font-medium">{recipeLabel}</h2>

@@ -24,7 +24,7 @@ import {
 import { BeanBatchDialog } from "./BeanBatchDialog";
 import { BrewLogFields } from "./BrewLogFields";
 import { UserGrinderDialog } from "./UserGrinderDialog";
-import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
+import { Button, SELECT_EXTRA, Shell, controlClass } from "@/components/ui";
 
 /**
  * 로그 작성 화면.
@@ -45,7 +45,7 @@ export function BrewLogForm({ recipeId }: { recipeId: number }) {
   const failure = recipe.error ?? grinders.error;
   if (failure) {
     return (
-      <Shell>
+      <Screen>
         <ErrorState
           error={failure}
           onRetry={() => {
@@ -53,27 +53,27 @@ export function BrewLogForm({ recipeId }: { recipeId: number }) {
             void grinders.refetch();
           }}
         />
-      </Shell>
+      </Screen>
     );
   }
 
   // 두 쿼리를 섞으면 `isPending`만으로는 타입이 좁혀지지 않는다. 데이터 자체를 조건으로 쓴다.
   if (!ready || !recipe.data || !grinders.data) {
     return (
-      <Shell>
+      <Screen>
         <LoadingState />
-      </Shell>
+      </Screen>
     );
   }
 
   return (
-    <Shell>
+    <Screen>
       <Fields
         recipe={recipe.data}
         grinders={grinders.data}
         onSessionLost={onSessionLost}
       />
-    </Shell>
+    </Screen>
   );
 }
 
@@ -236,11 +236,11 @@ function batchLabel(
     .join(" · ");
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6">
+    <Shell stack>
       <h1 className="text-page-title font-semibold">이 레시피로 내렸다</h1>
       {children}
-    </main>
+    </Shell>
   );
 }

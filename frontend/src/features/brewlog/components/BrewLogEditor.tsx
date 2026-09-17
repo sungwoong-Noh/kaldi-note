@@ -21,7 +21,7 @@ import {
 import type { BrewLog } from "../schema";
 import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
 import { BrewLogFields } from "./BrewLogFields";
-import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
+import { Button, SELECT_EXTRA, Shell, controlClass } from "@/components/ui";
 
 /** 스펙이 정한 문구다. 값을 바꾸거나 기록을 지우는 것 말고는 길이 없다. */
 const CLEAR_MESSAGE = "값을 지울 수 없습니다. 고치거나 기록을 삭제하세요";
@@ -46,7 +46,7 @@ export function BrewLogEditor({ id }: { id: number }) {
   const failure = log.error ?? grinders.error;
   if (failure) {
     return (
-      <Shell>
+      <Screen>
         <ErrorState
           error={failure}
           onRetry={() => {
@@ -54,27 +54,27 @@ export function BrewLogEditor({ id }: { id: number }) {
             void grinders.refetch();
           }}
         />
-      </Shell>
+      </Screen>
     );
   }
 
   // 두 쿼리를 섞으면 `isPending`만으로는 타입이 좁혀지지 않는다. 데이터 자체를 조건으로 쓴다.
   if (!ready || !log.data || !grinders.data) {
     return (
-      <Shell>
+      <Screen>
         <LoadingState />
-      </Shell>
+      </Screen>
     );
   }
 
   return (
-    <Shell>
+    <Screen>
       <Fields
         log={log.data}
         grinders={grinders.data}
         onSessionLost={onSessionLost}
       />
-    </Shell>
+    </Screen>
   );
 }
 
@@ -221,11 +221,11 @@ function toVisibility(value: string): BrewLogEditState["visibility"] {
   return value === "FRIENDS" || value === "PUBLIC" ? value : "PRIVATE";
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-6">
+    <Shell stack>
       <h1 className="text-page-title font-semibold">기록 편집</h1>
       {children}
-    </main>
+    </Shell>
   );
 }

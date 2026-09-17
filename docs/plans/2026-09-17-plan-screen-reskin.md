@@ -91,12 +91,27 @@ frontend/src/components/ui/
 
 **Covers:** AC-SKIN-01, AC-SKIN-02
 
-- [ ] **Step 1: 실패하는 테스트** — `rounded-surface` 직접 사용 0곳, Shell 1종
-- [ ] **Step 2: 실패 확인** (현재 카드 7곳 · Shell 2종)
-- [ ] **Step 3: 화면의 `<main>`을 `Shell`로 교체**
-- [ ] **Step 4: 카드 7곳을 `Card`로 교체.** 다이얼로그 4곳은 `bg-paper`가 필요하므로
+- [x] **Step 1: 실패하는 테스트** — `rounded-surface` 직접 사용 0곳, Shell 1종
+- [x] **Step 2: 실패 확인** (현재 카드 7곳 · Shell 2종)
+- [x] **Step 3: 화면의 `<main>`을 `Shell`로 교체**
+- [x] **Step 4: 카드 7곳을 `Card`로 교체.** 다이얼로그 4곳은 `bg-paper`가 필요하므로
       `Card`에 `tone="raised"` 같은 변형이 필요한지 여기서 판단한다
-- [ ] **Step 5: `pnpm test` + `pnpm e2e` 초록 + 커밋**
+- [x] **Step 5: `pnpm test` + `pnpm e2e` 초록 + 커밋**
+
+
+**계획과 달라진 점(2026-09-17).**
+
+- **`cardClass()`를 더했다.** 계획은 7곳을 `Card` 컴포넌트로 바꾸는 것이었는데, 그중
+  **목록 카드 2곳은 `<Link>`**(감싸면 클릭 영역이 패딩 밖으로 샌다)이고 **다이얼로그 4곳은
+  `role`·`aria-modal`을 직접 들고 있다.** `controlClass`와 같은 이유·같은 모양으로 열었다.
+- **`Card`에 `tone`·`pad`를 더했다.** 다이얼로그는 배경막 위에 뜨므로 테두리를 더하면
+  **어두운 배경막과 겹쳐 이중선**이 된다 — `raised`는 불투명한 면 자체가 경계다.
+  `tight`는 카드 안의 카드(스텝 행)용이다.
+- **로컬 `Shell` 함수 12개와 이름이 충돌했다.** 화면마다 「컨테이너 + 제목」을 묶은 껍데기를
+  `Shell`이라 부르고 있었다. 로컬 쪽을 `Screen`으로 바꿨다.
+- **`AC-SPACE-05`가 뒤집혔다.** 「면 7곳이 `rounded-surface`를 쓴다」였는데 그 7곳을
+  걷어냈으니 목록이 빈다 — **조건이 깨진 것이 아니라 값이 한 곳으로 모인 것**이라
+  「프리미티브 두 곳에만 있다」로 고쳤다.
 
 ## Task 3: 히어로 카드 도입
 

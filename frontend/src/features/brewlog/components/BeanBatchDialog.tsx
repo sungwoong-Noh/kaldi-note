@@ -13,7 +13,7 @@ import { createBeanBatch } from "@/features/inventory/api";
 import type { BeanBatch } from "@/features/inventory/schema";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
-import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
+import { Button, SELECT_EXTRA, cardClass, controlClass } from "@/components/ui";
 
 /** 스펙 「원두 등록 모달」이 정한 네 가지. 서버 enum의 `DARK`는 이번 화면에 두지 않는다. */
 const ROAST_LEVELS: RoastLevel[] = [
@@ -120,7 +120,7 @@ export function BeanBatchDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="bean-batch-title"
-        className="flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto rounded-surface bg-paper p-4"
+        className={cardClass("flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto", { tone: "raised" })}
       >
         <h2 id="bean-batch-title" className="text-card-title font-semibold">
           원두 등록

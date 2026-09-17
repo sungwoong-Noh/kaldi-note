@@ -7,7 +7,7 @@ import { useRequireSession } from "@/features/auth/useRequireSession";
 import { fetchRecipePage } from "@/features/recipe/api";
 import { RecipeCard } from "@/features/recipe/components/RecipeCard";
 import { useMe } from "@/features/user/queries";
-import { Button, ButtonLink } from "@/components/ui";
+import { Button, ButtonLink, Shell } from "@/components/ui";
 
 export default function RecipesPage() {
   const { ready, onSessionLost } = useRequireSession();
@@ -39,17 +39,17 @@ export default function RecipesPage() {
 
   if (!ready || isPending) {
     return (
-      <Shell mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
+      <Screen mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
         {null}
-      </Shell>
+      </Screen>
     );
   }
 
   if (error) {
     return (
-      <Shell mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
+      <Screen mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
         <ErrorState error={error} onRetry={() => void refetch()} />
-      </Shell>
+      </Screen>
     );
   }
 
@@ -57,7 +57,7 @@ export default function RecipesPage() {
 
   if (recipes.length === 0) {
     return (
-      <Shell mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
+      <Screen mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
         {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
         <div data-empty className="flex flex-col gap-3">
           <p className="py-6 text-center text-body text-ink-3">
@@ -67,12 +67,12 @@ export default function RecipesPage() {
             새 레시피
           </ButtonLink>
         </div>
-      </Shell>
+      </Screen>
     );
   }
 
   return (
-    <Shell mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
+    <Screen mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
       <ul className="flex flex-col gap-3">
         {recipes.map((recipe) => (
           <RecipeCard key={recipe.id} recipe={recipe} />
@@ -88,11 +88,11 @@ export default function RecipesPage() {
           더 보기
         </Button>
       )}
-    </Shell>
+    </Screen>
   );
 }
 
-function Shell({
+function Screen({
   children,
   mineOnly,
   onMineOnlyChange,
@@ -102,7 +102,7 @@ function Shell({
   onMineOnlyChange?: (value: boolean) => void;
 }) {
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-6">
+    <Shell>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-page-title font-semibold">레시피</h1>
         <ButtonLink href="/recipes/new" variant="primary">
@@ -125,6 +125,6 @@ function Shell({
       )}
 
       {children}
-    </main>
+    </Shell>
   );
 }

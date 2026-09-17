@@ -1,5 +1,5 @@
 "use client";
-import { Button, controlClass } from "@/components/ui";
+import { Button, cardClass, controlClass } from "@/components/ui";
 
 /**
  * 로그 삭제 확인 대화상자.
@@ -22,7 +22,7 @@ export function DeleteBrewLogDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="delete-brew-log-title"
-        className="flex w-full max-w-sm flex-col gap-4 rounded-surface bg-paper p-4"
+        className={cardClass("flex w-full max-w-sm flex-col gap-4", { tone: "raised" })}
       >
         <h2
           id="delete-brew-log-title"

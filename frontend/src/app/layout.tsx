@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar";
+import { initThemeScript } from "@/lib/theme";
 
 export const metadata: Metadata = {
   title: "kaldi note",
@@ -23,6 +24,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   // 아니다. 이 플래그는 이 엘리먼트의 속성 차이만 덮으며 자식 트리에는 영향이 없다.
   return (
     <html lang="ko" className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        {/*
+          하이드레이션 전에 실행돼야 한다 — 그러지 않으면 다크를 저장해둔 사용자가 열 때마다
+          라이트가 한 프레임 번쩍인다(docs/specs/2026-09-17-dark-mode-toggle.md).
+        */}
+        <script dangerouslySetInnerHTML={{ __html: initThemeScript() }} />
+      </head>
       <body className="flex min-h-full flex-col">
         {/* 탭바는 여기 한 번만 둔다. 페이지마다 넣으면 새 화면을 만들 때마다 빠뜨린다. */}
         <Providers>

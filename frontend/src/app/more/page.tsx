@@ -10,6 +10,7 @@ import { useMe } from "@/features/user/queries";
 import { clearRecipeCache } from "@/lib/offline-cache";
 import { clearSession } from "@/lib/session";
 import { Button } from "@/components/ui";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function MorePage() {
   const router = useRouter();
@@ -86,6 +87,8 @@ export default function MorePage() {
           </Link>
         </li>
       </ul>
+
+      <ThemeToggle />
 
       <Button onClick={() => void logout()} disabled={loggingOut} block>
         로그아웃

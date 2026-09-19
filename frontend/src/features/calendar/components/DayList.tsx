@@ -62,6 +62,7 @@ export function DayList({
             key={log.id}
             log={log}
             recipeLabel={recipeLabels?.get(log.recipeId)}
+            variant={variant}
           />
         ))}
       </ul>
@@ -75,9 +76,11 @@ export function DayList({
 function DayListRow({
   log,
   recipeLabel,
+  variant,
 }: {
   log: BrewLogSummary;
   recipeLabel?: string;
+  variant: "mobile" | "web";
 }) {
   const roastLevel = useRoastLevel(log.beanBatchId, true);
   const metric = representativeMetric(log);
@@ -94,6 +97,14 @@ function DayListRow({
         </span>
         {metric !== undefined && <span className="text-metric">{metric}</span>}
       </Link>
+      {variant === "web" && log.overallNote !== undefined && (
+        <p className="text-body-sm italic text-ink-2">{log.overallNote}</p>
+      )}
+      {variant === "web" && log.diagnosis !== undefined && (
+        <p className="border-l-2 border-accent bg-surface px-3 py-2 text-body-sm">
+          {log.diagnosis}
+        </p>
+      )}
     </li>
   );
 }

@@ -107,6 +107,17 @@ test.describe("홈 달력 — 모바일", () => {
     await expect(page.getByText("2026.08")).toBeVisible();
   });
 
+  test("AC-HOMECAL-48 · 모바일 하단 CTA는 레시피 선택으로 보낸다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.goto("/");
+
+    await page.getByRole("link", { name: "기록하기" }).click();
+
+    await expect(page).toHaveURL("/recipes");
+  });
+
   test("AC-HOMECAL-49 · 기록을 저장하고 돌아오면 점이 찍혀 있다", async ({
     page,
     context,

@@ -172,7 +172,7 @@ plan: docs/plans/2026-09-09-plan-spacing-system.md
 > `docs/specs/2026-09-19-home-calendar.md`의 팔로우 레일이 아바타 2곳(사진 있을 때 `img`,
 > 없을 때 닉네임 첫 글자 대체 원)을 더해 **6곳**이 됐다.
 
-- **Given** `UserProfile`·`LoadingState`·`ThemeToggle`(트랙·손잡이)·`FollowRail`(사진·대체 원)
+- **Given** `UserProfile`·`LoadingState`·`ThemeToggle`(트랙·손잡이)·`Avatar`(사진·대체 원 — 홈 달력 레일과 웹 상단 바가 공유)
 - **When** 전체에서 `rounded-full`을 센다
 - **Then** **6곳**이고, 전부 그 파일들 안에 있다
 - **검증** 소스 검사 `src/test/spacing.test.ts`

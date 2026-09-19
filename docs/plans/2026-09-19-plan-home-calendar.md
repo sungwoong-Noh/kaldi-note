@@ -207,12 +207,12 @@ docs/specs/2026-09-19-home-calendar.md                        Modify — status,
 
 > **`primaryRecipeName`을 같은 쿼리에서 못 가져온다.** `GROUP BY date`와 「그 그룹에서 `brewedAt`이 최대인 행의 레시피명」은 윈도 함수가 필요하다. JPQL이 윈도 함수를 지원하지 않으므로 **쿼리를 둘로 나눈다** — ①날짜별 `count`, ②날짜별 대표 `brewLogId`. ②는 `brewedAt DESC, id DESC`로 정렬한 그 달 기록의 `id`·`recipeId`·`brewedAt`만 뽑아 자바에서 날짜별 첫 항목을 고른다. 한 달치 **경량 프로젝션**이라 엔티티 전체를 올리지 않는다.
 
-- [ ] **Step 1: 시작 전 초록을 확인한다**
+- [x] **Step 1: 시작 전 초록을 확인한다**
 
 Run: `docker compose up -d && cd backend && ./gradlew clean check`
 Expected: PASS. **테스트 개수를 적어둔다.**
 
-- [ ] **Step 2: `CalendarMonth` 실패 테스트 작성**
+- [x] **Step 2: `CalendarMonth` 실패 테스트 작성**
 
 Create `backend/src/test/java/com/kaldinote/brewlog/domain/CalendarMonthTest.java`:
 
@@ -249,12 +249,12 @@ class CalendarMonthTest {
 }
 ```
 
-- [ ] **Step 3: 테스트 실행 — 실패 확인**
+- [x] **Step 3: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*CalendarMonthTest'`
 Expected: FAIL — `CalendarMonth` 클래스가 없어 컴파일되지 않는다.
 
-- [ ] **Step 4: `CalendarMonth` 최소 구현**
+- [x] **Step 4: `CalendarMonth` 최소 구현**
 
 ```java
 package com.kaldinote.brewlog.domain;
@@ -309,12 +309,12 @@ public record CalendarMonth(YearMonth value) {
 }
 ```
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*CalendarMonthTest'`
 Expected: PASS, 2 tests
 
-- [ ] **Step 6: 리포지토리 집계 쿼리 추가**
+- [x] **Step 6: 리포지토리 집계 쿼리 추가**
 
 Modify `BrewLogRepository.java` — **기존 `findVisible`을 고치지 않는다.** 아래 둘을 더하고, `findVisible` 위에 주석으로 서로를 가리킨다.
 
@@ -399,7 +399,7 @@ Modify `BrewLogRepository.java` — **기존 `findVisible`을 고치지 않는�
 
 > **`:userId is null` 비교가 네이티브에서 타입 추론에 걸릴 수 있다.** 실패하면 `cast(:userId as bigint)`로 감싼다 — 이때도 **조건의 의미는 바꾸지 않는다.**
 
-- [ ] **Step 7: DTO 둘 생성**
+- [x] **Step 7: DTO 둘 생성**
 
 ```java
 // CalendarDayResponse.java
@@ -427,7 +427,7 @@ public record BrewLogCalendarResponse(
     String month, long totalCount, List<CalendarDayResponse> days) {}
 ```
 
-- [ ] **Step 8: 서비스 메서드 구현**
+- [x] **Step 8: 서비스 메서드 구현**
 
 Modify `BrewLogService.java` — `list` 아래에 더한다. `RecipeRepository`는 이미 주입돼 있다.
 
@@ -492,7 +492,7 @@ Modify `BrewLogService.java` — `list` 아래에 더한다. `RecipeRepository`�
 
 > **레시피 제목을 `findAllById`로 한 번에 읽는다.** 날짜마다 `findById`를 부르면 한 달에 최대 31회다. 삭제된 레시피는 `titles`에 없어 `primaryRecipeName`이 null이 되고, `non_null` 직렬화라 키가 빠진다 — 웹 셀은 그 줄을 그리지 않는다.
 
-- [ ] **Step 9: 컨트롤러 엔드포인트 추가**
+- [x] **Step 9: 컨트롤러 엔드포인트 추가**
 
 Modify `BrewLogController.java` — **`@GetMapping("/{id}")`보다 위에 둔다.** 리터럴이 템플릿보다 먼저 매칭되지만, 순서를 눈으로도 분명히 해 둔다.
 
@@ -514,7 +514,7 @@ Modify `BrewLogController.java` — **`@GetMapping("/{id}")`보다 위에 둔다
 
 > **`required = false`인데 필수인 이유:** 스프링이 던지는 `MissingServletRequestParameterException`은 `GlobalExceptionHandler`의 매핑에 따라 다른 `code`가 나올 수 있다. `CalendarMonth.parse(null)`이 `INVALID_REQUEST`를 던지게 해 **AC-HOMECAL-11과 같은 경로**로 모은다.
 
-- [ ] **Step 10: API 테스트 작성 — AC 16개**
+- [x] **Step 10: API 테스트 작성 — AC 16개**
 
 Create `BrewLogCalendarControllerTest.java`. 기존 `BrewLogControllerTest`의 셋업(Testcontainers·`@SpringBootTest`·토큰 발급)을 그대로 따른다.
 
@@ -619,12 +619,12 @@ Create `BrewLogCalendarControllerTest.java`. 기존 `BrewLogControllerTest`의 �
 
 나머지 AC-01·04·05·06·07·08·12·14·67도 같은 형태로 더한다. **`@DisplayName`에 AC ID를 반드시 남긴다** — `check-spec-coverage.sh`가 이걸로 찾는다.
 
-- [ ] **Step 11: 테스트 실행 — 통과 확인**
+- [x] **Step 11: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogCalendarControllerTest' --tests '*CalendarMonthTest'`
 Expected: PASS, 18 tests (API 16 + 단위 2)
 
-- [ ] **Step 12: 전체 검증 후 커밋**
+- [x] **Step 12: 전체 검증 후 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -652,7 +652,7 @@ cd .. && git add . && git commit -m "feat(brewlog): 달력 집계 API (AC-HOMECA
 
 > **`date`를 `Instant` 범위로 바꿔 넘긴다.** `findVisible`에 `at time zone`을 넣으면 인덱스(`idx_brew_logs_alive`)를 못 탄다. 컨트롤러에서 `LocalDate`를 받아 서비스가 `[startInclusive, endExclusive)`로 바꾼다 — Task 1의 `CalendarMonth`와 같은 방식이다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 Modify `BrewLogControllerTest.java` — 기존 테스트는 건드리지 않고 더한다.
 
@@ -696,24 +696,24 @@ Modify `BrewLogControllerTest.java` — 기존 테스트는 건드리지 않고 
 
 AC-HOMECAL-16(date + userId AND)도 같은 형태로 더한다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: FAIL — `date` 파라미터가 무시돼 `content.length()`가 3이고, `overallNote` 경로가 없다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 1. `BrewLogSummaryResponse`에 `String overallNote`를 **마지막 컴포넌트로** 더하고 `from`에 `log.getOverallNote()`를 넘긴다. 클래스 주석의 「`overallNote`만 뺐다」를 고친다 — **틀린 주석을 남겨두지 않는다.**
 2. `findVisible`에 `:startInclusive`/`:endExclusive` 조건을 더한다 (`:startInclusive is null or b.brewedAt >= :startInclusive` 형태, `countQuery`에도 **같이**).
 3. `BrewLogService.list`에 `LocalDate date`를 받아 `date == null ? null : date.atStartOfDay(CalendarMonth.KST).toInstant()`로 바꾼다.
 4. 컨트롤러에 `@RequestParam(required = false) String date`를 받아 파싱한다. `DateTimeParseException`을 `BusinessException(INVALID_REQUEST)`로 바꾼다 — **`@DateTimeFormat`을 쓰지 않는다.** 그쪽은 `MethodArgumentTypeMismatchException`이 나서 `code`가 달라진다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: PASS. **기존 테스트도 전부 통과해야 한다** — `list` 시그니처를 바꿨으므로 호출부 누락이 있으면 여기서 잡힌다.
 
-- [ ] **Step 5: 전체 검증 후 커밋**
+- [x] **Step 5: 전체 검증 후 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -741,7 +741,7 @@ cd .. && git add . && git commit -m "feat(brewlog): 날짜 필터와 요약의 �
 
 > **정렬을 SQL에서 끝낸다.** 자바에서 정렬하면 「볼 수 있는 기록의 마지막 시각」을 사람마다 따로 세게 된다. `left join`과 `max()`로 한 번에 낸다 — **무기록자가 빠지면 안 되므로 `left join`이다.**
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 Create `MutualFollowControllerTest.java`:
 
@@ -796,12 +796,12 @@ Create `MutualFollowControllerTest.java`:
 
 AC-19·21·23·24도 같은 형태로 더한다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*MutualFollowControllerTest'`
 Expected: FAIL — 404. 엔드포인트가 없다.
 
-- [ ] **Step 3: 리포지토리 쿼리 추가**
+- [x] **Step 3: 리포지토리 쿼리 추가**
 
 ```java
   /**
@@ -835,7 +835,7 @@ Expected: FAIL — 404. 엔드포인트가 없다.
 
 > **`b.visibility` 조건에 `PRIVATE`이 없다.** 맞팔로우 사이에서 볼 수 있는 것은 `PUBLIC`과 `FRIENDS`뿐이다. 정렬 기준이 「볼 수 있는 기록」이므로 상대의 `PRIVATE` 기록이 순서를 바꾸면 안 된다.
 
-- [ ] **Step 4: 서비스와 컨트롤러**
+- [x] **Step 4: 서비스와 컨트롤러**
 
 ```java
   /** 레일에 세울 맞팔로우 목록. 페이지 봉투가 아니라 배열이다 — 페이지네이션이 필요한 규모가 아니다. */
@@ -856,19 +856,19 @@ Expected: FAIL — 404. 엔드포인트가 없다.
 
 `UserService`에 `FollowRepository`를 주입한다.
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*MutualFollowControllerTest'`
 Expected: PASS, 7 tests
 
-- [ ] **Step 6: 백엔드 전체 검증 후 커밋**
+- [x] **Step 6: 백엔드 전체 검증 후 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
 cd .. && git add . && git commit -m "feat(user): 맞팔로우 목록 API (AC-HOMECAL-18~24)"
 ```
 
-- [ ] **Step 7: ★ 실제 응답을 떠 둔다**
+- [x] **Step 7: ★ 실제 응답을 떠 둔다**
 
 ```bash
 cd backend && ./gradlew bootRun &
@@ -905,7 +905,7 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 > **이 태스크를 먼저 하는 이유:** AC-HOMECAL-54는 **기존 화면의 버그 수정**이고 달력과 독립이다. 먼저 초록으로 만들어 두면, 이후 달력 작업 중 날짜가 어긋났을 때 원인이 달력 쪽임을 안다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 // frontend/src/lib/kstDate.test.ts
@@ -954,12 +954,12 @@ describe("brewCountLabel", () => {
   });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test kstDate brewCountLabel tokens BrewLogCard BrewDetail`
 Expected: FAIL — `kstDate.ts`가 없고, `BrewLogCard`가 `2026-09-18`을 보여준다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```ts
 // frontend/src/lib/kstDate.ts
@@ -996,12 +996,12 @@ export function toKstDate(iso: string): string {
 
 `BrewLogCard.formatBrewedDate`와 `BrewDetail`의 `log.brewedAt.slice(0, 10)`을 `toKstDate(log.brewedAt)`으로 바꾼다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test kstDate brewCountLabel tokens BrewLogCard BrewDetail`
 Expected: PASS
 
-- [ ] **Step 5: 전체 검증 후 커밋**
+- [x] **Step 5: 전체 검증 후 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -1026,7 +1026,7 @@ cd .. && git add . && git commit -m "fix(web): 날짜를 KST 기준으로 통일
 
 > **컴포넌트를 두 벌 만들지 않는다.** `variant`로 CSS만 가른다. 두 벌이면 aria-label·키보드 이동 같은 규칙이 한쪽에만 적용되는 사고가 난다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
   it("AC-HOMECAL-25 · 요일 헤더의 첫 칸이 월이고 마지막이 일이다", () => {
@@ -1075,23 +1075,23 @@ cd .. && git add . && git commit -m "fix(web): 날짜를 KST 기준으로 통일
 
 `monthGrid.test.ts`에 격자 계산 테스트를 더한다 — `2026-09-01`이 화요일이므로 첫 칸(월요일)이 `2026-08-31`이고 `inMonth: false`다. 6주에 걸치는 달(`2026-08`)은 길이가 42다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test Calendar monthGrid`
 Expected: FAIL — 모듈이 없다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `buildMonthGrid`는 그 달 1일의 요일을 구해 월요일까지 되감고, 7의 배수가 될 때까지 뒤를 채운다. `Calendar.tsx`는 `role="grid"`, 요일 헤더에 `role="columnheader"`, 각 날짜 칸을 `button`으로 그린다. `variant === "web"`일 때만 대표 레시피명과 `외 N건`을 렌더한다. 키보드 이동은 `onKeyDown`에서 `ArrowLeft/Right`는 ±1일, `ArrowUp/Down`은 ±7일로 계산해 `onSelect`를 부른다.
 
 **다른 달 칸(`inMonth: false`)은 `button`이 아니다** — 웹은 배경만 칠하고, 모바일은 빈 `div`다(AC-HOMECAL-69).
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test Calendar monthGrid`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -1111,7 +1111,7 @@ cd .. && git add . && git commit -m "feat(web): 달력 그리드 (AC-HOMECAL-25�
 - Consumes: `brewCountLabel`, `addMonths`, `kstToday` (Task 4)
 - Produces: `<MonthNav month totalCount ownerNickname onPrev onNext />` — `ownerNickname`이 `undefined`면 내 달력
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
   it("AC-HOMECAL-32 · 이번 달에서 다음 달 버튼이 비활성이다", () => {
@@ -1132,16 +1132,16 @@ cd .. && git add . && git commit -m "feat(web): 달력 그리드 (AC-HOMECAL-25�
 
 내 달력이 `9 BREWS`인 것도 같은 파일에서 검증한다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test MonthNav`
 Expected: FAIL — 모듈이 없다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `month === kstMonthOf(kstToday())`이면 다음 달 버튼에 `disabled`. 라벨은 `ownerNickname ? `${ownerNickname} · ${brewCountLabel(totalCount)}` : brewCountLabel(totalCount)`.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인** → **Step 5: 커밋**
+- [x] **Step 4: 테스트 실행 — 통과 확인** → **Step 5: 커밋**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -1165,7 +1165,7 @@ cd .. && git add . && git commit -m "feat(web): 월 네비게이션 (AC-HOMECAL-
 
 > **대표 수치는 계산하지 않는다.** `extractionYieldPercent`와 `brewRatio`는 서버가 반올림해서 준다. 프론트는 `?? `로 고르고 포맷만 한다(`lib/format.ts` 주석).
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
   it("AC-HOMECAL-42 · 목록 헤더가 날짜·요일·건수를 담는다", () => {
@@ -1203,11 +1203,11 @@ cd .. && git add . && git commit -m "feat(web): 월 네비게이션 (AC-HOMECAL-
 
 > `!` 금지 규칙 때문에 위 단언은 `firstElementChild`를 먼저 `expect(...).not.toBeNull()`로 좁히고 지역 변수에 담아 쓴다. **테스트 코드도 같은 규칙을 지킨다.**
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인** → **Step 3: 최소 구현**
+- [x] **Step 2: 테스트 실행 — 실패 확인** → **Step 3: 최소 구현**
 
 목록 헤더는 `MM.DD` + 영문 요일 3글자 대문자 + `brewCountLabel`. `ownerNickname`이 있으면 요일과 건수 사이에 끼운다. roast dot 색은 핸드오프의 5단계 명도를 `roastLevel`에 매핑한 상수 테이블로 둔다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인** → **Step 5: 커밋**
+- [x] **Step 4: 테스트 실행 — 통과 확인** → **Step 5: 커밋**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -1232,7 +1232,7 @@ cd .. && git add . && git commit -m "feat(web): 날짜별 목록과 로스팅 �
 
 > **스키마는 Task 3 Step 7에서 뜬 실제 응답으로 쓴다.** `/tmp/calendar.json`·`/tmp/mutual.json`을 열어 키를 확인하고 `z.object`를 맞춘다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
   it("AC-HOMECAL-36 · 첫 칸이 나이고 기본 선택이다", () => {
@@ -1259,11 +1259,11 @@ cd .. && git add . && git commit -m "feat(web): 날짜별 목록과 로스팅 �
   });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인** → **Step 3: 최소 구현**
+- [x] **Step 2: 테스트 실행 — 실패 확인** → **Step 3: 최소 구현**
 
 레일은 「나」 칸을 `me`로 직접 만들고 그 뒤에 `mutuals`를 **서버가 준 순서 그대로** 붙인다 — **프론트에서 다시 정렬하지 않는다.** 정렬은 서버의 책임이고 두 곳에서 하면 갈라진다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인** → **Step 5: 커밋**
+- [x] **Step 4: 테스트 실행 — 통과 확인** → **Step 5: 커밋**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -1287,7 +1287,7 @@ cd .. && git add . && git commit -m "feat(web): 팔로우 레일 (AC-HOMECAL-36�
 
 > **상태를 한 곳에 둔다.** 세 값 모두 `page.tsx`가 갖고, 하위 컴포넌트는 받기만 한다. 레일이 자기 선택을 따로 갖기 시작하면 「사람을 바꾸면 selectedDate 초기화」(AC-HOMECAL-38) 같은 규칙이 두 곳에 흩어진다.
 
-- [ ] **Step 1: 실패하는 테스트 작성 (컴포넌트)**
+- [x] **Step 1: 실패하는 테스트 작성 (컴포넌트)**
 
 `page.test.tsx`를 **교체**한다 — 기존 「최근 기록 3개」 테스트는 그 화면이 사라지므로 남기지 않는다.
 
@@ -1354,7 +1354,7 @@ cd .. && git add . && git commit -m "feat(web): 팔로우 레일 (AC-HOMECAL-36�
 
 AC-28·37·39도 같은 파일에 더한다.
 
-- [ ] **Step 2: 실패하는 테스트 작성 (e2e)**
+- [x] **Step 2: 실패하는 테스트 작성 (e2e)**
 
 Create `frontend/e2e/home-calendar.spec.ts` — 390px 뷰포트. `stubs.ts`에 달력·맞팔로우·날짜별 목록 핸들러를 더한다.
 
@@ -1390,21 +1390,21 @@ test("AC-HOMECAL-49 · 기록을 저장하고 돌아오면 점이 찍혀 있다"
 
 AC-31·34·48·57도 같은 파일에 더한다.
 
-- [ ] **Step 3: 테스트 실행 — 실패 확인**
+- [x] **Step 3: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm test page && pnpm e2e home-calendar`
 Expected: FAIL — 홈이 아직 「최근 기록」이다.
 
-- [ ] **Step 4: 홈 구현**
+- [x] **Step 4: 홈 구현**
 
 `page.tsx`를 달력으로 교체한다. 상태 셋을 `useState`로 갖고, `useCalendar(selectedUserId, selectedMonth)`와 `useCalendar(selectedUserId, addMonths(selectedMonth, -1))`를 **둘 다 건다** — 후자가 프리페치다(AC-HOMECAL-50). 날짜가 선택됐을 때만 `useDayLogs`를 `enabled`로 부른다.
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test && pnpm e2e home-calendar`
 Expected: PASS
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -1432,7 +1432,7 @@ cd .. && git add . && git commit -m "feat(web): 홈을 달력으로 (AC-HOMECAL-
 
 > **`<760px`에서 상단 바를 렌더하지 않는다.** 하단 탭바와 동시에 뜨면 최상위 이동 수단이 둘이 된다. CSS `display`로만 감추지 말고 **DOM에서 빼거나** `hidden` 속성을 준다 — AC-HOMECAL-58이 탭바 부재를 함께 단언한다.
 
-- [ ] **Step 1: 로고 에셋 복사**
+- [x] **Step 1: 로고 에셋 복사**
 
 ```bash
 cp "docs/design/design_handoff_kaldi_note/assets/logo-symbol.svg" frontend/public/logo-symbol.svg
@@ -1440,7 +1440,7 @@ cp "docs/design/design_handoff_kaldi_note/assets/logo-symbol.svg" frontend/publi
 
 `currentColor` 상속판이므로 색을 CSS로 준다. **락업(`logo-lockup-*.svg`)을 쓰지 않는다** — 워드마크가 `<text>`라 폰트 의존이 생긴다.
 
-- [ ] **Step 2: 실패하는 테스트 작성 (e2e, 1440×900)**
+- [x] **Step 2: 실패하는 테스트 작성 (e2e, 1440×900)**
 
 ```ts
 test("AC-HOMECAL-55 · 1100px에서 2컬럼이다", async ({ page }) => {
@@ -1499,12 +1499,12 @@ test("AC-HOMECAL-79 · 우측 컬럼만 스크롤한다", async ({ page }) => {
 
 나머지 AC-58~63·65·69~72·74·77·78도 같은 파일에 더한다.
 
-- [ ] **Step 3: 테스트 실행 — 실패 확인**
+- [x] **Step 3: 테스트 실행 — 실패 확인**
 
 Run: `cd frontend && pnpm e2e home-calendar-web`
 Expected: FAIL — 1440px에서도 모바일 레이아웃이다.
 
-- [ ] **Step 4: 구현**
+- [x] **Step 4: 구현**
 
 1. `WebTopBar` — `hidden lg:flex`가 아니라 **미디어 쿼리 분기로 DOM을 가른다.**
 2. `page.tsx`에 `≥1100px` 2컬럼 / `760–1099px` 1컬럼 / `<760px` 모바일 분기.
@@ -1514,12 +1514,12 @@ Expected: FAIL — 1440px에서도 모바일 레이아웃이다.
 
 **경계값을 CSS에 리터럴로 적는다** — `@media (min-width: 1100px)`, `@media (min-width: 760px)`. AC-HOMECAL-55·56·57이 각각 `1100`/`1099`/`759`를 단언한다.
 
-- [ ] **Step 5: 테스트 실행 — 통과 확인**
+- [x] **Step 5: 테스트 실행 — 통과 확인**
 
 Run: `cd frontend && pnpm test && pnpm e2e`
 Expected: PASS — **기존 e2e도 전부 통과해야 한다.** 홈을 바꿨으므로 `layout.spec.ts`·`structure.spec.ts` 등이 홈을 밟고 있으면 함께 고친다.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e
@@ -1530,10 +1530,10 @@ cd .. && git add . && git commit -m "feat(web): 홈 달력의 웹 레이아웃 (
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과 — **AC 79개가 전부 테스트에서 발견돼야 한다**
-- [ ] 스펙의 `status`를 `구현완료`로, `plan`에 이 문서 경로를 적는다
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과 — **AC 79개가 전부 테스트에서 발견됐다**
+- [x] 스펙의 `status`를 `구현완료`로, `plan`에 이 문서 경로를 적는다
 - [ ] `docs/JOURNAL.md`에 세션 일지를 적는다
 - [ ] 스펙의 「수동 확인」 6개를 밟고 결과를 적는다 (전부 비차단형)
 

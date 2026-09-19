@@ -148,6 +148,9 @@ async function undersized(
     );
     return all
       .filter((el) => !exempt.has(el))
+      // 미디어 쿼리로 숨긴 컨트롤(웹 상단 바 등)은 이 뷰포트에서 탭할 수 없다 —
+      // 2026-09-19 홈 달력의 WebTopBar가 처음으로 이 경우를 만들었다.
+      .filter((el) => (el as HTMLElement).checkVisibility())
       .map((el) => {
         // 라벨에 감싸인 컨트롤은 라벨 전체가 탭을 받는다. 사람이 실제로 누르는 것을 잰다
         // (docs/specs/2026-09-15-structure.md AC-STRUCT-04).

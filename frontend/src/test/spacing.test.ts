@@ -169,8 +169,9 @@ describe("모서리", () => {
      * radius 999(rounded-full)를 "아바타·**토글**·프로그레스"로 못박아뒀다 —
      * 스위치 트랙과 손잡이가 각각 하나씩, 두 번 쓰인다.
      *
-     * 갱신(2026-09-19): 홈 달력 레일이 아바타를 하나 더한다 — 사진 있을 때(img)와
-     * 없을 때(닉네임 첫 글자, 대체 원) 각각 하나씩, 4곳 → 6곳.
+     * 갱신(2026-09-19): 아바타(사진 있을 때 img·없을 때 닉네임 첫 글자 대체 원)가
+     * 늘어 4곳 → 6곳. 홈 달력 레일과 웹 상단 바가 둘 다 쓰므로 `components/ui/Avatar.tsx`
+     * 하나로 모았다 — 따로 있었으면 8곳이 됐을 것이다.
      */
     const found = SOURCES.flatMap((path) =>
       Array(count(path, /\brounded-full\b/g)).fill(path),
@@ -178,8 +179,8 @@ describe("모서리", () => {
 
     expect(found).toHaveLength(6);
     expect(found.map((path) => path.split(sep).pop()).sort()).toEqual([
-      "FollowRail.tsx",
-      "FollowRail.tsx",
+      "Avatar.tsx",
+      "Avatar.tsx",
       "LoadingState.tsx",
       "ThemeToggle.tsx",
       "ThemeToggle.tsx",

@@ -36,16 +36,16 @@ const brewLogShape = {
   body: z.number().optional(),
   bitterness: z.number().optional(),
   aftertaste: z.number().optional(),
+  // 2026-09-19: 요약 응답도 overallNote를 담는다 — 웹 홈 달력의 우측 카드가 메모 한 줄을
+  // 그린다(docs/specs/2026-09-19-home-calendar.md, list-query-api.md의 AC-LIST-25 정정 참조).
+  overallNote: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 };
 
-export const brewLogSchema = z.object({
-  ...brewLogShape,
-  overallNote: z.string().optional(),
-});
+export const brewLogSchema = z.object(brewLogShape);
 
-/** 목록 항목. 단건에서 `overallNote` 하나만 뺀 것이다(`BrewLogSummaryResponse`). */
+/** 목록 항목. 단건과 필드가 같다. */
 export const brewLogSummarySchema = z.object(brewLogShape);
 
 export const brewLogPageSchema = pageResponseSchema(brewLogSummarySchema);

@@ -8,9 +8,24 @@ const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"] as cons
 /** 손가락이 우연히 스치는 것과 실제 스와이프를 가르는 최소 이동 거리. */
 const SWIPE_THRESHOLD_PX = 50;
 
+/**
+ * 웹 그리드의 고정 총 높이(px). 5주·6주 달 모두 이 높이를 나눠 갖는다 —
+ * `gridTemplateRows: repeat(주 수, 1fr)`로 주 수가 늘면 행 하나의 높이만 줄어든다
+ * (AC-HOMECAL-68).
+ */
+const WEB_GRID_HEIGHT_PX = 420;
+
 export interface CalendarDayInfo {
   readonly count: number;
   readonly primaryRecipeName?: string;
+}
+
+function chunkIntoWeeks<T>(items: T[]): T[][] {
+  const weeks: T[][] = [];
+  for (let i = 0; i < items.length; i += 7) {
+    weeks.push(items.slice(i, i + 7));
+  }
+  return weeks;
 }
 
 /**
@@ -38,6 +53,7 @@ export function Calendar({
   variant: "mobile" | "web";
 }) {
   const grid = buildMonthGrid(month);
+  const weeks = chunkIntoWeeks(grid);
   const swipeStartX = useRef<number | null>(null);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, date: string) {
@@ -66,6 +82,8 @@ export function Calendar({
     else if (delta >= SWIPE_THRESHOLD_PX) onSwipeRight?.();
   }
 
+  const isWeb = variant === "web";
+
   return (
     <div
       role="grid"
@@ -80,39 +98,68 @@ export function Calendar({
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7">
-        {grid.map((cell) => {
-          if (!cell.inMonth) {
-            return <div key={cell.date} data-testid="calendar-out-of-month" aria-hidden />;
-          }
+      <div
+        style={
+          isWeb
+            ? {
+                height: WEB_GRID_HEIGHT_PX,
+                display: "grid",
+                gridTemplateRows: `repeat(${weeks.length}, 1fr)`,
+              }
+            : undefined
+        }
+      >
+        {weeks.map((week, weekIndex) => (
+          <div key={weekIndex} data-testid="calendar-row" role="row" className="grid grid-cols-7">
+            {week.map((cell) => {
+              if (!cell.inMonth) {
+                return (
+                  <div
+                    key={cell.date}
+                    data-testid="calendar-out-of-month"
+                    aria-hidden
+                    className={isWeb ? "bg-surface" : ""}
+                  />
+                );
+              }
 
-          const info = days.get(cell.date);
-          const count = info?.count ?? 0;
-          const day = Number(cell.date.slice(8, 10));
-          const month1 = Number(cell.date.slice(5, 7));
-          const label =
-            count > 0 ? `${month1}월 ${day}일, 기록 ${count}건` : `${month1}월 ${day}일, 기록 없음`;
+              const info = days.get(cell.date);
+              const count = info?.count ?? 0;
+              const day = Number(cell.date.slice(8, 10));
+              const month1 = Number(cell.date.slice(5, 7));
+              const label =
+                count > 0
+                  ? `${month1}월 ${day}일, 기록 ${count}건`
+                  : `${month1}월 ${day}일, 기록 없음`;
+              const selected = cell.date === selectedDate;
 
-          return (
-            <button
-              key={cell.date}
-              type="button"
-              data-date={cell.date}
-              aria-label={label}
-              aria-current={cell.date === selectedDate ? "date" : undefined}
-              onClick={() => onSelect(cell.date)}
-              onKeyDown={(event) => handleKeyDown(event, cell.date)}
-              className="flex min-h-11 min-w-11 flex-col items-center justify-center"
-            >
-              <span>{day}</span>
-              {count > 0 && <span data-record-dot aria-hidden />}
-              {variant === "web" && info?.primaryRecipeName && (
-                <span>{info.primaryRecipeName}</span>
-              )}
-              {variant === "web" && count > 1 && <span>외 {count - 1}건</span>}
-            </button>
-          );
-        })}
+              return (
+                <button
+                  key={cell.date}
+                  type="button"
+                  data-date={cell.date}
+                  aria-label={label}
+                  aria-current={selected ? "date" : undefined}
+                  onClick={() => onSelect(cell.date)}
+                  onKeyDown={(event) => handleKeyDown(event, cell.date)}
+                  style={
+                    isWeb && selected
+                      ? { boxShadow: "inset 0 0 0 2px var(--ink)" }
+                      : undefined
+                  }
+                  className={`flex min-h-11 min-w-11 flex-col items-center justify-center ${
+                    isWeb && selected ? "bg-surface" : ""
+                  }`}
+                >
+                  <span>{day}</span>
+                  {count > 0 && <span data-record-dot aria-hidden />}
+                  {isWeb && info?.primaryRecipeName && <span>{info.primaryRecipeName}</span>}
+                  {isWeb && count > 1 && <span>외 {count - 1}건</span>}
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </div>
     </div>
   );

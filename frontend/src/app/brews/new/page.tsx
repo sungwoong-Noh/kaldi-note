@@ -8,9 +8,32 @@ import { BrewLogForm } from "@/features/brewlog/components/BrewLogForm";
 export default async function BrewNewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ recipeId?: string }>;
+  searchParams: Promise<{
+    recipeId?: string;
+    grinderModelId?: string;
+    grindSettingValue?: string;
+  }>;
 }) {
-  const { recipeId } = await searchParams;
+  const { recipeId, grinderModelId, grindSettingValue } = await searchParams;
 
-  return <BrewLogForm recipeId={Number(recipeId)} />;
+  /*
+   * 환산기에서 「이 값으로 기록하기」로 넘어온 분쇄도다. 레시피 선택을 한 번 거치므로
+   * 두 값이 여기까지 따라온다(docs/specs/2026-09-17-small-features.md).
+   * 숫자가 아닌 값은 버린다 — 쿼리는 사용자가 손댈 수 있다.
+   */
+  const toNumber = (value: string | undefined): number | undefined => {
+    if (value === undefined) return undefined;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
+
+  return (
+    <BrewLogForm
+      recipeId={Number(recipeId)}
+      grind={{
+        grinderModelId: toNumber(grinderModelId),
+        grindSettingValue: toNumber(grindSettingValue),
+      }}
+    />
+  );
 }

@@ -256,3 +256,43 @@ describe("formStateFromLog", () => {
     ).toBe("PRIVATE");
   });
 });
+
+describe("환산값 넘겨받기 — docs/specs/2026-09-17-small-features.md", () => {
+  // `grindedRecipe`는 grinderModelId 1 · grindSettingValue 22.0을 갖는다.
+  // id 7이 그 모델과 맞는 「내 그라인더」이고, id 2는 다른 모델이다.
+  const grinders = [
+    { id: 2, grinderModelId: 99 },
+    { id: 7, grinderModelId: 1 },
+  ];
+
+  it("AC-SMALL-13 · 넘어온 분쇄도가 레시피 값보다 우선한다", () => {
+    // 환산기에서 「이 값으로 기록하기」로 넘어온 경우다. 사용자가 방금 환산한 값이
+    // 레시피에 적힌 값보다 의도에 가깝다.
+    const state = initialFormState(grindedRecipe, grinders, new Date(), {
+      grinderModelId: 99,
+      grindSettingValue: 30,
+    });
+
+    expect(state.userGrinderId).toBe(2);
+    expect(state.actualGrindSettingValue).toBe(30);
+  });
+
+  it("AC-SMALL-13 · 넘어온 값이 없으면 기존 동작 그대로다", () => {
+    const withOverride = initialFormState(grindedRecipe, grinders, new Date(), {});
+    const without = initialFormState(grindedRecipe, grinders, new Date());
+
+    expect(withOverride).toEqual(without);
+  });
+
+  it("AC-SMALL-13 · 내가 안 가진 모델은 무시한다", () => {
+    // 환산기에서는 어떤 모델이든 고를 수 있다. 내가 등록하지 않은 모델로 넘어오면
+    // 저장 시 서버가 거부하므로 폼이 먼저 걸러내고 레시피 기준으로 돌아간다.
+    const state = initialFormState(grindedRecipe, grinders, new Date(), {
+      grinderModelId: 12345,
+      grindSettingValue: 30,
+    });
+
+    expect(state.userGrinderId).toBe(7);
+    expect(state.actualGrindSettingValue).toBe(22.0);
+  });
+});

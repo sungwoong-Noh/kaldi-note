@@ -69,6 +69,39 @@ describe("GrindConverterPage", () => {
     expect(screen.getByText(c40ToE80Conversion.warning)).toBeInTheDocument();
   });
 
+  it("AC-SMALL-07 · AC-SMALL-08 · 환산 결과에서 기록으로 이어진다", async () => {
+    const user = userEvent.setup();
+
+    renderWithQuery(<GrindConverterPage />);
+    await convert(user);
+
+    const link = await screen.findByRole("link", {
+      name: "이 값으로 기록하기",
+    });
+
+    /*
+     * 레시피 목록을 거친다. 백엔드가 `BrewLogCreateRequest.recipeId`를 `@NotNull`로
+     * 요구해서 레시피 없는 기록은 만들 수 없다 — 환산값만 들고 기록 작성으로 갈 수 없다.
+     *
+     * 넘기는 것은 `grinderModelId`다. 환산기는 장비 **모델** 단위로 동작하고,
+     * 기록은 **내가 등록한 그라인더**를 가리킨다 — 받는 쪽이 모델로 내 그라인더를 찾는다.
+     */
+    const href = link.getAttribute("href") ?? "";
+    expect(href.startsWith("/recipes?")).toBe(true);
+    expect(href).toContain("grinderModelId=");
+    expect(href).toContain("grindSettingValue=29.3");
+  });
+
+  it("AC-SMALL-09 · 환산 전에는 진입점이 없다", async () => {
+    renderWithQuery(<GrindConverterPage />);
+
+    // 넘길 값이 없는데 링크만 있으면 빈 쿼리로 목록에 보내게 된다.
+    await screen.findByLabelText("원본 그라인더");
+    expect(
+      screen.queryByRole("link", { name: "이 값으로 기록하기" }),
+    ).toBeNull();
+  });
+
   it("AC-WEBSHELL-25 · 요청 본문이 고른 값 그대로다", async () => {
     const user = userEvent.setup();
     let body: unknown = null;

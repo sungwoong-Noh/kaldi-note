@@ -20,6 +20,7 @@ import {
   initialFormState,
   toRequestBody,
   type BrewLogFormState,
+  type GrindOverride,
 } from "../formState";
 import { BeanBatchDialog } from "./BeanBatchDialog";
 import { BrewLogFields } from "./BrewLogFields";
@@ -32,7 +33,14 @@ import { Button, SELECT_EXTRA, Shell, controlClass } from "@/components/ui";
  * <p>레시피와 내 그라인더가 <b>둘 다 도착한 뒤에</b> 폼을 마운트한다. 그라인더 자동 선택이 두 응답을 함께 봐야 정해지는데,
  * 폼을 먼저 띄우면 나중에 도착한 값으로 사용자가 고친 입력을 덮어쓰게 된다.
  */
-export function BrewLogForm({ recipeId }: { recipeId: number }) {
+export function BrewLogForm({
+  recipeId,
+  grind = {},
+}: {
+  recipeId: number;
+  /** 환산기에서 넘어온 분쇄도. 레시피 값보다 우선한다. */
+  grind?: GrindOverride;
+}) {
   const { ready, onSessionLost } = useRequireSession();
 
   const recipe = useQuery({
@@ -71,6 +79,7 @@ export function BrewLogForm({ recipeId }: { recipeId: number }) {
       <Fields
         recipe={recipe.data}
         grinders={grinders.data}
+        grind={grind}
         onSessionLost={onSessionLost}
       />
     </Screen>
@@ -80,10 +89,12 @@ export function BrewLogForm({ recipeId }: { recipeId: number }) {
 function Fields({
   recipe,
   grinders,
+  grind,
   onSessionLost,
 }: {
   recipe: Recipe;
   grinders: UserGrinder[];
+  grind: GrindOverride;
   onSessionLost: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -95,7 +106,7 @@ function Fields({
   // 초기값은 마운트 시점에 한 번만 계산한다. 이후 그라인더 목록이 갱신돼도
   // 사용자가 고쳐둔 값을 덮어쓰지 않는다.
   const [state, setState] = useState<BrewLogFormState>(() =>
-    initialFormState(recipe, grinders),
+    initialFormState(recipe, grinders, new Date(), grind),
   );
   const [addingGrinder, setAddingGrinder] = useState(false);
   const [addingBean, setAddingBean] = useState(false);

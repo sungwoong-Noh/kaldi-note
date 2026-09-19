@@ -49,7 +49,10 @@ plan: docs/plans/2026-09-17-plan-small-features.md
 **스키마·API 변경 없음.** 셋 다 이미 있는 값을 쓴다.
 
 - 차이 문구: `RecipeComparison`이 이미 `targets`와 `log`를 둘 다 들고 있다
-- 「이 값으로 기록」: 환산 결과의 대상 그라인더·설정값을 쿼리 파라미터로 넘긴다
+- 「이 값으로 기록」: 환산 결과의 대상 그라인더·설정값을 쿼리 파라미터로 넘긴다.
+  **레시피 선택을 거친다** — 백엔드가 `BrewLogCreateRequest.recipeId`를 `@NotNull`로
+  요구하므로 레시피 없는 기록은 만들 수 없다(2026-09-17 확인).
+  경로: 환산 결과 → `/recipes?grind=…` → 레시피 선택 → `/brews/new?recipeId=…&grind=…`
 - 「다시 내리기」: `/brews/new?recipeId=<기록의 recipeId>`
 
 ## 어떻게 동작 — 인수 조건
@@ -100,11 +103,28 @@ plan: docs/plans/2026-09-17-plan-small-features.md
 - **When** 렌더된 링크를 읽는다
 - **Then** **「이 값으로 기록하기」** 링크가 있다
 
-#### AC-SMALL-08 · 환산값이 쿼리로 넘어간다
+#### AC-SMALL-08 · 환산값을 들고 레시피 목록으로 간다
 
 - **Given** 대상 그라인더 id `2`, 대상 설정값 `30.0`
 - **When** 링크의 `href`를 읽는다
-- **Then** `/brews/new`로 가며 `userGrinderId`와 `grindSettingValue`를 담는다
+- **Then** `/recipes`로 가며 `userGrinderId=2`와 `grindSettingValue=30`을 담는다
+
+> **레시피를 먼저 골라야 하는 이유.** 백엔드가 `recipeId`를 `@NotNull`로 요구한다 —
+> 레시피 없는 기록은 API가 거부한다. 환산값만 들고 기록 작성으로 바로 갈 수 없다.
+
+#### AC-SMALL-12 · 레시피 목록이 환산값을 기록 작성으로 넘긴다
+
+- **Given** `/recipes?userGrinderId=2&grindSettingValue=30`
+- **When** 레시피 카드의 링크를 읽는다
+- **Then** `/brews/new?recipeId=<그 레시피>&userGrinderId=2&grindSettingValue=30`을 가리킨다
+
+> 환산값이 없으면(`/recipes`로 그냥 들어온 경우) 카드는 평소대로 레시피 상세로 간다.
+
+#### AC-SMALL-13 · 기록 작성이 넘어온 분쇄도를 채운다
+
+- **Given** `/brews/new?recipeId=12&userGrinderId=2&grindSettingValue=30`
+- **When** 폼의 초기값을 읽는다
+- **Then** 그라인더가 `2`, 분쇄도 값이 `30`이다 — **레시피의 분쇄도보다 우선한다**
 
 #### AC-SMALL-09 · 환산 전에는 진입점이 없다
 

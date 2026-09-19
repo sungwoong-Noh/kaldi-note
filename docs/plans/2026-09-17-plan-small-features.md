@@ -84,12 +84,28 @@ export function diffPhrase(
 
 **Covers:** AC-SMALL-07~09
 
-- [ ] **Step 1: 실패하는 테스트**
-- [ ] **Step 2: 실패 확인**
-- [ ] **Step 3: 환산 성공 시 `ButtonLink`를 낸다.** `/brews/new?userGrinderId=…&grindSettingValue=…`
-- [ ] **Step 4: 기록 작성 화면이 그 쿼리를 읽는지 확인.** 안 읽으면 읽게 한다 —
+- [x] **Step 1: 실패하는 테스트**
+- [x] **Step 2: 실패 확인**
+- [x] **Step 3: 환산 성공 시 `ButtonLink`를 낸다.** `/brews/new?userGrinderId=…&grindSettingValue=…`
+- [x] **Step 4: 기록 작성 화면이 그 쿼리를 읽는지 확인.** 안 읽으면 읽게 한다 —
       **링크만 만들고 받는 쪽이 무시하면 아무 일도 안 일어난다**
-- [ ] **Step 5: 전체 초록 + 커밋**
+- [x] **Step 5: 전체 초록 + 커밋**
+
+
+**계획과 달라진 점(2026-09-17).**
+
+- **레시피 선택을 거치게 됐다.** 계획은 환산 결과 → 기록 작성 직행이었는데,
+  백엔드가 `BrewLogCreateRequest.recipeId`를 **`@NotNull`로 요구**한다 —
+  레시피 없는 기록은 API가 거부한다. 경로를 환산기 → `/recipes?grind…` → 카드 클릭 →
+  `/brews/new?recipeId=…&grind…`로 바꾸고 `AC-SMALL-08`을 고쳤다(`12`·`13` 추가).
+- **`userGrinderId`가 아니라 `grinderModelId`를 넘긴다.** 환산기는 장비 **모델** 단위로
+  동작하고(누구의 C40이든 30µm/click), 기록은 **내가 등록한 그라인더**를 가리킨다.
+  받는 쪽이 모델로 내 그라인더를 찾고, **내가 안 가진 모델이면 버린다.**
+- **`/recipes`를 서버 래퍼 + `RecipeListScreen`으로 쪼갰다.** 클라이언트에서
+  `useSearchParams`로 쿼리를 읽었더니 **프로덕션 빌드의 프리렌더가 깨졌다**
+  (`Export encountered an error on /recipes/page`). `/brews/new`가 2026-08-30에 겪은
+  것과 같은 함정이고, 그쪽이 쓰던 「서버에서 `await searchParams`」 패턴으로 통일했다.
+  **`pnpm test`는 초록인데 `pnpm build`만 깨져서, 빌드를 돌리지 않았으면 놓쳤다.**
 
 ## Task 3: 다시 내리기
 

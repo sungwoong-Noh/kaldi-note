@@ -2,7 +2,7 @@
 id: HOMECAL
 title: 홈 달력 — 언제 내렸는지 한눈에 보기 (모바일 + 웹)
 status: 초안
-plan:
+plan: docs/plans/2026-09-19-plan-home-calendar.md
 ---
 
 # 홈 달력 스펙

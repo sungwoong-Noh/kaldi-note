@@ -26,6 +26,9 @@ export function useCalendar(
         schema: calendarSchema,
         onSessionLost,
       }),
+    // 이전 달을 프리페치해 두는 의미가 살려면, 그 달이 "현재 달"이 될 때 다시 부르지
+    // 않아야 한다. staleTime 0이면 관찰자가 바뀔 때 배경 재요청이 걸린다.
+    staleTime: 5 * 60 * 1000,
   });
 }
 

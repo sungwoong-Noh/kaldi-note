@@ -1,8 +1,12 @@
 "use client";
 
+import { useRef } from "react";
 import { addDays, buildMonthGrid } from "../monthGrid";
 
 const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"] as const;
+
+/** 손가락이 우연히 스치는 것과 실제 스와이프를 가르는 최소 이동 거리. */
+const SWIPE_THRESHOLD_PX = 50;
 
 export interface CalendarDayInfo {
   readonly count: number;
@@ -19,15 +23,22 @@ export function Calendar({
   days,
   selectedDate,
   onSelect,
+  onSwipeLeft,
+  onSwipeRight,
   variant,
 }: {
   month: string;
   days: Map<string, CalendarDayInfo>;
   selectedDate: string | null;
   onSelect: (date: string) => void;
+  /** 왼쪽으로 스와이프 — 다음 달로 넘긴다. */
+  onSwipeLeft?: () => void;
+  /** 오른쪽으로 스와이프 — 이전 달로 넘긴다. */
+  onSwipeRight?: () => void;
   variant: "mobile" | "web";
 }) {
   const grid = buildMonthGrid(month);
+  const swipeStartX = useRef<number | null>(null);
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, date: string) {
     const delta = deltaFor(event.key);
@@ -39,8 +50,29 @@ export function Calendar({
     target?.focus();
   }
 
+  /**
+   * 포인터 이벤트를 쓴다 — 터치·마우스 드래그 둘 다 같은 경로로 잡히고, 테스트에서
+   * `mouse.down/move/up`으로 재현할 수 있다(순수 touch 이벤트는 헤드리스에서 재현하기 까다롭다).
+   */
+  function handlePointerDown(event: React.PointerEvent) {
+    swipeStartX.current = event.clientX;
+  }
+
+  function handlePointerUp(event: React.PointerEvent) {
+    if (swipeStartX.current === null) return;
+    const delta = event.clientX - swipeStartX.current;
+    swipeStartX.current = null;
+    if (delta <= -SWIPE_THRESHOLD_PX) onSwipeLeft?.();
+    else if (delta >= SWIPE_THRESHOLD_PX) onSwipeRight?.();
+  }
+
   return (
-    <div role="grid" data-variant={variant}>
+    <div
+      role="grid"
+      data-variant={variant}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+    >
       <div role="row" className="grid grid-cols-7">
         {WEEKDAY_LABELS.map((label) => (
           <div key={label} role="columnheader">
@@ -70,6 +102,7 @@ export function Calendar({
               aria-current={cell.date === selectedDate ? "date" : undefined}
               onClick={() => onSelect(cell.date)}
               onKeyDown={(event) => handleKeyDown(event, cell.date)}
+              className="flex min-h-11 min-w-11 flex-col items-center justify-center"
             >
               <span>{day}</span>
               {count > 0 && <span data-record-dot aria-hidden />}

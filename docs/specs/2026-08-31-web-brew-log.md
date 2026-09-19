@@ -431,25 +431,12 @@ plan: docs/plans/2026-08-31-plan-web-brew-log.md
 
 ### 홈
 
-#### AC-WEBBREW-37 · 홈은 최근 3개를 부른다
-
-- **Given** 로그인한 사용자가 `/`를 연다
-- **When** 첫 요청이 나간다
-- **Then** `GET /api/v1/brew-logs`의 쿼리가 `page=0&size=3`이다
-- **검증** 페이지 테스트 `HomePage.test.tsx`
-
-#### AC-WEBBREW-38 · 홈에서 목록으로 갈 수 있다
-
-- **When** `/`를 연다
-- **Then** 이름이 `전체 보기`인 링크의 `href`가 `/brews`다
-- **검증** 페이지 테스트 `HomePage.test.tsx`
-
-#### AC-WEBBREW-39 · 기록이 없으면 홈이 레시피로 안내한다
-
-- **Given** 응답의 `content`가 `[]`다
-- **When** `/`를 연다
-- **Then** `아직 기록이 없습니다`가 보이고 이름이 `레시피 보러 가기`인 링크의 `href`가 `/recipes`다
-- **검증** 페이지 테스트 `HomePage.test.tsx`
+> **2026-09-19 폐기:** `AC-WEBBREW-37`~`39`(홈이 최근 3개를 부른다 / 전체 보기 링크 /
+> 빈 상태 안내)는 `docs/specs/2026-09-19-home-calendar.md`가 홈을 달력으로 **전면 교체**하며
+> 없어졌다. "최근 기록 3개를 세로로 세우는 홈"이라는 대상 자체가 더 이상 존재하지 않아 값을
+> 고쳐 쓰는 정정으로 남길 수 없다 — `check-spec-coverage.sh`가 찾을 `####` 헤딩을 지운다.
+> 셋이 테스트하던 것(홈에서 목록으로 갈 수 있다 / 빈 상태 안내)은 각각 `AC-HOMECAL-31`·
+> `AC-HOMECAL-29`가 새 형태로 잇는다. ID는 재사용하지 않는다.
 
 ### 상세
 

@@ -74,7 +74,7 @@
 | AC-HOMECAL-30 | 1건인 날도 상세로 안 감 | Task 9 | e2e |
 | AC-HOMECAL-31 | 행 탭하면 상세로 | Task 9 | e2e |
 | AC-HOMECAL-34 | 스와이프로 월 전환 | Task 9 | e2e |
-| AC-HOMECAL-48 | 모바일 CTA가 날짜 프리필 | Task 9 | e2e |
+| AC-HOMECAL-48 | 모바일 CTA는 레시피 선택으로 | Task 9 | e2e |
 | AC-HOMECAL-49 | 저장하고 오면 점이 있다 | Task 9 | e2e |
 | AC-HOMECAL-51 | 4건인 날도 달력 위치 불변 | Task 9 | e2e |
 | AC-HOMECAL-57 | 759px는 모바일 | Task 9 | e2e |
@@ -82,8 +82,8 @@
 | AC-HOMECAL-56 | 1099px는 1컬럼 | Task 10 | e2e |
 | AC-HOMECAL-58 | 상단 바 6요소 | Task 10 | e2e |
 | AC-HOMECAL-59 | 아바타 → /more | Task 10 | e2e |
-| AC-HOMECAL-60 | 상단 CTA는 프리필 없음 | Task 10 | e2e |
-| AC-HOMECAL-61 | 우측 CTA는 날짜 프리필 | Task 10 | e2e |
+| AC-HOMECAL-60 | 상단 CTA는 레시피 선택으로 | Task 10 | e2e |
+| AC-HOMECAL-61 | 우측 CTA도 레시피 선택으로 | Task 10 | e2e |
 | AC-HOMECAL-62 | 남의 달력 CTA → /u/{id} | Task 10 | e2e |
 | AC-HOMECAL-63 | 셀에 대표 레시피명 | Task 10 | e2e |
 | AC-HOMECAL-64 | 3건이면 외 2건 | Task 10 | e2e |

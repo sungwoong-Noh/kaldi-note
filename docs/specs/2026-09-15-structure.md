@@ -348,9 +348,14 @@ plan: docs/plans/2026-09-15-plan-structure.md
 
 #### AC-STRUCT-19 · 빈 기록 화면이 레시피로 보낸다
 
-- **Given** `GET /brew-logs`가 빈 목록을 주는 상태에서 `/`와 `/brews`를 연다
+> **2026-09-19 정정.** 원래 `/`와 `/brews` 둘 다를 봤다. `docs/specs/2026-09-19-home-calendar.md`가
+> 홈을 달력으로 바꾸며 **홈에는 이 "전체가 비었다" 패턴(`[data-empty]`)이 없어졌다** — 달력은
+> 기록이 없어도 항상 격자를 그리고, 빈 날짜는 날짜 단위로 "이 날에는 기록이 없습니다."를
+> 보여준다(`AC-HOMECAL-29`). `/brews`만 남긴다.
+
+- **Given** `GET /brew-logs`가 빈 목록을 주는 상태에서 `/brews`를 연다
 - **When** 빈 상태 영역의 링크를 읽는다
-- **Then** 두 화면 모두 **`/recipes`로 가는 링크가 정확히 1개** 있고, 그 탭 영역이 44×44px 이상이다
+- **Then** **`/recipes`로 가는 링크가 정확히 1개** 있고, 그 탭 영역이 44×44px 이상이다
 - **검증** e2e `structure.spec.ts`
 
 #### AC-STRUCT-20 · 빈 레시피 화면이 작성으로 보낸다

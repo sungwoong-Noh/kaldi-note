@@ -1,93 +1,176 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
+import { Shell, ButtonLink } from "@/components/ui";
 import { useRequireSession } from "@/features/auth/useRequireSession";
-import { fetchBrewLogPage } from "@/features/brewlog/api";
-import { BrewLogCard } from "@/features/brewlog/components/BrewLogCard";
+import { useCalendar, useDayLogs, useMutualFollows } from "@/features/calendar/api";
+import { Calendar, type CalendarDayInfo } from "@/features/calendar/components/Calendar";
+import { DayList } from "@/features/calendar/components/DayList";
+import { FollowRail } from "@/features/calendar/components/FollowRail";
+import { MonthNav } from "@/features/calendar/components/MonthNav";
+import type { BrewLogSummary } from "@/features/brewlog/schema";
 import { useRecipeLabels } from "@/features/brewlog/useRecipeLabels";
-import { ButtonLink, Shell } from "@/components/ui";
-
-/** 홈에 세우는 최근 기록 수. 스크롤 없이 한눈에 들어오는 만큼만 둔다. */
-const RECENT_SIZE = 3;
+import { addMonths, kstMonthOf, kstToday } from "@/lib/kstDate";
+import { useMe } from "@/features/user/queries";
 
 export default function HomePage() {
   const { ready, onSessionLost } = useRequireSession();
+  const me = useMe(onSessionLost);
+  const mutuals = useMutualFollows(onSessionLost);
 
-  const recent = useQuery({
-    queryKey: ["brew-logs", "recent", RECENT_SIZE],
-    queryFn: () => fetchBrewLogPage(0, RECENT_SIZE, onSessionLost),
-    enabled: ready,
-  });
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState(() => kstMonthOf(kstToday()));
+  const [selectedDate, setSelectedDate] = useState<string | null>(() => kstToday());
 
-  const logs = recent.data?.content ?? [];
-  const labels = useRecipeLabels(logs, ready, onSessionLost);
+  const meId = me.data?.id ?? null;
+  const effectiveUserId = selectedUserId ?? meId;
+  const isMine = effectiveUserId === null || effectiveUserId === meId;
+  const calendarUserId = isMine ? undefined : (effectiveUserId ?? undefined);
 
-  if (!ready || recent.isPending) {
+  const calendar = useCalendar(calendarUserId, selectedMonth, onSessionLost);
+  // 이전 달 프리페치. 화면에 쓰지 않고 캐시에만 얹는다(AC-HOMECAL-50).
+  useCalendar(calendarUserId, addMonths(selectedMonth, -1), onSessionLost);
+
+  const dayLogs = useDayLogs(calendarUserId, selectedDate, onSessionLost);
+  const logs = dayLogs.data?.content ?? [];
+  const recipeLabels = useRecipeLabels(
+    logs,
+    ready && selectedDate !== null,
+    onSessionLost,
+  );
+
+  const ownerNickname = isMine
+    ? undefined
+    : mutuals.data?.find((profile) => profile.id === effectiveUserId)?.nickname;
+
+  function handleSelectUser(userId: number) {
+    setSelectedUserId(userId);
+    const today = kstToday();
+    setSelectedDate(kstMonthOf(today) === selectedMonth ? today : null);
+  }
+
+  function handlePrevMonth() {
+    setSelectedMonth((month) => addMonths(month, -1));
+    setSelectedDate(null);
+  }
+
+  function handleNextMonth() {
+    // 버튼은 disabled로 이번 달 이후를 막지만, 스와이프는 같은 함수를 타므로 여기서도
+    // 막아야 한다 — 그러지 않으면 스와이프로 미래 달까지 넘어간다.
+    if (selectedMonth === kstMonthOf(kstToday())) return;
+    setSelectedMonth((month) => addMonths(month, 1));
+    setSelectedDate(null);
+  }
+
+  if (!ready || me.isPending) {
     return (
-      <Screen>
+      <Shell>
         <LoadingState />
-      </Screen>
+      </Shell>
     );
   }
 
-  if (recent.error) {
+  if (me.error) {
     return (
-      <Screen>
-        <ErrorState
-          error={recent.error}
-          onRetry={() => void recent.refetch()}
-        />
-      </Screen>
+      <Shell>
+        <ErrorState error={me.error} onRetry={() => void me.refetch()} />
+      </Shell>
     );
   }
 
-  if (logs.length === 0) {
-    return (
-      <Screen>
-        {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
-        <div data-empty className="flex flex-col gap-3">
-          <p className="py-6 text-center text-body text-ink-3">
-            아직 기록이 없습니다
-          </p>
-          <ButtonLink href="/recipes" variant="primary">
-            레시피 보러 가기
-          </ButtonLink>
-        </div>
-      </Screen>
-    );
+  if (me.data === undefined) {
+    // isPending이 false이고 error도 없다면 항상 성립한다 — 타입을 좁히기 위한 경계다.
+    return null;
   }
+
+  const days = new Map<string, CalendarDayInfo>(
+    (calendar.data?.days ?? []).map((day) => [
+      day.date,
+      { count: day.count, primaryRecipeName: day.primaryRecipeName },
+    ]),
+  );
 
   return (
-    <Screen>
-      <ul className="flex flex-col gap-3">
-        {logs.map((log) => (
-          <BrewLogCard
-            key={log.id}
-            log={log}
-            recipeLabel={labels.get(log.recipeId) ?? ""}
-          />
-        ))}
-      </ul>
-    </Screen>
+    <Shell stack>
+      <FollowRail
+        me={me.data}
+        mutuals={mutuals.data ?? []}
+        selectedUserId={effectiveUserId ?? me.data.id}
+        onSelect={handleSelectUser}
+      />
+
+      <MonthNav
+        month={selectedMonth}
+        totalCount={calendar.data?.totalCount ?? 0}
+        ownerNickname={ownerNickname}
+        onPrev={handlePrevMonth}
+        onNext={handleNextMonth}
+      />
+
+      <Calendar
+        month={selectedMonth}
+        days={days}
+        selectedDate={selectedDate}
+        onSelect={setSelectedDate}
+        onSwipeLeft={handleNextMonth}
+        onSwipeRight={handlePrevMonth}
+        variant="mobile"
+      />
+
+      {selectedDate !== null && (
+        <DaySection
+          date={selectedDate}
+          logs={logs}
+          isPending={dayLogs.isPending}
+          recipeLabels={recipeLabels}
+          ownerNickname={ownerNickname}
+        />
+      )}
+
+      {/*
+        /brews/new는 recipeId를 필수로 받는다 — 캘린더 홈에는 「이 레시피」라고 부를
+        특정 레시피가 없어 레시피 선택부터 시작한다(docs/specs/2026-09-19-home-calendar.md
+        「구현 중 정정」).
+      */}
+      <ButtonLink href="/recipes" variant="primary" block>
+        기록하기
+      </ButtonLink>
+    </Shell>
   );
 }
 
-function Screen({ children }: { children: React.ReactNode }) {
+function DaySection({
+  date,
+  logs,
+  isPending,
+  recipeLabels,
+  ownerNickname,
+}: {
+  date: string;
+  logs: BrewLogSummary[];
+  isPending: boolean;
+  recipeLabels: Map<number, string>;
+  ownerNickname?: string;
+}) {
+  if (isPending) return null;
+
+  if (logs.length === 0) {
+    return (
+      <p className="rounded-control border-l-2 border-divider-strong bg-surface px-3 py-2 text-body-sm">
+        이 날에는 기록이 없습니다.
+      </p>
+    );
+  }
+
   return (
-    <Shell>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h1 className="text-page-title font-semibold">최근 기록</h1>
-        <Link
-          href="/brews"
-          className="inline-flex min-h-11 min-w-11 items-center justify-center text-body text-ink-3"
-        >
-          전체 보기
-        </Link>
-      </div>
-      {children}
-    </Shell>
+    <DayList
+      date={date}
+      logs={logs}
+      recipeLabels={recipeLabels}
+      ownerNickname={ownerNickname}
+      variant="mobile"
+    />
   );
 }

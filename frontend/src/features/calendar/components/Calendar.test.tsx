@@ -109,4 +109,82 @@ describe("Calendar", () => {
       expect(cell).toBeEmptyDOMElement();
     }
   });
+
+  it("AC-HOMECAL-34 · 왼쪽으로 스와이프하면 onSwipeLeft가 불린다", () => {
+    const onSwipeLeft = vi.fn();
+    const onSwipeRight = vi.fn();
+    render(
+      <Calendar
+        month="2026-09"
+        days={new Map()}
+        selectedDate={null}
+        onSelect={() => {}}
+        onSwipeLeft={onSwipeLeft}
+        onSwipeRight={onSwipeRight}
+        variant="mobile"
+      />,
+    );
+
+    const grid = screen.getByRole("grid");
+    grid.dispatchEvent(
+      new PointerEvent("pointerdown", { clientX: 300, bubbles: true }),
+    );
+    grid.dispatchEvent(
+      new PointerEvent("pointerup", { clientX: 200, bubbles: true }),
+    );
+
+    expect(onSwipeLeft).toHaveBeenCalledTimes(1);
+    expect(onSwipeRight).not.toHaveBeenCalled();
+  });
+
+  it("오른쪽으로 스와이프하면 onSwipeRight가 불린다", () => {
+    const onSwipeLeft = vi.fn();
+    const onSwipeRight = vi.fn();
+    render(
+      <Calendar
+        month="2026-09"
+        days={new Map()}
+        selectedDate={null}
+        onSelect={() => {}}
+        onSwipeLeft={onSwipeLeft}
+        onSwipeRight={onSwipeRight}
+        variant="mobile"
+      />,
+    );
+
+    const grid = screen.getByRole("grid");
+    grid.dispatchEvent(
+      new PointerEvent("pointerdown", { clientX: 100, bubbles: true }),
+    );
+    grid.dispatchEvent(
+      new PointerEvent("pointerup", { clientX: 220, bubbles: true }),
+    );
+
+    expect(onSwipeRight).toHaveBeenCalledTimes(1);
+    expect(onSwipeLeft).not.toHaveBeenCalled();
+  });
+
+  it("이동 거리가 임계값 미만이면 스와이프로 치지 않는다", () => {
+    const onSwipeLeft = vi.fn();
+    render(
+      <Calendar
+        month="2026-09"
+        days={new Map()}
+        selectedDate={null}
+        onSelect={() => {}}
+        onSwipeLeft={onSwipeLeft}
+        variant="mobile"
+      />,
+    );
+
+    const grid = screen.getByRole("grid");
+    grid.dispatchEvent(
+      new PointerEvent("pointerdown", { clientX: 300, bubbles: true }),
+    );
+    grid.dispatchEvent(
+      new PointerEvent("pointerup", { clientX: 280, bubbles: true }),
+    );
+
+    expect(onSwipeLeft).not.toHaveBeenCalled();
+  });
 });

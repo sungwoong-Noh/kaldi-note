@@ -303,7 +303,9 @@ test.describe("구조 — 기록 비교표", () => {
 });
 
 test.describe("구조 — 빈 화면", () => {
-  for (const path of ["/", "/brews"]) {
+  // 2026-09-19 정정: 홈이 달력으로 바뀌며 이 data-empty 패턴이 없어졌다 — /brews만 남긴다
+  // (docs/specs/2026-09-15-structure.md AC-STRUCT-19 정정 주석 참조).
+  for (const path of ["/brews"]) {
     test(`AC-STRUCT-19 · ${path}의 빈 화면이 레시피로 보낸다`, async ({
       page,
     }) => {

@@ -65,6 +65,9 @@ export function DayList({
           />
         ))}
       </ul>
+      {ownerNickname !== undefined && (
+        <p className="text-body-sm text-ink-3">맞팔로우 — 서로의 기록이 보입니다</p>
+      )}
     </div>
   );
 }
@@ -81,7 +84,10 @@ function DayListRow({
 
   return (
     <li data-testid="day-list-row">
-      <Link href={`/brews/${log.id}`} className="flex items-center gap-2">
+      <Link
+        href={`/brews/${log.id}`}
+        className="flex min-h-11 items-center gap-2"
+      >
         <RoastDot roastLevel={roastLevel} />
         <span className="flex-1 truncate text-body font-medium">
           {recipeLabel ?? ""}

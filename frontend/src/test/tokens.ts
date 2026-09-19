@@ -2,12 +2,15 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 /**
- * 스펙이 정한 토큰 15개. 이 목록이 곧 허용목록이다
+ * 스펙이 정한 토큰 16개. 이 목록이 곧 허용목록이다
  * (`docs/specs/2026-09-17-design-system-v2.md`).
  *
- * <p>2026-09-17에 8개에서 늘었다. 이름도 바뀌었다 —
+ * <p>2026-09-17에 8개에서 15개로 늘었다. 이름도 바뀌었다 —
  * `background`→`paper`, `foreground`→`ink`, `muted`→`ink-3`, `line`→`border`,
  * `brand`→`accent`, `on-accent`→`on-ink`.
+ *
+ * <p>2026-09-19에 `signal-record`가 더해져 16개가 됐다 — 달력의 기록 점 전용 신호색이다
+ * (`docs/specs/2026-09-19-home-calendar.md`).
  */
 export const TOKEN_NAMES = [
   // 면
@@ -30,6 +33,8 @@ export const TOKEN_NAMES = [
   "accent-wash",
   // 오류
   "danger",
+  // 신호 — 달력의 기록 점 전용. 이 용도 외에는 쓰지 않는다
+  "signal-record",
 ] as const;
 
 export type Palette = Record<string, string>;

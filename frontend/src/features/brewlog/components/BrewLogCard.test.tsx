@@ -84,4 +84,10 @@ describe("브루잉 로그 카드", () => {
     ]);
     expect(labels).not.toContain("브루 비율");
   });
+
+  it("AC-HOMECAL-54 · UTC 전날 23시 기록을 KST 날짜로 보여준다", () => {
+    renderCard({ ...withRatio, brewedAt: "2026-09-18T23:00:00Z" });
+
+    expect(screen.getByText("2026-09-19")).toBeInTheDocument();
+  });
 });

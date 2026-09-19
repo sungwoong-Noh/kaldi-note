@@ -529,4 +529,20 @@ describe("BrewDetailPage — 푸어 스텝", () => {
     expect(await screen.findByText("실측값")).toBeInTheDocument();
     expect(screen.queryByText("푸어 스텝")).not.toBeInTheDocument();
   });
+
+  it("AC-HOMECAL-54 · UTC 전날 23시 기록을 KST 날짜로 보여준다", async () => {
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({
+          ...brewLogWithTds,
+          id: 42,
+          brewedAt: "2026-09-18T23:00:00Z",
+        }),
+      ),
+    );
+
+    await renderDetail();
+
+    expect(await screen.findByText("2026-09-19")).toBeInTheDocument();
+  });
 });

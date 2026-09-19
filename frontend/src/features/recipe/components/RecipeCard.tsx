@@ -10,11 +10,24 @@ import { statusLabel } from "@/lib/statusLabel";
 import { cardClass } from "@/components/ui";
 
 /** 목록의 한 항목. 카드 전체가 링크라 탭 타깃이 크다 — 부엌에서 폰으로 쓰는 환경을 전제한다. */
-export function RecipeCard({ recipe }: { recipe: RecipeSummary }) {
+export function RecipeCard({
+  recipe,
+  href,
+}: {
+  recipe: RecipeSummary;
+  /**
+   * 카드를 눌렀을 때 갈 곳. 기본은 레시피 상세다.
+   *
+   * <p>환산기에서 「이 값으로 기록하기」로 들어온 경우에는 **기록 작성**으로 보낸다 —
+   * 그때는 레시피를 고르는 것이 목적이지 읽는 것이 아니다
+   * (docs/specs/2026-09-17-small-features.md).
+   */
+  href?: string;
+}) {
   return (
     <li>
       <Link
-        href={`/recipes/${recipe.id}`}
+        href={href ?? `/recipes/${recipe.id}`}
         className={cardClass("block active:bg-surface")}
       >
         <div className="flex items-start justify-between gap-2">

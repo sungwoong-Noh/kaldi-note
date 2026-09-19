@@ -2,7 +2,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import RecipesPage from "./page";
+import { RecipeListScreen } from "@/features/recipe/components/RecipeListScreen";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
   hoffmannSummary,
@@ -19,6 +19,13 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/recipes",
 }));
 
+/**
+ * 화면은 쿼리를 직접 읽지 않는다 — 서버 컴포넌트(`page.tsx`)가 풀어 prop으로 넘긴다.
+ * 클라이언트에서 `useSearchParams`를 쓰면 Suspense 경계를 요구해 프리렌더가 깨진다
+ * (2026-09-17에 겪었다).
+ */
+const NO_GRIND = {} as const;
+
 const LIST_URL = "http://localhost:8080/api/v1/recipes";
 
 beforeEach(() => {
@@ -27,13 +34,13 @@ beforeEach(() => {
   setAccessToken("a.b.c");
 });
 
-describe("RecipesPage", () => {
+describe("RecipeListScreen", () => {
   it("AC-WEB-09 · 카드에 추출 파라미터가 표시된다", async () => {
     server.use(
       http.get(LIST_URL, () => HttpResponse.json(pageOf([hoffmannSummary]))),
     );
 
-    renderWithQuery(<RecipesPage />);
+    renderWithQuery(<RecipeListScreen grind={NO_GRIND} />);
 
     expect(
       await screen.findByText("James Hoffmann Ultimate V60"),
@@ -54,7 +61,7 @@ describe("RecipesPage", () => {
       ),
     );
 
-    renderWithQuery(<RecipesPage />);
+    renderWithQuery(<RecipeListScreen grind={NO_GRIND} />);
 
     expect(
       await screen.findByRole("button", { name: "더 보기" }),
@@ -68,7 +75,7 @@ describe("RecipesPage", () => {
       ),
     );
 
-    renderWithQuery(<RecipesPage />);
+    renderWithQuery(<RecipeListScreen grind={NO_GRIND} />);
 
     await screen.findByText("James Hoffmann Ultimate V60");
     expect(
@@ -98,7 +105,7 @@ describe("RecipesPage", () => {
       }),
     );
 
-    renderWithQuery(<RecipesPage />);
+    renderWithQuery(<RecipeListScreen grind={NO_GRIND} />);
 
     await userEvent.click(
       await screen.findByRole("button", { name: "더 보기" }),
@@ -121,7 +128,7 @@ describe("RecipesPage", () => {
   it("AC-WEB-13 · 볼 레시피가 없으면 안내를 보여준다", async () => {
     server.use(http.get(LIST_URL, () => HttpResponse.json(pageOf([]))));
 
-    renderWithQuery(<RecipesPage />);
+    renderWithQuery(<RecipeListScreen grind={NO_GRIND} />);
 
     expect(await screen.findByText("레시피가 없습니다")).toBeInTheDocument();
   });
@@ -143,7 +150,7 @@ describe("RecipesPage", () => {
       ),
     );
 
-    renderWithQuery(<RecipesPage />);
+    renderWithQuery(<RecipeListScreen grind={NO_GRIND} />);
 
     expect(
       await screen.findByText("James Hoffmann Ultimate V60"),
@@ -167,7 +174,7 @@ describe("RecipesPage", () => {
       ),
     );
 
-    renderWithQuery(<RecipesPage />);
+    renderWithQuery(<RecipeListScreen grind={NO_GRIND} />);
 
     await waitFor(() =>
       expect(replace).toHaveBeenCalledWith("/login?next=%2Frecipes"),
@@ -184,7 +191,7 @@ describe("RecipesPage", () => {
       ),
     );
 
-    renderWithQuery(<RecipesPage />);
+    renderWithQuery(<RecipeListScreen grind={NO_GRIND} />);
 
     expect(
       await screen.findByText("서버 오류가 발생했습니다."),
@@ -201,7 +208,7 @@ describe("RecipesPage — 쓰기 슬라이스", () => {
       http.get(LIST_URL, () => HttpResponse.json(pageOf([hoffmannSummary]))),
     );
 
-    renderWithQuery(<RecipesPage />);
+    renderWithQuery(<RecipeListScreen grind={NO_GRIND} />);
 
     expect(
       await screen.findByRole("link", { name: "새 레시피" }),
@@ -226,7 +233,7 @@ describe("RecipesPage — 쓰기 슬라이스", () => {
       }),
     );
 
-    renderWithQuery(<RecipesPage />);
+    renderWithQuery(<RecipeListScreen grind={NO_GRIND} />);
     await user.click(
       await screen.findByRole("checkbox", { name: "내 레시피만" }),
     );
@@ -234,5 +241,39 @@ describe("RecipesPage — 쓰기 슬라이스", () => {
     await waitFor(() =>
       expect(searches.at(-1)).toBe("?page=0&size=20&ownerUserId=7"),
     );
+  });
+});
+
+describe("환산값 이어받기 — docs/specs/2026-09-17-small-features.md", () => {
+  it("AC-SMALL-12 · 환산값이 있으면 카드가 기록 작성으로 간다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([hoffmannSummary]))),
+    );
+    renderWithQuery(
+      <RecipeListScreen
+        grind={{ grinderModelId: 1, grindSettingValue: 30 }}
+      />,
+    );
+
+    // 카드의 접근 가능한 이름에는 제목 말고 수치도 섞인다. 제목으로 찾아 링크로 올라간다.
+    const title = await screen.findByText("James Hoffmann Ultimate V60");
+    const card = title.closest("a");
+
+    expect(card?.getAttribute("href")).toBe(
+      "/brews/new?recipeId=2&grinderModelId=1&grindSettingValue=30",
+    );
+  });
+
+  it("AC-SMALL-12 · 환산값이 없으면 평소대로 상세로 간다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([hoffmannSummary]))),
+    );
+  
+    renderWithQuery(<RecipeListScreen grind={NO_GRIND} />);
+
+    const title = await screen.findByText("James Hoffmann Ultimate V60");
+    const card = title.closest("a");
+
+    expect(card?.getAttribute("href")).toBe("/recipes/2");
   });
 });

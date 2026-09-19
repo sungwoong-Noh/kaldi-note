@@ -173,12 +173,24 @@ export function BrewDetail({ id }: { id: number }) {
         `PATCH`·`DELETE`는 소유자만 받는다. 남의 로그에 버튼을 두면 눌렀을 때 403이 난다.
         `me`가 아직 안 왔으면 남의 것으로 본다 — 파괴적 버튼은 늦게 나타나는 편이 안전하다.
       */}
-      {isMine && (
-        <div className="flex items-center gap-2 self-start">
-          <ButtonLink href={`/brews/${id}/edit`}>편집</ButtonLink>
-          <Button onClick={() => setConfirmingDelete(true)}>삭제</Button>
-        </div>
-      )}
+      {/*
+        「다시 내리기」는 내 기록이 아니어도 보인다 — 남의 기록을 보고 같은 레시피로
+        내려보는 것이 이 서비스의 쓰임이다. 편집·삭제만 소유자 전용이다
+        (docs/specs/2026-09-17-small-features.md).
+      */}
+      <div className="flex items-center gap-2 self-start">
+        {recipeId !== undefined && (
+          <ButtonLink href={`/brews/new?recipeId=${recipeId}`} variant="primary">
+            다시 내리기
+          </ButtonLink>
+        )}
+        {isMine && (
+          <>
+            <ButtonLink href={`/brews/${id}/edit`}>편집</ButtonLink>
+            <Button onClick={() => setConfirmingDelete(true)}>삭제</Button>
+          </>
+        )}
+      </div>
 
       {confirmingDelete && (
         <DeleteBrewLogDialog

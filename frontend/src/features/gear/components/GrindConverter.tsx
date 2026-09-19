@@ -5,7 +5,7 @@ import { useState } from "react";
 import { errorMessageOf } from "@/components/ErrorState";
 import { convertGrind } from "../api";
 import type { GrinderModel } from "../schema";
-import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
+import { Button, ButtonLink, SELECT_EXTRA, controlClass } from "@/components/ui";
 
 /**
  * 마스터 그라인더끼리 분쇄도를 환산한다.
@@ -106,6 +106,23 @@ export function GrindConverter({
             </p>
           )}
         </dl>
+      )}
+
+      {/*
+        환산 결과를 기록으로 잇는다 — docs/specs/2026-09-17-small-features.md
+
+        레시피를 먼저 고르게 하는 이유: 백엔드가 `BrewLogCreateRequest.recipeId`를
+        `@NotNull`로 요구한다. 레시피 없는 기록은 API가 거부하므로 환산값만 들고
+        기록 작성으로 바로 갈 수 없다.
+      */}
+      {result?.targetSetting !== undefined && (
+        <ButtonLink
+          href={`/recipes?grinderModelId=${targetId}&grindSettingValue=${result.targetSetting}`}
+          variant="primary"
+          block
+        >
+          이 값으로 기록하기
+        </ButtonLink>
       )}
     </div>
   );

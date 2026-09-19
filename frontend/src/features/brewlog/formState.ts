@@ -58,10 +58,25 @@ export function toDateTimeLocal(date: Date): string {
  *
  * <p>그라인더는 레시피와 **같은 모델 중 `id`가 가장 작은 것**(먼저 등록한 것)을 고른다. 없으면 비워 둔다.
  */
+/**
+ * 환산기에서 넘어온 분쇄도. 없으면 레시피 값을 쓴다.
+ *
+ * <p><b>`grinderModelId`다, `userGrinderId`가 아니다.</b> 환산기는 장비 **모델** 단위로
+ * 동작하고(누구의 C40이든 30µm/click이다), 기록은 **내가 등록한 그라인더**를 가리킨다.
+ * 그 모델을 내가 갖고 있지 않으면 넘어온 값은 버린다 — 저장 시 서버가 거부한다.
+ *
+ * <p>쿼리 파라미터로 오므로 사용자가 손댈 수 있다.
+ */
+export interface GrindOverride {
+  grinderModelId?: number;
+  grindSettingValue?: number;
+}
+
 export function initialFormState(
   recipe: Recipe,
   grinders: readonly GrinderChoice[],
   now: Date = new Date(),
+  override: GrindOverride = {},
 ): BrewLogFormState {
   const matched = grinders
     .filter((g) => g.grinderModelId === recipe.grinderModelId)
@@ -70,14 +85,35 @@ export function initialFormState(
       null,
     );
 
+  /*
+   * 환산기에서 넘어온 값이 레시피 값보다 우선한다 — 사용자가 **방금 환산한 값**이
+   * 레시피에 적힌 값보다 의도에 가깝다(docs/specs/2026-09-17-small-features.md).
+   * 내 그라인더 목록에 없는 id는 버린다.
+   */
+  const handed =
+    override.grinderModelId === undefined
+      ? null
+      : grinders
+          .filter((g) => g.grinderModelId === override.grinderModelId)
+          .reduce<GrinderChoice | null>(
+            (best, g) => (best === null || g.id < best.id ? g : best),
+            null,
+          );
+
+  const grinder = handed ?? matched;
+
   return {
     recipeId: recipe.id,
     brewedAt: toDateTimeLocal(now),
     beanBatchId: null,
-    userGrinderId: matched?.id ?? null,
+    userGrinderId: grinder?.id ?? null,
     // 그라인더를 못 고르면 설정값도 의미가 없다 — 어느 그라인더의 22클릭인지 알 수 없다.
     actualGrindSettingValue:
-      matched === null ? null : (recipe.grindSettingValue ?? null),
+      grinder === null
+        ? null
+        : handed !== null && override.grindSettingValue !== undefined
+          ? override.grindSettingValue
+          : (recipe.grindSettingValue ?? null),
     actualDoseG: recipe.doseG,
     actualWaterG: recipe.waterG,
     actualWaterTempC: recipe.waterTempC ?? null,

@@ -55,6 +55,14 @@ public class BrewLogService {
 
   private static final Sort LIST_SORT = Sort.by(Sort.Order.desc("brewedAt"), Sort.Order.desc("id"));
 
+  /**
+   * 날짜 필터가 없을 때 쓰는 넓은 경계. {@code brew_logs.brewed_at}이 실제로 이 범위를 벗어날 일은 없다 — 필터를 끄는 것과 같은 효과를 내면서도
+   * 리포지토리 쿼리가 null을 받지 않게 한다(BrewLogRepository.findVisible 주석 참조).
+   */
+  private static final Instant NO_DATE_FILTER_START = Instant.parse("0001-01-01T00:00:00Z");
+
+  private static final Instant NO_DATE_FILTER_END = Instant.parse("9999-12-31T23:59:59Z");
+
   private final BrewLogRepository brewLogRepository;
   private final RecipeRepository recipeRepository;
   private final BeanBatchRepository beanBatchRepository;
@@ -128,10 +136,27 @@ public class BrewLogService {
    * 몰아 입력할 때 순서가 엉킨다.
    */
   public PageResponse<BrewLogSummaryResponse> list(
-      Long viewerId, Long recipeId, Long userId, Long beanBatchId, PageParams params) {
+      Long viewerId,
+      Long recipeId,
+      Long userId,
+      Long beanBatchId,
+      LocalDate date,
+      PageParams params) {
+    Instant startInclusive =
+        (date == null) ? NO_DATE_FILTER_START : date.atStartOfDay(CalendarMonth.KST).toInstant();
+    Instant endExclusive =
+        (date == null)
+            ? NO_DATE_FILTER_END
+            : date.plusDays(1).atStartOfDay(CalendarMonth.KST).toInstant();
     return PageResponse.from(
         brewLogRepository.findVisible(
-            viewerId, recipeId, userId, beanBatchId, params.toPageable(LIST_SORT)),
+            viewerId,
+            recipeId,
+            userId,
+            beanBatchId,
+            startInclusive,
+            endExclusive,
+            params.toPageable(LIST_SORT)),
         log -> BrewLogSummaryResponse.from(log, analyze(log)));
   }
 

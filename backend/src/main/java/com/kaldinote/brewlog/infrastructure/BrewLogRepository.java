@@ -23,6 +23,11 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
    *
    * <p><b>★ {@link #countByKstDay}·{@link #findVisibleForPrimaryRecipe}의 where 절과 문자 그대로 같아야
    * 한다.</b> 한쪽만 고치면 「목록에는 보이는데 달력에는 점이 없다」가 된다.
+   *
+   * <p><b>{@code startInclusive}·{@code endExclusive}는 null을 받지 않는다.</b> JPQL에서 온전히 IS NULL로만 쓰이는
+   * {@code Instant} 파라미터는 PostgreSQL이 바인드 타입을 추론하지 못해 "could not determine data type" 오류를 낸다({@code
+   * recipeId} 같은 {@code Long}은 같은 자리에서 문제가 없었다 — Hibernate 7의 타입 추론이 기본 수치형과 시각형에서 다르게 동작한다). 날짜
+   * 필터가 없을 때는 서비스가 시각 범위 전체를 덮는 값을 넘긴다.
    */
   @Query(
       value =
@@ -32,6 +37,8 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
             and (:recipeId is null or b.recipeId = :recipeId)
             and (:userId is null or b.userId = :userId)
             and (:beanBatchId is null or b.beanBatchId = :beanBatchId)
+            and b.brewedAt >= :startInclusive
+            and b.brewedAt < :endExclusive
             and ( b.userId = :viewerId
                or b.visibility = com.kaldinote.brewlog.domain.BrewLogVisibility.PUBLIC
                or ( b.visibility = com.kaldinote.brewlog.domain.BrewLogVisibility.FRIENDS
@@ -49,6 +56,8 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
             and (:recipeId is null or b.recipeId = :recipeId)
             and (:userId is null or b.userId = :userId)
             and (:beanBatchId is null or b.beanBatchId = :beanBatchId)
+            and b.brewedAt >= :startInclusive
+            and b.brewedAt < :endExclusive
             and ( b.userId = :viewerId
                or b.visibility = com.kaldinote.brewlog.domain.BrewLogVisibility.PUBLIC
                or ( b.visibility = com.kaldinote.brewlog.domain.BrewLogVisibility.FRIENDS
@@ -64,6 +73,8 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
       @Param("recipeId") Long recipeId,
       @Param("userId") Long userId,
       @Param("beanBatchId") Long beanBatchId,
+      @Param("startInclusive") Instant startInclusive,
+      @Param("endExclusive") Instant endExclusive,
       Pageable pageable);
 
   /**

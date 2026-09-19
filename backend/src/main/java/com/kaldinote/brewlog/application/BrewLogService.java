@@ -3,11 +3,14 @@ package com.kaldinote.brewlog.application;
 import com.kaldinote.brewlog.domain.BrewLog;
 import com.kaldinote.brewlog.domain.BrewLogPatch;
 import com.kaldinote.brewlog.domain.BrewLogVisibility;
+import com.kaldinote.brewlog.domain.CalendarMonth;
 import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
+import com.kaldinote.brewlog.presentation.dto.BrewLogCalendarResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogPatchRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogSummaryResponse;
+import com.kaldinote.brewlog.presentation.dto.CalendarDayResponse;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
 import com.kaldinote.common.response.PageParams;
@@ -32,6 +35,11 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -125,6 +133,64 @@ public class BrewLogService {
         brewLogRepository.findVisible(
             viewerId, recipeId, userId, beanBatchId, params.toPageable(LIST_SORT)),
         log -> BrewLogSummaryResponse.from(log, analyze(log)));
+  }
+
+  /**
+   * 달력 집계. 공개범위 판정은 목록과 같은 규칙이다 — 볼 수 없는 대상을 가리켜도 403이 아니라 빈 결과다.
+   *
+   * <p>userId가 null이면 호출자 본인의 달력이다(AC-HOMECAL-14).
+   */
+  public BrewLogCalendarResponse calendar(Long viewerId, Long userId, String rawMonth) {
+    CalendarMonth month = CalendarMonth.parse(rawMonth);
+    Instant start = month.startInclusive();
+    Instant end = month.endExclusive();
+    // 목록(list)과 달리 생략 시 "전체 보이는 것"이 아니라 "내 달력"이다 — 달력은 항상 한 사람의 것이다.
+    Long targetUserId = (userId == null) ? viewerId : userId;
+
+    Map<LocalDate, Long> counts = new LinkedHashMap<>();
+    for (BrewLogRepository.DayCountRow row :
+        brewLogRepository.countByKstDay(viewerId, targetUserId, start, end)) {
+      counts.put(row.getDay(), row.getCnt());
+    }
+
+    Map<LocalDate, String> primaryNames = primaryRecipeNames(viewerId, targetUserId, start, end);
+
+    List<CalendarDayResponse> days =
+        counts.entrySet().stream()
+            .map(
+                e ->
+                    new CalendarDayResponse(e.getKey(), e.getValue(), primaryNames.get(e.getKey())))
+            .toList();
+
+    long total = days.stream().mapToLong(CalendarDayResponse::count).sum();
+    return new BrewLogCalendarResponse(month.format(), total, days);
+  }
+
+  /** 날짜별 대표 레시피명. 쿼리가 brewedAt 내림차순이므로 **각 날짜에 처음 나타나는 행**이 그날 마지막 기록이다(AC-HOMECAL-66). */
+  private Map<LocalDate, String> primaryRecipeNames(
+      Long viewerId, Long userId, Instant start, Instant end) {
+    Map<LocalDate, Long> firstRecipeIdByDay = new LinkedHashMap<>();
+    for (BrewLogRepository.PrimaryRecipeRow row :
+        brewLogRepository.findVisibleForPrimaryRecipe(viewerId, userId, start, end)) {
+      firstRecipeIdByDay.putIfAbsent(CalendarMonth.toKstDate(row.getBrewedAt()), row.getRecipeId());
+    }
+    if (firstRecipeIdByDay.isEmpty()) {
+      return Map.of();
+    }
+
+    Map<Long, String> titles =
+        recipeRepository.findAllById(Set.copyOf(firstRecipeIdByDay.values())).stream()
+            .collect(Collectors.toMap(Recipe::getId, Recipe::getTitle));
+
+    Map<LocalDate, String> result = new LinkedHashMap<>();
+    firstRecipeIdByDay.forEach(
+        (day, recipeId) -> {
+          String title = titles.get(recipeId);
+          if (title != null) {
+            result.put(day, title);
+          }
+        });
+    return result;
   }
 
   /** EY·SCA는 DB에 없다. 저장된 실측값으로 조회할 때마다 계산한다. */

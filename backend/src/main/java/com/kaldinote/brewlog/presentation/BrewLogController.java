@@ -1,6 +1,7 @@
 package com.kaldinote.brewlog.presentation;
 
 import com.kaldinote.brewlog.application.BrewLogService;
+import com.kaldinote.brewlog.presentation.dto.BrewLogCalendarResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogPatchRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
@@ -60,6 +61,20 @@ public class BrewLogController {
       @Parameter(description = "그 원두 봉지로 내린 기록만.") @RequestParam(required = false) Long beanBatchId,
       AuthenticatedUser user) {
     return brewLogService.list(user.id(), recipeId, userId, beanBatchId, PageParams.of(page, size));
+  }
+
+  @GetMapping("/calendar")
+  @Operation(
+      summary = "월별 기록일 집계",
+      description = "KST 기준으로 그 달에 기록이 있는 날짜만 희소 배열로 준다. 공개범위 판정은 목록과 같다. 미래 달도 400이 아니라 빈 결과다.")
+  public BrewLogCalendarResponse calendar(
+      @Parameter(description = "누구의 달력인가. 생략하면 호출자 본인.") @RequestParam(required = false)
+          Long userId,
+      @Parameter(description = "YYYY-MM. KST 기준의 달.", required = true)
+          @RequestParam(required = false)
+          String month,
+      AuthenticatedUser user) {
+    return brewLogService.calendar(user.id(), userId, month);
   }
 
   @GetMapping("/{id}")

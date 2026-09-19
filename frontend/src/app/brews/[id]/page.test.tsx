@@ -530,3 +530,16 @@ describe("BrewDetailPage — 푸어 스텝", () => {
     expect(screen.queryByText("푸어 스텝")).not.toBeInTheDocument();
   });
 });
+
+describe("다시 내리기 — docs/specs/2026-09-17-small-features.md", () => {
+  it("AC-SMALL-10 · 같은 레시피로 새 기록을 여는 링크가 있다", async () => {
+    await renderDetail();
+    await screen.findByText("실측값");
+
+    const link = screen.getByRole("link", { name: "다시 내리기" });
+
+    // 좋았던 기록을 또 내리려면 지금은 레시피를 다시 찾아 들어가야 한다.
+    expect(link.getAttribute("href")).toBe("/brews/new?recipeId=1");
+  });
+
+});

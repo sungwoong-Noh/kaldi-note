@@ -1,7 +1,7 @@
 ---
 id: SMALL
 title: 작은 기능 3개 — 비교표 문구 · 이 값으로 기록 · 다시 내리기
-status: 승인
+status: 구현완료
 plan: docs/plans/2026-09-17-plan-small-features.md
 ---
 
@@ -140,11 +140,19 @@ plan: docs/plans/2026-09-17-plan-small-features.md
 - **When** 액션 영역을 읽는다
 - **Then** **「다시 내리기」** 링크가 `/brews/new?recipeId=12`를 가리킨다
 
-#### AC-SMALL-11 · 즉흥 추출에는 없다
+#### ~~AC-SMALL-11 · 즉흥 추출에는 없다~~ — **철회(2026-09-17)**
 
-- **Given** `recipeId`가 없는 기록(즉흥 추출)
-- **When** 액션 영역을 읽는다
-- **Then** 「다시 내리기」가 **없다** — 다시 내릴 레시피가 없다
+> **검증할 수 없는 조건이라 뺀다.** 「`recipeId`가 없는 기록」은 **존재할 수 없다** —
+> 백엔드가 `BrewLogCreateRequest.recipeId`를 `@NotNull`로 요구하고, 프론트 스키마도
+> `recipeId: z.number()`로 필수다. `recipeId`를 지운 응답은 **파싱 단계에서 실패해**
+> 화면이 아예 그려지지 않는다(테스트로 확인했다).
+>
+> `architecture.md`가 데이터 모델에 「즉흥 추출 허용(`recipe_id` nullable)」을 적어뒀지만
+> **API가 그것을 막고 있다.** 즉흥 추출을 실제로 열려면 백엔드부터 바꿔야 하고,
+> 그때 이 조건을 되살린다.
+>
+> 코드에는 `recipeId !== undefined` 가드가 남아 있다 — 타입 안전성 차원이지
+> 도달 가능한 분기가 아니다.
 
 ## 열어둔 결정
 

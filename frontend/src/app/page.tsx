@@ -3,11 +3,17 @@
 import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
-import { WebTopBar } from "@/components/layout/WebTopBar";
 import { Shell, ButtonLink, Button } from "@/components/ui";
 import { useRequireSession } from "@/features/auth/useRequireSession";
-import { useCalendar, useDayLogs, useMutualFollows } from "@/features/calendar/api";
-import { Calendar, type CalendarDayInfo } from "@/features/calendar/components/Calendar";
+import {
+  useCalendar,
+  useDayLogs,
+  useMutualFollows,
+} from "@/features/calendar/api";
+import {
+  Calendar,
+  type CalendarDayInfo,
+} from "@/features/calendar/components/Calendar";
 import { DayList } from "@/features/calendar/components/DayList";
 import { FollowRail } from "@/features/calendar/components/FollowRail";
 import { MonthNav } from "@/features/calendar/components/MonthNav";
@@ -29,8 +35,12 @@ export default function HomePage() {
   const width = useViewportWidth();
 
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState(() => kstMonthOf(kstToday()));
-  const [selectedDate, setSelectedDate] = useState<string | null>(() => kstToday());
+  const [selectedMonth, setSelectedMonth] = useState(() =>
+    kstMonthOf(kstToday()),
+  );
+  const [selectedDate, setSelectedDate] = useState<string | null>(() =>
+    kstToday(),
+  );
 
   const meId = me.data?.id ?? null;
   const effectiveUserId = selectedUserId ?? meId;
@@ -138,50 +148,47 @@ export default function HomePage() {
   );
 
   return (
-    <>
-      <WebTopBar me={me.data} />
-      <Shell stack wide={isWeb}>
-        <FollowRail
-          me={me.data}
-          mutuals={mutuals.data ?? []}
-          selectedUserId={effectiveUserId ?? me.data.id}
-          onSelect={handleSelectUser}
-          variant={variant}
-        />
+    <Shell stack wide={isWeb}>
+      <FollowRail
+        me={me.data}
+        mutuals={mutuals.data ?? []}
+        selectedUserId={effectiveUserId ?? me.data.id}
+        onSelect={handleSelectUser}
+        variant={variant}
+      />
 
-        {isTwoColumn ? (
-          <div className="flex gap-6">
-            <div className="flex-1">{calendarBlock}</div>
-            <div
-              data-testid="day-column"
-              className="flex w-[420px] shrink-0 flex-col gap-3 overflow-y-auto bg-surface p-4"
-              style={{ maxHeight: 600 }}
-            >
-              {daySection}
-              <ContextCta
-                isMine={isMine}
-                ownerNickname={ownerNickname}
-                otherUserId={effectiveUserId ?? undefined}
-              />
-            </div>
-          </div>
-        ) : (
-          <>
-            {calendarBlock}
+      {isTwoColumn ? (
+        <div className="flex gap-6">
+          <div className="flex-1">{calendarBlock}</div>
+          <div
+            data-testid="day-column"
+            className="flex w-[420px] shrink-0 flex-col gap-3 overflow-y-auto bg-surface p-4"
+            style={{ maxHeight: 600 }}
+          >
             {daySection}
-          </>
-        )}
+            <ContextCta
+              isMine={isMine}
+              ownerNickname={ownerNickname}
+              otherUserId={effectiveUserId ?? undefined}
+            />
+          </div>
+        </div>
+      ) : (
+        <>
+          {calendarBlock}
+          {daySection}
+        </>
+      )}
 
-        <ButtonLink
-          href="/recipes"
-          variant="primary"
-          block
-          className="min-[1100px]:hidden"
-        >
-          기록하기
-        </ButtonLink>
-      </Shell>
-    </>
+      <ButtonLink
+        href="/recipes"
+        variant="primary"
+        block
+        className="min-[1100px]:hidden"
+      >
+        기록하기
+      </ButtonLink>
+    </Shell>
   );
 }
 
@@ -206,7 +213,10 @@ function ContextCta({
   }
   if (ownerNickname === undefined || otherUserId === undefined) return null;
   return (
-    <Button variant="secondary" onClick={() => router.push(`/u/${otherUserId}`)}>
+    <Button
+      variant="secondary"
+      onClick={() => router.push(`/u/${otherUserId}`)}
+    >
       {ownerNickname} 님 프로필 보기
     </Button>
   );

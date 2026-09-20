@@ -1,5 +1,6 @@
 package com.kaldinote.recipe.application;
 
+import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
 import com.kaldinote.common.response.PageParams;
@@ -49,6 +50,7 @@ public class RecipeService {
   private final RecipeStepRepository recipeStepRepository;
   private final GrinderModelRepository grinderRepository;
   private final BrewerRepository brewerRepository;
+  private final BrewLogRepository brewLogRepository;
   private final FollowService followService;
   private final GrindConverter grindConverter = new GrindConverter();
 
@@ -89,11 +91,18 @@ public class RecipeService {
                 : request.recommendedRoastLevel());
     recipe.replaceSteps(steps);
 
-    return RecipeResponse.from(recipeRepository.save(recipe));
+    return RecipeResponse.from(recipeRepository.save(recipe), 0L, 0L);
   }
 
   public RecipeResponse get(Long userId, Long recipeId) {
-    return RecipeResponse.from(findViewable(userId, recipeId));
+    return withCounts(findViewable(userId, recipeId));
+  }
+
+  /** 새로 저장된 레시피(레시피 자체·포크본)는 포크·브루 실적이 있을 수 없으므로 0을 하드코딩한 from()과 달리, 기존 레시피는 실제 집계가 필요하다. */
+  private RecipeResponse withCounts(Recipe recipe) {
+    long savedCount = recipeRepository.countByParentRecipeIdAndDeletedAtIsNull(recipe.getId());
+    long brewCount = brewLogRepository.countByRecipeIdAndDeletedAtIsNull(recipe.getId());
+    return RecipeResponse.from(recipe, savedCount, brewCount);
   }
 
   /**
@@ -119,7 +128,7 @@ public class RecipeService {
     Recipe fork = Recipe.forkFrom(original, userId);
     List<RecipeStep> copiedSteps = original.getSteps().stream().map(RecipeStep::copyOf).toList();
     fork.replaceSteps(copiedSteps);
-    return RecipeResponse.from(recipeRepository.save(fork));
+    return RecipeResponse.from(recipeRepository.save(fork), 0L, 0L);
   }
 
   /** media 도메인이 업로드 권한을 확인할 때 쓴다. 엔티티를 밖으로 내보내지 않는다(도메인 간 ID 참조 원칙). */
@@ -163,6 +172,11 @@ public class RecipeService {
   @Transactional
   public RecipeResponse update(Long userId, Long recipeId, UpdateRecipeRequest request) {
     Recipe recipe = findOwned(userId, recipeId);
+    // 카운트 조회를 스텝 교체보다 먼저 한다 — 이후에 두면 count 쿼리의 자동 flush가 deleteAllByRecipe
+    // 이후 아직 flush되지 않은 새 스텝 insert를 끌어올려, Hibernate가 insert를 delete보다 먼저
+    // 실행하려다 uq_recipe_steps_order 위반을 낸다.
+    long savedCount = recipeRepository.countByParentRecipeIdAndDeletedAtIsNull(recipe.getId());
+    long brewCount = brewLogRepository.countByRecipeIdAndDeletedAtIsNull(recipe.getId());
 
     requireExists(request.brewerId(), brewerRepository::existsById, "브루어");
 
@@ -197,7 +211,7 @@ public class RecipeService {
     recipe.getSteps().clear();
     recipe.replaceSteps(steps);
 
-    return RecipeResponse.from(recipe);
+    return RecipeResponse.from(recipe, savedCount, brewCount);
   }
 
   @Transactional

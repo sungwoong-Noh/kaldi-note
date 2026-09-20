@@ -12,6 +12,8 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
   Optional<Recipe> findByIdAndDeletedAtIsNull(Long id);
 
+  long countByParentRecipeIdAndDeletedAtIsNull(Long parentRecipeId);
+
   /**
    * 목록용 공개범위 판정.
    *

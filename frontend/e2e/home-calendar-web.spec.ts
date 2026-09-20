@@ -414,4 +414,33 @@ test.describe("홈 달력 — 웹", () => {
       right: "12px",
     });
   });
+
+  test("AC-HOMECAL-89 · 선택된 날짜 숫자가 24px 원으로 감싸진다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    const cell = page.getByRole("button", { name: "9월 5일, 기록 2건" });
+    await cell.click();
+    const numberEl = cell.getByTestId("day-number");
+
+    const box = await numberEl.boundingBox();
+    expect(Math.round(box?.width ?? 0)).toBe(24);
+    expect(Math.round(box?.height ?? 0)).toBe(24);
+
+    // Tailwind의 `rounded-full`은 큰 px 값(예: `3.35544e+07px`)으로 계산된다 — 정확한 숫자가
+    // 아니라 박스 절반(12px)보다 훨씬 커서 완전한 원이 되는지만 확인한다.
+    const borderRadius = await numberEl.evaluate(
+      (el) => getComputedStyle(el).borderRadius,
+    );
+    const bg = await numberEl.evaluate(
+      (el) => getComputedStyle(el).backgroundColor,
+    );
+    const color = await numberEl.evaluate((el) => getComputedStyle(el).color);
+    expect(parseFloat(borderRadius)).toBeGreaterThan(12);
+    expect(bg).toBe(await tokenColor(page, "ink"));
+    expect(color).toBe(await tokenColor(page, "on-ink"));
+  });
 });

@@ -183,7 +183,16 @@ export function Calendar({
                     isWeb ? "px-3 py-2" : ""
                   } ${isWeb && selected ? "bg-surface" : ""} ${lineClass}`}
                 >
-                  <span>{day}</span>
+                  <span
+                    data-testid="day-number"
+                    className={
+                      isWeb && selected
+                        ? "flex h-6 w-6 items-center justify-center rounded-full bg-ink text-on-ink"
+                        : undefined
+                    }
+                  >
+                    {day}
+                  </span>
                   {count > 0 && (
                     <span
                       data-record-dot

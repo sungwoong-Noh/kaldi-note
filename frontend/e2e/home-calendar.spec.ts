@@ -294,3 +294,47 @@ test.describe("홈 달력 — 모바일 선택/오늘 표시", () => {
     expect(bg).toBe("rgba(0, 0, 0, 0)");
   });
 });
+
+/**
+ * 모바일 스크롤 고정 — 버그 수정. `docs/design/design_handoff_kaldi_note 3/HOME-CALENDAR.md`의
+ * 「스크롤 정책」은 "화면 전체가 아니라 날짜별 목록 영역만 세로 스크롤한다. 헤더·레일·달력·CTA·
+ * 탭바는 고정"이라고 못박았지만, 실제로는 이 정책이 웹 2컬럼(`day-column`, AC-HOMECAL-79)에만
+ * 구현돼 있고 모바일에는 전혀 없었다 — 날짜별 목록이 길어지면 페이지 전체가 스크롤되며
+ * 달력·헤더가 함께 밀려 올라갔다.
+ */
+test.describe("홈 달력 — 모바일 스크롤 고정", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.clock.setFixedTime(TODAY);
+  });
+
+  test("날짜별 목록만 스크롤되고 달력은 고정된다", async ({ page }) => {
+    await installStubs(page);
+    await page.route("**/api/v1/brew-logs*", (route) => {
+      if (new URL(route.request().url()).pathname !== "/api/v1/brew-logs") {
+        return route.fallback();
+      }
+      const content = Array.from({ length: 10 }, (_, i) => ({
+        ...brewLogPage.content[0],
+        id: 100 + i,
+      }));
+      return route.fulfill({
+        json: {
+          content,
+          page: 0,
+          size: 100,
+          totalElements: content.length,
+          totalPages: 1,
+          hasNext: false,
+        },
+      });
+    });
+    await page.goto("/");
+    await page.getByRole("button", { name: "9월 2일, 기록 1건" }).click();
+
+    const before = await page.getByRole("grid").boundingBox();
+    await page.getByTestId("day-scroll").evaluate((el) => el.scrollBy(0, 300));
+    const after = await page.getByRole("grid").boundingBox();
+
+    expect(after?.y).toBe(before?.y);
+  });
+});

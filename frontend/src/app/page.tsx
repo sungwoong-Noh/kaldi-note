@@ -150,7 +150,9 @@ export default function HomePage() {
   );
 
   return (
-    <Shell stack wide={isWeb} grow={isTwoColumn}>
+    // grow는 두 경우 모두 필요하다 — 2컬럼은 Calendar의 fillHeight 체인이, 1컬럼/모바일은
+    // 아래 day-scroll의 flex-1이 각각 이 높이를 물려받는다.
+    <Shell stack wide={isWeb} grow>
       <FollowRail
         me={me.data}
         mutuals={mutuals.data ?? []}
@@ -178,7 +180,12 @@ export default function HomePage() {
       ) : (
         <>
           {calendarBlock}
-          {daySection}
+          <div
+            data-testid="day-scroll"
+            className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto"
+          >
+            {daySection}
+          </div>
         </>
       )}
 

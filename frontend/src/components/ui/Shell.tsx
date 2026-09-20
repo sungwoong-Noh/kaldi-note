@@ -12,8 +12,9 @@ import type { ReactNode } from "react";
  *   우측 고정 420px)이 그 안에 눌려 칸이 20~30px까지 좁아졌던 것을 2026-09-20에 발견했다
  *   (docs/specs/2026-09-19-home-calendar.md AC-HOMECAL-84).
  * @param grow 남는 뷰포트 세로 공간을 채운다 — `body`가 이미 `flex flex-col min-h-full`이므로
- *   `<main>`이 `flex-1`이면 나머지 공간을 그대로 물려받는다. 홈의 웹 2컬럼 달력만 쓴다
- *   (docs/specs/2026-09-20-calendar-grid-responsive.md AC-HOMECAL-85).
+ *   `<main>`이 `flex-1`이면 나머지 공간을 그대로 물려받는다. 홈이 두 가지 목적으로 쓴다:
+ *   2컬럼 달력이 `flex:1`로 남는 공간을 채우고(docs/specs/2026-09-20-calendar-grid-responsive.md
+ *   AC-HOMECAL-85), 1컬럼·모바일은 날짜별 목록만 스크롤되고 달력·헤더는 고정되게 한다.
  */
 export function Shell({
   children,

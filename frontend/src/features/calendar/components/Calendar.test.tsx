@@ -33,7 +33,14 @@ describe("Calendar", () => {
     );
 
     const cell = screen.getByRole("button", { name: "9월 5일, 기록 2건" });
-    expect(cell.querySelectorAll("[data-record-dot]")).toHaveLength(1);
+    const dots = cell.querySelectorAll("[data-record-dot]");
+    expect(dots).toHaveLength(1);
+
+    const dot = dots[0] as HTMLElement;
+    expect(dot.style.width).toBe("5px");
+    expect(dot.style.height).toBe("5px");
+    expect(dot.style.borderRadius).toBe("50%");
+    expect(dot.style.backgroundColor).toBe("var(--signal-record)");
   });
 
   it("AC-HOMECAL-45 · aria-label이 건수를 말한다", () => {

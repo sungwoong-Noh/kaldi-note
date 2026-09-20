@@ -152,7 +152,19 @@ export function Calendar({
                   }`}
                 >
                   <span>{day}</span>
-                  {count > 0 && <span data-record-dot aria-hidden />}
+                  {count > 0 && (
+                    <span
+                      data-record-dot
+                      aria-hidden
+                      style={{
+                        display: "inline-block",
+                        width: 5,
+                        height: 5,
+                        borderRadius: "50%",
+                        backgroundColor: "var(--signal-record)",
+                      }}
+                    />
+                  )}
                   {isWeb && info?.primaryRecipeName && <span>{info.primaryRecipeName}</span>}
                   {isWeb && count > 1 && <span>외 {count - 1}건</span>}
                 </button>

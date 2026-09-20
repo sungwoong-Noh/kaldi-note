@@ -338,3 +338,42 @@ test.describe("홈 달력 — 모바일 스크롤 고정", () => {
     expect(after?.y).toBe(before?.y);
   });
 });
+
+/**
+ * 팔로우 레일 아바타 크기 고정 — 버그 수정. 웹 pill(`FollowRail.tsx`의 `RailTab` web 분기)의
+ * 버튼은 `min-w-11` 같은 최소 너비 보호가 없다 — 모바일 분기와 달리 `flex items-center gap-2`
+ * 뿐이다. 맞팔로우가 많아 `role="tablist"` 행(`overflow-x-auto`)이 넘치면, 사진 없는 아바타의
+ * 이니셜 `<span>`(비대체 요소, 자동 최소 크기가 텍스트 min-content로 작다)이 32px 밑으로
+ * 찌그러든다. 실측: 20명일 때 32px → 약 21.5~22.2px.
+ */
+test.describe("홈 달력 — 팔로우 레일 아바타 크기(웹)", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.clock.setFixedTime(TODAY);
+  });
+
+  test("맞팔로우가 많아도 32px로 찌그러지지 않는다", async ({ page }) => {
+    await installStubs(page);
+    // installStubs 뒤에 등록해야 한다 — Playwright는 나중에 등록한 route가 먼저 매칭되므로,
+    // 여기서 먼저 걸면 installStubs의 기본 mutualFollows 핸들러에 가려진다.
+    await page.route("**/api/v1/users/me/mutual-follows", (route) =>
+      route.fulfill({
+        json: Array.from({ length: 20 }, (_, i) => ({
+          id: 100 + i,
+          nickname: `친구${i}`,
+        })),
+      }),
+    );
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await expect(page.getByRole("tab", { name: /친구19/ })).toBeVisible();
+
+    const widths = await page
+      .locator('[role="tablist"] span[style*="32px"]')
+      .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
+
+    expect(widths.length).toBeGreaterThan(10);
+    for (const width of widths) {
+      expect(Math.round(width)).toBe(32);
+    }
+  });
+});

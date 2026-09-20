@@ -1,12 +1,13 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createUserGrinder } from "@/features/gear/api";
 import { useGrinders } from "@/features/gear/queries";
 import type { UserGrinder } from "@/features/gear/schema";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
+import { focusFirstInvalidField } from "@/lib/focusFirstError";
 import { Button, SELECT_EXTRA, cardClass, controlClass } from "@/components/ui";
 
 /**
@@ -47,9 +48,16 @@ export function UserGrinderDialog({
       ? mapFieldErrors(create.error.fieldErrors)
       : null;
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (create.error) focusFirstInvalidField(dialogRef.current);
+  }, [create.error]);
+
   return (
     <div className="fixed inset-0 z-10 flex items-center justify-center bg-black/40 p-4">
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="user-grinder-title"
@@ -105,7 +113,13 @@ export function UserGrinderDialog({
         </label>
 
         {create.error && !fieldErrors?.byField.nickname && (
-          <p className="text-body-sm text-danger">{create.error.message}</p>
+          <p
+            data-general-error
+            tabIndex={-1}
+            className="text-body-sm text-danger"
+          >
+            {create.error.message}
+          </p>
         )}
 
         <div className="flex justify-end gap-2">

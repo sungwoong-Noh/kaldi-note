@@ -60,6 +60,17 @@ function invalidProductName() {
   );
 }
 
+function unmappedProductError() {
+  return HttpResponse.json(
+    {
+      code: "INVALID_REQUEST",
+      message: "입력값이 올바르지 않습니다.",
+      fieldErrors: [{ field: "sku", message: "알 수 없는 오류" }],
+    },
+    { status: 400 },
+  );
+}
+
 async function fillNewBean(
   user: ReturnType<typeof userEvent.setup>,
   { productName = "예가체프" } = {},
@@ -187,5 +198,30 @@ describe("BeanBatchDialog", () => {
 
     expect(order).toEqual([]);
     expect(onCancel).toHaveBeenCalled();
+  });
+
+  it("AC-ERRFOCUS-02 · 실패한 필드로 포커스가 간다", async () => {
+    const user = userEvent.setup();
+    recordCalls({ product: invalidProductName });
+    renderDialog();
+
+    await fillNewBean(user);
+    await user.click(screen.getByRole("button", { name: "등록" }));
+
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText("제품 이름")),
+    );
+  });
+
+  it("AC-ERRFOCUS-05 · 필드에 안 붙는 에러는 하단 문구가 포커스를 받는다", async () => {
+    const user = userEvent.setup();
+    recordCalls({ product: unmappedProductError });
+    renderDialog();
+
+    await fillNewBean(user);
+    await user.click(screen.getByRole("button", { name: "등록" }));
+
+    const message = await screen.findByText("입력값이 올바르지 않습니다.");
+    await waitFor(() => expect(document.activeElement).toBe(message));
   });
 });

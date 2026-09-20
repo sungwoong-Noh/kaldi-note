@@ -42,7 +42,9 @@ test.describe("홈 달력 — 웹", () => {
     ).toContainText("Hoffmann V60");
   });
 
-  test("AC-HOMECAL-58 · 상단 바에 6개 요소가 있다", async ({ page }) => {
+  test("AC-HOMECAL-58 · AC-HOMECAL-83 · 상단 바에 6개 요소가 있다", async ({
+    page,
+  }) => {
     await installStubs(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");

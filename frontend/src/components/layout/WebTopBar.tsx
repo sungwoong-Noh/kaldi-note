@@ -3,35 +3,40 @@ import type { Me } from "@/features/user/queries";
 import { Avatar, ButtonLink } from "@/components/ui";
 
 /**
- * 웹 홈의 상단 바. `≥1100px`에서만 보인다 — 홈 밖 화면에는 아직 적용하지 않는다
+ * 홈의 상단 바. 로고+워드마크는 모든 폭에서 보이고, 네비·CTA·아바타는 `≥1100px`에서만
+ * 보인다 — 그 밖은 하단 탭바가 대신한다. 홈 밖 화면에는 아직 적용하지 않는다
  * (docs/specs/2026-09-19-home-calendar.md 「열어둔 결정」).
+ *
+ * <p>2026-09-20 갱신: 원래는 `<header>` 전체가 `≥1100px`에서만 보였다 — `<1100px`에서는
+ * 로고조차 없어 브랜드 헤더 자리가 통째로 빈다는 지적을 받았다. 네비·CTA·아바타는 하단
+ * 탭바와 기능이 겹쳐 좁은 폭에서는 굳이 넣지 않는다.
  *
  * <p>로고는 SVG를 파일로 참조하지 않고 **인라인**한다 — `<img src>`로 불러오면
  * `currentColor`가 상속되지 않아 다크 모드에서 심볼이 고정색으로 남는다.
  */
 export function WebTopBar({ me }: { me: Me }) {
   return (
-    <header className="hidden min-[1100px]:flex items-center justify-between gap-6 border-b border-border bg-paper px-6 py-3">
-      <div className="flex items-center gap-6">
-        <Link href="/" className="flex items-center gap-2">
-          <LogoSymbol />
-          <span className="text-card-title font-semibold tracking-[-0.03em]">
-            kaldi<span className="text-accent-soft">·</span>note
-          </span>
-        </Link>
+    <header className="flex items-center justify-between gap-6 border-b border-border bg-paper px-6 py-3">
+      <Link href="/" className="flex min-h-11 items-center gap-2">
+        <LogoSymbol />
+        <span className="text-card-title font-semibold tracking-[-0.03em]">
+          kaldi<span className="text-accent-soft">·</span>note
+        </span>
+      </Link>
+      <div className="hidden min-[1100px]:flex items-center gap-6">
         <nav className="flex items-center gap-4 text-body">
           <Link href="/">홈</Link>
           <Link href="/recipes">레시피</Link>
           <Link href="/brews">기록</Link>
         </nav>
-      </div>
-      <div className="flex items-center gap-4">
-        <ButtonLink href="/recipes" variant="primary">
-          기록하기
-        </ButtonLink>
-        <Link href="/more" aria-label="더보기">
-          <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} size={36} />
-        </Link>
+        <div className="flex items-center gap-4">
+          <ButtonLink href="/recipes" variant="primary">
+            기록하기
+          </ButtonLink>
+          <Link href="/more" aria-label="더보기">
+            <Avatar nickname={me.nickname} profileImageUrl={me.profileImageUrl} size={36} />
+          </Link>
+        </div>
       </div>
     </header>
   );

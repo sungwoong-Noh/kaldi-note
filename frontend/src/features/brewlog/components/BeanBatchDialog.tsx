@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   createBeanProduct,
   createRoaster,
@@ -13,6 +13,7 @@ import { createBeanBatch } from "@/features/inventory/api";
 import type { BeanBatch } from "@/features/inventory/schema";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
+import { focusFirstInvalidField } from "@/lib/focusFirstError";
 import { Button, SELECT_EXTRA, cardClass, controlClass } from "@/components/ui";
 
 /** 스펙 「원두 등록 모달」이 정한 네 가지. 서버 enum의 `DARK`는 이번 화면에 두지 않는다. */
@@ -114,9 +115,16 @@ export function BeanBatchDialog({
     (product) => product.roasterId === roasterId,
   );
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (submit.error) focusFirstInvalidField(dialogRef.current);
+  }, [submit.error]);
+
   return (
     <div className="fixed inset-0 z-10 flex items-center justify-center bg-black/40 p-4">
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="bean-batch-title"
@@ -206,8 +214,8 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.weightG ? "bean-batch-weight-error" : undefined
             }
-            aria-invalid={mapped ? true : undefined}
-            className={controlClass("", Boolean(mapped))}
+            aria-invalid={mapped?.byField.weightG ? true : undefined}
+            className={controlClass("", Boolean(mapped?.byField.weightG))}
           />
           {mapped?.byField.weightG && (
             <span
@@ -229,8 +237,8 @@ export function BeanBatchDialog({
             aria-describedby={
               mapped?.byField.roastedAt ? "bean-batch-roasted-error" : undefined
             }
-            aria-invalid={mapped ? true : undefined}
-            className={controlClass("", Boolean(mapped))}
+            aria-invalid={mapped?.byField.roastedAt ? true : undefined}
+            className={controlClass("", Boolean(mapped?.byField.roastedAt))}
           />
           {mapped?.byField.roastedAt && (
             <span
@@ -243,7 +251,13 @@ export function BeanBatchDialog({
         </label>
 
         {submit.error && (
-          <p className="text-body-sm text-danger">{submit.error.message}</p>
+          <p
+            data-general-error
+            tabIndex={-1}
+            className="text-body-sm text-danger"
+          >
+            {submit.error.message}
+          </p>
         )}
 
         <div className="flex justify-end gap-2">

@@ -33,7 +33,14 @@ describe("Calendar", () => {
     );
 
     const cell = screen.getByRole("button", { name: "9월 5일, 기록 2건" });
-    expect(cell.querySelectorAll("[data-record-dot]")).toHaveLength(1);
+    const dots = cell.querySelectorAll("[data-record-dot]");
+    expect(dots).toHaveLength(1);
+
+    const dot = dots[0] as HTMLElement;
+    expect(dot.style.width).toBe("5px");
+    expect(dot.style.height).toBe("5px");
+    expect(dot.style.borderRadius).toBe("50%");
+    expect(dot.style.backgroundColor).toBe("var(--signal-record)");
   });
 
   it("AC-HOMECAL-45 · aria-label이 건수를 말한다", () => {
@@ -70,6 +77,30 @@ describe("Calendar", () => {
     const current = document.querySelectorAll('[aria-current="date"]');
     expect(current).toHaveLength(1);
     expect(current[0]).toHaveAccessibleName("9월 5일, 기록 없음");
+  });
+
+  it("AC-HOMECAL-63 · 웹 셀의 긴 레시피명은 잘려서 한 줄로 표시된다", () => {
+    const days = new Map([
+      [
+        "2026-09-05",
+        { count: 1, primaryRecipeName: "Tetsu Kasuya 4:6 Method" },
+      ],
+    ]);
+    render(
+      <Calendar
+        month="2026-09"
+        days={days}
+        selectedDate={null}
+        onSelect={() => {}}
+        variant="web"
+      />,
+    );
+
+    const cell = screen.getByRole("button", { name: "9월 5일, 기록 1건" });
+    expect(cell).toHaveTextContent("Tetsu Kasuya 4:6 Method");
+    const name = screen.getByText("Tetsu Kasuya 4:6 Method");
+    expect(name).toHaveClass("truncate");
+    expect(cell).toHaveClass("overflow-hidden");
   });
 
   it("AC-HOMECAL-35 · 화살표 키로 하루·일주일 이동한다", async () => {

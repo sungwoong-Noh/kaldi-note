@@ -57,4 +57,59 @@ describe("UserGrinderDialog", () => {
     await waitFor(() => expect(captured.body).not.toBeNull());
     expect(captured.body).toEqual({ grinderModelId: 1 });
   });
+
+  it("AC-ERRFOCUS-03 · 실패한 필드로 포커스가 간다", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(GRINDERS_URL, () => HttpResponse.json([comandanteC40])),
+      http.post(USER_GRINDERS_URL, () =>
+        HttpResponse.json(
+          {
+            code: "INVALID_REQUEST",
+            message: "입력값이 올바르지 않습니다.",
+            fieldErrors: [{ field: "nickname", message: "20자 이하여야 합니다" }],
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+
+    renderWithQuery(
+      <UserGrinderDialog onCreated={vi.fn()} onCancel={vi.fn()} />,
+    );
+    await screen.findByRole("option", { name: "Comandante C40 MK4" });
+    await user.selectOptions(screen.getByLabelText("모델"), "1");
+    await user.click(screen.getByRole("button", { name: "등록" }));
+
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText("별명")),
+    );
+  });
+
+  it("AC-ERRFOCUS-06 · 필드에 안 붙는 에러는 하단 문구가 포커스를 받는다", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(GRINDERS_URL, () => HttpResponse.json([comandanteC40])),
+      http.post(USER_GRINDERS_URL, () =>
+        HttpResponse.json(
+          {
+            code: "INVALID_REQUEST",
+            message: "입력값이 올바르지 않습니다.",
+            fieldErrors: [{ field: "grinderModelId", message: "이상합니다" }],
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+
+    renderWithQuery(
+      <UserGrinderDialog onCreated={vi.fn()} onCancel={vi.fn()} />,
+    );
+    await screen.findByRole("option", { name: "Comandante C40 MK4" });
+    await user.selectOptions(screen.getByLabelText("모델"), "1");
+    await user.click(screen.getByRole("button", { name: "등록" }));
+
+    const message = await screen.findByText("입력값이 올바르지 않습니다.");
+    await waitFor(() => expect(document.activeElement).toBe(message));
+  });
 });

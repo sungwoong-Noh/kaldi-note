@@ -147,14 +147,34 @@ export function Calendar({
                       ? { boxShadow: "inset 0 0 0 2px var(--ink)" }
                       : undefined
                   }
-                  className={`flex min-h-11 min-w-11 flex-col items-center justify-center ${
+                  className={`flex h-full w-full min-h-11 min-w-11 flex-col items-center justify-center overflow-hidden ${
                     isWeb && selected ? "bg-surface" : ""
                   }`}
                 >
                   <span>{day}</span>
-                  {count > 0 && <span data-record-dot aria-hidden />}
-                  {isWeb && info?.primaryRecipeName && <span>{info.primaryRecipeName}</span>}
-                  {isWeb && count > 1 && <span>외 {count - 1}건</span>}
+                  {count > 0 && (
+                    <span
+                      data-record-dot
+                      aria-hidden
+                      style={{
+                        display: "inline-block",
+                        width: 5,
+                        height: 5,
+                        borderRadius: "50%",
+                        backgroundColor: "var(--signal-record)",
+                      }}
+                    />
+                  )}
+                  {isWeb && info?.primaryRecipeName && (
+                    <span className="w-full truncate px-1 text-center">
+                      {info.primaryRecipeName}
+                    </span>
+                  )}
+                  {isWeb && count > 1 && (
+                    <span className="w-full truncate px-1 text-center">
+                      외 {count - 1}건
+                    </span>
+                  )}
                 </button>
               );
             })}

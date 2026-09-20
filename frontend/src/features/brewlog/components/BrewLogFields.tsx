@@ -54,8 +54,8 @@ export function BrewLogFields({
           aria-describedby={
             fieldErrors?.byField.brewedAt ? "brew-brewed-at-error" : undefined
           }
-          aria-invalid={fieldErrors ? true : undefined}
-          className={controlClass("", Boolean(fieldErrors))}
+          aria-invalid={fieldErrors?.byField.brewedAt ? true : undefined}
+          className={controlClass("", Boolean(fieldErrors?.byField.brewedAt))}
         />
         {fieldErrors?.byField.brewedAt && (
           <span id="brew-brewed-at-error" className="text-body-sm text-danger">
@@ -200,8 +200,11 @@ export function BrewLogFields({
             aria-describedby={
               fieldErrors?.byField.overallNote ? "brew-note-error" : undefined
             }
-            aria-invalid={fieldErrors ? true : undefined}
-            className={controlClass("", Boolean(fieldErrors))}
+            aria-invalid={fieldErrors?.byField.overallNote ? true : undefined}
+            className={controlClass(
+              "",
+              Boolean(fieldErrors?.byField.overallNote),
+            )}
           />
           {fieldErrors?.byField.overallNote && (
             <span id="brew-note-error" className="text-body-sm text-danger">

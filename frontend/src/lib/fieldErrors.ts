@@ -33,6 +33,8 @@ const KNOWN_FIELDS = new Set([
   "body",
   "bitterness",
   "aftertaste",
+  // 그라인더 등록 모달
+  "nickname",
   // 원두 등록 모달의 3단 생성. `name`은 로스터·제품이 같은 이름을 쓰지만,
   // 두 요청이 순차라 한 번에 한쪽의 오류만 온다.
   "name",

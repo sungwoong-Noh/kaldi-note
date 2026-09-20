@@ -14,6 +14,8 @@ import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * 실제로 커피를 내린 기록.
@@ -36,8 +38,13 @@ public class BrewLog extends BaseTimeEntity {
   @Column(name = "user_id", nullable = false)
   private Long userId;
 
-  @Column(name = "recipe_id", nullable = false)
+  @Column(name = "recipe_id")
   private Long recipeId;
+
+  /** 남의 레시피로 브루잉했을 때(비소유) recipeId가 null이 되는 경우에도, 브루 시점 값은 이 필드에 항상 남는다. */
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "recipe_snapshot", nullable = false, columnDefinition = "jsonb")
+  private RecipeSnapshot recipeSnapshot;
 
   @Column(name = "bean_batch_id", nullable = false)
   private Long beanBatchId;
@@ -108,6 +115,7 @@ public class BrewLog extends BaseTimeEntity {
   private BrewLog(
       Long userId,
       Long recipeId,
+      RecipeSnapshot recipeSnapshot,
       Long beanBatchId,
       Instant brewedAt,
       BigDecimal actualDoseG,
@@ -131,6 +139,7 @@ public class BrewLog extends BaseTimeEntity {
       String overallNote) {
     this.userId = userId;
     this.recipeId = recipeId;
+    this.recipeSnapshot = recipeSnapshot;
     this.beanBatchId = beanBatchId;
     this.brewedAt = brewedAt;
     this.actualDoseG = actualDoseG;
@@ -157,6 +166,7 @@ public class BrewLog extends BaseTimeEntity {
   public static BrewLog create(
       Long userId,
       Long recipeId,
+      RecipeSnapshot recipeSnapshot,
       Long beanBatchId,
       Instant brewedAt,
       BrewLogVisibility visibility,
@@ -183,6 +193,7 @@ public class BrewLog extends BaseTimeEntity {
         new BrewLog(
             userId,
             recipeId,
+            recipeSnapshot,
             beanBatchId,
             brewedAt,
             actualDoseG,

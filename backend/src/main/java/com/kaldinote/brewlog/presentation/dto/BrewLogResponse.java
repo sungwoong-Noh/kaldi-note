@@ -1,6 +1,7 @@
 package com.kaldinote.brewlog.presentation.dto;
 
 import com.kaldinote.brewlog.domain.BrewLog;
+import com.kaldinote.brewlog.domain.RecipeSnapshot;
 import com.kaldinote.extraction.domain.ExtractionAnalysis;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -14,6 +15,7 @@ public record BrewLogResponse(
     Long id,
     Long userId,
     Long recipeId,
+    RecipeSnapshot recipeSnapshot,
     Long beanBatchId,
     Instant brewedAt,
     String visibility,
@@ -49,6 +51,7 @@ public record BrewLogResponse(
         log.getId(),
         log.getUserId(),
         log.getRecipeId(),
+        log.getRecipeSnapshot(),
         log.getBeanBatchId(),
         log.getBrewedAt(),
         log.getVisibility().name(),

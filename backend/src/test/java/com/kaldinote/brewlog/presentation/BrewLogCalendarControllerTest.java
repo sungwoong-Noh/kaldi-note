@@ -10,6 +10,7 @@ import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
 import com.kaldinote.brewlog.domain.BrewLog;
 import com.kaldinote.brewlog.domain.BrewLogVisibility;
+import com.kaldinote.brewlog.domain.RecipeSnapshot;
 import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
 import com.kaldinote.inventory.domain.DegassingStatus;
@@ -155,6 +156,15 @@ class BrewLogCalendarControllerTest extends AbstractIntegrationTest {
         BrewLog.create(
             owner.getId(),
             fixture.recipeId(),
+            new RecipeSnapshot(
+                "테스트 레시피",
+                "테스터",
+                new BigDecimal("15.0"),
+                new BigDecimal("250.0"),
+                null,
+                null,
+                new RecipeSnapshot.GrindValueSnapshot(new BigDecimal("22.0"), "CLICK"),
+                java.util.List.of()),
             fixture.beanBatchId(),
             brewedAt,
             visibility,

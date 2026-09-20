@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.brewlog.domain.BrewLog;
+import com.kaldinote.brewlog.domain.RecipeSnapshot;
 import com.kaldinote.catalog.domain.BeanMix;
 import com.kaldinote.catalog.domain.BeanProduct;
 import com.kaldinote.catalog.domain.RoastLevel;
@@ -108,6 +109,18 @@ class BrewLogRepositoryTest extends AbstractIntegrationTest {
     return new Fixture(userId, recipeId, beanBatchId, userGrinderId);
   }
 
+  private RecipeSnapshot testSnapshot() {
+    return new RecipeSnapshot(
+        "테스트 레시피",
+        "브루로그테스터",
+        new BigDecimal("15.0"),
+        new BigDecimal("250.0"),
+        null,
+        null,
+        new RecipeSnapshot.GrindValueSnapshot(new BigDecimal("22.0"), "CLICK"),
+        java.util.List.of());
+  }
+
   @Test
   void 브루잉_로그를_저장하고_조회한다() {
     Fixture f = fixture();
@@ -116,6 +129,7 @@ class BrewLogRepositoryTest extends AbstractIntegrationTest {
         BrewLog.create(
             f.userId(),
             f.recipeId(),
+            testSnapshot(),
             f.beanBatchId(),
             Instant.parse("2026-08-17T08:30:00Z"),
             null, // visibility 생략 → 도메인이 PRIVATE으로 정한다
@@ -157,6 +171,7 @@ class BrewLogRepositoryTest extends AbstractIntegrationTest {
         BrewLog.create(
             f.userId(),
             f.recipeId(),
+            testSnapshot(),
             f.beanBatchId(),
             Instant.parse("2026-08-17T08:30:00Z"),
             null, // visibility 생략 → 도메인이 PRIVATE으로 정한다
@@ -194,6 +209,7 @@ class BrewLogRepositoryTest extends AbstractIntegrationTest {
         BrewLog.create(
             f.userId(),
             f.recipeId(),
+            testSnapshot(),
             f.beanBatchId(),
             Instant.parse("2026-08-17T08:30:00Z"),
             null, // visibility 생략 → 도메인이 PRIVATE으로 정한다

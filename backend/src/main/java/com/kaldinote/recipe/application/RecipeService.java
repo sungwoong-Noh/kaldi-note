@@ -152,9 +152,22 @@ public class RecipeService {
     findOwned(userId, recipeId);
   }
 
-  /** media 도메인이 조회(첨부 목록) 권한을 확인할 때 쓴다. */
-  public void requireViewable(Long userId, Long recipeId) {
-    findViewable(userId, recipeId);
+  /**
+   * media 도메인이 조회(첨부 목록) 권한을 확인할 때, brewlog 도메인이 브루잉 시점 레시피를 가져올 때 쓴다. 반환형이 Recipe인 이유는
+   * BrewLogService가 recipeSnapshot을 만들려면 레시피 값 전체가 필요하기 때문이다(ID만으로는 부족하다).
+   */
+  public Recipe requireViewable(Long userId, Long recipeId) {
+    return findViewable(userId, recipeId);
+  }
+
+  /**
+   * 브루 스냅샷에 쓸 표시용 작성자명. 포크본은 담기(fork) 시점에 sourceAuthorName이 이미 고정돼 있으므로 그 값을 그대로 쓰고, 그렇지 않은(포크되지
+   * 않은) 레시피는 지금 시점 기준으로 다시 계산한다.
+   */
+  public String authorNameFor(Recipe recipe) {
+    return recipe.getSourceAuthorName() != null
+        ? recipe.getSourceAuthorName()
+        : sourceAuthorNameOf(recipe);
   }
 
   /**

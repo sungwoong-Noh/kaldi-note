@@ -31,6 +31,18 @@ test.describe("홈 달력 — 웹", () => {
     expect((await column.boundingBox())?.width).toBe(420);
   });
 
+  test("AC-HOMECAL-84 · 1440px에서 달력 그리드가 Shell의 max-w-2xl에 눌리지 않는다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    const grid = page.getByRole("grid");
+    const width = (await grid.boundingBox())?.width ?? 0;
+    expect(width).toBeGreaterThan(900);
+  });
+
   test("AC-HOMECAL-56 · 1099px에서 1컬럼이고 셀은 웹 박스다", async ({ page }) => {
     await installStubs(page);
     await page.setViewportSize({ width: 1099, height: 900 });

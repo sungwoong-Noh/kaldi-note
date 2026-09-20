@@ -140,7 +140,7 @@ export default function HomePage() {
   return (
     <>
       <WebTopBar me={me.data} />
-      <Shell stack>
+      <Shell stack wide={isWeb}>
         <FollowRail
           me={me.data}
           mutuals={mutuals.data ?? []}

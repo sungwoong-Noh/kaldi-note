@@ -7,6 +7,35 @@
 
 ---
 
+## 2026-09-20 · docs/design/ 중복 폴더 정리 (저장소 정리, 같은 세션 이어서)
+
+**브랜치:** `docs/recipe-v2-data-model-spec` (아래 항목과 같은 세션·같은 브랜치) · **PR:** #133(열림)
+**상태:** 완료
+
+### 한 일
+
+- 사용자 요청으로 `docs/design/`이 zip을 두 번 더 풀어 `design_handoff_kaldi_note 2`·`3`(둘 다
+  미커밋)으로 중복돼 있던 것을 정리. `3`의 새 파일(레시피/잔 목업 2개·`RECIPES-AND-BREWS.md`·
+  스크린샷 2장)과 최상위에 따로 있던 최신 `README.md`·`DECISIONS.md`를 커밋된
+  `design_handoff_kaldi_note/` 하나로 합치고 중복 폴더 2벌을 지웠다.
+- 이미 커밋에 남아 있던 옛 경로 참조(`design_handoff_kaldi_note 3`) 2곳
+  (`frontend/e2e/home-calendar.spec.ts`의 주석, `docs/specs/2026-09-20-recipe-v2-data-model.md`
+  본문)을 새 경로로 고쳤다 — 주석/문서 텍스트만 바뀐 것이라 테스트 동작에는 영향 없음.
+- 메모리(`~/.claude/.../memory/`)는 확인만 하고 손대지 않았다 — 이미 3개뿐이고 전부 8월 14일
+  확정 내용 그대로 유효해 정리할 게 없었다.
+
+### 발견한 것
+
+- `docs/design/`에 아직 zip 원본 2개(`Kaldi-note 브랜딩 계획.zip`·`_0919.zip`, 둘 다 git에
+  커밋돼 있음)가 남아 있다 — 삭제 여부를 사용자에게 물었으나 이번 세션에서는 확인받지 못했다.
+
+### 다음 세션에게
+
+- 위 두 zip을 지울지 사용자에게 확인이 필요하면 물을 것(이미 한 번 물어본 상태).
+- 그 외에는 앞 항목(레시피/잔 데이터 모델 스펙·계획)의 "다음 세션에게"를 그대로 따른다.
+
+---
+
 ## 2026-09-20 · 캘린더 그리드 마무리 + 버그 3건 + 레시피/잔 재설계 스펙·계획 (혼합 세션)
 
 **브랜치:** `feat/calendar-grid-responsive`→#129(머지) · `fix/calendar-mobile-today-marker`→#130(머지) ·

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { brewLogWithTds } from "../src/test/fixtures";
 import { installStubs } from "./stubs";
+import { tokenColor } from "./tokenColor";
 
 /** 홈 달력 — 웹(docs/specs/2026-09-19-home-calendar.md). "오늘"을 2026-09-19로 고정한다. */
 const TODAY = new Date("2026-09-19T01:00:00Z");
@@ -359,5 +360,33 @@ test.describe("홈 달력 — 웹", () => {
     const tall = await page.getByTestId("calendar-week-grid").boundingBox();
 
     expect(short?.height).toBe(tall?.height);
+  });
+
+  test("AC-HOMECAL-87 · 그리드선 — 상단은 divider-strong, 내부는 sunken, 폭 1px", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    const grid = page.getByTestId("calendar-week-grid");
+    const topWidth = await grid.evaluate(
+      (el) => getComputedStyle(el).borderTopWidth,
+    );
+    const topColor = await grid.evaluate(
+      (el) => getComputedStyle(el).borderTopColor,
+    );
+    expect(topWidth).toBe("1px");
+    expect(topColor).toBe(await tokenColor(page, "divider-strong"));
+
+    const secondRow = page.getByTestId("calendar-row").nth(1);
+    const innerWidth = await secondRow.evaluate(
+      (el) => getComputedStyle(el).borderTopWidth,
+    );
+    const innerColor = await secondRow.evaluate(
+      (el) => getComputedStyle(el).borderTopColor,
+    );
+    expect(innerWidth).toBe("1px");
+    expect(innerColor).toBe(await tokenColor(page, "sunken"));
   });
 });

@@ -115,6 +115,7 @@ export function Calendar({
       </div>
       <div
         data-testid="calendar-week-grid"
+        className={isWeb ? "border-t border-divider-strong" : undefined}
         style={
           isWeb
             ? fillHeight
@@ -136,16 +137,20 @@ export function Calendar({
             key={weekIndex}
             data-testid="calendar-row"
             role="row"
-            className="grid grid-cols-7"
+            className={`grid grid-cols-7 ${
+              isWeb && weekIndex > 0 ? "border-t border-sunken" : ""
+            }`}
           >
-            {week.map((cell) => {
+            {week.map((cell, columnIndex) => {
+              const lineClass =
+                isWeb && columnIndex > 0 ? "border-l border-sunken" : "";
               if (!cell.inMonth) {
                 return (
                   <div
                     key={cell.date}
                     data-testid="calendar-out-of-month"
                     aria-hidden
-                    className={isWeb ? "bg-surface" : ""}
+                    className={`${isWeb ? "bg-surface" : ""} ${lineClass}`}
                   />
                 );
               }
@@ -176,7 +181,7 @@ export function Calendar({
                   }
                   className={`flex h-full w-full min-h-11 min-w-11 flex-col items-center justify-center overflow-hidden ${
                     isWeb && selected ? "bg-surface" : ""
-                  }`}
+                  } ${lineClass}`}
                 >
                   <span>{day}</span>
                   {count > 0 && (

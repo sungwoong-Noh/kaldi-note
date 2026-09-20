@@ -173,8 +173,9 @@ describe("모서리", () => {
      * 늘어 4곳 → 6곳. 홈 달력 레일과 웹 상단 바가 둘 다 쓰므로 `components/ui/Avatar.tsx`
      * 하나로 모았다 — 따로 있었으면 8곳이 됐을 것이다.
      *
-     * 갱신(2026-09-20): 웹 달력 날짜 숫자가 늘어 6곳 → 8곳. 선택된 날짜 숫자(24px `ink` 원)와
-     * 오늘·미선택 날짜 숫자(24px `border` 링)가 `Calendar.tsx`에 하나씩 더해졌다
+     * 갱신(2026-09-20): 달력 날짜 숫자가 늘어 6곳 → 8곳. 선택된 날짜 숫자(원)와 오늘·미선택
+     * 날짜 숫자(링)가 `Calendar.tsx`의 `dayNumberClassName` 헬퍼 하나로 웹(24px)·모바일
+     * (28px) 둘 다 쓴다 — 따로 있었으면 10곳이 됐을 것이다
      * (docs/specs/2026-09-20-calendar-grid-responsive.md AC-HOMECAL-89·90).
      */
     const found = SOURCES.flatMap((path) =>

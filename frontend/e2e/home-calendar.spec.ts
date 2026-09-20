@@ -145,7 +145,11 @@ test.describe("홈 달력 — 모바일", () => {
               totalCount: homeCalendar.totalCount + 1,
               days: [
                 ...homeCalendar.days,
-                { date: "2026-09-08", count: 1, primaryRecipeName: "분쇄도 있는 레시피" },
+                {
+                  date: "2026-09-08",
+                  count: 1,
+                  primaryRecipeName: "분쇄도 있는 레시피",
+                },
               ],
             }
           : homeCalendar,
@@ -198,7 +202,9 @@ test.describe("홈 달력 — 모바일", () => {
     // 하단 탭바로 좁힌다 — 2026-09-20부터 상단 로고 헤더의 "홈" 네비게이션 링크도
     // (숨겨진 채로) DOM에 함께 있어 이름만으로 찾으면 두 개가 잡힌다.
     await expect(
-      page.locator("nav[aria-label='주요 화면']").getByRole("link", { name: "홈" }),
+      page
+        .locator("nav[aria-label='주요 화면']")
+        .getByRole("link", { name: "홈" }),
     ).toBeVisible();
   });
 });
@@ -208,7 +214,9 @@ test.describe("홈 달력 — 모바일 헤더", () => {
     await page.clock.setFixedTime(TODAY);
   });
 
-  test("AC-HOMECAL-80 · 1100px 미만에서도 로고 헤더가 보인다", async ({ page }) => {
+  test("AC-HOMECAL-80 · 1100px 미만에서도 로고 헤더가 보인다", async ({
+    page,
+  }) => {
     await installStubs(page);
     await page.goto("/");
 
@@ -217,7 +225,9 @@ test.describe("홈 달력 — 모바일 헤더", () => {
     await expect(header.getByText("kaldi")).toBeVisible();
   });
 
-  test("AC-HOMECAL-81 · 그 헤더에는 네비게이션 링크가 없다", async ({ page }) => {
+  test("AC-HOMECAL-81 · 그 헤더에는 네비게이션 링크가 없다", async ({
+    page,
+  }) => {
     await installStubs(page);
     await page.goto("/");
 
@@ -236,5 +246,51 @@ test.describe("홈 달력 — 모바일 헤더", () => {
     const header = page.locator("header");
     await expect(header.getByRole("link", { name: "기록하기" })).toBeHidden();
     await expect(header.getByRole("link", { name: "더보기" })).toBeHidden();
+  });
+});
+
+/**
+ * 모바일 선택/오늘 날짜 표시 — 버그 수정. `docs/design/design_handoff_kaldi_note 3/
+ * HOME-CALENDAR.md`는 모바일도 "선택된 날: 28px ink 원", "오늘·미선택: 28px 1px border 링"을
+ * 요구하지만, 2026-09-19 home-calendar 스펙에는 `aria-current`(a11y)만 AC로 남고 시각적
+ * 표시 AC가 빠져 있었다 — 실제로 모바일에는 표시가 전혀 없었다.
+ */
+test.describe("홈 달력 — 모바일 선택/오늘 표시", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.clock.setFixedTime(TODAY);
+  });
+
+  test("선택된 날짜 숫자가 28px ink 원으로 감싸진다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/");
+
+    const cell = page.getByRole("button", { name: "9월 5일, 기록 2건" });
+    await cell.click();
+    const numberEl = cell.getByTestId("day-number");
+
+    const box = await numberEl.boundingBox();
+    expect(Math.round(box?.width ?? 0)).toBe(28);
+    expect(Math.round(box?.height ?? 0)).toBe(28);
+  });
+
+  test("오늘이지만 선택 안 된 날짜 숫자에 1px 링이 있다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/");
+
+    // 진입 시 오늘(9/19)이 자동 선택되므로, 다른 날짜를 선택해 오늘을 비선택 상태로 만든다.
+    await page.getByRole("button", { name: "9월 5일, 기록 2건" }).click();
+
+    const todayCell = page.getByRole("button", { name: "9월 19일, 기록 없음" });
+    const numberEl = todayCell.getByTestId("day-number");
+
+    const borderWidth = await numberEl.evaluate(
+      (el) => getComputedStyle(el).borderTopWidth,
+    );
+    const bg = await numberEl.evaluate(
+      (el) => getComputedStyle(el).backgroundColor,
+    );
+
+    expect(borderWidth).toBe("1px");
+    expect(bg).toBe("rgba(0, 0, 0, 0)");
   });
 });

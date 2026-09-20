@@ -29,6 +29,25 @@ function chunkIntoWeeks<T>(items: T[]): T[][] {
 }
 
 /**
+ * 선택·오늘 날짜 숫자를 감싸는 원 스타일. 웹은 24px, 모바일은 28px — 나머지 규칙은 같다:
+ * 선택되면 `ink` 배경 원, 선택 안 됐지만 오늘이면 `border` 링만(배경 없음).
+ */
+function dayNumberClassName(
+  isWeb: boolean,
+  selected: boolean,
+  isToday: boolean,
+): string | undefined {
+  const size = isWeb ? "h-6 w-6" : "h-7 w-7";
+  if (selected) {
+    return `flex ${size} items-center justify-center rounded-full bg-ink text-on-ink`;
+  }
+  if (isToday) {
+    return `flex ${size} items-center justify-center rounded-full border border-border`;
+  }
+  return undefined;
+}
+
+/**
  * 달력 그리드. 모바일·웹이 같은 컴포넌트를 쓰고 `variant`로 CSS만 가른다
  * (docs/specs/2026-09-19-home-calendar.md) — 두 벌로 만들면 aria-label·키보드 이동 같은
  * 규칙이 한쪽에만 적용되는 사고가 난다.
@@ -61,7 +80,7 @@ export function Calendar({
    * AC-HOMECAL-85·86).
    */
   fillHeight?: boolean;
-  /** `kstToday()`. 웹에서 선택되지 않은 오늘 날짜에 링을 그리는 데만 쓴다(AC-HOMECAL-90). */
+  /** `kstToday()`. 선택되지 않은 오늘 날짜에 링을 그리는 데만 쓴다(웹 AC-HOMECAL-90, 모바일). */
   today?: string;
 }) {
   const grid = buildMonthGrid(month);
@@ -189,13 +208,7 @@ export function Calendar({
                 >
                   <span
                     data-testid="day-number"
-                    className={
-                      isWeb && selected
-                        ? "flex h-6 w-6 items-center justify-center rounded-full bg-ink text-on-ink"
-                        : isWeb && isToday
-                          ? "flex h-6 w-6 items-center justify-center rounded-full border border-border"
-                          : undefined
-                    }
+                    className={dayNumberClassName(isWeb, selected, isToday)}
                   >
                     {day}
                   </span>

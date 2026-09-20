@@ -7,6 +7,63 @@
 
 ---
 
+## 2026-09-20 · 레시피/잔 재설계 데이터 모델 구현 (Task 1~5 전부)
+
+**브랜치:** `feat/recipe-v2-data-model` (PR 없음, 아직 push 전) · **상태:** 완료 — 계획의 태스크 5개
+전부 구현·커밋·`clean check` 통과. 스펙 `status`를 `구현완료`로 바꿨다.
+
+### 한 일
+
+- PR #133(스펙·계획 문서)을 먼저 `main`에 머지한 뒤 새 브랜치를 팠다 — 구현 브랜치가 스펙·계획
+  파일 자체를 갖고 있어야 했다.
+- Task 1~3(`temperatureType`·`recommendedRoastLevel`·`savedCount`/`brewCount`·포크
+  `sourceAuthorName`)은 계획대로 각각 커밋.
+- **Task 4(brew_logs 스키마+백필)와 Task 5(접근 규칙 완화+recipeSnapshot 생성)는 커밋을
+  합쳤다.** 계획은 둘로 나눴지만, `recipe_snapshot`이 DB에서 NOT NULL이라 BrewLogService가
+  그 값을 채우기 전까지는 기존 브루잉 로그 생성 테스트가 전부 깨진다 — "각 태스크는 초록으로
+  끝난다"는 규칙을 지키려면 두 태스크를 한 커밋으로 묶는 수밖에 없었다.
+
+### 발견한 것 (계획의 "검증되지 않은 가정" 3개 결과)
+
+1. **`@JdbcTypeCode(SqlTypes.JSON)`은 이 프로젝트 첫 JSONB 매핑인데 바로 동작했다.** Hibernate 7 +
+   Jackson 3 조합에서 별도 라이브러리(`hypersistence-utils` 등) 없이 record ↔ JSONB 왕복이 그대로
+   맞물린다. `RecipeSnapshot`을 `brewlog/domain`에 record로 두고 `BrewLog`에 붙였다.
+2. **`RecipeControllerTest`의 `recipeId(token)` 헬퍼는 기본 `PRIVATE`였다** — `AC-RECIPEV2-42`
+   (기존 `AC-BREW-32`)의 전제가 맞았다. 헬퍼를 고칠 필요 없었다.
+3. **`RecipeMigrationTest`·`BrewLogMigrationTest`가 기댈 시드 데이터는 없었다.** Testcontainers는
+   매번 빈 DB에 V1~V15를 한 번에 적용하므로 "마이그레이션 이전 행"을 재현할 방법이 없다.
+   - `RecipeMigrationTest`(Task 1)는 컬럼을 지정하지 않고 직접 INSERT해 DEFAULT가 적용되는지로
+     대신 검증했다(기존 세션이 이미 이 대안을 계획 텍스트에 남겨뒀었다).
+   - `BrewLogMigrationTest`(Task 4, AC-RECIPEV2-32)는 백필 UPDATE의 실행 결과 대신, V15가 끝에
+     거는 `recipe_snapshot NOT NULL` 제약이 실제로 걸렸는지로 대체했다 — 백필 로직 자체의 정확성은
+     같은 JSON 구성 코드를 쓰는 Task 5의 API 테스트(AC-RECIPEV2-18~21)가 검증한다.
+
+### 그 외 발견
+
+- **`RecipeService.update()`에서 count 조회(`withCounts`)를 스텝 교체 뒤에 두면 회귀가 난다.**
+  count 쿼리가 트리거하는 Hibernate 자동 flush가, 아직 flush되지 않은 새 스텝 insert를 끌어올려
+  delete보다 insert가 먼저 나가면서 `uq_recipe_steps_order`를 위반한다(기존 주석이 경고하던 바로
+  그 문제). count 조회를 스텝 교체 **이전**으로 옮겨 해결했다 — 카운트는 이번 update의 스텝
+  변경과 무관한 값이라 순서를 옮겨도 의미가 같다.
+- **포크 시 `sourceAuthorName` 계산은 소유자가 이미 `null`인 유기 레시피(`AC-FORK-16`, 탈퇴자
+  재현)를 놓치면 500이 난다.** `RecipeService.sourceAuthorNameOf`에 `ownerUserId == null → null`
+  분기를 추가해서 고쳤다 — 계획에는 없던 경계 조건이고, 기존 회귀 테스트를 실제로 돌려보고서야
+  드러났다.
+- **`recipeSnapshot.authorName`과 fork의 `sourceAuthorName` 계산 로직이 미묘하게 다르다.** fork는
+  원본의 기존 `sourceAuthorName`을 무시하고 항상 "CURATED면 authorName, 아니면 그 시점 소유자
+  닉네임"을 새로 계산한다(`sourceAuthorNameOf`). 반면 브루 스냅샷의 `authorName`은 그 레시피
+  **자신**이 포크본이면 이미 고정된 `sourceAuthorName`을 그대로 쓰고, 아니면 같은 로직으로
+  다시 계산한다(`authorNameFor`, `sourceAuthorNameOf`를 감싼다). 이름이 비슷해 헷갈리기 쉽다.
+
+### 다음 세션에게
+
+- 브랜치가 아직 push 전이다. `/handover`로 검증·PR까지 마무리할 것.
+- 남은 인터뷰 2건(팔로워 목록 화면, 레시피/잔 프론트 화면)은 이 데이터 모델 위에서 진행하면 된다
+  — API가 이제 `temperatureType`·`recommendedRoastLevel`·`sourceAuthorName`·`savedCount`·
+  `brewCount`·`recipeSnapshot`을 전부 응답한다.
+
+---
+
 ## 2026-09-20 · docs/design/ 중복 폴더 정리 (저장소 정리, 같은 세션 이어서)
 
 **브랜치:** `docs/recipe-v2-data-model-spec` (아래 항목과 같은 세션·같은 브랜치) · **PR:** #133(열림)

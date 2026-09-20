@@ -125,7 +125,7 @@ backend/src/test/java/com/kaldinote/
 - Produces: `RecipeTemperatureType { HOT, ICE }`, `RecipeRoastLevel { LIGHT, MEDIUM, DARK }`,
   `Recipe.getTemperatureType()`, `Recipe.getRecommendedRoastLevel()`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `RecipeControllerTest.java`에 추가:
 
@@ -254,13 +254,13 @@ class RecipeMigrationTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest' --tests '*RecipeMigrationTest'`
 Expected: FAIL — `temperatureType`이 요청/응답 어디에도 없어 컴파일부터 깨지거나(DTO에 필드 없음)
 `jsonPath`가 없는 키를 찾다 실패한다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `V13__add_recipe_temperature_roast.sql`:
 
@@ -324,12 +324,12 @@ request.recommendedRoastLevel() == null ? RecipeRoastLevel.MEDIUM : request.reco
 
 `RecipeResponse`에 두 필드를 `.name()`으로 추가.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest' --tests '*RecipeMigrationTest'`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -357,7 +357,7 @@ cd .. && git add . && git commit -m "feat(recipe): temperatureType·recommendedR
 - Produces: `RecipeRepository.countByParentRecipeIdAndDeletedAtIsNull(Long)`,
   `BrewLogRepository.countByRecipeIdAndDeletedAtIsNull(Long)`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```java
 @Test
@@ -413,12 +413,12 @@ void 소유자가_자기_레시피로_낸_잔_수만큼_brewCount가_늘어난�
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: FAIL — 응답에 `savedCount` 키 자체가 없다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `RecipeRepository`에 추가:
 
@@ -435,13 +435,13 @@ long countByRecipeIdAndDeletedAtIsNull(Long recipeId);
 `RecipeService.get()`에서 두 값을 계산해 `RecipeResponse.from(recipe, savedCount, brewCount)`로
 전달하도록 바꾸고, `RecipeResponse`에 `Long savedCount, Long brewCount` 필드를 추가한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeControllerTest'`
 Expected: PASS (AC-10은 브루로그 생성 헬퍼가 필요하므로, 없다면 이 스텝에서 최소한의 헬퍼를
 `RecipeControllerTest`에 추가한다)
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -463,7 +463,7 @@ cd .. && git add . && git commit -m "feat(recipe): savedCount·brewCount를 파�
 - Consumes: `UserService.profile(Long userId): PublicProfileResponse`(이미 존재 — `nickname` 필드)
 - Produces: `Recipe.getSourceAuthorName()`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `RecipeForkControllerTest.java`에 추가:
 
@@ -527,12 +527,12 @@ void 포크_후_원본_소유자가_닉네임을_바꿔도_sourceAuthorName은_�
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*RecipeForkControllerTest'`
 Expected: FAIL — 응답에 `sourceAuthorName` 키가 없다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `RecipeService`에 `UserService` 의존성 추가(`@RequiredArgsConstructor`라 필드만 추가하면 됨):
 
@@ -563,12 +563,12 @@ public RecipeResponse fork(Long userId, Long recipeId) {
 
 `RecipeResponse`에 `sourceAuthorName` 필드 추가.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*RecipeForkControllerTest'`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -592,7 +592,7 @@ cd .. && git add . && git commit -m "feat(recipe): 포크 시 sourceAuthorName�
 - Produces: `RecipeSnapshot(String title, String authorName, BigDecimal doseG, BigDecimal waterG, BigDecimal temperatureC, String grinder, GrindValueSnapshot grindValue, List<StepSnapshot> steps)`,
   `BrewLog.getRecipeSnapshot()`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `BrewLogMigrationTest.java`(신규):
 
@@ -639,12 +639,12 @@ class BrewLogMigrationTest extends AbstractIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogMigrationTest'`
 Expected: FAIL — `recipe_snapshot` 컬럼 자체가 없어 쿼리가 실패한다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `V14__alter_brew_logs_snapshot.sql`:
 
@@ -727,13 +727,13 @@ private RecipeSnapshot recipeSnapshot;
 > Jackson 3(`tools.jackson.*`)와 Hibernate 7의 기본 JSON 직렬화가 그대로 맞물리는지 Step 4에서
 > 처음 확인된다. 안 맞으면 `hypersistence-utils-hibernate-63` 같은 별도 라이브러리 추가를 검토한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogMigrationTest'`
 Expected: PASS — 이 시점에는 `BrewLog.create()`가 아직 `recipeSnapshot`을 안 채우므로(Task 5 몫),
 기존 데이터만 검증되고 신규 생성 경로는 Task 5에서 확인한다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -756,7 +756,7 @@ cd .. && git add . && git commit -m "feat(brewlog): recipe_id를 nullable로 바
 - Consumes: `RecipeService.requireViewable(Long userId, Long recipeId): Recipe`(반환형 변경)
 - Produces: `BrewLogResponse.recipeSnapshot`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `BrewLogControllerTest.java`에 추가(기존 `AC-BREW-32` "남의 레시피를 가리키면 403이다"는 아래
 `AC-RECIPEV2-42`로 대체한다 — PRIVATE로 조건을 좁혀 테스트를 고친다):
@@ -824,13 +824,13 @@ void 레시피를_나중에_수정해도_기존_잔의_recipeSnapshot은_불변�
 }
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: FAIL — `requireOwnedRecipe`가 여전히 소유자만 허용해 `AC-RECIPEV2-16`·`17`이 403으로
 실패하고, 응답에 `recipeSnapshot`이 없어 나머지도 실패한다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `RecipeService.requireViewable` 반환형을 `void → Recipe`로 변경(호출부인 `media` 도메인은 반환값을
 무시하는 문장이라 그대로 컴파일된다):
@@ -891,12 +891,12 @@ private RecipeSnapshot buildSnapshot(Recipe recipe) {
 것"에서 "가시성 없음"으로 바뀌었을 뿐, `PRIVATE` 레시피는 둘 다 403이기 때문이다. 통과 여부만
 Step 4에서 확인하고, 실패하면 그 테스트를 `AC-RECIPEV2-42`로 갈아끼운다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `./gradlew test --tests '*BrewLogControllerTest'`
 Expected: PASS 전체. 기존 `AC-BREW-32`도 함께 재확인한다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 ./gradlew spotlessApply && ./gradlew clean check
@@ -907,12 +907,12 @@ cd .. && git add . && git commit -m "feat(brewlog): 가시성 있는 레시피�
 
 ## 완료 기준
 
-- [ ] `cd backend && ./gradlew clean check` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과
-- [ ] 스펙의 `status`를 `구현완료`로 변경
-- [ ] 회귀 확인: `RecipeVisibilityTest`·`BrewLogControllerTest`의 기존 403/404 케이스 전부 통과
+- [x] `cd backend && ./gradlew clean check` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과
+- [x] 스펙의 `status`를 `구현완료`로 변경
+- [x] 회귀 확인: `RecipeVisibilityTest`·`BrewLogControllerTest`의 기존 403/404 케이스 전부 통과
       (특히 스냅샷 불변성 회귀 — `backend/CLAUDE.md`의 "반드시 있어야 하는 회귀 테스트")
-- [ ] 수동 확인 없음(스펙에 명시됨)
+- [x] 수동 확인 없음(스펙에 명시됨)
 
 ---
 

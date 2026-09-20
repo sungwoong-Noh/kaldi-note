@@ -17,6 +17,8 @@ import com.kaldinote.inventory.domain.BeanBatch;
 import com.kaldinote.inventory.infrastructure.BeanBatchRepository;
 import com.kaldinote.recipe.domain.GrindSettingUnit;
 import com.kaldinote.recipe.domain.Recipe;
+import com.kaldinote.recipe.domain.RecipeRoastLevel;
+import com.kaldinote.recipe.domain.RecipeTemperatureType;
 import com.kaldinote.recipe.domain.RecipeVisibility;
 import com.kaldinote.recipe.infrastructure.RecipeRepository;
 import com.kaldinote.user.domain.User;
@@ -63,7 +65,9 @@ class BrewLogRepositoryTest extends AbstractIntegrationTest {
                     null,
                     null,
                     (GrindSettingUnit) null,
-                    null))
+                    null,
+                    RecipeTemperatureType.HOT,
+                    RecipeRoastLevel.MEDIUM))
             .getId();
 
     Long roasterId =

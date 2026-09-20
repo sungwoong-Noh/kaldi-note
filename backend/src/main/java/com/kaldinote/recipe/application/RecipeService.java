@@ -11,8 +11,10 @@ import com.kaldinote.grind.domain.GrindConverter;
 import com.kaldinote.grind.domain.GrindSpec;
 import com.kaldinote.recipe.domain.GrindSettingUnit;
 import com.kaldinote.recipe.domain.Recipe;
+import com.kaldinote.recipe.domain.RecipeRoastLevel;
 import com.kaldinote.recipe.domain.RecipeSourceType;
 import com.kaldinote.recipe.domain.RecipeStep;
+import com.kaldinote.recipe.domain.RecipeTemperatureType;
 import com.kaldinote.recipe.domain.RecipeVisibility;
 import com.kaldinote.recipe.domain.StepType;
 import com.kaldinote.recipe.infrastructure.RecipeRepository;
@@ -78,7 +80,13 @@ public class RecipeService {
             request.grinderModelId(),
             request.grindSettingValue(),
             request.grindSettingUnit(),
-            micron);
+            micron,
+            request.temperatureType() == null
+                ? RecipeTemperatureType.HOT
+                : request.temperatureType(),
+            request.recommendedRoastLevel() == null
+                ? RecipeRoastLevel.MEDIUM
+                : request.recommendedRoastLevel());
     recipe.replaceSteps(steps);
 
     return RecipeResponse.from(recipeRepository.save(recipe));
@@ -176,7 +184,11 @@ public class RecipeService {
         request.grinderModelId(),
         request.grindSettingValue(),
         request.grindSettingUnit(),
-        micron);
+        micron,
+        request.temperatureType() == null ? RecipeTemperatureType.HOT : request.temperatureType(),
+        request.recommendedRoastLevel() == null
+            ? RecipeRoastLevel.MEDIUM
+            : request.recommendedRoastLevel());
 
     // UNIQUE(recipe_id, step_order) 위반을 피하려면 기존 스텝을 지우고 flush한 뒤 새로 넣는다.
     // clear()+addAll()만 하면 Hibernate가 insert를 delete보다 먼저 실행해 유니크 제약에 걸린다.

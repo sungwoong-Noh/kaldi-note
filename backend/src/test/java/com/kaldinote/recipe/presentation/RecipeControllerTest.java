@@ -837,6 +837,130 @@ class RecipeControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.code").value("FORBIDDEN"));
   }
 
+  // ===== 레시피 v2 데이터 모델 (AC-RECIPEV2-01~06, 30, 40) =====
+
+  @Test
+  @DisplayName("AC-RECIPEV2-01 · temperatureType을 지정해 레시피를 만들 수 있다")
+  void temperatureType을_지정해_레시피를_만들_수_있다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"아이스 브루","doseG":15.0,"waterG":250.0,"temperatureType":"ICE"}
+        """)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.temperatureType").value("ICE"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-02 · temperatureType을 생략하면 HOT이 기본값이다")
+  void temperatureType을_생략하면_HOT이_기본값이다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"기본값","doseG":15.0,"waterG":250.0}
+        """)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.temperatureType").value("HOT"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-03 · recommendedRoastLevel을 지정해 레시피를 만들 수 있다")
+  void recommendedRoastLevel을_지정해_레시피를_만들_수_있다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"다크 로스트용","doseG":15.0,"waterG":250.0,"recommendedRoastLevel":"DARK"}
+        """)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.recommendedRoastLevel").value("DARK"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-04 · recommendedRoastLevel을 생략하면 MEDIUM이 기본값이다")
+  void recommendedRoastLevel을_생략하면_MEDIUM이_기본값이다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"기본값","doseG":15.0,"waterG":250.0}
+        """)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.recommendedRoastLevel").value("MEDIUM"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-05 · PATCH로 temperatureType만 수정할 수 있다")
+  void PATCH로_temperatureType만_수정할_수_있다() throws Exception {
+    String token = token();
+    Long id =
+        createdId(
+            createRecipe(
+                token,
+                """
+                {"title":"원본","doseG":15.0,"waterG":250.0,"temperatureType":"HOT"}
+                """));
+
+    mockMvc
+        .perform(
+            put("/api/v1/recipes/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"원본","doseG":15.0,"waterG":250.0,"temperatureType":"ICE"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.temperatureType").value("ICE"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-06 · PATCH로 recommendedRoastLevel만 수정할 수 있다")
+  void PATCH로_recommendedRoastLevel만_수정할_수_있다() throws Exception {
+    String token = token();
+    Long id =
+        createdId(
+            createRecipe(
+                token,
+                """
+                {"title":"원본","doseG":15.0,"waterG":250.0,"recommendedRoastLevel":"LIGHT"}
+                """));
+
+    mockMvc
+        .perform(
+            put("/api/v1/recipes/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"원본","doseG":15.0,"waterG":250.0,"recommendedRoastLevel":"DARK"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.recommendedRoastLevel").value("DARK"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-30 · recommendedRoastLevel에 5단계 값을 보내면 거절한다")
+  void recommendedRoastLevel에_5단계_값을_보내면_거절한다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"잘못됨","doseG":15.0,"waterG":250.0,"recommendedRoastLevel":"MEDIUM_LIGHT"}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-40 · 잘못된 temperatureType은 400이다")
+  void 잘못된_temperatureType은_400이다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"잘못됨","doseG":15.0,"waterG":250.0,"temperatureType":"WARM"}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
   // ===== 공개범위 인가 (AC-VIS-01~17) =====
 
   @PersistenceContext private EntityManager entityManager;

@@ -97,6 +97,17 @@ public class Recipe extends BaseTimeEntity {
   @Column(name = "grind_micron_estimated", precision = 6, scale = 0)
   private BigDecimal grindMicronEstimated;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "temperature_type", nullable = false, length = 10)
+  private RecipeTemperatureType temperatureType;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "recommended_roast_level", nullable = false, length = 10)
+  private RecipeRoastLevel recommendedRoastLevel;
+
+  @Column(name = "source_author_name", length = 100)
+  private String sourceAuthorName;
+
   @Column(name = "deleted_at")
   private Instant deletedAt;
 
@@ -118,7 +129,9 @@ public class Recipe extends BaseTimeEntity {
       Long grinderModelId,
       BigDecimal grindSettingValue,
       GrindSettingUnit grindSettingUnit,
-      BigDecimal grindMicronEstimated) {
+      BigDecimal grindMicronEstimated,
+      RecipeTemperatureType temperatureType,
+      RecipeRoastLevel recommendedRoastLevel) {
     this.ownerUserId = ownerUserId;
     this.sourceType = RecipeSourceType.USER;
     this.title = title;
@@ -135,6 +148,8 @@ public class Recipe extends BaseTimeEntity {
     this.grindSettingValue = grindSettingValue;
     this.grindSettingUnit = grindSettingUnit;
     this.grindMicronEstimated = grindMicronEstimated;
+    this.temperatureType = temperatureType;
+    this.recommendedRoastLevel = recommendedRoastLevel;
   }
 
   public static Recipe create(
@@ -151,7 +166,9 @@ public class Recipe extends BaseTimeEntity {
       Long grinderModelId,
       BigDecimal grindSettingValue,
       GrindSettingUnit grindSettingUnit,
-      BigDecimal grindMicronEstimated) {
+      BigDecimal grindMicronEstimated,
+      RecipeTemperatureType temperatureType,
+      RecipeRoastLevel recommendedRoastLevel) {
     return new Recipe(
         ownerUserId,
         title,
@@ -166,7 +183,9 @@ public class Recipe extends BaseTimeEntity {
         grinderModelId,
         grindSettingValue,
         grindSettingUnit,
-        grindMicronEstimated);
+        grindMicronEstimated,
+        temperatureType,
+        recommendedRoastLevel);
   }
 
   public void applyUpdate(
@@ -182,7 +201,9 @@ public class Recipe extends BaseTimeEntity {
       Long grinderModelId,
       BigDecimal grindSettingValue,
       GrindSettingUnit grindSettingUnit,
-      BigDecimal grindMicronEstimated) {
+      BigDecimal grindMicronEstimated,
+      RecipeTemperatureType temperatureType,
+      RecipeRoastLevel recommendedRoastLevel) {
     this.title = title;
     this.description = description;
     this.visibility = visibility;
@@ -196,6 +217,8 @@ public class Recipe extends BaseTimeEntity {
     this.grindSettingValue = grindSettingValue;
     this.grindSettingUnit = grindSettingUnit;
     this.grindMicronEstimated = grindMicronEstimated;
+    this.temperatureType = temperatureType;
+    this.recommendedRoastLevel = recommendedRoastLevel;
   }
 
   public void replaceSteps(List<RecipeStep> newSteps) {
@@ -232,7 +255,9 @@ public class Recipe extends BaseTimeEntity {
             original.grinderModelId,
             original.grindSettingValue,
             original.grindSettingUnit,
-            original.grindMicronEstimated);
+            original.grindMicronEstimated,
+            original.temperatureType,
+            original.recommendedRoastLevel);
     fork.parentRecipeId = original.id;
     fork.forkRootId = original.forkRootId != null ? original.forkRootId : original.id;
     fork.authorName = original.authorName;

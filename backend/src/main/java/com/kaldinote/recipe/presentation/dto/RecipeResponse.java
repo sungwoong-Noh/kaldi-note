@@ -27,6 +27,8 @@ public record RecipeResponse(
     BigDecimal grindSettingValue,
     String grindSettingUnit,
     BigDecimal grindMicronEstimated,
+    String temperatureType,
+    String recommendedRoastLevel,
     List<RecipeStepResponse> steps,
     Instant createdAt,
     Instant updatedAt) {
@@ -56,6 +58,8 @@ public record RecipeResponse(
         r.getGrindSettingValue(),
         r.getGrindSettingUnit() == null ? null : r.getGrindSettingUnit().name(),
         r.getGrindMicronEstimated(),
+        r.getTemperatureType().name(),
+        r.getRecommendedRoastLevel().name(),
         RecipeStepResponse.listFrom(r.getSteps()),
         r.getCreatedAt(),
         r.getUpdatedAt());

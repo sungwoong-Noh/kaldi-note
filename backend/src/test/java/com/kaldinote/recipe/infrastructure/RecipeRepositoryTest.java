@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.recipe.domain.GrindSettingUnit;
 import com.kaldinote.recipe.domain.Recipe;
+import com.kaldinote.recipe.domain.RecipeRoastLevel;
 import com.kaldinote.recipe.domain.RecipeStep;
+import com.kaldinote.recipe.domain.RecipeTemperatureType;
 import com.kaldinote.recipe.domain.RecipeVisibility;
 import com.kaldinote.recipe.domain.StepType;
 import com.kaldinote.user.domain.User;
@@ -43,7 +45,9 @@ class RecipeRepositoryTest extends AbstractIntegrationTest {
             null,
             null,
             (GrindSettingUnit) null,
-            null);
+            null,
+            RecipeTemperatureType.HOT,
+            RecipeRoastLevel.MEDIUM);
     recipe.replaceSteps(
         List.of(RecipeStep.of(1, StepType.BLOOM, 0, 10, new BigDecimal("40.0"), null, null, null)));
 
@@ -71,7 +75,9 @@ class RecipeRepositoryTest extends AbstractIntegrationTest {
             null,
             null,
             (GrindSettingUnit) null,
-            null);
+            null,
+            RecipeTemperatureType.HOT,
+            RecipeRoastLevel.MEDIUM);
     Recipe saved = recipeRepository.save(recipe);
     saved.softDelete();
     recipeRepository.save(saved);

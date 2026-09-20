@@ -79,6 +79,30 @@ describe("Calendar", () => {
     expect(current[0]).toHaveAccessibleName("9월 5일, 기록 없음");
   });
 
+  it("AC-HOMECAL-63 · 웹 셀의 긴 레시피명은 잘려서 한 줄로 표시된다", () => {
+    const days = new Map([
+      [
+        "2026-09-05",
+        { count: 1, primaryRecipeName: "Tetsu Kasuya 4:6 Method" },
+      ],
+    ]);
+    render(
+      <Calendar
+        month="2026-09"
+        days={days}
+        selectedDate={null}
+        onSelect={() => {}}
+        variant="web"
+      />,
+    );
+
+    const cell = screen.getByRole("button", { name: "9월 5일, 기록 1건" });
+    expect(cell).toHaveTextContent("Tetsu Kasuya 4:6 Method");
+    const name = screen.getByText("Tetsu Kasuya 4:6 Method");
+    expect(name).toHaveClass("truncate");
+    expect(cell).toHaveClass("overflow-hidden");
+  });
+
   it("AC-HOMECAL-35 · 화살표 키로 하루·일주일 이동한다", async () => {
     const onSelect = vi.fn();
     render(

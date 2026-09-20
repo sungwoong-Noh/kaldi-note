@@ -112,10 +112,13 @@ test("AC-HOMECAL-86 · 행 높이가 64px 밑으로 내려가야 하면 페이�
 
   const rows = page.getByTestId("calendar-row");
   await expect(rows).toHaveCount(6);
+  // 500px는 그리드 밖 크롬이 약 249px라 6행이 64px 바닥에 정확히 눌리는 높이다(사전 실측).
+  // `toBeGreaterThanOrEqual(64)`만 쓰면 옛 고정 420px 구현도 70px(420÷6)로 우연히 통과해
+  // 이 테스트가 아무것도 증명하지 못한다 — 정확히 64px이어야 새 바닥 로직을 증명한다.
   const firstRowHeight = await rows
     .first()
     .evaluate((el) => el.getBoundingClientRect().height);
-  expect(firstRowHeight).toBeGreaterThanOrEqual(64);
+  expect(firstRowHeight).toBe(64);
 
   const scrollHeight = await page.evaluate(
     () => document.documentElement.scrollHeight,

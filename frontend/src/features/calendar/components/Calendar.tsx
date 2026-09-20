@@ -41,6 +41,7 @@ export function Calendar({
   onSwipeLeft,
   onSwipeRight,
   variant,
+  fillHeight = false,
 }: {
   month: string;
   days: Map<string, CalendarDayInfo>;
@@ -51,18 +52,31 @@ export function Calendar({
   /** 오른쪽으로 스와이프 — 이전 달로 넘긴다. */
   onSwipeRight?: () => void;
   variant: "mobile" | "web";
+  /**
+   * `≥1100px` 2컬럼에서만 true. 남는 세로 공간을 채우는 flex 체인을 켠다 — 어떤 조상에도
+   * `min-height:0`을 주지 않으므로, flexbox의 자동 최소 크기(`min-height:auto`)가
+   * `64px×주 수`를 콘텐츠 최소 크기로 잡아 바닥 역할을 한다. 공간이 부족하면 그리드가 이
+   * 바닥 밑으로 눌리는 대신 넘쳐서 페이지가 스크롤된다(docs/specs/2026-09-20-calendar-grid-responsive.md
+   * AC-HOMECAL-85·86).
+   */
+  fillHeight?: boolean;
 }) {
   const grid = buildMonthGrid(month);
   const weeks = chunkIntoWeeks(grid);
   const swipeStartX = useRef<number | null>(null);
 
-  function handleKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, date: string) {
+  function handleKeyDown(
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    date: string,
+  ) {
     const delta = deltaFor(event.key);
     if (delta === null) return;
     event.preventDefault();
     const next = addDays(date, delta);
     onSelect(next);
-    const target = document.querySelector<HTMLButtonElement>(`[data-date="${next}"]`);
+    const target = document.querySelector<HTMLButtonElement>(
+      `[data-date="${next}"]`,
+    );
     target?.focus();
   }
 
@@ -90,6 +104,7 @@ export function Calendar({
       data-variant={variant}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
+      className={fillHeight ? "flex flex-1 flex-col" : undefined}
     >
       <div role="row" className="grid grid-cols-7">
         {WEEKDAY_LABELS.map((label) => (
@@ -99,18 +114,30 @@ export function Calendar({
         ))}
       </div>
       <div
+        data-testid="calendar-week-grid"
         style={
           isWeb
-            ? {
-                height: WEB_GRID_HEIGHT_PX,
-                display: "grid",
-                gridTemplateRows: `repeat(${weeks.length}, 1fr)`,
-              }
+            ? fillHeight
+              ? {
+                  flex: "1 1 auto",
+                  display: "grid",
+                  gridTemplateRows: `repeat(${weeks.length}, minmax(64px, 1fr))`,
+                }
+              : {
+                  height: WEB_GRID_HEIGHT_PX,
+                  display: "grid",
+                  gridTemplateRows: `repeat(${weeks.length}, 1fr)`,
+                }
             : undefined
         }
       >
         {weeks.map((week, weekIndex) => (
-          <div key={weekIndex} data-testid="calendar-row" role="row" className="grid grid-cols-7">
+          <div
+            key={weekIndex}
+            data-testid="calendar-row"
+            role="row"
+            className="grid grid-cols-7"
+          >
             {week.map((cell) => {
               if (!cell.inMonth) {
                 return (

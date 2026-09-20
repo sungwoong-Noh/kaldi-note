@@ -1,7 +1,9 @@
 package com.kaldinote.recipe.presentation.dto;
 
 import com.kaldinote.recipe.domain.GrindSettingUnit;
+import com.kaldinote.recipe.domain.RecipeRoastLevel;
 import com.kaldinote.recipe.domain.RecipeSourceType;
+import com.kaldinote.recipe.domain.RecipeTemperatureType;
 import com.kaldinote.recipe.domain.RecipeVisibility;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
@@ -28,6 +30,8 @@ public record CreateRecipeRequest(
     Long grinderModelId,
     BigDecimal grindSettingValue,
     GrindSettingUnit grindSettingUnit,
+    RecipeTemperatureType temperatureType,
+    RecipeRoastLevel recommendedRoastLevel,
     @Valid @Size(max = 30) List<StepRequest> steps) {
 
   public CreateRecipeRequest {

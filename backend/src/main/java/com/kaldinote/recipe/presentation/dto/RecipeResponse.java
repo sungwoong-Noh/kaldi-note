@@ -27,6 +27,11 @@ public record RecipeResponse(
     BigDecimal grindSettingValue,
     String grindSettingUnit,
     BigDecimal grindMicronEstimated,
+    String temperatureType,
+    String recommendedRoastLevel,
+    String sourceAuthorName,
+    Long savedCount,
+    Long brewCount,
     List<RecipeStepResponse> steps,
     Instant createdAt,
     Instant updatedAt) {
@@ -34,7 +39,7 @@ public record RecipeResponse(
   private static final int DIVISION_SCALE = 6;
   private static final int RATIO_SCALE = 1;
 
-  public static RecipeResponse from(Recipe r) {
+  public static RecipeResponse from(Recipe r, long savedCount, long brewCount) {
     return new RecipeResponse(
         r.getId(),
         r.getOwnerUserId(),
@@ -56,6 +61,11 @@ public record RecipeResponse(
         r.getGrindSettingValue(),
         r.getGrindSettingUnit() == null ? null : r.getGrindSettingUnit().name(),
         r.getGrindMicronEstimated(),
+        r.getTemperatureType().name(),
+        r.getRecommendedRoastLevel().name(),
+        r.getSourceAuthorName(),
+        savedCount,
+        brewCount,
         RecipeStepResponse.listFrom(r.getSteps()),
         r.getCreatedAt(),
         r.getUpdatedAt());

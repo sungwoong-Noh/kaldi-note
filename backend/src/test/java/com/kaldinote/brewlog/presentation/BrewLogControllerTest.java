@@ -17,6 +17,7 @@ import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
 import com.kaldinote.brewlog.domain.BrewLog;
 import com.kaldinote.brewlog.domain.BrewLogVisibility;
+import com.kaldinote.brewlog.domain.RecipeSnapshot;
 import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
 import com.kaldinote.inventory.domain.DegassingStatus;
@@ -92,6 +93,32 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
                     """
                     {"title":"브루잉 로그 테스트용","doseG":15.0,"waterG":250.0}
                     """)));
+  }
+
+  private Long publicRecipeId(String token) throws Exception {
+    return createdId(
+        mockMvc.perform(
+            post("/api/v1/recipes")
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"브루잉 로그 테스트용","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+                    """)));
+  }
+
+  private void updateRecipeDoseTo(String token, Long recipeId, String doseG) throws Exception {
+    mockMvc
+        .perform(
+            put("/api/v1/recipes/{id}", recipeId)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"브루잉 로그 테스트용","doseG":%s,"waterG":250.0}
+                    """
+                        .formatted(doseG)))
+        .andExpect(status().isOk());
   }
 
   private Long roasterId(String token) throws Exception {
@@ -281,6 +308,26 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
+  @DisplayName("AC-RECIPEV2-41 · recipeId를 생략하면 여전히 400이다")
+  void recipeId를_생략하면_여전히_400이다() throws Exception {
+    String token = token("테스터");
+    Long beanBatchId = beanBatchId(token, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(token, c40Id());
+
+    String body =
+        """
+        {"beanBatchId":%d,"brewedAt":"%s",
+         "actualDoseG":15.0,"actualWaterG":250.0,"actualWaterTempC":92.0,
+         "userGrinderId":%d,"actualGrindSettingValue":22.0}
+        """
+            .formatted(beanBatchId, BREWED_AT, userGrinderId);
+
+    createBrewLog(token, body)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
   @DisplayName("AC-BREW-30 · 인증 없이 생성할 수 없다")
   void 인증_없이_생성할_수_없다() throws Exception {
     mockMvc
@@ -292,7 +339,7 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @DisplayName("AC-BREW-31 · 존재하지 않는 recipeId는 404다")
+  @DisplayName("AC-BREW-31 · AC-RECIPEV2-43 · 존재하지 않는 recipeId는 404다")
   void 존재하지_않는_recipeId는_404다() throws Exception {
     String token = token("테스터");
     Long beanBatchId = beanBatchId(token, BREWED_AT, 6);
@@ -316,6 +363,179 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
     createBrewLog(requester, minimalBody(othersRecipeId, beanBatchId, BREWED_AT, userGrinderId))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  // ===== 레시피 접근 규칙 완화 + recipeSnapshot (AC-RECIPEV2-11, 15~21, 42) =====
+
+  @Test
+  @DisplayName("AC-RECIPEV2-15 · 내 소유 레시피로 브루잉하면 recipeId가 그대로 저장된다")
+  void 내_소유_레시피로_브루잉하면_recipeId가_그대로_저장된다() throws Exception {
+    String token = token("소유자");
+    Long recipeId = recipeId(token);
+    Long beanBatchId = beanBatchId(token, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(token, c40Id());
+
+    createBrewLog(token, minimalBody(recipeId, beanBatchId, BREWED_AT, userGrinderId))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.recipeId").value(recipeId));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-16 · 남의 PUBLIC 레시피로 브루잉하면 성공하되 recipeId는 null이다")
+  void 남의_PUBLIC_레시피로_브루잉하면_recipeId는_null이다() throws Exception {
+    String owner = token("소유자");
+    Long recipeId = publicRecipeId(owner);
+
+    String requester = token("요청자");
+    Long beanBatchId = beanBatchId(requester, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(requester, c40Id());
+
+    createBrewLog(requester, minimalBody(recipeId, beanBatchId, BREWED_AT, userGrinderId))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.recipeId").doesNotExist())
+        .andExpect(jsonPath("$.recipeSnapshot.title").isNotEmpty());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-17 · 맞팔로우 FRIENDS 레시피로 브루잉할 수 있다")
+  void 맞팔로우_FRIENDS_레시피로_브루잉할_수_있다() throws Exception {
+    User owner = newUser("recipev2-17owner");
+    User requester = newUser("recipev2-17requester");
+    mutualFollow(owner, requester);
+
+    Long recipeId =
+        createdId(
+            mockMvc.perform(
+                post("/api/v1/recipes")
+                    .header(HttpHeaders.AUTHORIZATION, tokenOf(owner))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"title":"맞팔로우 공유","doseG":15.0,"waterG":250.0,"visibility":"FRIENDS"}
+                        """)));
+
+    String requesterToken = tokenOf(requester);
+    Long beanBatchId = beanBatchId(requesterToken, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(requesterToken, c40Id());
+
+    createBrewLog(requesterToken, minimalBody(recipeId, beanBatchId, BREWED_AT, userGrinderId))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.recipeId").doesNotExist());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-18 · recipeSnapshot.doseG는 브루 시점 레시피의 doseG와 같다")
+  void recipeSnapshot_doseG는_브루_시점_레시피의_doseG와_같다() throws Exception {
+    String token = token("테스터");
+    Long recipeId = recipeId(token);
+    Long beanBatchId = beanBatchId(token, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(token, c40Id());
+
+    createBrewLog(token, minimalBody(recipeId, beanBatchId, BREWED_AT, userGrinderId))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.recipeSnapshot.doseG").value(15.0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-19 · 레시피를 나중에 수정해도 기존 잔의 recipeSnapshot은 불변이다")
+  void 레시피를_나중에_수정해도_기존_잔의_recipeSnapshot은_불변이다() throws Exception {
+    String token = token("테스터");
+    Long recipeId = recipeId(token);
+    Long beanBatchId = beanBatchId(token, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(token, c40Id());
+    Long logId =
+        createdId(
+            createBrewLog(token, minimalBody(recipeId, beanBatchId, BREWED_AT, userGrinderId)));
+
+    updateRecipeDoseTo(token, recipeId, "16.0");
+
+    getBrewLog(token, logId).andExpect(jsonPath("$.recipeSnapshot.doseG").value(15.0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-20 · recipeSnapshot.steps는 브루 시점 recipe_steps를 순서대로 담는다")
+  void recipeSnapshot_steps는_브루_시점_recipe_steps를_순서대로_담는다() throws Exception {
+    String token = token("테스터");
+    Long recipeId =
+        createdId(
+            mockMvc.perform(
+                post("/api/v1/recipes")
+                    .header(HttpHeaders.AUTHORIZATION, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"title":"스텝 스냅샷","doseG":15.0,"waterG":250.0,"steps":[
+                          {"stepType":"BLOOM","startAtSeconds":0,"durationSeconds":30,"waterG":40.0},
+                          {"stepType":"POUR","startAtSeconds":40,"durationSeconds":30,"waterG":210.0}
+                        ]}
+                        """)));
+    Long beanBatchId = beanBatchId(token, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(token, c40Id());
+
+    createBrewLog(token, minimalBody(recipeId, beanBatchId, BREWED_AT, userGrinderId))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.recipeSnapshot.steps.length()").value(2))
+        .andExpect(jsonPath("$.recipeSnapshot.steps[0].type").value("BLOOM"))
+        .andExpect(jsonPath("$.recipeSnapshot.steps[1].type").value("POUR"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-21 · recipeSnapshot.grindValue는 {value, unit} 구조다")
+  void recipeSnapshot_grindValue는_구조를_갖는다() throws Exception {
+    String token = token("테스터");
+    Long c40 = c40Id();
+    Long recipeId =
+        createdId(
+            mockMvc.perform(
+                post("/api/v1/recipes")
+                    .header(HttpHeaders.AUTHORIZATION, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"title":"그라인드 스냅샷","doseG":15.0,"waterG":250.0,
+                         "grinderModelId":%d,"grindSettingValue":22,"grindSettingUnit":"CLICK"}
+                        """
+                            .formatted(c40))));
+    Long beanBatchId = beanBatchId(token, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(token, c40);
+
+    createBrewLog(token, minimalBody(recipeId, beanBatchId, BREWED_AT, userGrinderId))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.recipeSnapshot.grindValue.value").value(22.0))
+        .andExpect(jsonPath("$.recipeSnapshot.grindValue.unit").value("CLICK"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-42 · 가시성 없는 남의 레시피를 가리키면 403이다")
+  void 가시성_없는_남의_레시피를_가리키면_403이다() throws Exception {
+    String owner = token("소유자");
+    Long privateRecipeId = recipeId(owner);
+
+    String requester = token("요청자");
+    Long beanBatchId = beanBatchId(requester, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(requester, c40Id());
+
+    createBrewLog(requester, minimalBody(privateRecipeId, beanBatchId, BREWED_AT, userGrinderId))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-11 · 남이 내 레시피로 바로 내리면(recipeId가 null로 저장) brewCount는 불변이다")
+  void 남이_내_레시피로_바로_내리면_brewCount는_불변이다() throws Exception {
+    String owner = token("소유자");
+    Long recipeId = publicRecipeId(owner);
+
+    String requester = token("요청자");
+    Long beanBatchId = beanBatchId(requester, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(requester, c40Id());
+
+    createBrewLog(requester, minimalBody(recipeId, beanBatchId, BREWED_AT, userGrinderId))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(get("/api/v1/recipes/{id}", recipeId).header(HttpHeaders.AUTHORIZATION, owner))
+        .andExpect(jsonPath("$.brewCount").value(0));
   }
 
   @Test
@@ -715,6 +935,15 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
         BrewLog.create(
             owner.getId(),
             recipeId,
+            new RecipeSnapshot(
+                "테스트 레시피",
+                "테스터",
+                new BigDecimal("15.0"),
+                new BigDecimal("250.0"),
+                null,
+                null,
+                new RecipeSnapshot.GrindValueSnapshot(new BigDecimal("22.0"), "CLICK"),
+                java.util.List.of()),
             beanBatchId,
             brewedAt,
             visibility,

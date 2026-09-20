@@ -837,6 +837,279 @@ class RecipeControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.code").value("FORBIDDEN"));
   }
 
+  // ===== 레시피 v2 데이터 모델 (AC-RECIPEV2-01~06, 30, 40) =====
+
+  @Test
+  @DisplayName("AC-RECIPEV2-01 · temperatureType을 지정해 레시피를 만들 수 있다")
+  void temperatureType을_지정해_레시피를_만들_수_있다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"아이스 브루","doseG":15.0,"waterG":250.0,"temperatureType":"ICE"}
+        """)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.temperatureType").value("ICE"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-02 · temperatureType을 생략하면 HOT이 기본값이다")
+  void temperatureType을_생략하면_HOT이_기본값이다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"기본값","doseG":15.0,"waterG":250.0}
+        """)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.temperatureType").value("HOT"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-03 · recommendedRoastLevel을 지정해 레시피를 만들 수 있다")
+  void recommendedRoastLevel을_지정해_레시피를_만들_수_있다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"다크 로스트용","doseG":15.0,"waterG":250.0,"recommendedRoastLevel":"DARK"}
+        """)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.recommendedRoastLevel").value("DARK"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-04 · recommendedRoastLevel을 생략하면 MEDIUM이 기본값이다")
+  void recommendedRoastLevel을_생략하면_MEDIUM이_기본값이다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"기본값","doseG":15.0,"waterG":250.0}
+        """)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.recommendedRoastLevel").value("MEDIUM"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-05 · PATCH로 temperatureType만 수정할 수 있다")
+  void PATCH로_temperatureType만_수정할_수_있다() throws Exception {
+    String token = token();
+    Long id =
+        createdId(
+            createRecipe(
+                token,
+                """
+                {"title":"원본","doseG":15.0,"waterG":250.0,"temperatureType":"HOT"}
+                """));
+
+    mockMvc
+        .perform(
+            put("/api/v1/recipes/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"원본","doseG":15.0,"waterG":250.0,"temperatureType":"ICE"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.temperatureType").value("ICE"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-06 · PATCH로 recommendedRoastLevel만 수정할 수 있다")
+  void PATCH로_recommendedRoastLevel만_수정할_수_있다() throws Exception {
+    String token = token();
+    Long id =
+        createdId(
+            createRecipe(
+                token,
+                """
+                {"title":"원본","doseG":15.0,"waterG":250.0,"recommendedRoastLevel":"LIGHT"}
+                """));
+
+    mockMvc
+        .perform(
+            put("/api/v1/recipes/{id}", id)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"원본","doseG":15.0,"waterG":250.0,"recommendedRoastLevel":"DARK"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.recommendedRoastLevel").value("DARK"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-30 · recommendedRoastLevel에 5단계 값을 보내면 거절한다")
+  void recommendedRoastLevel에_5단계_값을_보내면_거절한다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"잘못됨","doseG":15.0,"waterG":250.0,"recommendedRoastLevel":"MEDIUM_LIGHT"}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-40 · 잘못된 temperatureType은 400이다")
+  void 잘못된_temperatureType은_400이다() throws Exception {
+    createRecipe(
+            token(),
+            """
+        {"title":"잘못됨","doseG":15.0,"waterG":250.0,"temperatureType":"WARM"}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  // ===== savedCount·brewCount 파생 계산 (AC-RECIPEV2-07~10) =====
+
+  private static final java.time.Instant BREWED_AT =
+      java.time.Instant.now()
+          .minus(1, java.time.temporal.ChronoUnit.HOURS)
+          .truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+
+  private Long userGrinderId(String token, Long grinderModelId) throws Exception {
+    return createdId(
+        mockMvc.perform(
+            post("/api/v1/gear/user-grinders")
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"grinderModelId":%d,"nickname":"내 그라인더"}
+                    """
+                        .formatted(grinderModelId))));
+  }
+
+  private Long roasterId(String token) throws Exception {
+    return createdId(
+        mockMvc.perform(
+            post("/api/v1/roasters")
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name":"레시피테스트로스터-%s"}
+                    """
+                        .formatted(java.util.UUID.randomUUID()))));
+  }
+
+  private Long beanProductId(String token) throws Exception {
+    return createdId(
+        mockMvc.perform(
+            post("/api/v1/bean-products")
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"roasterId":%d,"name":"레시피테스트상품-%s","beanMix":"SINGLE_ORIGIN",
+                     "roastLevel":"LIGHT","origins":[{"country":"ET"}]}
+                    """
+                        .formatted(roasterId(token), java.util.UUID.randomUUID()))));
+  }
+
+  private Long beanBatchId(String token, java.time.Instant brewedAt, long daysAgo)
+      throws Exception {
+    java.time.LocalDate roastedAt =
+        brewedAt.atZone(java.time.ZoneOffset.UTC).toLocalDate().minusDays(daysAgo);
+    return createdId(
+        mockMvc.perform(
+            post("/api/v1/bean-batches")
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"beanProductId":%d,"weightG":200.0,"roastedAt":"%s"}
+                    """
+                        .formatted(beanProductId(token), roastedAt))));
+  }
+
+  private ResultActions createBrewLog(
+      String token, Long recipeId, Long beanBatchId, Long userGrinderId) throws Exception {
+    String body =
+        """
+        {"recipeId":%d,"beanBatchId":%d,"brewedAt":"%s",
+         "actualDoseG":15.0,"actualWaterG":250.0,"actualWaterTempC":92.0,
+         "userGrinderId":%d,"actualGrindSettingValue":22.0}
+        """
+            .formatted(recipeId, beanBatchId, BREWED_AT, userGrinderId);
+    return mockMvc.perform(
+        post("/api/v1/brew-logs")
+            .header(HttpHeaders.AUTHORIZATION, token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-07 · 포크가 0건이면 savedCount는 0이다")
+  void 포크가_0건이면_savedCount는_0이다() throws Exception {
+    String token = token();
+    Long id = simpleRecipe(token, "포크 안 된 레시피");
+
+    getRecipe(token, id).andExpect(jsonPath("$.savedCount").value(0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-08 · 포크한 사람 수만큼 savedCount가 늘어난다")
+  void 포크한_사람_수만큼_savedCount가_늘어난다() throws Exception {
+    String owner = token();
+    Long recipeId =
+        createdId(
+            createRecipe(
+                owner,
+                """
+                {"title":"인기 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+                """));
+
+    String a = tokenOf(newUser("A"));
+    String b = tokenOf(newUser("B"));
+    mockMvc.perform(
+        post("/api/v1/recipes/" + recipeId + "/fork").header(HttpHeaders.AUTHORIZATION, a));
+    mockMvc.perform(
+        post("/api/v1/recipes/" + recipeId + "/fork").header(HttpHeaders.AUTHORIZATION, b));
+
+    getRecipe(owner, recipeId).andExpect(jsonPath("$.savedCount").value(2));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-09 · 포크본을 삭제하면 원본의 savedCount가 즉시 줄어든다")
+  void 포크본을_삭제하면_원본의_savedCount가_즉시_줄어든다() throws Exception {
+    String owner = token();
+    Long recipeId =
+        createdId(
+            createRecipe(
+                owner,
+                """
+                {"title":"인기 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+                """));
+    String a = tokenOf(newUser("A"));
+    Long forkId =
+        createdId(
+            mockMvc.perform(
+                post("/api/v1/recipes/" + recipeId + "/fork")
+                    .header(HttpHeaders.AUTHORIZATION, a)));
+
+    mockMvc.perform(delete("/api/v1/recipes/" + forkId).header(HttpHeaders.AUTHORIZATION, a));
+
+    getRecipe(owner, recipeId).andExpect(jsonPath("$.savedCount").value(0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-10 · 소유자가 자기 레시피로 낸 잔 수만큼 brewCount가 늘어난다")
+  void 소유자가_자기_레시피로_낸_잔_수만큼_brewCount가_늘어난다() throws Exception {
+    String token = token();
+    Long recipeId = simpleRecipe(token, "brewCount 테스트");
+    Long grinderModelId = grinderId("Comandante", "C40 MK4");
+    Long userGrinderId = userGrinderId(token, grinderModelId);
+    Long beanBatchIdA = beanBatchId(token, BREWED_AT, 6);
+    Long beanBatchIdB = beanBatchId(token, BREWED_AT, 6);
+
+    createBrewLog(token, recipeId, beanBatchIdA, userGrinderId).andExpect(status().isCreated());
+    createBrewLog(token, recipeId, beanBatchIdB, userGrinderId).andExpect(status().isCreated());
+
+    getRecipe(token, recipeId).andExpect(jsonPath("$.brewCount").value(2));
+  }
+
   // ===== 공개범위 인가 (AC-VIS-01~17) =====
 
   @PersistenceContext private EntityManager entityManager;

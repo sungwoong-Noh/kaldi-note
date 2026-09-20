@@ -1,5 +1,6 @@
 package com.kaldinote.recipe.application;
 
+import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
 import com.kaldinote.common.response.PageParams;
@@ -11,8 +12,10 @@ import com.kaldinote.grind.domain.GrindConverter;
 import com.kaldinote.grind.domain.GrindSpec;
 import com.kaldinote.recipe.domain.GrindSettingUnit;
 import com.kaldinote.recipe.domain.Recipe;
+import com.kaldinote.recipe.domain.RecipeRoastLevel;
 import com.kaldinote.recipe.domain.RecipeSourceType;
 import com.kaldinote.recipe.domain.RecipeStep;
+import com.kaldinote.recipe.domain.RecipeTemperatureType;
 import com.kaldinote.recipe.domain.RecipeVisibility;
 import com.kaldinote.recipe.domain.StepType;
 import com.kaldinote.recipe.infrastructure.RecipeRepository;
@@ -23,6 +26,7 @@ import com.kaldinote.recipe.presentation.dto.RecipeSummaryResponse;
 import com.kaldinote.recipe.presentation.dto.StepRequest;
 import com.kaldinote.recipe.presentation.dto.UpdateRecipeRequest;
 import com.kaldinote.user.application.FollowService;
+import com.kaldinote.user.application.UserService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -47,7 +51,9 @@ public class RecipeService {
   private final RecipeStepRepository recipeStepRepository;
   private final GrinderModelRepository grinderRepository;
   private final BrewerRepository brewerRepository;
+  private final BrewLogRepository brewLogRepository;
   private final FollowService followService;
+  private final UserService userService;
   private final GrindConverter grindConverter = new GrindConverter();
 
   @Transactional
@@ -78,14 +84,27 @@ public class RecipeService {
             request.grinderModelId(),
             request.grindSettingValue(),
             request.grindSettingUnit(),
-            micron);
+            micron,
+            request.temperatureType() == null
+                ? RecipeTemperatureType.HOT
+                : request.temperatureType(),
+            request.recommendedRoastLevel() == null
+                ? RecipeRoastLevel.MEDIUM
+                : request.recommendedRoastLevel());
     recipe.replaceSteps(steps);
 
-    return RecipeResponse.from(recipeRepository.save(recipe));
+    return RecipeResponse.from(recipeRepository.save(recipe), 0L, 0L);
   }
 
   public RecipeResponse get(Long userId, Long recipeId) {
-    return RecipeResponse.from(findViewable(userId, recipeId));
+    return withCounts(findViewable(userId, recipeId));
+  }
+
+  /** 새로 저장된 레시피(레시피 자체·포크본)는 포크·브루 실적이 있을 수 없으므로 0을 하드코딩한 from()과 달리, 기존 레시피는 실제 집계가 필요하다. */
+  private RecipeResponse withCounts(Recipe recipe) {
+    long savedCount = recipeRepository.countByParentRecipeIdAndDeletedAtIsNull(recipe.getId());
+    long brewCount = brewLogRepository.countByRecipeIdAndDeletedAtIsNull(recipe.getId());
+    return RecipeResponse.from(recipe, savedCount, brewCount);
   }
 
   /**
@@ -108,10 +127,24 @@ public class RecipeService {
   @Transactional
   public RecipeResponse fork(Long userId, Long recipeId) {
     Recipe original = findViewable(userId, recipeId);
-    Recipe fork = Recipe.forkFrom(original, userId);
+    Recipe fork = Recipe.forkFrom(original, userId, sourceAuthorNameOf(original));
     List<RecipeStep> copiedSteps = original.getSteps().stream().map(RecipeStep::copyOf).toList();
     fork.replaceSteps(copiedSteps);
-    return RecipeResponse.from(recipeRepository.save(fork));
+    return RecipeResponse.from(recipeRepository.save(fork), 0L, 0L);
+  }
+
+  /**
+   * 포크 시점에 고정할 출처 표기. CURATED는 authorName을 그대로 쓴다. USER는 소유자 닉네임을 조회하되, 탈퇴 등으로 owner_user_id가 이미
+   * null인 유기 레시피(orphan)는 조회할 대상이 없으므로 null로 둔다.
+   */
+  private String sourceAuthorNameOf(Recipe recipe) {
+    if (recipe.getSourceType() == RecipeSourceType.CURATED) {
+      return recipe.getAuthorName();
+    }
+    if (recipe.getOwnerUserId() == null) {
+      return null;
+    }
+    return userService.profile(recipe.getOwnerUserId()).nickname();
   }
 
   /** media 도메인이 업로드 권한을 확인할 때 쓴다. 엔티티를 밖으로 내보내지 않는다(도메인 간 ID 참조 원칙). */
@@ -119,9 +152,22 @@ public class RecipeService {
     findOwned(userId, recipeId);
   }
 
-  /** media 도메인이 조회(첨부 목록) 권한을 확인할 때 쓴다. */
-  public void requireViewable(Long userId, Long recipeId) {
-    findViewable(userId, recipeId);
+  /**
+   * media 도메인이 조회(첨부 목록) 권한을 확인할 때, brewlog 도메인이 브루잉 시점 레시피를 가져올 때 쓴다. 반환형이 Recipe인 이유는
+   * BrewLogService가 recipeSnapshot을 만들려면 레시피 값 전체가 필요하기 때문이다(ID만으로는 부족하다).
+   */
+  public Recipe requireViewable(Long userId, Long recipeId) {
+    return findViewable(userId, recipeId);
+  }
+
+  /**
+   * 브루 스냅샷에 쓸 표시용 작성자명. 포크본은 담기(fork) 시점에 sourceAuthorName이 이미 고정돼 있으므로 그 값을 그대로 쓰고, 그렇지 않은(포크되지
+   * 않은) 레시피는 지금 시점 기준으로 다시 계산한다.
+   */
+  public String authorNameFor(Recipe recipe) {
+    return recipe.getSourceAuthorName() != null
+        ? recipe.getSourceAuthorName()
+        : sourceAuthorNameOf(recipe);
   }
 
   /**
@@ -155,6 +201,11 @@ public class RecipeService {
   @Transactional
   public RecipeResponse update(Long userId, Long recipeId, UpdateRecipeRequest request) {
     Recipe recipe = findOwned(userId, recipeId);
+    // 카운트 조회를 스텝 교체보다 먼저 한다 — 이후에 두면 count 쿼리의 자동 flush가 deleteAllByRecipe
+    // 이후 아직 flush되지 않은 새 스텝 insert를 끌어올려, Hibernate가 insert를 delete보다 먼저
+    // 실행하려다 uq_recipe_steps_order 위반을 낸다.
+    long savedCount = recipeRepository.countByParentRecipeIdAndDeletedAtIsNull(recipe.getId());
+    long brewCount = brewLogRepository.countByRecipeIdAndDeletedAtIsNull(recipe.getId());
 
     requireExists(request.brewerId(), brewerRepository::existsById, "브루어");
 
@@ -176,7 +227,11 @@ public class RecipeService {
         request.grinderModelId(),
         request.grindSettingValue(),
         request.grindSettingUnit(),
-        micron);
+        micron,
+        request.temperatureType() == null ? RecipeTemperatureType.HOT : request.temperatureType(),
+        request.recommendedRoastLevel() == null
+            ? RecipeRoastLevel.MEDIUM
+            : request.recommendedRoastLevel());
 
     // UNIQUE(recipe_id, step_order) 위반을 피하려면 기존 스텝을 지우고 flush한 뒤 새로 넣는다.
     // clear()+addAll()만 하면 Hibernate가 insert를 delete보다 먼저 실행해 유니크 제약에 걸린다.
@@ -185,7 +240,7 @@ public class RecipeService {
     recipe.getSteps().clear();
     recipe.replaceSteps(steps);
 
-    return RecipeResponse.from(recipe);
+    return RecipeResponse.from(recipe, savedCount, brewCount);
   }
 
   @Transactional

@@ -4,6 +4,7 @@ import com.kaldinote.brewlog.domain.BrewLog;
 import com.kaldinote.brewlog.domain.BrewLogPatch;
 import com.kaldinote.brewlog.domain.BrewLogVisibility;
 import com.kaldinote.brewlog.domain.CalendarMonth;
+import com.kaldinote.brewlog.domain.RecipeSnapshot;
 import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCalendarResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
@@ -27,7 +28,9 @@ import com.kaldinote.grind.domain.GrindSpec;
 import com.kaldinote.inventory.domain.BeanBatch;
 import com.kaldinote.inventory.domain.DegassingStatus;
 import com.kaldinote.inventory.infrastructure.BeanBatchRepository;
+import com.kaldinote.recipe.application.RecipeService;
 import com.kaldinote.recipe.domain.Recipe;
+import com.kaldinote.recipe.domain.RecipeStep;
 import com.kaldinote.recipe.infrastructure.RecipeRepository;
 import com.kaldinote.user.application.FollowService;
 import java.math.BigDecimal;
@@ -65,6 +68,7 @@ public class BrewLogService {
 
   private final BrewLogRepository brewLogRepository;
   private final RecipeRepository recipeRepository;
+  private final RecipeService recipeService;
   private final BeanBatchRepository beanBatchRepository;
   private final UserGrinderRepository userGrinderRepository;
   private final GrinderModelRepository grinderModelRepository;
@@ -76,7 +80,8 @@ public class BrewLogService {
   public BrewLogResponse create(Long userId, BrewLogCreateRequest request) {
     validateRatingStep(request.rating());
 
-    Recipe recipe = requireOwnedRecipe(userId, request.recipeId());
+    Recipe recipe = recipeService.requireViewable(userId, request.recipeId());
+    Long storedRecipeId = recipe.isOwnedBy(userId) ? recipe.getId() : null;
     BeanBatch beanBatch = requireOwnedBeanBatch(userId, request.beanBatchId());
     UserGrinder userGrinder = requireOwnedUserGrinder(userId, request.userGrinderId());
     GrinderModel grinderModel =
@@ -95,11 +100,13 @@ public class BrewLogService {
     ExtractionAnalysis analysis = analyze(request);
 
     int daysOffRoast = computeDaysOffRoast(request.brewedAt(), beanBatch.getRoastedAt());
+    RecipeSnapshot snapshot = buildSnapshot(recipe);
 
     BrewLog log =
         BrewLog.create(
             userId,
-            recipe.getId(),
+            storedRecipeId,
+            snapshot,
             beanBatch.getId(),
             request.brewedAt(),
             request.visibility(),
@@ -373,16 +380,30 @@ public class BrewLogService {
             request.tdsPercent()));
   }
 
-  private Recipe requireOwnedRecipe(Long userId, Long recipeId) {
-    Recipe recipe =
-        recipeRepository
-            .findByIdAndDeletedAtIsNull(recipeId)
-            .orElseThrow(
-                () -> new BusinessException(ErrorCode.NOT_FOUND, "레시피를 찾을 수 없습니다: " + recipeId));
-    if (!recipe.isOwnedBy(userId)) {
-      throw new BusinessException(ErrorCode.FORBIDDEN, "본인의 레시피만 브루잉 로그에 연결할 수 있습니다.");
-    }
-    return recipe;
+  /** 브루 시점 레시피 값을 고정한다. recipeId가 null로 저장되는 경우(남의 레시피)에도 이 값은 항상 채운다. */
+  private RecipeSnapshot buildSnapshot(Recipe recipe) {
+    GrinderModel grinderModel =
+        recipe.getGrinderModelId() == null
+            ? null
+            : grinderModelRepository.findById(recipe.getGrinderModelId()).orElse(null);
+    List<RecipeSnapshot.StepSnapshot> steps =
+        recipe.getSteps().stream()
+            .map(
+                (RecipeStep s) ->
+                    new RecipeSnapshot.StepSnapshot(
+                        s.getStepType().name(), s.getWaterG(), s.getDurationSeconds(), s.getNote()))
+            .toList();
+    return new RecipeSnapshot(
+        recipe.getTitle(),
+        recipeService.authorNameFor(recipe),
+        recipe.getDoseG(),
+        recipe.getWaterG(),
+        recipe.getWaterTempC(),
+        grinderModel == null ? null : grinderModel.getName(),
+        new RecipeSnapshot.GrindValueSnapshot(
+            recipe.getGrindSettingValue(),
+            recipe.getGrindSettingUnit() == null ? null : recipe.getGrindSettingUnit().name()),
+        steps);
   }
 
   private BeanBatch requireOwnedBeanBatch(Long userId, Long beanBatchId) {

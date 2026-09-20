@@ -1,7 +1,7 @@
 ---
 id: RECIPEV2
 title: 레시피/잔 재설계 — 데이터 모델과 마이그레이션
-status: 승인
+status: 구현완료
 plan: docs/plans/2026-09-20-plan-recipe-v2-data-model.md
 ---
 

@@ -15,6 +15,8 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
 
   Optional<BrewLog> findByIdAndDeletedAtIsNull(Long id);
 
+  long countByRecipeIdAndDeletedAtIsNull(Long recipeId);
+
   /**
    * 목록용 공개범위 판정. RecipeRepository.findVisible과 같은 구조다. 소유자 컬럼 이름과 enum 타입만 다르다.
    *

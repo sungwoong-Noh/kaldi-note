@@ -145,4 +145,16 @@ test.describe("웹 헤더 롤아웃", () => {
 
     await expect(header.getByRole("link", { name: "더보기" })).toBeVisible();
   });
+
+  test("AC-WEBHDR-07 · ≥1100px에서는 대상 화면 전부에서 하단 탭바가 숨는다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+
+    for (const path of ["/recipes", "/brews", "/more"]) {
+      await page.goto(path);
+      await expect(page.locator("nav[aria-label='주요 화면']")).toBeHidden();
+    }
+  });
 });

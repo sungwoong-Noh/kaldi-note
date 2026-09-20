@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { WebTopBar } from "@/components/layout/WebTopBar";
 import { ServiceWorkerRegistrar } from "@/components/pwa/ServiceWorkerRegistrar";
 import { initThemeScript } from "@/lib/theme";
 
@@ -32,8 +33,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: initThemeScript() }} />
       </head>
       <body className="flex min-h-full flex-col">
-        {/* 탭바는 여기 한 번만 둔다. 페이지마다 넣으면 새 화면을 만들 때마다 빠뜨린다. */}
+        {/* 헤더·탭바는 여기 한 번만 둔다. 페이지마다 넣으면 새 화면을 만들 때마다 빠뜨린다. */}
         <Providers>
+          <WebTopBar />
           {children}
           <BottomNav />
           <ServiceWorkerRegistrar />

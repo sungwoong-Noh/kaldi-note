@@ -195,6 +195,46 @@ test.describe("홈 달력 — 모바일", () => {
 
     const cell = page.getByRole("button", { name: "9월 2일, 기록 1건" });
     await expect(cell).not.toContainText("Hoffmann V60");
-    await expect(page.getByRole("link", { name: "홈" })).toBeVisible();
+    // 하단 탭바로 좁힌다 — 2026-09-20부터 상단 로고 헤더의 "홈" 네비게이션 링크도
+    // (숨겨진 채로) DOM에 함께 있어 이름만으로 찾으면 두 개가 잡힌다.
+    await expect(
+      page.locator("nav[aria-label='주요 화면']").getByRole("link", { name: "홈" }),
+    ).toBeVisible();
+  });
+});
+
+test.describe("홈 달력 — 모바일 헤더", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.clock.setFixedTime(TODAY);
+  });
+
+  test("AC-HOMECAL-80 · 1100px 미만에서도 로고 헤더가 보인다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/");
+
+    const header = page.locator("header");
+    await expect(header.locator("svg")).toBeVisible();
+    await expect(header.getByText("kaldi")).toBeVisible();
+  });
+
+  test("AC-HOMECAL-81 · 그 헤더에는 네비게이션 링크가 없다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/");
+
+    const header = page.locator("header");
+    await expect(header.getByRole("link", { name: "홈" })).toBeHidden();
+    await expect(header.getByRole("link", { name: "레시피" })).toBeHidden();
+    await expect(
+      header.getByRole("link", { name: "기록", exact: true }),
+    ).toBeHidden();
+  });
+
+  test("AC-HOMECAL-82 · 그 헤더에는 CTA와 아바타가 없다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/");
+
+    const header = page.locator("header");
+    await expect(header.getByRole("link", { name: "기록하기" })).toBeHidden();
+    await expect(header.getByRole("link", { name: "더보기" })).toBeHidden();
   });
 });

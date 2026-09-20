@@ -180,8 +180,8 @@ export function Calendar({
                       : undefined
                   }
                   className={`flex h-full w-full min-h-11 min-w-11 flex-col items-center justify-center overflow-hidden ${
-                    isWeb && selected ? "bg-surface" : ""
-                  } ${lineClass}`}
+                    isWeb ? "px-3 py-2" : ""
+                  } ${isWeb && selected ? "bg-surface" : ""} ${lineClass}`}
                 >
                   <span>{day}</span>
                   {count > 0 && (

@@ -389,4 +389,29 @@ test.describe("홈 달력 — 웹", () => {
     expect(innerWidth).toBe("1px");
     expect(innerColor).toBe(await tokenColor(page, "sunken"));
   });
+
+  test("AC-HOMECAL-88 · 셀 안쪽 여백이 상하 8px·좌우 12px다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    const cell = page.getByRole("button", { name: "9월 5일, 기록 2건" });
+    const padding = await cell.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return {
+        top: s.paddingTop,
+        bottom: s.paddingBottom,
+        left: s.paddingLeft,
+        right: s.paddingRight,
+      };
+    });
+    expect(padding).toEqual({
+      top: "8px",
+      bottom: "8px",
+      left: "12px",
+      right: "12px",
+    });
+  });
 });

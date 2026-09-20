@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
@@ -15,6 +15,7 @@ import { fetchRecipe } from "@/features/recipe/api";
 import type { Recipe } from "@/features/recipe/schema";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
+import { focusFirstInvalidField } from "@/lib/focusFirstError";
 import { createBrewLog } from "../api";
 import {
   initialFormState,
@@ -118,6 +119,12 @@ function Fields({
       ? mapFieldErrors(save.error.fieldErrors)
       : null;
 
+  const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (save.error) focusFirstInvalidField(formRef.current);
+  }, [save.error]);
+
   const set = <K extends keyof BrewLogFormState>(
     key: K,
     value: BrewLogFormState[K],
@@ -159,7 +166,7 @@ function Fields({
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div ref={formRef} className="flex flex-col gap-4">
       <BrewLogFields
         state={state}
         grinders={grinders}
@@ -170,7 +177,9 @@ function Fields({
       />
 
       {save.error && (
-        <p className="text-body text-danger">{save.error.message}</p>
+        <p data-general-error tabIndex={-1} className="text-body text-danger">
+          {save.error.message}
+        </p>
       )}
 
       <div className="flex items-center gap-2">

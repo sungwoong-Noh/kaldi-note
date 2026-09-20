@@ -562,3 +562,84 @@ describe("BrewNewPage — 취소", () => {
     expect(push).toHaveBeenCalledWith("/recipes/1");
   });
 });
+
+describe("BrewNewPage — 에러 필드로 포커스 이동", () => {
+  it("AC-ERRFOCUS-01 · 여러 필드가 틀리면 DOM 순서상 첫 번째로 포커스가 간다", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.post(`${BASE}/brew-logs`, () =>
+        HttpResponse.json(
+          {
+            code: "INVALID_REQUEST",
+            message: "입력값이 올바르지 않습니다.",
+            fieldErrors: [
+              { field: "actualDoseG", message: "0보다 커야 합니다" },
+              { field: "actualWaterG", message: "0보다 커야 합니다" },
+            ],
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("button", { name: "기록하기" }));
+
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText("원두량")),
+    );
+  });
+
+  it("AC-ERRFOCUS-04 · 어떤 필드에도 안 붙는 에러는 하단 문구가 포커스를 받는다", async () => {
+    const user = userEvent.setup();
+    captureCreate(badRequest("quantity", "이상한 값입니다"));
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("button", { name: "기록하기" }));
+
+    const message = await screen.findByText("입력값이 올바르지 않습니다.");
+    await waitFor(() => expect(document.activeElement).toBe(message));
+    expect(message).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("AC-ERRFOCUS-07 · 필드 에러가 있으면 하단 문구가 보여도 필드가 포커스를 받는다", async () => {
+    const user = userEvent.setup();
+    captureCreate(badRequest("actualDoseG", "0보다 커야 합니다"));
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("button", { name: "기록하기" }));
+
+    expect(
+      await screen.findByText("입력값이 올바르지 않습니다."),
+    ).toBeVisible();
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText("원두량")),
+    );
+  });
+
+  it("AC-ERRFOCUS-08 · 재시도가 다른 필드에서 실패하면 포커스가 그 필드로 다시 이동한다", async () => {
+    const user = userEvent.setup();
+    let call = 0;
+    server.use(
+      http.post(`${BASE}/brew-logs`, () => {
+        call += 1;
+        return call === 1
+          ? badRequest("actualDoseG", "0보다 커야 합니다")()
+          : badRequest("actualWaterG", "0보다 커야 합니다")();
+      }),
+    );
+
+    await renderNewPage();
+    const submit = await screen.findByRole("button", { name: "기록하기" });
+
+    await user.click(submit);
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText("원두량")),
+    );
+
+    await user.click(submit);
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText("물량")),
+    );
+  });
+});

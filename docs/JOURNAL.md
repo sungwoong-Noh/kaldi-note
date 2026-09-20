@@ -7,6 +7,60 @@
 
 ---
 
+## 2026-09-20 · 캘린더 그리드 마무리 + 버그 3건 + 레시피/잔 재설계 스펙·계획 (혼합 세션)
+
+**브랜치:** `feat/calendar-grid-responsive`→#129(머지) · `fix/calendar-mobile-today-marker`→#130(머지) ·
+`fix/calendar-mobile-sticky-scroll`→#131(머지) · `fix/follow-rail-avatar-shrink`→#132(머지) ·
+`docs/recipe-v2-data-model-spec`→**#133(열림, 리뷰 대기)**
+**상태:** 앞 네 PR은 전부 완료·머지·배포됨. 마지막 PR(#133)은 스펙+계획만이고 코드는 없음 —
+**다음 세션이 구현부터 시작한다.**
+
+### 한 일
+
+- **AC-HOMECAL-85~91**(웹 달력 그리드 반응형) Task 1~5 전부 구현·머지. `min-height:0` 없이
+  flexbox 자동 최소 크기만으로 64px 바닥이 실측으로 확인됐다(계획의 "검증되지 않은 가정" 해소).
+- **버그 3건**(사용자가 수동 확인에서 보고): 모바일 달력에 선택/오늘 날짜 시각 표시가 아예
+  없던 것, 날짜별 목록이 길어지면 헤더·달력까지 페이지 전체가 스크롤되던 것, 팔로우 레일
+  웹 pill 아바타가 맞팔로우 많으면(20명 실측 32px→22px) 찌그러지던 것 — 셋 다 TDD로 고쳐
+  각각 별도 PR로 머지.
+- 네 PR을 순서대로 머지하며 `Calendar.tsx`·`Shell.tsx`·`page.tsx`가 겹쳐 **매번 리베이스
+  충돌**이 났다. `Shell`의 `grow` prop이 두 PR에서 정반대 조건(`isTwoColumn` vs
+  `!isTwoColumn`)으로 따로 생겨 충돌했는데, 합쳐보니 **둘 다 필요**해서 조건 없는 `grow`
+  하나로 단순화했다 — 이 프로젝트에서 병렬 브랜치가 같은 파일을 건드릴 때 실제로 나는
+  충돌의 예시로 남겨둔다.
+- `/interview`로 `RECIPES-AND-BREWS.md`(레시피/잔 재설계) 중 **백엔드 데이터 모델만** 스코프를
+  좁혀 인터뷰 → `docs/specs/2026-09-20-recipe-v2-data-model.md`(승인, AC 28개) +
+  `docs/plans/2026-09-20-plan-recipe-v2-data-model.md`(Task 1~5) 작성, PR #133.
+
+### 발견한 것
+
+- **인터뷰 중 기존에 테스트로 고정돼 있던 결정 2개를 다시 열었다** — 둘 다 사람에게 명시적으로
+  확인받고 진행:
+  1. `brew_logs.recipe_id`가 `NOT NULL`인 건 `2026-08-17-brew-log.md`가 "즉흥 추출을 의도적으로
+     닫았다"고 써둔 결과였다. 이번 스펙이 그 결정을 다시 열어 nullable로 바꾼다.
+  2. `POST /brew-logs`는 `BrewLogService.requireOwnedRecipe`라는 이름 그대로 **소유자 전용**이었다
+     (`AC-BREW-32`가 이미 테스트로 고정). 가시성 규칙으로 완화하는 게 이번 스펙의 핵심인데,
+     설계 문서만 봐선 이 기존 제약이 안 보인다 — 코드를 실제로 읽어야만 드러났다.
+- `RecipeService.requireViewable`(소유자→PUBLIC→FRIENDS 순으로 이미 구현돼 있음)을
+  `BrewLogService`가 그대로 재사용하도록 계획했다 — 새 인가 로직을 만들지 않는다.
+- `catalog.RoastLevel`(5단계, 원두 실배전도)과 이름이 겹쳐서 레시피의 새 필드는
+  `RecipeRoastLevel`(3단계)로 따로 이름 짓기로 했다.
+- 이 프로젝트에 JSONB 매핑이 아직 한 번도 없었다 — `recipe_snapshot` 컬럼이 `@JdbcTypeCode
+  (SqlTypes.JSON)`을 쓰는 첫 사례가 된다. 계획의 "검증되지 않은 가정"으로 남겨뒀다.
+
+### 다음 세션에게
+
+- **`docs/plans/2026-09-20-plan-recipe-v2-data-model.md` Task 1부터 TDD로 시작한다.** 스펙·계획
+  둘 다 승인 완료, 인터뷰 불필요.
+- 시작 전 새 브랜치(`main`에서). PR #133은 문서만이라 머지돼도, 안 돼도 구현 브랜치는 새로 판다.
+- 계획의 "검증되지 않은 가정" 3개(JSONB 매핑, `recipeId(token)` 헬퍼의 기본 visibility,
+  `RecipeMigrationTest`가 기댈 시드 데이터 존재)를 Task 1·4·5에서 실제로 확인하고 결과를 이
+  JOURNAL에 남길 것.
+- 남은 인터뷰 2건(팔로워 목록 화면, 레시피/잔 프론트 화면)은 이 데이터 모델이 구현된 뒤에
+  진행하는 게 자연스럽다 — 화면이 이 API에 의존한다.
+
+---
+
 ## 2026-09-20 · 수동 확인에서 나온 버그 3건 + 신기능 2건 + 다음 스펙 (혼합 세션)
 
 **브랜치:** `fix/calendar-record-dot` → `fix/shell-max-width` → `feat/web-header-rollout` (전부 머지·배포됨) · 지금은 `main`

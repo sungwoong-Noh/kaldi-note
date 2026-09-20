@@ -132,6 +132,8 @@ export default function HomePage() {
         onSwipeLeft={handleNextMonth}
         onSwipeRight={handlePrevMonth}
         variant={variant}
+        fillHeight={isTwoColumn}
+        today={kstToday()}
       />
     </>
   );
@@ -148,7 +150,7 @@ export default function HomePage() {
   );
 
   return (
-    <Shell stack wide={isWeb}>
+    <Shell stack wide={isWeb} grow={isTwoColumn}>
       <FollowRail
         me={me.data}
         mutuals={mutuals.data ?? []}
@@ -158,8 +160,8 @@ export default function HomePage() {
       />
 
       {isTwoColumn ? (
-        <div className="flex gap-6">
-          <div className="flex-1">{calendarBlock}</div>
+        <div className="flex flex-1 gap-6">
+          <div className="flex flex-1 flex-col">{calendarBlock}</div>
           <div
             data-testid="day-column"
             className="flex w-[420px] shrink-0 flex-col gap-3 overflow-y-auto bg-surface p-4"

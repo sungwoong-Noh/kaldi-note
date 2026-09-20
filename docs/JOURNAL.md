@@ -7,6 +7,68 @@
 
 ---
 
+## 2026-09-20 · 수동 확인에서 나온 버그 3건 + 신기능 2건 + 다음 스펙 (혼합 세션)
+
+**브랜치:** `fix/calendar-record-dot` → `fix/shell-max-width` → `feat/web-header-rollout` (전부 머지·배포됨) · 지금은 `main`
+**PR:** #125(머지) · #126(머지) · #127(머지)
+**상태:** 위 3개 PR 전부 완료·배포 확인. 이번 세션 마지막 산출물인
+`docs/specs/2026-09-20-calendar-grid-responsive.md`는 **스펙만 승인**됐고 계획·코드는
+다음 세션 몫이다.
+
+### 한 일
+
+- **AC-HOMECAL-26 버그:** 달력 기록 점에 스타일이 없어 렌더가 안 됨 → 5px 원 스타일 추가.
+- **AC-ERRFOCUS-01~08 (신기능):** 기록 등록 폼·원두/그라인더 등록 모달에서 저장 실패 시
+  첫 번째 invalid 필드로 포커스 이동. 구현 중 `BrewLogFields`·`BeanBatchDialog`의 기존
+  `aria-invalid` 버그(자기 필드가 아니라 전체 에러 존재 여부로 켜짐)와 `UserGrinderDialog`의
+  `nickname`이 `KNOWN_FIELDS`에 없어 죽어 있던 매칭을 같이 고쳤다.
+- **AC-HOMECAL-63 버그:** 웹 달력 셀에 `truncate`가 없어 긴 레시피명이 다음 칸까지 겹침 → 고침.
+- **AC-HOMECAL-80~83 (신기능):** `<1100px`에서도 홈에 로고 헤더 표시(로고만, 네비·CTA·아바타는
+  `≥1100px`부터).
+- **AC-HOMECAL-84 버그(가장 큼):** `Shell`이 모든 화면에 `max-w-2xl`(672px)을 고정으로 씌워
+  웹 2컬럼 레이아웃(달력+우측 420px)이 그 안에 눌려 칸이 20~30px까지 좁아져 있었다. 앞의
+  `truncate` 수정이 안 먹힌 진짜 원인. `Shell`에 `wide` prop 추가로 해결.
+- **AC-WEBHDR-01~10 (신기능):** 로고 헤더를 홈 밖 화면(레시피·기록·상세·더보기·그라인더
+  환산기) 전부로 확장. `WebTopBar`를 `page.tsx` 전용에서 `layout.tsx` 전역으로 옮기고,
+  `isHidden`/`isActive` 판정을 `lib/navScreens.ts`로 뽑아 `BottomNav`와 공유.
+- **`docs/specs/2026-09-20-calendar-grid-responsive.md` (다음 스펙, 승인만 됨):** 웹 달력
+  그리드를 목업(`Kaldi Note Home - Calendar Web.dc.html`)에 맞춰 `flex:1` 반응형으로
+  바꾸는 스펙. AC-HOMECAL-85~91. **계획서 없음 — 다음 세션이 `docs/plans/`부터 쓴다.**
+
+### 발견한 것
+
+- **`gh pr merge`가 로컬 main에 별도 커밋이 있으면 fast-forward 실패로 보인다.** 실제로는
+  서버 쪽 머지는 성공하고 로컬만 갈라진다 — `git fetch` + `git rebase origin/main`으로 정리.
+- **머지 뒤 `git branch --show-current`가 `main`으로 바뀐다.** 이걸 놓쳐서 두 번이나 다음
+  버그를 **`main`에 직접 커밋**했다(`c24c963`, 지금은 `fix/shell-max-width`로 이동시킴).
+  **다음 세션은 PR 머지 직후 반드시 새 브랜치를 만들고 확인한 뒤 커밋을 시작한다.**
+- **`pnpm format`이 전체 저장소를 재포맷한다.** 의도한 파일 몇 개만 바뀐 게 아니라 32개
+  무관한 파일이 줄바꿈 스타일로 바뀌어 있었다 — 커밋 전 `git status`로 스코프 밖 변경을
+  걷어냈다. CI의 포맷 검사는 그 32개 파일의 "고치기 전" 상태를 이미 통과시키고 있었으므로
+  로컬 포맷 결과를 무조건 믿지 않는다.
+- **Tailwind의 `hidden`(`display:none`)은 접근성 트리에서 서브트리를 통째로 뺀다.** 로고
+  헤더를 전역화하면서 `<1100px`에 숨겨진 네비 링크가 기존 e2e의 `getByRole` 어서션과
+  충돌할까 걱정했는데, 실제로는 `display:none` 서브트리가 트리에 안 잡혀 충돌이 없었다 —
+  이미 `header`로 스코프를 좁혀둔 홈 관련 테스트 1곳만 실제로 손봐야 했다.
+- **`ui-ux-pro-max`·`frontend-design` 플러그인이 설치돼 있지만 이번 세션엔 안 썼다.** 둘 다
+  "새 시각적 정체성을 처음부터 설계"하는 도구라, 이미 토큰·타이포·간격이 잠긴 이 프로젝트에는
+  맞지 않는다고 판단했다. 목업 HTML을 직접 읽어 값을 옮기는 쪽을 택했다.
+- **웹 달력이 목업과 다르게 보인 진짜 이유는 그리드 자체의 반응형 부재다.** `WEB_GRID_HEIGHT_PX
+  = 420` 고정값 때문에 화면이 커져도 항상 같은 크기로 눌려 있었고, 그리드선도 아예 없었다.
+  인터뷰로 `flex:1` 채움·`64px` 행 최소값·`divider-strong`/`sunken` 그리드선·선택 숫자
+  `24px` 원 등을 확정했다(`calendar-grid-responsive.md` 참조).
+
+### 다음 세션에게
+
+- `docs/specs/2026-09-20-calendar-grid-responsive.md`(status: `승인`)를 읽고
+  `docs/plans/2026-09-20-plan-calendar-grid-responsive.md`부터 쓴다. **스펙엔 이미 리터럴
+  값이 다 있다** — 64px, 8px/12px, 24px, 토큰 이름까지. 추가 인터뷰 불필요, 계획만 쓰면 된다.
+- 시작 전에 **새 브랜치**를 만든다(`git branch --show-current`로 `main`이 아닌지 먼저 확인).
+- 우측 컬럼(`DayList`) 카드 틀·태그 줄은 이 스펙의 「열어둔 결정」에 명시적으로 미뤄뒀다 —
+  건드리지 않는다.
+
+---
+
 ## 2026-09-19 · 홈 달력(HOMECAL) — Task 1~10 전체 (구현 세션)
 
 **브랜치:** `feat/home-calendar` · **PR:** 이 세션에서 생성

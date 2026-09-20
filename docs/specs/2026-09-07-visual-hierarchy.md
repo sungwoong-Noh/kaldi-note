@@ -308,17 +308,22 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 - **Then** 두 경우 모두 `text-lg font-semibold`를 가진 요소가 **정확히 1개**다
 - **검증** 단위 테스트 `BrewLogCard.test.tsx`
 
-#### AC-VISUAL-13 · 화면 제목 15곳이 같은 단계를 쓴다
+#### AC-VISUAL-13 · 화면 제목 14곳이 같은 단계를 쓴다
 
-- **Given** `frontend/src` 아래에서 `<h1`을 그리는 곳 **15곳**
+- **Given** `frontend/src` 아래에서 `<h1`을 그리는 곳 **14곳**
 - **When** 각 `<h1`의 `className`을 읽는다
-- **Then** 15곳 모두 `text-xl`과 `font-semibold`를 갖는다. `text-2xl`·`font-bold`는 **0곳**이다
+- **Then** 14곳 모두 `text-xl`과 `font-semibold`를 갖는다. `text-2xl`·`font-bold`는 **0곳**이다
 - **검증** 단위 테스트 `headings.test.ts` (소스 검사). **실제로 20px로 렌더되는지는 `AC-VISUAL-15`가 브라우저에서 잰다** — 클래스가 맞아도 화면이 다를 수 있으므로 둘 다 필요하다
 
 > **2026-09-08 갱신: 14곳 → 15곳.** `screen-consistency` 스펙이 `BrewDetail`에 `h1`을 더했다.
 > **브루로그 상세만 화면 제목이 없었다** — 레시피 이름이 `<Link className="text-lg font-medium">`
 > 이라 제목 탐색으로 「지금 무엇을 보고 있는가」를 알 수 없었다.
 > **조건 자체(「모든 `h1`이 `text-xl font-semibold`」)는 그대로다.**
+>
+> **2026-09-19 정정: 15곳 → 14곳.** `docs/specs/2026-09-19-home-calendar.md`가 홈을 달력으로
+> 바꾸며 `h1`(`최근 기록`)을 없앴다 — 홈의 헤더는 이제 「로고만」이다(레일·월 헤더가 곧바로
+> 「지금 무엇을 보고 있는가」를 말해준다). 화면 제목이 없는 화면이 하나 늘어난 것이지,
+> 조건 자체는 여전히 그대로다.
 
 ### 정상 동작 — 실제 렌더값 (Playwright)
 

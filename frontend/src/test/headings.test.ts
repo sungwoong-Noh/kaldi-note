@@ -20,7 +20,7 @@ function headingClasses(source: string): string[] {
   );
 }
 
-describe("AC-VISUAL-13 · 화면 제목 15곳이 같은 단계를 쓴다", () => {
+describe("AC-VISUAL-13 · 화면 제목 14곳이 같은 단계를 쓴다", () => {
   const found = SOURCES.flatMap((path) =>
     headingClasses(readFileSync(path, "utf8")).map((className) => ({
       path,
@@ -28,8 +28,9 @@ describe("AC-VISUAL-13 · 화면 제목 15곳이 같은 단계를 쓴다", () =>
     })),
   );
 
-  it("h1이 15곳이다", () => {
-    expect(found).toHaveLength(15);
+  it("h1이 14곳이다", () => {
+    // 2026-09-19: 홈이 달력으로 바뀌며 h1("최근 기록")이 없어졌다 — 15 → 14.
+    expect(found).toHaveLength(14);
   });
 
   it("모든 h1이 text-page-title font-semibold다", () => {

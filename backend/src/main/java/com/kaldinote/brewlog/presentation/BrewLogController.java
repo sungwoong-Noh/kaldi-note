@@ -1,10 +1,13 @@
 package com.kaldinote.brewlog.presentation;
 
 import com.kaldinote.brewlog.application.BrewLogService;
+import com.kaldinote.brewlog.presentation.dto.BrewLogCalendarResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogPatchRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogSummaryResponse;
+import com.kaldinote.common.error.BusinessException;
+import com.kaldinote.common.error.ErrorCode;
 import com.kaldinote.common.response.PageParams;
 import com.kaldinote.common.response.PageResponse;
 import com.kaldinote.common.security.AuthenticatedUser;
@@ -13,6 +16,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -58,8 +63,37 @@ public class BrewLogController {
       @Parameter(description = "그 레시피로 내린 기록만.") @RequestParam(required = false) Long recipeId,
       @Parameter(description = "그 사용자가 남긴 기록만.") @RequestParam(required = false) Long userId,
       @Parameter(description = "그 원두 봉지로 내린 기록만.") @RequestParam(required = false) Long beanBatchId,
+      @Parameter(description = "YYYY-MM-DD. KST 기준 그 하루의 기록만.") @RequestParam(required = false)
+          String date,
       AuthenticatedUser user) {
-    return brewLogService.list(user.id(), recipeId, userId, beanBatchId, PageParams.of(page, size));
+    return brewLogService.list(
+        user.id(), recipeId, userId, beanBatchId, parseDate(date), PageParams.of(page, size));
+  }
+
+  /** {@code @DateTimeFormat}을 쓰지 않는다 — 그쪽은 타입 변환 실패가 다른 code로 나간다. */
+  private LocalDate parseDate(String raw) {
+    if (raw == null) {
+      return null;
+    }
+    try {
+      return LocalDate.parse(raw);
+    } catch (DateTimeParseException e) {
+      throw new BusinessException(ErrorCode.INVALID_REQUEST, "date는 YYYY-MM-DD 형식이어야 합니다: " + raw);
+    }
+  }
+
+  @GetMapping("/calendar")
+  @Operation(
+      summary = "월별 기록일 집계",
+      description = "KST 기준으로 그 달에 기록이 있는 날짜만 희소 배열로 준다. 공개범위 판정은 목록과 같다. 미래 달도 400이 아니라 빈 결과다.")
+  public BrewLogCalendarResponse calendar(
+      @Parameter(description = "누구의 달력인가. 생략하면 호출자 본인.") @RequestParam(required = false)
+          Long userId,
+      @Parameter(description = "YYYY-MM. KST 기준의 달.", required = true)
+          @RequestParam(required = false)
+          String month,
+      AuthenticatedUser user) {
+    return brewLogService.calendar(user.id(), userId, month);
   }
 
   @GetMapping("/{id}")

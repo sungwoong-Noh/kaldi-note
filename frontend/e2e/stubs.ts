@@ -10,9 +10,11 @@ import {
   hoffmann,
   hoffmannSummary,
   holzklotzE80,
+  homeCalendar,
   kasuyaRecipe,
   kasuyaSummary,
   me,
+  mutualFollows,
   myComandante,
   pageOf,
   wilfaUniform,
@@ -28,12 +30,16 @@ import {
  */
 const HANDLERS: ReadonlyArray<readonly [RegExp, unknown]> = [
   [/^\/api\/v1\/users\/me$/, me],
+  [/^\/api\/v1\/users\/me\/mutual-follows$/, mutualFollows],
   // 상세가 목록보다 먼저 와야 한다. 순서를 바꾸면 `/recipes/12`가 목록 응답을 받는다.
   // id 3만 kasuya다 — 「연결 없음」 화면이 서로 다른 레시피 둘을 보여주는지 재려면
   // 캐시에 제목이 다른 항목이 둘 필요하다. `kasuyaSummary`가 3이라 id를 맞춘다.
   [/^\/api\/v1\/recipes\/3$/, { ...kasuyaRecipe, id: 3 }],
   [/^\/api\/v1\/recipes\/\d+$/, hoffmann],
   [/^\/api\/v1\/recipes$/, pageOf([hoffmannSummary, kasuyaSummary])],
+  // calendar가 brew-logs/\d+보다 위에 와야 한다 — \d+ 패턴은 "calendar"에 매칭되지 않지만
+  // 순서를 분명히 해 둔다.
+  [/^\/api\/v1\/brew-logs\/calendar$/, homeCalendar],
   [/^\/api\/v1\/brew-logs\/\d+$/, brewLogWithTds],
   [/^\/api\/v1\/brew-logs$/, brewLogPage],
   [/^\/api\/v1\/gear\/brewers$/, brewers],

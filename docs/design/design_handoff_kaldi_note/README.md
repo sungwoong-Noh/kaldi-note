@@ -165,7 +165,11 @@ radius 999. 36px(헤더) / 48px(더보기) / 60px(프로필). 이니셜 텍스�
 
 웹은 상단 바(로고 + 홈·레시피·기록 3링크 + primary CTA 1개 + 아바타), 하단 탭 없음.
 
-### M1 · 홈 `/` — 최근 기록
+### M1 · 홈 `/` — 달력
+
+> **이 섹션은 `HOME-CALENDAR.md`로 대체되었습니다.** 홈은 달력 + 팔로우 레일 + 날짜별 목록 구조입니다. 구현 전에 그 문서를 먼저 읽으세요. 아래는 이전(최근 기록 리스트) 버전으로, 히어로 카드·원장 행 패턴의 레퍼런스로만 참고하세요.
+
+#### (구) 홈 — 최근 기록
 - 목적: 오늘 내린 커피를 확인하고, 바로 다음 기록을 시작한다.
 - 레이아웃: 헤더(로고 + 아바타) → "최근 기록" 21px + 전체 보기 링크 → 히어로 카드 → 원장 행 3개 → 하단 고정 primary CTA "이 레시피로 내렸다".
 - 히어로: 아이브로우 `Today · 08:20`, 레시피명 19px 2줄, roast dot 30px, 대표 수치 = **수율 36px** + "수율 · ★ 4", 구분선 아래 한 줄 감상(italic).
@@ -225,6 +229,10 @@ radius 999. 36px(헤더) / 48px(더보기) / 60px(프로필). 이니셜 텍스�
 - **에러 토스트**: bg `surface` + 1px border + `ink` 텍스트 — "저장하지 못했습니다. 다시 시도해 주세요."
 
 ### W1 · 웹 홈 (1440×900)
+
+> **이 섹션은 `HOME-CALENDAR.md`의 「웹」 절로 대체되었습니다.** 웹 홈도 달력입니다. 아래는 이전(최근 기록 리스트) 버전으로, 원장 행의 웹 컬럼 배분 레퍼런스로만 참고하세요.
+
+#### (구) 웹 홈 — 최근 기록
 상단 바 → 좌측 컬럼(flex:1, padding 44px 48px, 우측 1px divider): "최근 기록" 30px + 전체 보기 / 원장 행(도트 · 제목+원두·기구·시각 · 요약 mono 150px · **수율 16px 86px** · 별점 44px, 모두 우측 정렬) / 빈 상태 카드 → 우측 컬럼(420px, bg `surface`): 오늘의 한 잔 히어로(수율 44px) + 주간 요약 2칸(잔 / 평균 비율) + Observation 블록.
 
 ### W2 · 웹 레시피 목록
@@ -258,7 +266,23 @@ radius 999. 36px(헤더) / 48px(더보기) / 60px(프로필). 이니셜 텍스�
 
 ## Assets
 
-외부 이미지·아이콘 없음. 모든 그래픽은 CSS 도형(원, 사각형, 바)입니다. 로고 심볼도 2px 링 원 + 중앙 점 두 개의 div로 만들어져 있습니다 — 필요하면 SVG로 다시 그리세요.
+`assets/` 폴더에 로고·아이콘 SVG가 들어 있습니다. 미리보기와 사용 규칙은 `Kaldi Note Assets.dc.html`을 열어 보세요.
+
+| 파일 | 용도 |
+|---|---|
+| `logo-symbol.svg` | 심볼 — `currentColor` 상속판(UI에서 이걸 쓰세요) |
+| `logo-symbol-ink.svg` / `-paper.svg` | 색 고정판(라이트 / 다크 배경용) |
+| `logo-lockup-ink.svg` / `-paper.svg` | 심볼 + 워드마크 가로 락업 |
+| `app-icon.svg` / `-accent.svg` | 앱 아이콘 1024, radius 225 |
+| `favicon.svg` | 32 기준 — 작은 크기용으로 stroke를 2.6으로 두께게 조정한 별도 버전 |
+| `roast-dots.svg` | 로스팅 단계 색 참고 시트(구현은 CSS로) |
+
+주의사항:
+- **워드마크는 `<text>`로 조판돼 있습니다.** 배포용은 반드시 벡터 편집기에서 아웃라인(패스 변환) 후 사용. 앱 내부에서는 SVG 락업 대신 **심볼 + HTML 텍스트** 조합을 권합니다.
+- 파비콘을 앱 아이콘 축소로 대체하지 마세요 — 16px에서 링이 사라집니다.
+- SVG 내부 색은 oklch 미지원 툴(스토어 업로드 등)을 고려해 hex로 하드코딩돼 있습니다: `ink #302c28` / `paper #f7f4f0` / `accent #a06a4f`. **UI 코드에서는 항상 oklch 토큰을 쓰세요.**
+
+그 외 그래픽은 없습니다 — 모두 CSS 도형(원, 사각형, 바)으로 만들어졌습니다.
 
 폰트는 Google Fonts:
 ```html
@@ -274,8 +298,11 @@ radius 999. 36px(헤더) / 48px(더보기) / 60px(프로필). 이니셜 텍스�
 | `Kaldi Note Screens - Mobile.dc.html` | 모바일 11화면 + 빈 상태·로딩·토스트 (390×844) |
 | `Kaldi Note Screens - Web.dc.html` | 웹 3화면 — 홈 · 레시피 목록 · 기록 상세 (1440×900) |
 | `Kaldi Note Mockups v2.dc.html` | 초기 핵심 흐름 5화면(홈 → 작성 → 타이머 → 상세 → 친구 피드). **푸어 타이머와 친구 피드는 이 파일에만 있습니다** |
+| `Kaldi Note Home - Calendar.dc.html` | **현행 홈** — 달력 2상태(내 기록 / 팔로우 선택) + 규격 패널 |
+| `Kaldi Note Home - Calendar Web.dc.html` | **현행 웹 홈** — 달력 2상태 + 웹에서 달라지는 점 |
 | `Kaldi Note Navigation.dc.html` | 하단 탭 바 규격(라이트/다크) + 적용 예 2화면, CTA와의 관계 규칙 |
-| `Kaldi Note Brand Directions.dc.html` | 채택 전 브랜드 방향 3안 — 왜 이 방향인지 맥락용(구현 대상 아님) |
+| `Kaldi Note Assets.dc.html` | 로고·아이콘 에셋 미리보기 + 사용 규칙 + hex 대응표 |
+| `assets/` | SVG 원본 9개 |
 
 ### Screenshots
 
@@ -287,6 +314,8 @@ radius 999. 36px(헤더) / 48px(더보기) / 60px(프로필). 이니셜 텍스�
 | `screenshots/screens-web.png` | 웹 3화면 |
 | `screenshots/design-system.png` | 디자인 시스템 문서 |
 | `screenshots/navigation.png` | 탭 바 규격 + 적용 예 |
+| `screenshots/home-calendar.png` | 달력 홈 2상태 + 규격 |
+| `screenshots/home-calendar-web.png` | 웹 달력 홈 2상태 |
 | `screenshots/core-flow-v2.png` | 핵심 흐름 5화면(타이머·친구 피드 포함) |
 
 미구현(디자인 미완): 기록 작성 화면 `/brews/new`와 원두 선택 다이얼로그. 기록 작성은 M4 레시피 작성 폼의 원장 입력 패턴 + M6의 평가 5축 컴포넌트를 조합해 만드세요.

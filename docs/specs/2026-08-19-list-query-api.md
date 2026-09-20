@@ -44,7 +44,7 @@ plan: docs/plans/2026-08-19-plan-list-query.md
 | 용어 | 정의 |
 |---|---|
 | 볼 수 있는 레시피 | `visibility` 스펙의 조회 인가 판정(소유자 → `PUBLIC` → `FRIENDS`+상호 팔로우)을 통과하는 레시피. 목록은 이 판정을 통과한 것만 담는다 |
-| 요약 응답 | 목록 항목용 DTO. 단건 응답에서 무거운 필드만 덜어낸 것. 레시피는 `steps`, 브루잉 로그는 `overallNote`를 뺀다 |
+| 요약 응답 | 목록 항목용 DTO. 단건 응답에서 무거운 필드만 덜어낸 것. 레시피는 `steps`를 뺀다. ~~브루잉 로그는 `overallNote`를 뺀다~~ **2026-09-19 정정: 브루잉 로그 요약은 `overallNote`를 그대로 담는다.** 아래 참조 |
 | 페이지 봉투 | `PageResponse<T>`. `content`/`page`/`size`/`totalElements`/`totalPages`/`hasNext` 여섯 키만 갖는다 |
 | 조회 시점 계산 필드 | DB에 없고 응답을 만들 때마다 계산하는 값. `brewRatio`, `extractionYieldPercent`, `strengthZone`, `extractionZone`, `diagnosis`가 여기 해당한다 |
 
@@ -406,11 +406,16 @@ Authorization: Bearer <토큰>
 - **Then** `content`의 `id` 순서가 `[201, 200, <8월 17일 건>]`이다
 - **검증** API 테스트 `BrewLogControllerTest`
 
-#### AC-LIST-25 · 목록 응답에 overallNote 키가 없다
+#### AC-LIST-25 · 목록 응답에 overallNote가 담긴다
+
+> **2026-09-19 정정:** 원래는 「목록 응답에 overallNote 키가 없다」였다. 후속 스펙
+> `docs/specs/2026-09-19-home-calendar.md`에서 뒤집었다 — 웹 홈 달력의 우측 카드가 메모 한 줄을
+> 그리는데, 카드마다 단건 조회를 부르면 기록이 여러 건인 날에 요청이 그만큼 더 나간다. AC ID와 테스트
+> 메서드는 유지하고 단언만 반대로 바꿨다(`AC-HOMECAL-73`과 같은 사실을 확인한다).
 
 - **Given** `overallNote`가 채워진 로그가 1건 있다
 - **When** A가 `GET /api/v1/brew-logs`
-- **Then** `content[0]`에 `overallNote` 키가 존재하지 않고, `rating`·`actualDoseG`는 존재한다
+- **Then** `content[0]`에 `overallNote` 키가 존재하고, `rating`·`actualDoseG`도 존재한다
 - **검증** API 테스트 `BrewLogControllerTest`
 
 #### AC-LIST-26 · TDS가 없는 로그도 목록에 나오고 분석 필드가 null이다

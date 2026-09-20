@@ -673,3 +673,20 @@ export const brewLogPage = {
   totalPages: 1,
   hasNext: false,
 };
+
+/**
+ * `GET /brew-logs/calendar`. e2e는 `page.clock`으로 "오늘"을 `2026-09-19T01:00:00Z`(KST
+ * 09-19)에 고정해 두고 이 달을 본다 — 실제 실행 날짜가 바뀌어도 어긋나지 않는다.
+ */
+export const homeCalendar = {
+  month: "2026-09",
+  totalCount: 7,
+  days: [
+    { date: "2026-09-02", count: 1, primaryRecipeName: "Hoffmann V60" },
+    { date: "2026-09-05", count: 2, primaryRecipeName: "Kasuya 4:6" },
+    { date: "2026-09-12", count: 4, primaryRecipeName: "Kasuya 4:6" },
+  ],
+};
+
+/** `GET /users/me/mutual-follows`. 페이지 봉투가 아니라 배열이다. */
+export const mutualFollows = [{ id: 12, nickname: "지연" }];

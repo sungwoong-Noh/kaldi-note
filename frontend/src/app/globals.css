@@ -7,7 +7,8 @@
 @import "./fonts.css";
 
 /*
- * 색 토큰 15개 — Clean Ledger (docs/specs/2026-09-17-design-system-v2.md)
+ * 색 토큰 16개 — Clean Ledger (docs/specs/2026-09-17-design-system-v2.md) +
+ * signal-record (docs/specs/2026-09-19-home-calendar.md)
  *
  * ★ 값의 원천은 docs/design/design_handoff_kaldi_note/README.md다.
  *   어긋나면 그쪽이 옳다. 이 파일은 그것을 CSS로 옮긴 것이고,
@@ -52,6 +53,15 @@
   --danger: oklch(0.5 0.18 28);
 
   /*
+   * 달력의 기록 점 — docs/specs/2026-09-19-home-calendar.md
+   *
+   * ★ 시스템에 추가되는 유일한 신호색이고 **이 용도 외에는 쓰지 않는다.** 팔레트의 유채색이
+   *   에스프레소 계열 하나뿐인 것과 별개로, 「기록이 있는 날」을 나타내는 점 하나만을 위해 예외로
+   *   둔다.
+   */
+  --signal-record: oklch(0.55 0.16 30);
+
+  /*
    * 히어로 블록 — docs/specs/2026-09-17-screen-reskin.md
    *
    * ★ 라이트·다크 **양쪽에서 같은 값**이다. 화면의 대표 수치를 담는 어두운 판이고,
@@ -80,6 +90,7 @@
   --color-accent-soft: var(--accent-soft);
   --color-accent-wash: var(--accent-wash);
   --color-danger: var(--danger);
+  --color-signal-record: var(--signal-record);
   --color-hero: var(--hero);
   --color-on-hero: var(--on-hero);
   --color-hero-line: var(--hero-line);
@@ -210,6 +221,7 @@
     --accent-wash: oklch(0.26 0.03 50);
 
     --danger: oklch(0.72 0.15 28);
+    --signal-record: oklch(0.65 0.17 30);
   }
 }
 
@@ -238,6 +250,7 @@
     --accent-wash: oklch(0.26 0.03 50);
 
     --danger: oklch(0.72 0.15 28);
+    --signal-record: oklch(0.65 0.17 30);
 }
 
 body {

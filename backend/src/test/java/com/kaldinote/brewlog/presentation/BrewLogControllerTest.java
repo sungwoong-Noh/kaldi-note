@@ -15,10 +15,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
+import com.kaldinote.brewlog.domain.BrewLog;
+import com.kaldinote.brewlog.domain.BrewLogVisibility;
 import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
+import com.kaldinote.inventory.domain.DegassingStatus;
 import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.UserRepository;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -690,6 +694,52 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
     follow(b, a);
   }
 
+  /**
+   * date 필터 경계 테스트용. {@code @PastOrPresent}는 DTO 검증이라 도메인 엔티티에는 걸리지 않으므로, KST 자정 경계를 확인하는 데 필요한 고정
+   * 리터럴 시각(예: {@code 2026-09-19T15:00:00Z})을 실행 시각과 무관하게 저장할 수 있다.
+   */
+  private Long saveBrewLogAt(
+      User owner, Long recipeId, Long beanBatchId, Long userGrinderId, Instant brewedAt) {
+    return saveBrewLogAt(
+        owner, recipeId, beanBatchId, userGrinderId, brewedAt, BrewLogVisibility.PRIVATE);
+  }
+
+  private Long saveBrewLogAt(
+      User owner,
+      Long recipeId,
+      Long beanBatchId,
+      Long userGrinderId,
+      Instant brewedAt,
+      BrewLogVisibility visibility) {
+    BrewLog log =
+        BrewLog.create(
+            owner.getId(),
+            recipeId,
+            beanBatchId,
+            brewedAt,
+            visibility,
+            new BigDecimal("15.0"),
+            new BigDecimal("250.0"),
+            new BigDecimal("92.0"),
+            null,
+            null,
+            userGrinderId,
+            new BigDecimal("22.0"),
+            null,
+            null,
+            null,
+            10,
+            DegassingStatus.IDEAL.name(),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
+    return brewLogRepository.save(log).getId();
+  }
+
   /** visibility를 지정해 브루잉 로그를 만들고 id를 돌려준다. */
   private Long brewLogWith(String token, String visibility) throws Exception {
     Long recipe = recipeId(token);
@@ -1340,14 +1390,14 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @DisplayName("AC-LIST-25 · 목록 응답에 overallNote 키가 없다")
-  void 목록_응답에_overallNote_키가_없다() throws Exception {
+  @DisplayName("AC-LIST-25 · 목록 응답에 overallNote가 담긴다")
+  void 목록_응답에_overallNote가_담긴다() throws Exception {
     String token = token("list-25");
     createdId(createWith(token, "\"overallNote\":\"묽고 밍밍하다\""));
 
     listBrewLogs(token, "")
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content[0].overallNote").doesNotExist())
+        .andExpect(jsonPath("$.content[0].overallNote").value("묽고 밍밍하다"))
         .andExpect(jsonPath("$.content[0].actualDoseG").value(15.0));
   }
 
@@ -1410,5 +1460,79 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
     deleteBrewLog(token, id)
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  // ===== 홈 달력 — date 필터·overallNote (AC-HOMECAL-15~17·73) =====
+
+  @Test
+  @DisplayName("AC-HOMECAL-15 · date는 KST 기준 하루로 필터한다")
+  void date는_KST_하루로_거른다() throws Exception {
+    User me = newUser("homecal-15");
+    Long recipe = recipeId(tokenOf(me));
+    Long batch = beanBatchId(tokenOf(me), BREWED_AT, 30);
+    Long grinder = userGrinderId(tokenOf(me), c40Id());
+    saveBrewLogAt(me, recipe, batch, grinder, Instant.parse("2026-09-18T23:00:00Z")); // KST 09-19
+    saveBrewLogAt(me, recipe, batch, grinder, Instant.parse("2026-09-19T14:59:59Z")); // KST 09-19
+    saveBrewLogAt(me, recipe, batch, grinder, Instant.parse("2026-09-19T15:00:00Z")); // KST 09-20
+
+    listBrewLogs(tokenOf(me), "?date=2026-09-19")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(2));
+  }
+
+  @Test
+  @DisplayName("AC-HOMECAL-16 · date와 userId는 AND로 결합된다")
+  void date와_userId는_AND로_결합된다() throws Exception {
+    User me = newUser("homecal-16-me");
+    User other = newUser("homecal-16-other");
+    mutualFollow(me, other);
+    Long recipe = recipeId(tokenOf(other));
+    Long batch = beanBatchId(tokenOf(other), BREWED_AT, 30);
+    Long grinder = userGrinderId(tokenOf(other), c40Id());
+    Long onTarget =
+        saveBrewLogAt(
+            other,
+            recipe,
+            batch,
+            grinder,
+            Instant.parse("2026-09-19T01:00:00Z"),
+            BrewLogVisibility.FRIENDS);
+    saveBrewLogAt(
+        other,
+        recipe,
+        batch,
+        grinder,
+        Instant.parse("2026-09-20T01:00:00Z"),
+        BrewLogVisibility.FRIENDS);
+
+    listBrewLogs(tokenOf(me), "?userId=" + other.getId() + "&date=2026-09-19")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(1))
+        .andExpect(jsonPath("$.content[0].id").value(onTarget));
+  }
+
+  @Test
+  @DisplayName("AC-HOMECAL-17 · date 형식이 틀리면 400이다")
+  void date_형식이_틀리면_사백이다() throws Exception {
+    String token = token("homecal-17");
+
+    listBrewLogs(token, "?date=2026-9-19")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-HOMECAL-73 · 목록 요약 응답에 overallNote가 담긴다")
+  void 요약에_메모가_담긴다() throws Exception {
+    String token = token("homecal-73");
+    Long recipeId = recipeId(token);
+    Long beanBatchId = beanBatchId(token, BREWED_AT, 6);
+    Long userGrinderId = userGrinderId(token, c40Id());
+
+    createBrewLog(
+        token,
+        bodyWith(recipeId, beanBatchId, BREWED_AT, userGrinderId, "\"overallNote\":\"산미가 강했다\""));
+
+    listBrewLogs(token, "").andExpect(jsonPath("$.content[0].overallNote").value("산미가 강했다"));
   }
 }

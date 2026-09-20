@@ -1,3 +1,4 @@
+export { Avatar } from "./Avatar";
 export { Button, type ButtonVariant } from "./Button";
 export { ButtonLink } from "./ButtonLink";
 export {

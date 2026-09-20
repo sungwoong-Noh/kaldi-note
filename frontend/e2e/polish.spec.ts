@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import type { Page, Route } from "@playwright/test";
 import { installStubs } from "./stubs";
-import { brewLogPage, hoffmann } from "../src/test/fixtures";
+import { hoffmann, me } from "../src/test/fixtures";
 
 /**
  * 기대 스택을 **`globals.css`에서 읽는다.** 브라우저가 따옴표를 정규화하므로 이름 단위로 순서를 본다.
@@ -53,8 +53,10 @@ async function delay(page: Page, pattern: string, ms: number, body: unknown) {
 
 test.describe("로딩 표시", () => {
   test("AC-POLISH-08 · 홈에서 느린 응답이면 뜬다", async ({ page }) => {
+    // 2026-09-19 정정: 홈이 달력으로 바뀌며 첫 블로킹 조회가 brew-logs에서 users/me로
+    // 옮겨졌다(docs/specs/2026-09-05-polish.md 정정 주석 참조).
     await installStubs(page);
-    await delay(page, "**/api/v1/brew-logs*", 1500, brewLogPage);
+    await delay(page, "**/api/v1/users/me", 1500, me);
 
     await page.goto("/");
 

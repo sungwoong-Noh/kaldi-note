@@ -105,6 +105,10 @@ function Fields({
     mutationFn: () => createBrewLog(toRequestBody(state), onSessionLost),
     onSuccess: (created) => {
       void queryClient.invalidateQueries({ queryKey: ["brew-logs"] });
+      // 홈 달력의 캐시 키는 별도 접두어("calendar")다 — brew-logs를 무효화해도
+      // 같이 지워지지 않는다. 홈으로 돌아왔을 때 새 점이 바로 보이려면 따로 무효화한다
+      // (docs/specs/2026-09-19-home-calendar.md, AC-HOMECAL-49).
+      void queryClient.invalidateQueries({ queryKey: ["calendar"] });
       router.push(`/brews/${created.id}`);
     },
   });

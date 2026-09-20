@@ -1,0 +1,200 @@
+import { expect, test } from "@playwright/test";
+import {
+  brewLogPage,
+  grindedRecipe,
+  homeCalendar,
+  yirgacheffeBatch,
+} from "../src/test/fixtures";
+import { installStubs, stubRecipeDetail } from "./stubs";
+
+/** brewLogPage.content[0]에서 id·brewedAt만 덜어쓴 것 — 지어내지 않고 실제 응답 모양을 쓴다. */
+function singleDayLog(id: number, brewedAt: string) {
+  return {
+    ...brewLogPage.content[0],
+    id,
+    brewedAt,
+  };
+}
+
+/**
+ * 홈 달력 — 모바일(docs/specs/2026-09-19-home-calendar.md).
+ *
+ * <p>"오늘"을 `page.clock`으로 고정한다. 실행 시각이 바뀌어도 `homeCalendar` 픽스처의
+ * 2026-09 날짜들과 어긋나지 않는다.
+ */
+const TODAY = new Date("2026-09-19T01:00:00Z");
+
+test.describe("홈 달력 — 모바일", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.clock.setFixedTime(TODAY);
+  });
+
+  test("AC-HOMECAL-30 · 기록이 1건인 날을 눌러도 상세로 이동하지 않는다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.route("**/api/v1/brew-logs*", (route) => {
+      // 정확히 /brew-logs(쿼리 유무 무관)만 가로챈다 — /brew-logs/7(단건 상세)까지 잡으면
+      // AC-HOMECAL-31에서 상세 화면이 이 응답으로 잘못 그려진다.
+      if (new URL(route.request().url()).pathname !== "/api/v1/brew-logs") {
+        return route.fallback();
+      }
+      return route.fulfill({
+        json: {
+          content: [singleDayLog(7, "2026-09-02T01:00:00Z")],
+          page: 0,
+          size: 100,
+          totalElements: 1,
+          totalPages: 1,
+          hasNext: false,
+        },
+      });
+    });
+    await page.goto("/");
+
+    await page.getByRole("button", { name: "9월 2일, 기록 1건" }).click();
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByTestId("day-list-row")).toHaveCount(1);
+  });
+
+  test("AC-HOMECAL-31 · 목록 행을 누르면 상세로 간다", async ({ page }) => {
+    await installStubs(page);
+    await page.route("**/api/v1/brew-logs*", (route) => {
+      // 정확히 /brew-logs(쿼리 유무 무관)만 가로챈다 — /brew-logs/7(단건 상세)까지 잡으면
+      // AC-HOMECAL-31에서 상세 화면이 이 응답으로 잘못 그려진다.
+      if (new URL(route.request().url()).pathname !== "/api/v1/brew-logs") {
+        return route.fallback();
+      }
+      return route.fulfill({
+        json: {
+          content: [singleDayLog(7, "2026-09-02T01:00:00Z")],
+          page: 0,
+          size: 100,
+          totalElements: 1,
+          totalPages: 1,
+          hasNext: false,
+        },
+      });
+    });
+    await page.goto("/");
+    await page.getByRole("button", { name: "9월 2일, 기록 1건" }).click();
+
+    await page.getByTestId("day-list-row").click();
+
+    await expect(page).toHaveURL("/brews/7");
+  });
+
+  test("AC-HOMECAL-34 · 오른쪽으로 스와이프하면 이전 달로 넘어간다", async ({
+    page,
+  }) => {
+    // 왼쪽 스와이프는 다음 달 방향이라, "오늘"이 속한 이번 달에서는 막혀 있다
+    // (미래 달 금지). 뒤로는 항상 열려 있어 오른쪽 스와이프로 검증한다.
+    await installStubs(page);
+    await page.goto("/");
+    await expect(page.getByText("2026.09")).toBeVisible();
+
+    const grid = page.getByRole("grid");
+    const box = await grid.boundingBox();
+    if (box === null) throw new Error("grid의 bounding box를 읽지 못했다");
+    const y = box.y + box.height / 2;
+
+    await page.mouse.move(box.x + 20, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width - 20, y, { steps: 5 });
+    await page.mouse.up();
+
+    await expect(page.getByText("2026.08")).toBeVisible();
+  });
+
+  test("AC-HOMECAL-48 · 모바일 하단 CTA는 레시피 선택으로 보낸다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.goto("/");
+
+    await page.getByRole("link", { name: "기록하기" }).click();
+
+    await expect(page).toHaveURL("/recipes");
+  });
+
+  test("AC-HOMECAL-49 · 기록을 저장하고 돌아오면 점이 찍혀 있다", async ({
+    page,
+    context,
+  }) => {
+    await installStubs(page);
+    // 홈에 아직 기록이 없는 날짜다(homeCalendar 픽스처에 없다).
+    await page.goto("/");
+    await expect(
+      page.getByRole("button", { name: "9월 8일, 기록 없음" }),
+    ).toBeVisible();
+
+    // 캘린더 홈은 recipeId 없이 작성 화면을 열 수 없다 — 실제 흐름처럼 레시피를 정해 연다
+    // (docs/specs/2026-09-19-home-calendar.md 「구현 중 정정」).
+    //
+    // 레시피 상세는 Service Worker가 네트워크 우선 캐시로 가로챈다 — page.route로는 못 잡고
+    // context.route로만 잡힌다(stubs.ts의 installSwStubs 주석 참조). stubRecipeDetail이 그
+    // 경로를 쓴다.
+    await stubRecipeDetail(context, grindedRecipe);
+    let created = false;
+    await page.route("**/api/v1/brew-logs/calendar*", (route) =>
+      route.fulfill({
+        json: created
+          ? {
+              ...homeCalendar,
+              totalCount: homeCalendar.totalCount + 1,
+              days: [
+                ...homeCalendar.days,
+                { date: "2026-09-08", count: 1, primaryRecipeName: "분쇄도 있는 레시피" },
+              ],
+            }
+          : homeCalendar,
+      }),
+    );
+    await page.route("**/api/v1/brew-logs", (route) => {
+      if (route.request().method() !== "POST") return route.fallback();
+      created = true;
+      return route.fulfill({
+        status: 201,
+        json: singleDayLog(99, "2026-09-08T01:00:00Z"),
+      });
+    });
+
+    await page.goto("/brews/new?recipeId=16");
+    await page
+      .getByLabel("원두", { exact: true })
+      .selectOption(String(yirgacheffeBatch.id));
+    await page.getByRole("button", { name: "기록하기" }).click();
+
+    await expect(page).toHaveURL("/brews/99");
+    await page.getByRole("link", { name: "홈" }).click();
+
+    await expect(
+      page.getByRole("button", { name: "9월 8일, 기록 1건" }),
+    ).toBeVisible();
+  });
+
+  test("AC-HOMECAL-51 · 기록이 4건인 날에도 달력 위치가 변하지 않는다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.goto("/");
+    await page.getByRole("button", { name: "9월 2일, 기록 1건" }).click();
+    const before = await page.getByRole("grid").boundingBox();
+
+    await page.getByRole("button", { name: "9월 12일, 기록 4건" }).click();
+    const after = await page.getByRole("grid").boundingBox();
+
+    expect(after?.y).toBe(before?.y);
+  });
+
+  test("AC-HOMECAL-57 · 759px에서 모바일 레이아웃이다", async ({ page }) => {
+    await page.setViewportSize({ width: 759, height: 900 });
+    await installStubs(page);
+    await page.goto("/");
+
+    const cell = page.getByRole("button", { name: "9월 2일, 기록 1건" });
+    await expect(cell).not.toContainText("Hoffmann V60");
+    await expect(page.getByRole("link", { name: "홈" })).toBeVisible();
+  });
+});

@@ -15,6 +15,7 @@ import {
   formatRatio,
   formatTemperature,
 } from "@/lib/format";
+import { toKstDate } from "@/lib/kstDate";
 import { deleteBrewLog, fetchBrewLog } from "../api";
 import { headline } from "../headline";
 import type { BrewLog } from "../schema";
@@ -76,7 +77,7 @@ export function BrewDetail({ id }: { id: number }) {
     <Screen>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <p className="text-body text-ink-3">{log.brewedAt.slice(0, 10)}</p>
+          <p className="text-body text-ink-3">{toKstDate(log.brewedAt)}</p>
           {/*
             화면 제목이다. **`h1`은 언제나 그리고 링크만 조건부로 한다** — 조건부로 사라지면
             제목 없는 화면이 생기고, 스크린리더 사용자가 「지금 무엇을 보고 있는가」를 제목

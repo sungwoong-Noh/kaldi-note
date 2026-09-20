@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatDuration, formatRatio, formatTemperature } from "@/lib/format";
+import { toKstDate } from "@/lib/kstDate";
 import { headline } from "../headline";
 import type { BrewLogSummary } from "../schema";
 import { cardClass } from "@/components/ui";
@@ -92,9 +93,13 @@ function summaryEntries(
   );
 }
 
-/** `2026-08-31T09:00:00Z` → `2026-08-31`. 시각까지 늘어놓으면 목록이 읽히지 않는다. */
+/**
+ * `2026-08-31T09:00:00Z` → `2026-08-31`(KST). 시각까지 늘어놓으면 목록이 읽히지 않는다.
+ *
+ * <p>KST로 바꾸는 이유는 `lib/kstDate.ts` 참조 — 한국 시간 아침에 내린 기록이 UTC로는 전날이다.
+ */
 function formatBrewedDate(brewedAt: string): string {
-  return brewedAt.slice(0, 10);
+  return toKstDate(brewedAt);
 }
 
 /** 서버가 `4.0`으로 주는 값을 `4`로 줄인다. `4.5`는 그대로 둔다. */

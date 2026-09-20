@@ -23,7 +23,7 @@ function offenders(pattern: RegExp): string[] {
 }
 
 describe("디자인 토큰", () => {
-  it("AC-VISUAL-06 · AC-READ-04 · AC-DS2-01 · 토큰 15개가 라이트·다크 값을 모두 갖는다", () => {
+  it("AC-VISUAL-06 · AC-READ-04 · AC-DS2-01 · 토큰 16개가 라이트·다크 값을 모두 갖는다", () => {
     const { light, dark } = readPalettes();
     const expected = [...TOKEN_NAMES].sort();
 

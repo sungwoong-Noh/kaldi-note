@@ -165,11 +165,16 @@ plan: docs/plans/2026-09-09-plan-spacing-system.md
 - **Then** **0곳**이다. 컨트롤 5곳이 `rounded-md`로 옮겨졌다는 뜻이다
 - **검증** 소스 검사 `src/test/spacing.test.ts`
 
-#### AC-SPACE-07 · `rounded-full`이 정확히 2곳이다
+#### AC-SPACE-07 · `rounded-full`이 정확히 6곳이다
 
-- **Given** `UserProfile`(프로필 아바타)과 `LoadingState`(로딩 스피너)
+> **정정 (뒤늦게 기록):** `2026-09-17` 다크 모드 토글이 스위치 트랙·손잡이 2곳을 더해
+> **4곳**이 됐었다(테스트는 그때 고쳐졌으나 이 문서에 정정 주석이 빠졌었다). `2026-09-19`
+> `docs/specs/2026-09-19-home-calendar.md`의 팔로우 레일이 아바타 2곳(사진 있을 때 `img`,
+> 없을 때 닉네임 첫 글자 대체 원)을 더해 **6곳**이 됐다.
+
+- **Given** `UserProfile`·`LoadingState`·`ThemeToggle`(트랙·손잡이)·`Avatar`(사진·대체 원 — 홈 달력 레일과 웹 상단 바가 공유)
 - **When** 전체에서 `rounded-full`을 센다
-- **Then** **2곳**이고, 둘 다 그 두 파일 안에 있다
+- **Then** **6곳**이고, 전부 그 파일들 안에 있다
 - **검증** 소스 검사 `src/test/spacing.test.ts`
 
 #### AC-SPACE-08 · `shadow-*`가 0곳이다

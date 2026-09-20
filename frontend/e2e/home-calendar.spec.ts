@@ -250,7 +250,7 @@ test.describe("홈 달력 — 모바일 헤더", () => {
 });
 
 /**
- * 모바일 선택/오늘 날짜 표시 — 버그 수정. `docs/design/design_handoff_kaldi_note 3/
+ * 모바일 선택/오늘 날짜 표시 — 버그 수정. `docs/design/design_handoff_kaldi_note/
  * HOME-CALENDAR.md`는 모바일도 "선택된 날: 28px ink 원", "오늘·미선택: 28px 1px border 링"을
  * 요구하지만, 2026-09-19 home-calendar 스펙에는 `aria-current`(a11y)만 AC로 남고 시각적
  * 표시 AC가 빠져 있었다 — 실제로 모바일에는 표시가 전혀 없었다.
@@ -296,7 +296,7 @@ test.describe("홈 달력 — 모바일 선택/오늘 표시", () => {
 });
 
 /**
- * 모바일 스크롤 고정 — 버그 수정. `docs/design/design_handoff_kaldi_note 3/HOME-CALENDAR.md`의
+ * 모바일 스크롤 고정 — 버그 수정. `docs/design/design_handoff_kaldi_note/HOME-CALENDAR.md`의
  * 「스크롤 정책」은 "화면 전체가 아니라 날짜별 목록 영역만 세로 스크롤한다. 헤더·레일·달력·CTA·
  * 탭바는 고정"이라고 못박았지만, 실제로는 이 정책이 웹 2컬럼(`day-column`, AC-HOMECAL-79)에만
  * 구현돼 있고 모바일에는 전혀 없었다 — 날짜별 목록이 길어지면 페이지 전체가 스크롤되며

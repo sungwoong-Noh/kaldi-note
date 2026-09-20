@@ -239,7 +239,7 @@ public class Recipe extends BaseTimeEntity {
    * 포크본을 만든다. sourceType은 항상 USER(기존 생성자가 하드코딩), visibility는 항상 PRIVATE. grindMicronEstimated는
    * 재계산하지 않고 원본 값을 그대로 옮긴다.
    */
-  public static Recipe forkFrom(Recipe original, Long forkedByUserId) {
+  public static Recipe forkFrom(Recipe original, Long forkedByUserId, String sourceAuthorName) {
     Recipe fork =
         new Recipe(
             forkedByUserId,
@@ -263,6 +263,7 @@ public class Recipe extends BaseTimeEntity {
     fork.authorName = original.authorName;
     fork.sourceUrl = original.sourceUrl;
     fork.sourceNote = original.sourceNote;
+    fork.sourceAuthorName = sourceAuthorName;
     return fork;
   }
 }

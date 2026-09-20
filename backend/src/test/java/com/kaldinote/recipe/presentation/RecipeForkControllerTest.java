@@ -386,6 +386,43 @@ class RecipeForkControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
+  @DisplayName("AC-RECIPEV2-12 · CURATED 레시피를 포크하면 sourceAuthorName이 authorName이 된다")
+  void CURATED_레시피를_포크하면_sourceAuthorName이_authorName이_된다() throws Exception {
+    User a = newUser("recipev2-12a");
+    User b = newUser("recipev2-12b");
+    Long r1 = recipeWith(tokenOf(a), "PUBLIC");
+    setSourceType(r1, "CURATED");
+    setSourceFields(r1, "Tetsu Kasuya", null, null);
+
+    forkRecipe(tokenOf(b), r1).andExpect(jsonPath("$.sourceAuthorName").value("Tetsu Kasuya"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-13 · USER 소유 레시피를 포크하면 그 시점 소유자 닉네임이 담긴다")
+  void USER_소유_레시피를_포크하면_그_시점_소유자_닉네임이_담긴다() throws Exception {
+    User owner = newUser("지연");
+    User a = newUser("recipev2-13a");
+    Long r1 = recipeWith(tokenOf(owner), "PUBLIC");
+
+    forkRecipe(tokenOf(a), r1).andExpect(jsonPath("$.sourceAuthorName").value("지연"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPEV2-14 · 포크 후 원본 소유자가 닉네임을 바꿔도 sourceAuthorName은 그대로다")
+  void 포크_후_원본_소유자가_닉네임을_바꿔도_sourceAuthorName은_그대로다() throws Exception {
+    User owner = newUser("지연");
+    User a = newUser("recipev2-14a");
+    Long r1 = recipeWith(tokenOf(owner), "PUBLIC");
+
+    Long forkId = createdId(forkRecipe(tokenOf(a), r1));
+
+    owner.updateProfile("지연2", null);
+    userRepository.save(owner);
+
+    getRecipe(tokenOf(a), forkId).andExpect(jsonPath("$.sourceAuthorName").value("지연"));
+  }
+
+  @Test
   @DisplayName("AC-FORK-16 · 주인 없는 PUBLIC 레시피도 포크된다")
   void 주인_없는_PUBLIC_레시피도_포크된다() throws Exception {
     User owner = newUser("fork-16owner");

@@ -26,6 +26,7 @@ import com.kaldinote.recipe.presentation.dto.RecipeSummaryResponse;
 import com.kaldinote.recipe.presentation.dto.StepRequest;
 import com.kaldinote.recipe.presentation.dto.UpdateRecipeRequest;
 import com.kaldinote.user.application.FollowService;
+import com.kaldinote.user.application.UserService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ public class RecipeService {
   private final BrewerRepository brewerRepository;
   private final BrewLogRepository brewLogRepository;
   private final FollowService followService;
+  private final UserService userService;
   private final GrindConverter grindConverter = new GrindConverter();
 
   @Transactional
@@ -125,10 +127,24 @@ public class RecipeService {
   @Transactional
   public RecipeResponse fork(Long userId, Long recipeId) {
     Recipe original = findViewable(userId, recipeId);
-    Recipe fork = Recipe.forkFrom(original, userId);
+    Recipe fork = Recipe.forkFrom(original, userId, sourceAuthorNameOf(original));
     List<RecipeStep> copiedSteps = original.getSteps().stream().map(RecipeStep::copyOf).toList();
     fork.replaceSteps(copiedSteps);
     return RecipeResponse.from(recipeRepository.save(fork), 0L, 0L);
+  }
+
+  /**
+   * 포크 시점에 고정할 출처 표기. CURATED는 authorName을 그대로 쓴다. USER는 소유자 닉네임을 조회하되, 탈퇴 등으로 owner_user_id가 이미
+   * null인 유기 레시피(orphan)는 조회할 대상이 없으므로 null로 둔다.
+   */
+  private String sourceAuthorNameOf(Recipe recipe) {
+    if (recipe.getSourceType() == RecipeSourceType.CURATED) {
+      return recipe.getAuthorName();
+    }
+    if (recipe.getOwnerUserId() == null) {
+      return null;
+    }
+    return userService.profile(recipe.getOwnerUserId()).nickname();
   }
 
   /** media 도메인이 업로드 권한을 확인할 때 쓴다. 엔티티를 밖으로 내보내지 않는다(도메인 간 ID 참조 원칙). */

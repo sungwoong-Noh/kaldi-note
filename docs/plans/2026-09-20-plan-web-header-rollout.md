@@ -70,7 +70,7 @@ frontend/src/
 **Interfaces:**
 - Produces: `isHidden(pathname: string): boolean`, `isActive(href: string, pathname: string): boolean`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -110,12 +110,12 @@ describe("isActive", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- navScreens`
 Expected: FAIL — `navScreens.ts`가 없다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```ts
 /**
@@ -140,12 +140,12 @@ export function isActive(href: string, pathname: string): boolean {
 
 `BottomNav.tsx`에서 로컬 `isHidden`/`isActive` 정의를 지우고 `@/lib/navScreens`에서 가져온다 — 동작은 바뀌지 않는다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test`
 Expected: PASS, 전체 통과(BottomNav.test.tsx 포함, 회귀 없음)
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck
@@ -169,7 +169,7 @@ git commit -m "refactor(web): 탭바 숨김·활성 판정을 공유 모듈로 �
 **Interfaces:**
 - Consumes: `isHidden`, `isActive` (Task 1)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `e2e/web-header-rollout.spec.ts` (신규 파일):
 
@@ -299,12 +299,12 @@ test.describe("웹 헤더 롤아웃", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm e2e -- web-header-rollout`
 Expected: FAIL — `/recipes` 등에는 아직 `header`가 전혀 없다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `WebTopBar.tsx` 전체를 다시 쓴다:
 
@@ -415,12 +415,12 @@ import { WebTopBar } from "@/components/layout/WebTopBar";
 
 `page.tsx`에서 `<WebTopBar me={me.data} />` 줄과 그 import를 지운다. 그 한 줄만 감싸던 바깥 `<>...</>` 프래그먼트도 더 필요 없으면 `<Shell>`을 바로 반환한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e -- web-header-rollout` 그리고 `pnpm e2e -- home-calendar`(회귀 확인)
 Expected: PASS 전부
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck && pnpm test
@@ -440,7 +440,7 @@ git commit -m "feat(web): 로고 헤더를 전역화하고 활성 네비를 추�
 **Interfaces:**
 - 없음 — Task 2에서 이미 `{me.data && (...)}` 가드를 넣었으므로, 이 태스크는 그 동작을 **검증**하는 것이 전부다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `e2e/web-header-rollout.spec.ts`에 추가. `installStubs` 뒤에 `/users/me`만 늦추는 로컬 헬퍼(다른 파일의 `delay()`와 동일 패턴)를 쓴다:
 
@@ -472,22 +472,22 @@ test("AC-WEBHDR-06 · me가 로딩 중이어도 헤더는 보이고 아바타 �
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm e2e -- web-header-rollout`
 Expected: PASS — Task 2에서 이미 가드를 넣었으므로 사실 이 단계에서 이미 통과할 가능성이 높다.
 이 경우 **Step 3(구현)을 건너뛰고 테스트만으로 회귀를 잠근다** — 코드를 추가로 바꾸지 않는다.
 
-- [ ] **Step 3: 최소 구현 (필요시)**
+- [x] **Step 3: 최소 구현 (필요시)**
 
 Step 2에서 이미 통과했다면 이 단계는 없음.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e -- web-header-rollout`
 Expected: PASS, 전체 통과
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add e2e/web-header-rollout.spec.ts
@@ -504,7 +504,7 @@ git commit -m "test(web): me 로딩 중 아바타 빈자리를 회귀로 잠근�
 
 **Covers:** AC-WEBHDR-07
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-WEBHDR-07 · ≥1100px에서는 대상 화면 전부에서 하단 탭바가 숨는다", async ({
@@ -520,12 +520,12 @@ test("AC-WEBHDR-07 · ≥1100px에서는 대상 화면 전부에서 하단 탭�
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm e2e -- web-header-rollout`
 Expected: FAIL — `/recipes`·`/brews`·`/more`에서는 지금 `hideOnWideHome`이 `""`(홈이 아니므로)라 하단 탭바가 그대로 보인다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `BottomNav.tsx`에서 `pathname === "/"` 조건을 없애고, `isHidden`으로 걸러진 뒤에는 항상 `min-[1100px]:hidden`을 붙인다:
 
@@ -559,12 +559,12 @@ export function BottomNav() {
 
 (이 지점에 도달했다는 것은 이미 대상 화면이라는 뜻이므로 `pathname === "/"` 분기가 더 필요 없다.)
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e -- web-header-rollout` 그리고 `pnpm e2e`(전체)
 Expected: PASS 전부
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck
@@ -576,12 +576,12 @@ git commit -m "feat(web): 하단 탭바가 대상 화면 전부에서 1100px 이
 
 ## 완료 기준
 
-- [ ] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` 전부 통과
-- [ ] `pnpm test:worker` 통과
-- [ ] `pnpm e2e` 전체 통과 (신규 + 기존 회귀)
-- [ ] `(cd .. && ./scripts/check-spec-coverage.sh)` 통과
-- [ ] 스펙의 `status`를 `구현완료`로 변경
-- [ ] 수동 확인 없음(전부 자동화됨)
+- [x] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` 전부 통과
+- [x] `pnpm test:worker` 통과
+- [x] `pnpm e2e` 전체 통과 (신규 + 기존 회귀)
+- [x] `(cd .. && ./scripts/check-spec-coverage.sh)` 통과
+- [x] 스펙의 `status`를 `구현완료`로 변경
+- [x] 수동 확인 없음(전부 자동화됨)
 
 ---
 

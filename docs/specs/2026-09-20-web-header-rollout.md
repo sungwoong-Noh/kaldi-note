@@ -1,7 +1,7 @@
 ---
 id: WEBHDR
 title: 웹 헤더를 홈 밖 화면에도 적용
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-09-20-plan-web-header-rollout.md
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: ERRFOCUS
 title: 폼 에러 필드로 포커스 이동
-status: 초안
+status: 구현완료
 plan: docs/plans/2026-09-20-plan-error-focus.md
 ---
 

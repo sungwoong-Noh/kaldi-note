@@ -72,7 +72,7 @@ frontend/src/
 **Interfaces:**
 - Produces: `focusFirstInvalidField(container: HTMLElement | null): void` — Task 2·3·4가 각자의 `useEffect`에서 그대로 부른다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 import { afterEach, describe, expect, it } from "vitest";
@@ -126,12 +126,12 @@ describe("focusFirstInvalidField", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- focusFirstError`
 Expected: FAIL — `focusFirstError.ts`가 없어 import 자체가 깨진다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```ts
 /**
@@ -147,12 +147,12 @@ export function focusFirstInvalidField(container: HTMLElement | null): void {
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- focusFirstError`
 Expected: PASS, 4 tests
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck
@@ -175,7 +175,7 @@ git commit -m "feat(web): 첫 번째 invalid 필드로 포커스를 옮기는 �
 - Consumes: `focusFirstInvalidField` (Task 1)
 - Produces: 없음 — 화면 동작만 바뀐다.
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `src/app/brews/new/page.test.tsx`의 마지막 `describe` 뒤에 추가:
 
@@ -262,12 +262,12 @@ describe("BrewNewPage — 에러 필드로 포커스 이동", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- page.test`
 Expected: FAIL — 4 tests fail. `document.activeElement`가 여전히 저장 버튼이거나(포커스 이동이 없음), `내린 시각`이 엉뚱하게 잡힌다(기존 aria-invalid 버그)
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `BrewLogFields.tsx` — 두 곳의 버그 수정:
 
@@ -315,12 +315,12 @@ useEffect(() => {
 </div>
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- page.test`
 Expected: PASS — 새 4 tests 포함 전체 통과
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck
@@ -343,7 +343,7 @@ git commit -m "fix(web): 기록 작성 폼에서 틀린 필드로 포커스를 �
 **Interfaces:**
 - Consumes: `focusFirstInvalidField` (Task 1)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `BeanBatchDialog.test.tsx`에 추가:
 
@@ -385,12 +385,12 @@ it("AC-ERRFOCUS-05 · 필드에 안 붙는 에러는 하단 문구가 포커스�
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- BeanBatchDialog`
 Expected: FAIL — 2 new tests fail, 포커스 이동이 없다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `BeanBatchDialog.tsx` — 중량·로스팅일의 버그 수정:
 
@@ -433,12 +433,12 @@ useEffect(() => {
 )}
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- BeanBatchDialog`
 Expected: PASS, 전체 통과
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck
@@ -461,7 +461,7 @@ git commit -m "fix(web): 원두 등록 모달에서 틀린 필드로 포커스�
 **Interfaces:**
 - Consumes: `focusFirstInvalidField` (Task 1)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `UserGrinderDialog.test.tsx`에 추가:
 
@@ -524,12 +524,12 @@ it("AC-ERRFOCUS-06 · 필드에 안 붙는 에러는 하단 문구가 포커스�
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- UserGrinderDialog`
 Expected: FAIL — 2 new tests fail. AC-ERRFOCUS-03은 `nickname`이 `KNOWN_FIELDS`에 없어 애초에 `aria-invalid`가 걸리지 않는다
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `lib/fieldErrors.ts`의 `KNOWN_FIELDS`에 `"nickname"` 추가(브루잉 로그 섹션 뒤, 원두 등록 섹션 앞).
 
@@ -560,12 +560,12 @@ useEffect(() => {
 )}
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- UserGrinderDialog`
 Expected: PASS, 전체 통과
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck
@@ -579,10 +579,10 @@ git commit -m "fix(web): 그라인더 등록 모달에서 틀린 필드로 포�
 
 ## 완료 기준
 
-- [ ] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` 전부 통과
-- [ ] `pnpm test:worker` 통과
-- [ ] `(cd .. && ./scripts/check-spec-coverage.sh)` 통과 — AC-ERRFOCUS-01~08 전부 테스트에서 검출
-- [ ] 스펙(`docs/specs/2026-09-20-error-focus.md`)의 `status`를 `구현완료`로 변경
+- [x] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` 전부 통과
+- [x] `pnpm test:worker` 통과
+- [x] `(cd .. && ./scripts/check-spec-coverage.sh)` 통과 — AC-ERRFOCUS-01~08 전부 테스트에서 검출
+- [x] 스펙(`docs/specs/2026-09-20-error-focus.md`)의 `status`를 `구현완료`로 변경
 - [ ] 수동 확인 1건(모바일 실기기에서 포커스 이동 시 스크롤·키보드 겹침이 어색하지 않은지) 수행
 
 ---

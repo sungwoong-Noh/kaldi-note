@@ -78,7 +78,7 @@ frontend/src/
 **Interfaces:**
 - Produces: `Shell({ grow?: boolean })`, `Calendar({ fillHeight?: boolean })`, `data-testid="calendar-week-grid"`(주 그리드 컨테이너)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `e2e/home-calendar-web.spec.ts`에 추가(파일 하단, `AC-HOMECAL-71` 테스트 뒤):
 
@@ -144,13 +144,13 @@ test("AC-HOMECAL-91 · 1099px(1컬럼)에서는 이 반응형 채움을 쓰지 �
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm e2e -- home-calendar-web`
 Expected: FAIL — `calendar-week-grid` testid가 없고, 높이가 항상 `420px` 고정이라
 AC-85·86이 실패한다(AC-91은 이미 우연히 통과할 수 있음 — 상관없다, 회귀 방지 목적).
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `Shell.tsx`:
 
@@ -283,12 +283,12 @@ export function Calendar({
 자동 최소 크기(`64px×weeks.length`)가 그대로 유지되고 넘친 만큼 `main`→`body`가 커져 페이지가
 스크롤된다. `900px`·`1100px`처럼 공간이 남으면 `flex: 1 1 auto`가 그 공간을 그대로 채운다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e -- home-calendar-web`
 Expected: PASS, `AC-HOMECAL-68`(6주 총높이 동일) 포함 전체 통과 — 회귀 없음.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck
@@ -306,7 +306,7 @@ git commit -m "feat(web): 웹 달력 그리드가 flex로 남는 세로 공간�
 
 **Covers:** AC-HOMECAL-87
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 import { tokenColor } from "./tokenColor";
@@ -337,12 +337,12 @@ test("AC-HOMECAL-87 · 그리드선 — 상단은 divider-strong, 내부는 sunk
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm e2e -- home-calendar-web`
 Expected: FAIL — 지금은 그리드선이 전혀 없다(모든 border 값이 `0px none`).
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `Calendar.tsx`의 주 그리드 컨테이너와 각 행·셀에 클래스를 추가한다:
 
@@ -396,12 +396,12 @@ Expected: FAIL — 지금은 그리드선이 전혀 없다(모든 border 값이 
 겹치면 두 줄로 보인다. 첫 열(`columnIndex === 0`)도 왼쪽 선을 생략한다 — 바깥 세로 테두리는
 목업에 없다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e -- home-calendar-web`
 Expected: PASS 전체.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck
@@ -419,7 +419,7 @@ git commit -m "feat(web): 웹 달력에 그리드선을 그린다 (AC-HOMECAL-87
 
 **Covers:** AC-HOMECAL-88
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-HOMECAL-88 · 셀 안쪽 여백이 상하 8px·좌우 12px다", async ({ page }) => {
@@ -446,12 +446,12 @@ test("AC-HOMECAL-88 · 셀 안쪽 여백이 상하 8px·좌우 12px다", async (
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm e2e -- home-calendar-web`
 Expected: FAIL — 셀에는 지금 padding 클래스가 전혀 없다(`0px`).
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 셀 버튼(그리고 결 맞춤을 위해 `calendar-out-of-month` div도) 클래스에 `isWeb`일 때
 `py-2 px-3`(Tailwind: `8px`/`12px`)을 추가:
@@ -462,13 +462,13 @@ className={`flex h-full w-full min-h-11 min-w-11 flex-col items-center justify-c
 } ${isWeb && selected ? "bg-surface" : ""} ${lineClass}`}
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e -- home-calendar-web`
 Expected: PASS 전체 — 특히 `AC-HOMECAL-63`(레시피명 truncate)·`AC-HOMECAL-64`(외 N건)가
 padding이 생겨도 안 깨지는지 회귀로 확인한다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck
@@ -489,7 +489,7 @@ git commit -m "feat(web): 웹 달력 셀 안쪽 여백을 8px/12px로 맞춘다 
 **Interfaces:**
 - Produces: `data-testid="day-number"`(날짜 숫자를 감싸는 span)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-HOMECAL-89 · 선택된 날짜 숫자가 24px 원으로 감싸진다", async ({
@@ -522,12 +522,12 @@ test("AC-HOMECAL-89 · 선택된 날짜 숫자가 24px 원으로 감싸진다", 
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm e2e -- home-calendar-web`
 Expected: FAIL — `day-number` testid가 없고, 숫자는 그냥 텍스트 노드다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 날짜 숫자 `<span>{day}</span>`을 조건부 원 스타일로 감싼다:
 
@@ -547,12 +547,12 @@ Expected: FAIL — `day-number` testid가 없고, 숫자는 그냥 텍스트 노
 기존 `boxShadow`(셀 전체 inset 링)와 `bg-surface`(셀 배경)는 그대로 둔다 — 목업은 셀 전체
 강조 **더하기** 숫자 원을 함께 쓴다(`AC-HOMECAL-70` 회귀 확인).
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e -- home-calendar-web`
 Expected: PASS 전체, `AC-HOMECAL-70` 포함.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck
@@ -575,7 +575,7 @@ git commit -m "feat(web): 선택된 날짜 숫자를 24px ink 원으로 감싼�
 - Consumes: `kstToday()`(이미 `page.tsx`가 import함)
 - Produces: `Calendar({ today?: string })`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```ts
 test("AC-HOMECAL-90 · 오늘이지만 선택 안 된 날짜 숫자에 1px 링이 있다", async ({
@@ -607,12 +607,12 @@ test("AC-HOMECAL-90 · 오늘이지만 선택 안 된 날짜 숫자에 1px 링�
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm e2e -- home-calendar-web`
 Expected: FAIL — "오늘" 개념 자체가 `Calendar`에 없다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `page.tsx` — `Calendar`에 `today` 전달:
 
@@ -660,12 +660,12 @@ export function Calendar({
 }
 ```
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e -- home-calendar-web`
 Expected: PASS 전체.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm lint && pnpm typecheck
@@ -677,12 +677,12 @@ git commit -m "feat(web): 오늘 날짜 숫자에 미선택 상태 링을 그린
 
 ## 완료 기준
 
-- [ ] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` 전부 통과
-- [ ] `pnpm test:worker` 통과
-- [ ] `pnpm e2e` 전체 통과 (신규 7개 + 기존 회귀, 특히 `AC-HOMECAL-63·64·68·70·71`)
-- [ ] `(cd .. && ./scripts/check-spec-coverage.sh)` 통과
-- [ ] 스펙(`docs/specs/2026-09-20-calendar-grid-responsive.md`)의 `status`를 `구현완료`로 변경
-- [ ] 수동 확인 없음(스펙에 명시됨 — 전부 자동화 가능)
+- [x] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` 전부 통과
+- [x] `pnpm test:worker` 통과
+- [x] `pnpm e2e` 전체 통과 (신규 7개 + 기존 회귀, 특히 `AC-HOMECAL-63·64·68·70·71`)
+- [x] `(cd .. && ./scripts/check-spec-coverage.sh)` 통과
+- [x] 스펙(`docs/specs/2026-09-20-calendar-grid-responsive.md`)의 `status`를 `구현완료`로 변경
+- [x] 수동 확인 없음(스펙에 명시됨 — 전부 자동화 가능)
 
 ---
 
@@ -709,3 +709,25 @@ git commit -m "feat(web): 오늘 날짜 숫자에 미선택 상태 링을 그린
   Task 1 Step 4에서 실측으로 확정한다.
 - Task 2의 첫 행/첫 열 테두리 생략 규칙(중복 방지)은 스펙 문서에 명시되지 않은 구현 판단이다 —
   시각적으로 목업과 다르게 보이면 Task 2 안에서 조정한다.
+
+## 실행 결과 (2026-09-20)
+
+전부 확인·통과했다.
+
+- **`min-height:0` 없이 flex 자동 최소 크기만으로 64px 바닥이 성립함을 실측으로 확인.**
+  `1440×500`에서 6주 달의 행 높이가 정확히 `64px`(옛 고정값 기준 `70px`이 아님)로 나와,
+  Task 1 Step 1의 테스트를 `toBeGreaterThanOrEqual(64)`에서 `toBe(64)`로 강화했다 — 느슨한
+  하한선은 옛(고정 420px) 구현도 우연히 통과시켜 아무것도 증명하지 못했다.
+- `AC-HOMECAL-68`(6주 달 총높이 동일)은 `900px`에서 그대로 성립했다 — 여유 공간이 항상
+  `384px`(64×6)보다 컸다.
+- **예상 못 한 회귀 1건:** `src/test/spacing.test.ts`의 `AC-SPACE-07`(`rounded-full`이 정확히
+  6곳에서만 쓰여야 한다는 닫힌 집합 테스트)이 Task 4·5로 깨졌다 — `Calendar.tsx`에 원형이
+  2곳(선택 숫자·오늘 링) 늘어 8곳이 됐다. 계획에는 없던 발견이라 그 테스트의 기대값과 주석을
+  6곳 → 8곳으로 갱신했다(스펙이 명시적으로 요구한 디자인이므로 정당한 갱신).
+- Tailwind의 `rounded-full` computed `borderRadius`는 `9999px`가 아니라 매우 큰 계산값
+  (Chromium 실측 `3.35544e+07px`)으로 나왔다 — AC-HOMECAL-89 테스트를 `toBe("9999px")`에서
+  `parseFloat(...) > 12`로 바꿨다.
+- Task 2의 첫 행/첫 열 테두리 생략은 목업과 시각적으로 일치해 추가 조정 없이 통과했다.
+- 최종 검증: `pnpm typecheck && pnpm lint && pnpm test`(68 파일·500개) `&& pnpm build` 통과,
+  `pnpm test:worker`(6개) 통과, `pnpm e2e`(239개) 통과, `check-spec-coverage.sh`(스펙 40건·
+  AC 931개) 통과.

@@ -42,6 +42,7 @@ export function Calendar({
   onSwipeRight,
   variant,
   fillHeight = false,
+  today,
 }: {
   month: string;
   days: Map<string, CalendarDayInfo>;
@@ -60,6 +61,8 @@ export function Calendar({
    * AC-HOMECAL-85·86).
    */
   fillHeight?: boolean;
+  /** `kstToday()`. 웹에서 선택되지 않은 오늘 날짜에 링을 그리는 데만 쓴다(AC-HOMECAL-90). */
+  today?: string;
 }) {
   const grid = buildMonthGrid(month);
   const weeks = chunkIntoWeeks(grid);
@@ -164,6 +167,7 @@ export function Calendar({
                   ? `${month1}월 ${day}일, 기록 ${count}건`
                   : `${month1}월 ${day}일, 기록 없음`;
               const selected = cell.date === selectedDate;
+              const isToday = cell.date === today;
 
               return (
                 <button
@@ -188,7 +192,9 @@ export function Calendar({
                     className={
                       isWeb && selected
                         ? "flex h-6 w-6 items-center justify-center rounded-full bg-ink text-on-ink"
-                        : undefined
+                        : isWeb && isToday
+                          ? "flex h-6 w-6 items-center justify-center rounded-full border border-border"
+                          : undefined
                     }
                   >
                     {day}

@@ -443,4 +443,32 @@ test.describe("홈 달력 — 웹", () => {
     expect(bg).toBe(await tokenColor(page, "ink"));
     expect(color).toBe(await tokenColor(page, "on-ink"));
   });
+
+  test("AC-HOMECAL-90 · 오늘이지만 선택 안 된 날짜 숫자에 1px 링이 있다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    // 진입 시 오늘(9/19)이 자동 선택되므로, 다른 날짜를 선택해 오늘을 비선택 상태로 만든다.
+    await page.getByRole("button", { name: "9월 5일, 기록 2건" }).click();
+
+    const todayCell = page.getByRole("button", { name: "9월 19일, 기록 없음" });
+    const numberEl = todayCell.getByTestId("day-number");
+
+    const borderWidth = await numberEl.evaluate(
+      (el) => getComputedStyle(el).borderTopWidth,
+    );
+    const borderColor = await numberEl.evaluate(
+      (el) => getComputedStyle(el).borderTopColor,
+    );
+    const bg = await numberEl.evaluate(
+      (el) => getComputedStyle(el).backgroundColor,
+    );
+
+    expect(borderWidth).toBe("1px");
+    expect(borderColor).toBe(await tokenColor(page, "border"));
+    expect(bg).toBe("rgba(0, 0, 0, 0)");
+  });
 });

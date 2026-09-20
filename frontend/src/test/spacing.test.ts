@@ -172,15 +172,21 @@ describe("모서리", () => {
      * 갱신(2026-09-19): 아바타(사진 있을 때 img·없을 때 닉네임 첫 글자 대체 원)가
      * 늘어 4곳 → 6곳. 홈 달력 레일과 웹 상단 바가 둘 다 쓰므로 `components/ui/Avatar.tsx`
      * 하나로 모았다 — 따로 있었으면 8곳이 됐을 것이다.
+     *
+     * 갱신(2026-09-20): 웹 달력 날짜 숫자가 늘어 6곳 → 8곳. 선택된 날짜 숫자(24px `ink` 원)와
+     * 오늘·미선택 날짜 숫자(24px `border` 링)가 `Calendar.tsx`에 하나씩 더해졌다
+     * (docs/specs/2026-09-20-calendar-grid-responsive.md AC-HOMECAL-89·90).
      */
     const found = SOURCES.flatMap((path) =>
       Array(count(path, /\brounded-full\b/g)).fill(path),
     );
 
-    expect(found).toHaveLength(6);
+    expect(found).toHaveLength(8);
     expect(found.map((path) => path.split(sep).pop()).sort()).toEqual([
       "Avatar.tsx",
       "Avatar.tsx",
+      "Calendar.tsx",
+      "Calendar.tsx",
       "LoadingState.tsx",
       "ThemeToggle.tsx",
       "ThemeToggle.tsx",

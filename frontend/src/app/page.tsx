@@ -133,6 +133,7 @@ export default function HomePage() {
         onSwipeRight={handlePrevMonth}
         variant={variant}
         fillHeight={isTwoColumn}
+        today={kstToday()}
       />
     </>
   );

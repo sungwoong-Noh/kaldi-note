@@ -1,5 +1,15 @@
+import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
+import { me } from "../src/test/fixtures";
 import { installStubs } from "./stubs";
+
+/** 응답을 늦춘다. installStubs 뒤에 걸어야 이긴다. */
+async function delayMe(page: Page, ms: number) {
+  await page.route("**/api/v1/users/me", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, ms));
+    await route.fulfill({ json: me });
+  });
+}
 
 const TARGET_PAGES = [
   "/recipes",
@@ -120,4 +130,19 @@ test.describe("웹 헤더 롤아웃", () => {
       await expect(page.locator("header")).toHaveCount(0);
     });
   }
+
+  test("AC-WEBHDR-06 · me가 로딩 중이어도 헤더는 보이고 아바타 자리만 빈다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await delayMe(page, 500);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/recipes");
+
+    const header = page.locator("header");
+    await expect(header.locator("svg")).toBeVisible();
+    await expect(header.getByRole("link", { name: "더보기" })).toBeHidden();
+
+    await expect(header.getByRole("link", { name: "더보기" })).toBeVisible();
+  });
 });

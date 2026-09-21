@@ -11,7 +11,9 @@ import { tokenColor } from "./tokenColor";
  */
 
 test.describe("시각 위계 — 라이트", () => {
-  test("AC-VISUAL-14 · 주 액션 버튼이 accent 색이다", async ({ page }) => {
+  test("AC-VISUAL-14 · 주 액션 버튼이 ink 색이다", async ({ page }) => {
+    // 갱신(2026-09-21): docs/specs/2026-09-21-button-color-fidelity.md가
+    // 이 조건의 기준색을 accent에서 ink로 옮겼다 — design-system-v2가 이미 정한 값이다.
     await installStubs(page);
     await page.goto("/recipes/new");
 
@@ -20,7 +22,7 @@ test.describe("시각 위계 — 라이트", () => {
 
     expect(
       await save.evaluate((el) => getComputedStyle(el).backgroundColor),
-    ).toBe(await tokenColor(page, "accent"));
+    ).toBe(await tokenColor(page, "ink"));
   });
 
   test("AC-VISUAL-15 · 화면 제목이 27px다", async ({ page }) => {
@@ -95,7 +97,8 @@ test.describe("시각 위계 — 다크", () => {
       return { background: computed.backgroundColor, color: computed.color };
     });
 
-    expect(style.background).toBe(await tokenColor(page, "accent"));
+    // 갱신(2026-09-21): AC-VISUAL-14와 같은 이유로 accent가 아니라 ink다.
+    expect(style.background).toBe(await tokenColor(page, "ink"));
     expect(style.color).toBe(await tokenColor(page, "on-ink"));
   });
 });

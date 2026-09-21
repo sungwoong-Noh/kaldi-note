@@ -33,6 +33,12 @@
 | AC-HOMECAL-110~111 | 관계 문구 개인화(캘린더+프로필) | Task 5 | 컴포넌트 테스트 |
 | AC-HOMECAL-112~117 | 웹 우측 컬럼 카드 | Task 6 | 컴포넌트 테스트 + typography.test.ts |
 | AC-HOMECAL-119~120 | 아바타 3색조 | Task 7 | 컴포넌트 테스트 |
+| AC-HOMECAL-121 | 웹 셀 좌상단 정렬 | Task 8 | 컴포넌트 테스트 |
+| AC-HOMECAL-122 | 우측 컬럼 padding 40px·surface | Task 8 | 컴포넌트 테스트/e2e |
+| AC-HOMECAL-123~125 | 우측 헤더(요일 아이브로우+26px+건수) | Task 8 | 컴포넌트 테스트 |
+| AC-HOMECAL-126 | 관계 문구 Observation 블록 스타일 | Task 8 | 컴포넌트 테스트 |
+| AC-HOMECAL-127 | 전역 CTA 문구 통일 | Task 8 | 컴포넌트 테스트 |
+| AC-HOMECAL-128 | 모바일 목록 높이 상한 60vh | Task 8 | e2e |
 
 ---
 
@@ -60,7 +66,9 @@ frontend/src/
 ├── features/calendar/components/MonthNav.tsx            (수정) 버튼 44/32 + 라벨 타입스케일
 ├── features/calendar/components/DayList.tsx             (수정) 캡션 줄 + 관계 문구 + 웹 카드
 ├── features/calendar/components/DayCard.tsx             (신규) 웹 우측 컬럼 전용 카드
-└── features/user/components/UserProfile.tsx             (수정) 관계 문구 개인화
+├── features/user/components/UserProfile.tsx              (수정) 관계 문구 개인화
+├── app/page.tsx                                           (수정, Task 8) 컬럼 padding·CTA 문구·목록 높이
+└── components/layout/WebTopBar.tsx                        (수정, Task 8) CTA 문구
 
 frontend/src/features/calendar/components/
 ├── Calendar.test.tsx        (수정)
@@ -619,6 +627,166 @@ git add . && git commit -m "fix(avatar): userId 기반 3색조를 추가한다 (
 
 ---
 
+## Task 8: 재대조에서 나온 6개 격차 (웹 정렬·컬럼·헤더, 관계 문구, 전역 CTA, 모바일 여백)
+
+> 2026-09-21에 실제 배포 화면을 목업과 다시 대조하며 발견해 스펙에 추가한 것들이다
+> (`AC-HOMECAL-121~128`).
+
+**Files:**
+- Modify: `frontend/src/features/calendar/components/Calendar.tsx`
+- Modify: `frontend/src/features/calendar/components/DayList.tsx`
+- Modify: `frontend/src/app/page.tsx`
+- Modify: `frontend/src/components/layout/WebTopBar.tsx`
+- Test: `frontend/src/features/calendar/components/Calendar.test.tsx`
+- Test: `frontend/src/features/calendar/components/DayList.test.tsx`
+- Test: `frontend/src/app/page.test.tsx`
+- Test: `frontend/src/components/layout/WebTopBar.test.tsx`
+- Test: `frontend/e2e/home-calendar.spec.ts`(신규 또는 기존 파일에 추가)
+
+**Covers:** AC-HOMECAL-121, 122, 123, 124, 125, 126, 127, 128
+
+- [ ] **Step 1: 실패하는 테스트 작성**
+
+```tsx
+// Calendar.test.tsx
+it("AC-HOMECAL-121 · 웹 셀이 좌상단 정렬이다", () => {
+  render(<Calendar month="2026-09" days={new Map()} selectedDate={null} onSelect={() => {}} variant="web" />);
+  const cell = screen.getAllByRole("button")[0];
+  expect(cell).toHaveClass("items-start", "justify-start");
+});
+```
+
+```tsx
+// DayList.test.tsx — web variant 헤더 3종 + Observation 블록
+it("AC-HOMECAL-123 · 웹 헤더에 요일 아이브로우가 있다", () => {
+  render(<DayList date="2026-09-19" logs={[BASE_LOG]} variant="web" />);
+  expect(screen.getByText("SATURDAY")).toHaveAttribute("data-eyebrow");
+});
+
+it("AC-HOMECAL-124 · 웹 헤더 날짜가 page-title·font-semibold다", () => {
+  render(<DayList date="2026-09-19" logs={[BASE_LOG]} variant="web" />);
+  expect(screen.getByText("19")).toHaveClass("text-page-title", "font-semibold");
+});
+
+it("AC-HOMECAL-125 · 웹 헤더 우측에 mono 12px 건수가 있다", () => {
+  render(<DayList date="2026-09-19" logs={[BASE_LOG]} variant="web" />);
+  expect(screen.getByTestId("day-header-count")).toHaveClass("font-mono", "text-[12px]");
+});
+
+it("AC-HOMECAL-126 · 관계 문구가 Observation 블록 스타일이다", () => {
+  render(<DayList date="2026-09-19" logs={[BASE_LOG]} ownerNickname="지연" variant="mobile" />);
+  const notice = screen.getByText("맞팔로우 상태여서 지연 님의 기록이 보입니다.");
+  expect(notice).toHaveClass("bg-surface", "border-l-2", "border-accent", "rounded-r-lg");
+});
+```
+
+```tsx
+// page.test.tsx
+it("AC-HOMECAL-127 · 모바일 하단 CTA 문구가 이 레시피로 내렸다다", () => {
+  // installStubs 렌더 후
+  expect(screen.getByRole("link", { name: "이 레시피로 내렸다" })).toBeInTheDocument();
+  expect(screen.queryByText("기록하기")).not.toBeInTheDocument();
+});
+```
+
+```tsx
+// WebTopBar.test.tsx
+it("AC-HOMECAL-127 · 웹 상단 바 CTA 문구가 이 레시피로 내렸다다", () => {
+  expect(screen.getByRole("link", { name: "이 레시피로 내렸다" })).toBeInTheDocument();
+});
+```
+
+```ts
+// e2e/home-calendar.spec.ts
+test("AC-HOMECAL-128 · 모바일 날짜별 목록이 뷰포트 60%를 넘지 않는다", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await installStubs(page); // logs가 1~2건인 기본 픽스처 — 짧은 목록
+  await page.goto("/");
+  const box = await page.getByTestId("day-scroll").boundingBox();
+  expect(box!.height).toBeLessThanOrEqual(844 * 0.6);
+});
+```
+
+**Interfaces:**
+- Consumes: `DayList`가 이미 받는 `date`·`ownerNickname` — weekday 영문 대문자 변환은
+  `DayList.tsx`가 이미 갖고 있는 `weekdayOf` 로직을 영문 3글자에서 전체 영문으로 확장한
+  헬퍼로 만든다(`SATURDAY` 전체 철자, 기존 `WEEKDAY_EN`은 `SAT` 3글자라 그대로 못 쓴다)
+
+- [ ] **Step 2: 테스트 실행 — 실패 확인**
+
+Run: `pnpm test -- Calendar && pnpm test -- DayList && pnpm test -- page && pnpm test -- WebTopBar`
+Expected: FAIL —
+`AC-HOMECAL-121`은 현재 `items-center justify-center`라 클래스 불일치.
+`AC-HOMECAL-123~126`은 요소 자체가 없어 `getByText`/`getByTestId`가 못 찾는다.
+`AC-HOMECAL-127`은 두 곳 다 텍스트가 `"기록하기"`라 실패.
+
+Run: `pnpm e2e -- home-calendar`
+Expected: FAIL — `AC-HOMECAL-128`은 현재 `flex-1`이라 짧은 목록에서도 큰 높이를 갖는다
+(정확한 실패 수치는 실제 뷰포트 나머지 공간에 따라 다르다 — 844×0.6=506.4px보다 크면 실패).
+
+- [ ] **Step 3: 최소 구현**
+
+`Calendar.tsx` — web 셀의 `items-center justify-center`를 `isWeb`일 때만
+`items-start justify-start`로, `text-center`가 붙은 두 `<span>`(레시피명·"외 N건")도
+`isWeb`이면 `text-left`로 바꾼다(모바일은 그대로 `items-center justify-center`를 유지 —
+44px 정사각 셀이라 중앙 정렬이 맞다).
+
+`page.tsx`의 `data-testid="day-column"` 클래스에서 `p-4`를 `py-4 px-10`(40px 좌우, 상하는
+기존 16px 유지 — 목업이 상하 padding을 명시하지 않아 기존 값을 지킨다)로 바꾼다. `bg-surface`는
+이미 있다.
+
+`DayList.tsx`에 `weekdayEnglishOf(date)` 헬퍼 추가(`WEEKDAY_EN`을 전체 철자
+`["MONDAY", ..., "SUNDAY"]`로 바꾸거나 별도 배열 신설 — 기존 3글자 `WEEKDAY_EN`은
+모바일 목록 헤더가 이미 쓰고 있으므로 새 배열 `WEEKDAY_EN_FULL`을 추가해 기존 것은
+건드리지 않는다). `variant === "web"`일 때만 렌더되는 헤더 블록을 추가:
+
+```tsx
+{variant === "web" && (
+  <div data-testid="day-header-web" className="flex items-baseline justify-between">
+    <div>
+      <Eyebrow>
+        {weekdayEnglishOf(date)}
+        {ownerNickname ? ` · ${ownerNickname}` : ""}
+      </Eyebrow>
+      <p className="text-page-title font-semibold">{Number(date.slice(8, 10))}</p>
+    </div>
+    <span data-testid="day-header-count" className="font-mono text-[12px] text-ink-3">
+      {logs.length}건
+    </span>
+  </div>
+)}
+```
+
+관계 문구 `<p>`에 `bg-surface border-l-2 border-accent rounded-r-lg px-3 py-2 text-[13.5px]
+leading-[1.65]` 클래스를 추가(기존 `text-body-sm text-ink-3`는 제거 — 13.5px는 스케일에
+없는 값이라 임의값으로 쓰되, 색·모서리·간격 규칙과는 충돌하지 않는지 확인. 충돌하면
+`text-body-sm`(13px)으로 근사).
+
+`page.tsx`와 `WebTopBar.tsx`의 CTA 텍스트 `"기록하기"`를 `"이 레시피로 내렸다"`로 바꾼다
+(2곳).
+
+`page.tsx`의 `data-testid="day-scroll"` 클래스에서 `flex-1`을 제거하고
+`max-h-[60vh] overflow-y-auto`로 바꾼다(`min-h-0`는 flex 자식이 아니게 되므로 제거).
+
+- [ ] **Step 4: 테스트 실행 — 통과 확인**
+
+Run: `pnpm test && pnpm typecheck && pnpm lint && pnpm build`
+Expected: 전부 PASS. 특히 `AC-HOMECAL-85`(날짜별 목록만 스크롤) 회귀 확인 — `max-h-[60vh]
+overflow-y-auto`가 여전히 내부 스크롤을 제공하는지 기존 테스트로 재확인한다.
+
+Run: `pnpm e2e -- home-calendar`
+Expected: PASS
+
+- [ ] **Step 5: 커밋**
+
+```bash
+pnpm format && pnpm lint:fix
+pnpm typecheck && pnpm lint && pnpm test && pnpm build
+git add . && git commit -m "fix(calendar): 재대조에서 찾은 격차 6개를 목업과 맞춘다 (AC-HOMECAL-121~128)"
+```
+
+---
+
 ## 완료 기준
 
 - [ ] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
@@ -633,7 +801,7 @@ git add . && git commit -m "fix(avatar): userId 기반 3색조를 추가한다 (
 
 ## 자체 검토 결과
 
-**AC 커버리지:** 스펙의 AC 31개(`92~120`, `98a`, `98b` 포함) 중 31개가 태스크에 매핑됨.
+**AC 커버리지:** 스펙의 AC 39개(`92~128`, `98a`, `98b` 포함) 중 39개가 태스크에 매핑됨.
 
 **자리표시자 검사:** `TODO`, `TBD`, "나중에", "비슷하게" 없음.
 
@@ -651,3 +819,10 @@ git add . && git commit -m "fix(avatar): userId 기반 3색조를 추가한다 (
   근사하는 것을 계획 단계에서 제안한다 — Task 6 커밋 전에 실제로 렌더해 확인한다.
 - **Task 2의 웹 점 간격 6px→8px 반올림**은 스펙에 없던 세부사항이라 계획에서 자체적으로
   "동점은 올림" 규칙을 적용했다(위 Task 2 참조).
+- **Task 8의 관계 문구 13.5px**가 색·모서리 규칙과 충돌하지 않는지 Step 4에서 확인한다.
+  충돌하면 `text-body-sm`(13px)으로 근사한다.
+- **Task 8의 `max-h-[60vh]`가 실제로 "빈 공간 과다"를 눈에 띄게 줄이는지는 수치 근거가
+  약하다** — 목업이 정확한 픽셀 상한을 주지 않아 계획 단계에서 제안한 값이다(스펙에
+  `[제안 후 승인]`로 표시됨). 구현 후 실제 화면을 봐서 여전히 과하면 값을 조정한다.
+- **Task 8의 웹 헤더 요일 영문 전체 철자(`WEEKDAY_EN_FULL`)**는 기존 `WEEKDAY_EN`(3글자
+  약어)과 별도 배열로 추가한다 — 기존 모바일 목록 헤더가 3글자를 계속 쓰기 때문이다.

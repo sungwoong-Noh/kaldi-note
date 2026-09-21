@@ -313,6 +313,87 @@ plan: docs/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 - **Then** 두 렌더링의 배경색이 같다(같은 `userId → color` 함수 사용)
 - **검증** 컴포넌트 테스트 `Avatar.test.tsx`
 
+### 추가 발견 (2026-09-21) — 실제 배포 화면과 목업 재대조에서 나온 6개
+
+> 이 절은 위 92~120 작성 뒤 **실제 배포된 앱 화면**을 스크린샷으로 목업과 나란히 대조하며
+> 추가로 찾은 격차다. `HOME-CALENDAR.md`를 다시 읽어 확인했다.
+
+#### AC-HOMECAL-121 · 웹 달력 셀의 콘텐츠가 좌상단 정렬된다
+
+- **Given** 웹(≥1100px) 달력 셀
+- **When** 렌더한다
+- **Then** 셀(`<button>`)의 `align-items`가 `flex-start`, `justify-content`가 `flex-start`이고,
+  레시피명·"외 N건" 줄의 `text-align`이 `left`다(현재는 모바일과 같은 `center`를 그대로
+  물려쓰고 있다 — 모바일 44px 정사각 셀은 중앙 정렬이 맞지만, 웹은 세로로 긴 박스라
+  좌상단이 맞다)
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`(web variant)
+
+#### AC-HOMECAL-122 · 웹 우측 컬럼 컨테이너의 padding이 좌우 40px, 배경이 surface다
+
+- **Given** 웹(≥1100px) 2컬럼 레이아웃의 우측 컬럼 컨테이너(`data-testid="day-column"`)
+- **When** 렌더한다
+- **Then** `padding-left`·`padding-right`가 40px이고 `background-color`가 `surface` 토큰
+  값이다(현재 `p-4`로 16px 균등 padding만 적용돼 목업의 "여유로운 판" 느낌이 아니라
+  좁은 박스처럼 보인다)
+- **검증** 컴포넌트 테스트 또는 e2e `home-calendar-web.spec.ts`
+
+#### AC-HOMECAL-123 · 웹 우측 컬럼에 요일 아이브로우가 렌더된다
+
+- **Given** 웹 2컬럼에서 토요일을 선택한 상태(내 달력)
+- **When** 우측 컬럼 헤더를 렌더한다
+- **Then** `SATURDAY`(영문 대문자 요일, `Eyebrow` 컴포넌트 재사용 — mono 10px·`ink-3`)가
+  렌더된다. 남의 달력이면 `FRIDAY · 지연` 형식이다(요일 뒤에 `· {닉네임}`)
+- **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant)
+
+#### AC-HOMECAL-124 · 웹 우측 컬럼 헤더의 날짜 숫자가 26px 근사값(page-title 27px)·weight 600으로 렌더된다
+
+- **Given** 위와 같음
+- **When** 렌더한다
+- **Then** 날짜 숫자(예: `19`)가 기존 타입 스케일 `page-title`(27px, 목업 26px에서 1px
+  반올림 — `[제안 후 승인]`, 새 타입 단계를 추가하지 않는다)에 `font-weight` 600을 더해
+  렌더된다
+- **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant) + `src/test/typography.test.ts`(기존
+  단계 재사용이므로 새 등록 불필요)
+
+#### AC-HOMECAL-125 · 웹 우측 컬럼 헤더 오른쪽에 건수가 mono 12px로 렌더된다
+
+- **Given** 위와 같음
+- **When** 렌더한다
+- **Then** 헤더 우측에 `{count}건`(예: `2건`) 또는 목업 표기대로 건수가 `font-family` mono,
+  `font-size` 12px로 렌더된다
+- **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant)
+
+#### AC-HOMECAL-126 · 관계 문구가 Observation 블록 스타일로 렌더된다
+
+- **Given** 남의 달력(맞팔로우 상태)의 날짜별 목록 하단
+- **When** 관계 문구를 렌더한다
+- **Then** `surface` 배경 + 좌측 2px `accent` 보더 + `border-radius` `0 8px 8px 0`(우측 두
+  모서리만 8px, Tailwind `rounded-r-lg`) 박스 안에 `font-size` 13.5px·`line-height` 1.65로
+  렌더된다(현재는 배경·보더 없는 평범한 `<p>`다). 라벨(대문자 mono 9.5px)은 붙이지 않는다 —
+  목업이 이 관계 문구에는 라벨을 쓰지 않는다
+- **검증** 컴포넌트 테스트 `DayList.test.tsx`
+
+#### AC-HOMECAL-127 · 전역 CTA 문구가 "이 레시피로 내렸다"다
+
+- **Given** 모바일 하단 고정 CTA와 웹 상단 바 CTA(둘 다 전역 액션 — 날짜와 무관)
+- **When** 렌더한다
+- **Then** 두 곳 모두 버튼 텍스트가 정확히 `"이 레시피로 내렸다"`다(현재는 둘 다
+  `"기록하기"`다). 우측 컬럼의 날짜별 맥락 CTA(`AC-HOMECAL-*`가 이미 다루는 "이 날짜로
+  기록 추가"/"프로필 보기")는 이 조건의 대상이 아니다 — 이미 올바르다
+- **검증** 컴포넌트 테스트 `page.test.tsx` + `WebTopBar.test.tsx`
+
+#### AC-HOMECAL-128 · 모바일 날짜별 목록 영역이 뷰포트 높이의 60%를 넘지 않는다
+
+- **Given** 모바일(390×844) 홈 화면, 1컬럼 레이아웃
+- **When** 날짜별 목록(`data-testid="day-scroll"`)을 렌더한다
+- **Then** 이 영역이 `flex-1`로 남는 공간을 전부 차지하지 않고, `max-height`가 뷰포트 높이의
+  60% 이하로 제한된다(목업은 정확한 픽셀 상한을 주지 않는다 — "짧은 목록일수록 CTA 위
+  여백이 과도하게 커진다"는 실측 문제를 억제하는 상한이다, `[제안 후 승인]`). 내용이 이
+  상한을 넘으면 그 안에서 계속 스크롤된다(`AC-HOMECAL-85`가 이미 요구하는 "날짜별 목록만
+  스크롤" 동작은 유지)
+- **검증** e2e `home-calendar.spec.ts`(실제 뷰포트에서 `getBoundingClientRect().height`를
+  재서 뷰포트 높이의 60% 이하임을 확인 + 긴 목록에서는 여전히 내부 스크롤됨을 확인)
+
 ---
 
 ## 수동 확인

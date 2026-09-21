@@ -96,7 +96,7 @@ docs/specs/
 - Produces: CSS 토큰 `--ink-hover`·`--ink-disabled`, Tailwind 유틸 `bg-ink-hover`·
   `text-ink-disabled`, `TOKEN_NAMES` 18개 배열
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `frontend/src/test/designTokens.test.ts`의 기존 `describe` 안에 더한다.
 
@@ -121,14 +121,14 @@ it("AC-BTN-03 · 색 토큰이 양쪽 팔레트에 18개씩 있다", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- designTokens`
 Expected: FAIL 3건 —
 `AC-BTN-01`·`AC-BTN-02`는 `expected undefined to be "oklch(...)"`(토큰이 없다),
 `AC-BTN-03`은 `expected length 16 to be 18`.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `globals.css`의 `:root` 글자 블록에 더한다.
 
@@ -190,7 +190,7 @@ Expected: FAIL 3건 —
 
 본문의 "현재 **16개**"도 **18개**로 고친다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- designTokens`
 Expected: PASS. `AC-DS2-01`(개수)과 `AC-DS2-02`(전부 oklch)도 함께 초록이어야 한다 — 새 토큰
@@ -200,7 +200,7 @@ Run: `pnpm test && pnpm typecheck && pnpm lint`
 Expected: 전부 PASS. `AC-DS2-04`(대비 4.5:1)는 대상 토큰 목록이 `ink`·`ink-2`·`ink-3`·
 `accent`·`danger`로 명시돼 있어 새 토큰이 걸리지 않는다 — disabled 글자는 의도적으로 흐리다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test
@@ -222,7 +222,7 @@ cd .. && git add . && git commit -m "feat(design): 버튼 전용 토큰 ink-hove
 - Produces: `Button.tsx`가 내보내는 `BUTTON_BASE: string`과
   `BUTTON_VARIANT: Record<ButtonVariant, string>` — Task 3과 e2e가 쓴다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `frontend/e2e/button-color.spec.ts`를 새로 만든다. 하네스가 핵심이다 — 변형 클래스를
 `Button.tsx`에서 가져와 실제 페이지에 꽂고, **같은 문서에서 읽은 토큰 값**과 대조한다.
@@ -406,7 +406,7 @@ test.describe("버튼 색 — 다크", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm e2e -- button-color`
 Expected: FAIL —
@@ -419,7 +419,7 @@ export만 먼저 뚫으면 `AC-BTN-04`가 `expected "oklch(0.42 0.06 45)" to be 
 색이 틀렸다는 진짜 사유를 못 본다. 먼저 `Button.tsx`에서 `const`를 `export const`로만 바꾸고
 (`AC-BTN-15`의 이름과 맞춘다) 다시 돌려 위의 색 실패를 눈으로 확인한 뒤 Step 3으로 간다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `frontend/src/components/ui/Button.tsx`의 두 상수를 교체한다.
 
@@ -447,7 +447,7 @@ export const BUTTON_VARIANT: Record<ButtonVariant, string> = {
 
 `ButtonLink`는 `<a>`라 `:disabled`가 없다. Task 3에서 그 차이를 다룬다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm e2e -- button-color`
 Expected: PASS, 10 tests
@@ -462,7 +462,7 @@ Expected: 전부 PASS. 특히 아래가 깨지지 않았는지 확인한다.
 깨진 게 있으면 **고치기 전에 그 테스트가 무엇을 지키던 것인지 먼저 읽는다.** 색을 옛 값으로
 되돌리는 식의 수정은 하지 않는다.
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm e2e
@@ -483,7 +483,7 @@ cd .. && git add . && git commit -m "feat(ui): Button 네 모습과 hover를 목
 **Interfaces:**
 - Consumes: Task 2의 `BUTTON_BASE`·`BUTTON_VARIANT`
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 `frontend/src/test/primitives.test.tsx`에 더한다.
 
@@ -551,7 +551,7 @@ test.describe("버튼 색 — 링크와 버튼이 같다", () => {
 **컴포넌트가 실제로 그 상수를 쓰는지**는 보증하지 않기 때문이다. `/recipes/12`의 CTA는 실제
 `ButtonLink`가 렌더한 것이다.
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- primitives` 그리고 `pnpm e2e -- button-color`
 Expected: FAIL —
@@ -563,7 +563,7 @@ Expected: FAIL —
 > 하네스 3건이 Step 2에서 통과하는 것은 정상이다. 그 검사가 지키는 것은 "앞으로 둘이
 > 갈라지지 않는다"는 회귀 방지이고, **지금 갈라져 있다는 사실은 실제 화면 검사가 잡는다.**
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `frontend/src/components/ui/ButtonLink.tsx`의 자체 `BASE`·`VARIANT`를 지우고 가져다 쓴다.
 
@@ -579,7 +579,7 @@ import { BUTTON_BASE, BUTTON_VARIANT, type ButtonVariant } from "./Button";
 죽은 클래스가 붙을 뿐 렌더 결과는 같다. 링크는 비활성화되지 않으므로 분리할 이유가 없다.
 이 사실을 `ButtonLink.tsx` 주석에 남긴다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- primitives`
 Expected: PASS
@@ -593,7 +593,7 @@ Expected: 전부 PASS
 Run: `./scripts/check-spec-coverage.sh`
 Expected: PASS — `AC-BTN-01`~`AC-BTN-15`가 전부 테스트에서 발견된다
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e
@@ -605,10 +605,10 @@ git add . && git commit -m "feat(ui): ButtonLink를 Button과 같은 색 출처�
 
 ## 완료 기준
 
-- [ ] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과
-- [ ] 스펙 `docs/specs/2026-09-21-button-color-fidelity.md`의 `status`를 `구현완료`로 변경
-- [ ] `docs/specs/2026-09-17-design-system-v2.md`의 `AC-DS2-01` 개수가 18로 정정됨
+- [x] `cd frontend && pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm e2e` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과
+- [x] 스펙 `docs/specs/2026-09-21-button-color-fidelity.md`의 `status`를 `구현완료`로 변경
+- [x] `docs/specs/2026-09-17-design-system-v2.md`의 `AC-DS2-01` 개수가 18로 정정됨
 - [ ] 수동 확인 3건 (스펙의 「수동 확인」 절) — 폰 라이트/다크, 데스크톱 hover
 
 ---
@@ -636,3 +636,28 @@ git add . && git commit -m "feat(ui): ButtonLink를 Button과 같은 색 출처�
   그 경우 스텁이 내 소유로 주는 다른 레시피 id로 바꾼다.
 - **`ghost` 변형이 앱에서 한 번도 쓰이지 않는다**(사용처 0곳). 이번 스펙은 색만 맞추고 적용은
   하지 않는다. 목업이 ghost를 어디에 쓰는지는 화면별 스펙에서 다룬다.
+
+## 실행 중 발견 — 계획에 없던 스펙 충돌
+
+Task 2 완료 후 전체 e2e를 돌리자(계획 밖 확인이지만 회귀를 잡으려고 실행) 두 번째
+불확실 항목이 실제로 걸렸다 — 단, 예상과 다른 형태였다. `bg-accent` 문자열은 테스트에
+없었지만, **토큰 기반 비교**로 이미 같은 값을 검사하고 있었다.
+
+`docs/specs/2026-09-07-visual-hierarchy.md`(`status: 구현완료`)의 `AC-VISUAL-14`·`18`이
+"주 액션 버튼 = accent"를 여전히 못박고 있었고, `e2e/visual.spec.ts`가 그걸 실측하고 있었다.
+그 스펙은 2026-09-17에 DS2 도입으로 크기·토큰 개수·비교 방식을 갱신하면서 **색 자체는 갱신
+목록에서 빠뜨렸다** — 즉 이번 인터뷰 이전의 `bg-accent` 구현은 버그가 아니라 이 구 스펙을
+정확히 따른 것이었다.
+
+이건 `button-color-fidelity` 스펙의 범위(`Button`/`ButtonLink` 프리미티브)를 벗어나는
+다른 스펙의 수정이라 계획에 없었다. 사람에게 확인받은 뒤(추천안 채택) 다음을 추가로 했다 —
+파일 목록에 없던 변경이므로 별도로 남긴다.
+
+- `docs/specs/2026-09-07-visual-hierarchy.md`: `AC-VISUAL-14`·`18`에 2026-09-21 갱신 노트를
+  붙이고 기대값을 `rgb(...)` 리터럴/`accent`에서 `ink` 토큰으로 옮겼다. AC ID와 조건의 뜻은
+  그대로다 — 값만 바뀌었다.
+- `frontend/e2e/visual.spec.ts`: 두 테스트의 기대값을 `tokenColor(page, "accent")`에서
+  `tokenColor(page, "ink")`로 바꿨다.
+
+이 변경은 Task 2 커밋에 함께 포함됐다(별도 태스크로 쪼개지 않음 — 원인이 같고 분리하면
+중간 상태에서 두 스펙이 서로 모순된 채로 커밋이 하나 남는다).

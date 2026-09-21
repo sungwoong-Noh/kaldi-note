@@ -38,6 +38,8 @@ const SCALE = [
   "month-label",
   // 갱신(2026-09-21): 같은 보정(AC-HOMECAL-108)이 목록 행 캡션 크기를 들인다.
   "caption",
+  // 갱신(2026-09-21): 같은 보정(AC-HOMECAL-114)이 웹 카드 대표 수치 크기를 들인다.
+  "card-metric",
 ] as const;
 
 /**

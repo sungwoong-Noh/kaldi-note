@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 
 /**
  * 면 스타일의 단일 출처.
@@ -12,7 +12,7 @@ export function cardClass(
   { tone = "outlined", pad = "normal" }: CardTone = {},
 ): string {
   const surface = tone === "raised" ? "bg-paper" : "border border-border";
-  const padding = pad === "tight" ? "p-3" : "p-4";
+  const padding = pad === "tight" ? "p-3" : pad === "loose" ? "p-6" : "p-4";
   return `rounded-surface ${surface} ${padding} ${extra}`
     .replace(/\s+/g, " ")
     .trim();
@@ -20,7 +20,9 @@ export function cardClass(
 
 interface CardTone {
   tone?: "outlined" | "raised";
-  pad?: "normal" | "tight";
+  /** `loose`는 웹 홈 달력 카드용이다(AC-HOMECAL-112, 24px — 목업 20px을 간격
+   * 스케일에 반올림, |20-16|=|20-24|=4로 동점이라 이 스펙의 "동점은 올림" 규칙을 따른다). */
+  pad?: "normal" | "tight" | "loose";
 }
 
 /**
@@ -36,13 +38,18 @@ export function Card({
   tone = "outlined",
   pad = "normal",
   className = "",
+  ...rest
 }: {
   children: ReactNode;
   tone?: "outlined" | "raised";
-  pad?: "normal" | "tight";
+  pad?: "normal" | "tight" | "loose";
   className?: string;
-}) {
-  return <div className={cardClass(className, { tone, pad })}>{children}</div>;
+} & ComponentPropsWithoutRef<"div">) {
+  return (
+    <div className={cardClass(className, { tone, pad })} {...rest}>
+      {children}
+    </div>
+  );
 }
 
 /** 배지. 강조(`accent`)는 CURATED처럼 출처를 밝히는 자리에만 쓴다. */

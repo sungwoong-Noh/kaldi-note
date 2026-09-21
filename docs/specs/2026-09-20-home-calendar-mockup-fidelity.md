@@ -242,18 +242,39 @@ plan: docs/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 #### AC-HOMECAL-112 · 웹 우측 컬럼의 기록이 원장 행이 아니라 카드로 렌더된다
 
+> **2026-09-21 구현 확정 — 값 3개를 프로젝트 스케일에 반올림한다:**
+> - `border-radius` 10px → **`rounded-surface`(12px)**. 이 프로젝트는 모서리를 값이 아니라
+>   역할로 쓰고(`docs/conventions/frontend.md`), `rounded-surface`가 "카드·다이얼로그의 면"
+>   역할과 정확히 일치한다.
+> - `padding` 20px → **24px**(`Card`의 새 `pad="loose"`). 간격 스케일(4·8·12·16·24·32·48)에
+>   20이 없다 — `|20-16|=4`, `|20-24|=4`로 동점이라 이 스펙의 "동점은 올림" 규칙(Task 2 참조)을
+>   따른다.
+> - `gap` 13px → **12px**(`gap-3`). `|13-12|=1`, `|13-16|=3`로 12가 더 가깝다.
+>
+> **면 스타일은 프리미티브에만 있어야 한다**(`AC-SPACE-05`·`06`·`AC-SKIN-02`) — 이 카드는
+> `DayCard.tsx`가 직접 `rounded-surface`·`border`·`bg-paper`를 조합하지 않고
+> `components/ui/Card`(`tone="outlined" pad="loose"`)를 가져다 쓴다.
+
 - **Given** 웹(≥1100px)에서 날짜를 선택한 상태
 - **When** 우측 컬럼의 기록 목록을 렌더한다
-- **Then** 각 기록이 `paper` 배경 + 1px `border` + `border-radius` 10px + `padding` 20px +
-  내부 `gap` 13px인 카드로 렌더된다(기존 `DayListRow` 원장 행 재사용을 대체)
+- **Then** 각 기록이 `Card` 프리미티브(`bg-paper` + 1px `border` + `rounded-surface` +
+  `pad="loose"`) + 내부 `gap-3`(12px)인 카드로 렌더된다(기존 `DayListRow` 원장 행 재사용을 대체)
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant)
 
-#### AC-HOMECAL-113 · 카드 상단에 roast dot 10px·레시피명 15.5px·캡션 12px·대표 수치가 배치된다
+#### AC-HOMECAL-113 · 카드 상단에 roast dot 10px·레시피명·캡션·대표 수치가 배치된다
+
+> **2026-09-21 구현 확정:** 레시피명 15.5px는 기존 `body`(15px)로, 캡션 12px는 기존
+> `caption`(11.5px)으로 근사한다 — 차이가 0.5~1px라 육안 구분이 어렵다(계획의 제안대로).
+>
+> **캡션 내용을 "원두·기구·시각"에서 "시각"만으로 줄인다.** `BrewLogSummary`에는 원두·기구
+> 이름이 없다 — 둘 다 배치→제품→로스터(원두), 사용자 그라인더(기구) 조회를 새로 붙여야
+> 하는데, 이 스펙은 화면 정합성 보정이지 새 데이터 파이프라인 도입이 아니다. `Recipe`가
+> 원두를 참조하지 않아 검색 범위를 줄인 것과 같은 종류의 제약이다.
 
 - **Given** 웹 기록 카드 1개
 - **When** 렌더한다
-- **Then** 좌측에 roast dot(10px 원), 레시피명(`font-size` 15.5px, `font-weight` 600),
-  그 아래 원두·기구·시각 캡션(12px)이, 우측에 대표 수치가 배치된다
+- **Then** 좌측에 roast dot(10px 원), 레시피명(`text-body font-semibold`, 15px),
+  그 아래 시각 캡션(`text-caption`, 11.5px)이, 우측에 대표 수치가 배치된다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant)
 
 #### AC-HOMECAL-114 · 카드의 대표 수치가 새 타입 스케일 `card-metric`(mono 17px)으로 렌더된다

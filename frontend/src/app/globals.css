@@ -226,6 +226,15 @@
 }
 
 /*
+ * 웹 카드의 대표 수치 — docs/specs/2026-09-20-home-calendar-mockup-fidelity.md
+ * (AC-HOMECAL-114). 계측값이라 Mono다.
+ */
+@utility text-card-metric {
+  font-family: var(--font-mono);
+  font-size: 17px;
+}
+
+/*
  * 다크 값 — docs/specs/2026-09-17-dark-mode-toggle.md
  *
  * ★ 3단 구조다. **이 파일 안에서만 값이 두 곳에 산다 — 하나를 고치면 반드시 둘 다 고친다.**

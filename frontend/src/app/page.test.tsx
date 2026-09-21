@@ -114,7 +114,9 @@ describe("HomePage", () => {
     );
 
     expect(await screen.findByText("09.05 SAT · 2 BREWS")).toBeInTheDocument();
-    expect(screen.getAllByTestId("day-list-row")).toHaveLength(2);
+    // 갱신(2026-09-21, AC-HOMECAL-112): jsdom 기본 폭(1024px)이 웹 임계값(760px)을 넘어
+    // 이 테스트는 이제 원장 행이 아니라 카드를 본다.
+    expect(screen.getAllByTestId("day-card")).toHaveLength(2);
   });
 
   it("AC-HOMECAL-29 · 빈 날짜를 누르면 선택되고 빈 문구가 뜬다", async () => {

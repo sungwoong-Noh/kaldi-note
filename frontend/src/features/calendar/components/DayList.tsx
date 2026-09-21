@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { BrewLogSummary } from "@/features/brewlog/schema";
-import { formatRatio } from "@/lib/format";
 import { brewCountLabel } from "../brewCountLabel";
+import { kstTimeOf, representativeMetric } from "../dayListFormat";
 import { useRoastLevel } from "../useRoastLevel";
+import { DayCard } from "./DayCard";
 import { RoastDot } from "./RoastDot";
 
 const WEEKDAY_EN = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
@@ -18,25 +19,11 @@ function weekdayOf(date: string): string {
   return WEEKDAY_EN[(d.getUTCDay() + 6) % 7];
 }
 
-/** UTC ISO `brewedAt` → KST `HH:mm`. 별점이 있으면 뒤에 붙인다(AC-HOMECAL-108·109). */
+/** 시각 + 별점(있을 때만). 모바일 원장 행 캡션(AC-HOMECAL-108·109) 전용 — 웹 카드는 별점을
+ * 태그 줄에 따로 보여준다(AC-HOMECAL-115). */
 function formatCaption(brewedAt: string, rating: number | undefined): string {
-  const d = new Date(brewedAt);
-  const kstHour = (d.getUTCHours() + 9) % 24;
-  const hh = String(kstHour).padStart(2, "0");
-  const mm = String(d.getUTCMinutes()).padStart(2, "0");
-  const time = `${hh}:${mm}`;
+  const time = kstTimeOf(brewedAt);
   return rating !== undefined ? `${time} · ★ ${rating}` : time;
-}
-
-/** 수율이 있으면 수율, 없으면 비율 — 내 기록과 남의 기록에 같은 규칙을 쓴다(AC-HOMECAL-43). */
-function representativeMetric(log: BrewLogSummary): string | undefined {
-  if (log.extractionYieldPercent !== undefined) {
-    return `${log.extractionYieldPercent} %`;
-  }
-  if (log.brewRatio !== undefined) {
-    return formatRatio(log.brewRatio);
-  }
-  return undefined;
 }
 
 /**
@@ -66,15 +53,21 @@ export function DayList({
   return (
     <div data-day-list data-variant={variant}>
       <p className="text-label text-ink-3">{header}</p>
-      <ul>
-        {logs.map((log) => (
-          <DayListRow
-            key={log.id}
-            log={log}
-            recipeLabel={recipeLabels?.get(log.recipeId)}
-            variant={variant}
-          />
-        ))}
+      <ul className={variant === "web" ? "flex flex-col gap-3" : undefined}>
+        {logs.map((log) =>
+          variant === "web" ? (
+            <li key={log.id}>
+              <DayCard log={log} recipeLabel={recipeLabels?.get(log.recipeId)} />
+            </li>
+          ) : (
+            <DayListRow
+              key={log.id}
+              log={log}
+              recipeLabel={recipeLabels?.get(log.recipeId)}
+              variant={variant}
+            />
+          ),
+        )}
       </ul>
       {ownerNickname !== undefined && (
         <p className="text-body-sm text-ink-3">

@@ -36,6 +36,8 @@ const SCALE = [
   "label",
   // 갱신(2026-09-21): 홈 달력 목업 정합성 보정(AC-HOMECAL-107)이 월 라벨 크기를 들인다.
   "month-label",
+  // 갱신(2026-09-21): 같은 보정(AC-HOMECAL-108)이 목록 행 캡션 크기를 들인다.
+  "caption",
 ] as const;
 
 /**

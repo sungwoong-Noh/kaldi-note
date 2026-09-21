@@ -70,4 +70,46 @@ describe("DayList", () => {
 
     expect(screen.getByText("09.19 SAT · 지연 · 1 BREW")).toBeInTheDocument();
   });
+
+  it("AC-HOMECAL-108 · 별점이 있으면 시각·별점 캡션이 text-caption으로 렌더된다", () => {
+    // logA.brewedAt = 2026-08-31T09:00:00Z(UTC) → KST 18:00, rating: 4.0
+    renderWithQuery(
+      <DayList
+        date="2026-09-19"
+        logs={[{ ...logA, id: 1, beanBatchId: undefined }]}
+        variant="mobile"
+      />,
+    );
+
+    const caption = screen.getByText("18:00 · ★ 4");
+    expect(caption).toHaveClass("text-caption");
+  });
+
+  it("AC-HOMECAL-109 · 별점이 없으면 캡션에 시각만 나온다", () => {
+    renderWithQuery(
+      <DayList
+        date="2026-09-19"
+        logs={[{ ...logA, id: 1, beanBatchId: undefined, rating: undefined }]}
+        variant="mobile"
+      />,
+    );
+
+    expect(screen.getByText("18:00")).toBeInTheDocument();
+    expect(screen.queryByText(/★/)).not.toBeInTheDocument();
+  });
+
+  it("AC-HOMECAL-110 · 남의 달력 하단 관계 문구에 상대 닉네임이 보간된다", () => {
+    renderWithQuery(
+      <DayList
+        date="2026-09-19"
+        logs={[{ ...logA, id: 1, beanBatchId: undefined }]}
+        ownerNickname="지연"
+        variant="mobile"
+      />,
+    );
+
+    expect(
+      screen.getByText("맞팔로우 상태여서 지연 님의 기록이 보입니다."),
+    ).toBeInTheDocument();
+  });
 });

@@ -217,6 +217,15 @@
 }
 
 /*
+ * 목록 행의 시각·별점 캡션 — docs/specs/2026-09-20-home-calendar-mockup-fidelity.md
+ * (AC-HOMECAL-108). body-sm(13px)보다 한 단 작다.
+ */
+@utility text-caption {
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+/*
  * 다크 값 — docs/specs/2026-09-17-dark-mode-toggle.md
  *
  * ★ 3단 구조다. **이 파일 안에서만 값이 두 곳에 산다 — 하나를 고치면 반드시 둘 다 고친다.**

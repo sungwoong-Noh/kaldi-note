@@ -18,6 +18,16 @@ function weekdayOf(date: string): string {
   return WEEKDAY_EN[(d.getUTCDay() + 6) % 7];
 }
 
+/** UTC ISO `brewedAt` → KST `HH:mm`. 별점이 있으면 뒤에 붙인다(AC-HOMECAL-108·109). */
+function formatCaption(brewedAt: string, rating: number | undefined): string {
+  const d = new Date(brewedAt);
+  const kstHour = (d.getUTCHours() + 9) % 24;
+  const hh = String(kstHour).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  const time = `${hh}:${mm}`;
+  return rating !== undefined ? `${time} · ★ ${rating}` : time;
+}
+
 /** 수율이 있으면 수율, 없으면 비율 — 내 기록과 남의 기록에 같은 규칙을 쓴다(AC-HOMECAL-43). */
 function representativeMetric(log: BrewLogSummary): string | undefined {
   if (log.extractionYieldPercent !== undefined) {
@@ -67,7 +77,9 @@ export function DayList({
         ))}
       </ul>
       {ownerNickname !== undefined && (
-        <p className="text-body-sm text-ink-3">맞팔로우 — 서로의 기록이 보입니다</p>
+        <p className="text-body-sm text-ink-3">
+          맞팔로우 상태여서 {ownerNickname} 님의 기록이 보입니다.
+        </p>
       )}
     </div>
   );
@@ -92,8 +104,13 @@ function DayListRow({
         className="flex min-h-11 items-center gap-2"
       >
         <RoastDot roastLevel={roastLevel} />
-        <span className="flex-1 truncate text-body font-medium">
-          {recipeLabel ?? ""}
+        <span className="flex-1 truncate">
+          <span className="block truncate text-body font-medium">
+            {recipeLabel ?? ""}
+          </span>
+          <span className="text-caption text-ink-3">
+            {formatCaption(log.brewedAt, log.rating)}
+          </span>
         </span>
         {metric !== undefined && <span className="text-metric">{metric}</span>}
       </Link>

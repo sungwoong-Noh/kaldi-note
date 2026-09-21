@@ -166,8 +166,9 @@ describe("HomePage", () => {
       await screen.findByRole("button", { name: "9월 10일, 기록 1건" }),
     );
 
+    // 갱신(2026-09-21, AC-HOMECAL-110): 고정 문구가 상대 닉네임을 보간하는 문구로 바뀌었다.
     expect(
-      await screen.findByText("맞팔로우 — 서로의 기록이 보입니다"),
+      await screen.findByText("맞팔로우 상태여서 지연 님의 기록이 보입니다."),
     ).toBeInTheDocument();
   });
 

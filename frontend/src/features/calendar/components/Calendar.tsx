@@ -48,6 +48,28 @@ function dayNumberClassName(
 }
 
 /**
+ * 지난/미래 × 평일/주말 4색 규칙(AC-HOMECAL-95~98). 선택되거나 오늘인 셀은 대상이 아니다 —
+ * `dayNumberClassName`의 원/링 스타일이 우선한다(AC-HOMECAL-99).
+ */
+function dateColorVar(
+  cellDate: string,
+  today: string | undefined,
+  columnIndex: number,
+  selected: boolean,
+  isToday: boolean,
+): string | undefined {
+  if (selected || isToday || today === undefined) return undefined;
+  const isPast = cellDate < today;
+  const isWeekend = columnIndex >= 5;
+  if (isPast) {
+    return isWeekend ? "var(--date-past-weekend)" : "var(--date-past-weekday)";
+  }
+  return isWeekend
+    ? "var(--date-future-weekend)"
+    : "var(--date-future-weekday)";
+}
+
+/**
  * 달력 그리드. 모바일·웹이 같은 컴포넌트를 쓰고 `variant`로 CSS만 가른다
  * (docs/specs/2026-09-19-home-calendar.md) — 두 벌로 만들면 aria-label·키보드 이동 같은
  * 규칙이 한쪽에만 적용되는 사고가 난다.
@@ -129,8 +151,20 @@ export function Calendar({
       className={fillHeight ? "flex flex-1 flex-col" : undefined}
     >
       <div role="row" className="grid grid-cols-7">
-        {WEEKDAY_LABELS.map((label) => (
-          <div key={label} role="columnheader">
+        {WEEKDAY_LABELS.map((label, index) => (
+          <div
+            key={label}
+            role="columnheader"
+            className="text-label"
+            style={{
+              // text-label의 자간은 0.12em이다 — 이 헤더만 목업 값 0.08em으로 덮어쓴다.
+              letterSpacing: "0.08em",
+              color:
+                index >= 5
+                  ? "var(--weekday-header-weekend)"
+                  : "var(--weekday-header)",
+            }}
+          >
             {label}
           </div>
         ))}
@@ -209,6 +243,15 @@ export function Calendar({
                   <span
                     data-testid="day-number"
                     className={dayNumberClassName(isWeb, selected, isToday)}
+                    style={{
+                      color: dateColorVar(
+                        cell.date,
+                        today,
+                        columnIndex,
+                        selected,
+                        isToday,
+                      ),
+                    }}
                   >
                     {day}
                   </span>

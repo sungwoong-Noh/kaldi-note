@@ -77,6 +77,18 @@
   --on-hero: oklch(0.97 0.004 85);
   --hero-line: oklch(0.34 0.015 60);
   --on-hero-dim: oklch(0.72 0.05 55);
+
+  /*
+   * 홈 달력 전용 파생 토큰 — docs/specs/2026-09-20-home-calendar-mockup-fidelity.md
+   * (AC-HOMECAL-92~98). 핵심 팔레트(TOKEN_NAMES 18개)에는 넣지 않는다 — 이 화면
+   * 밖에서는 쓰지 않는 값이다.
+   */
+  --weekday-header: oklch(0.58 0.02 70);
+  --weekday-header-weekend: oklch(0.62 0.02 70);
+  --date-past-weekday: oklch(0.3 0.015 60);
+  --date-past-weekend: oklch(0.5 0.015 60);
+  --date-future-weekday: oklch(0.72 0.012 70);
+  --date-future-weekend: oklch(0.78 0.012 70);
 }
 
 @theme inline {
@@ -236,37 +248,51 @@
 
     --danger: oklch(0.72 0.15 28);
     --signal-record: oklch(0.65 0.17 30);
+
+    --weekday-header: var(--ink-3);
+    --weekday-header-weekend: var(--ink-3);
+    --date-past-weekday: var(--ink);
+    --date-past-weekend: var(--ink-2);
+    --date-future-weekday: var(--ink-3);
+    --date-future-weekend: oklch(0.55 0.012 70);
   }
 }
 
 :root[data-theme="dark"] {
-    --paper: oklch(0.17 0.008 60);
-    --surface: oklch(0.21 0.009 60);
-    /* 도출: 라이트에서 sunken은 paper보다 가라앉는다. 다크에서도 같은 방향으로 어둡게. */
-    --sunken: oklch(0.13 0.008 60);
-    --raised: oklch(0.23 0.014 60);
+  --paper: oklch(0.17 0.008 60);
+  --surface: oklch(0.21 0.009 60);
+  /* 도출: 라이트에서 sunken은 paper보다 가라앉는다. 다크에서도 같은 방향으로 어둡게. */
+  --sunken: oklch(0.13 0.008 60);
+  --raised: oklch(0.23 0.014 60);
 
-    --border: oklch(0.29 0.01 60);
-    --divider: oklch(0.26 0.012 60);
-    /* 도출: 라이트에서 divider-strong이 divider보다 진하다. 다크에서 진함은 밝음이다. */
-    --divider-strong: oklch(0.33 0.012 60);
+  --border: oklch(0.29 0.01 60);
+  --divider: oklch(0.26 0.012 60);
+  /* 도출: 라이트에서 divider-strong이 divider보다 진하다. 다크에서 진함은 밝음이다. */
+  --divider-strong: oklch(0.33 0.012 60);
 
-    --ink: oklch(0.95 0.005 85);
-    --ink-2: oklch(0.82 0.008 78);
-    --ink-3: oklch(0.68 0.01 70);
-    --ink-hover: oklch(0.88 0.005 85);
-    --ink-disabled: oklch(0.46 0.01 65);
-    /* 다크에서는 ink가 밝으므로 그 위 글자가 뒤집힌다 — 핸드오프의 「primary 반전」. */
-    --on-ink: oklch(0.2 0.015 60);
+  --ink: oklch(0.95 0.005 85);
+  --ink-2: oklch(0.82 0.008 78);
+  --ink-3: oklch(0.68 0.01 70);
+  --ink-hover: oklch(0.88 0.005 85);
+  --ink-disabled: oklch(0.46 0.01 65);
+  /* 다크에서는 ink가 밝으므로 그 위 글자가 뒤집힌다 — 핸드오프의 「primary 반전」. */
+  --on-ink: oklch(0.2 0.015 60);
 
-    --accent: oklch(0.72 0.07 55);
-    /* 도출: 라이트에서 accent-soft가 accent보다 밝다(0.42→0.62). 다크에서도 위로. */
-    --accent-soft: oklch(0.8 0.05 55);
-    /* 도출: wash는 배경이다. 라이트에서 paper 근처였듯 다크에서도 paper 근처로. */
-    --accent-wash: oklch(0.26 0.03 50);
+  --accent: oklch(0.72 0.07 55);
+  /* 도출: 라이트에서 accent-soft가 accent보다 밝다(0.42→0.62). 다크에서도 위로. */
+  --accent-soft: oklch(0.8 0.05 55);
+  /* 도출: wash는 배경이다. 라이트에서 paper 근처였듯 다크에서도 paper 근처로. */
+  --accent-wash: oklch(0.26 0.03 50);
 
-    --danger: oklch(0.72 0.15 28);
-    --signal-record: oklch(0.65 0.17 30);
+  --danger: oklch(0.72 0.15 28);
+  --signal-record: oklch(0.65 0.17 30);
+
+  --weekday-header: var(--ink-3);
+  --weekday-header-weekend: var(--ink-3);
+  --date-past-weekday: var(--ink);
+  --date-past-weekend: var(--ink-2);
+  --date-future-weekday: var(--ink-3);
+  --date-future-weekend: oklch(0.55 0.012 70);
 }
 
 body {
@@ -296,13 +322,11 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"])
-  .select-chevron {
+  :root:not([data-theme="light"]) .select-chevron {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%239c9792' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   }
 }
 
-:root[data-theme="dark"]
-  .select-chevron {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%239c9792' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-  }
+:root[data-theme="dark"] .select-chevron {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%239c9792' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+}

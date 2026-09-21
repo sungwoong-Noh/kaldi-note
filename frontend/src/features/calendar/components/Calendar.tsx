@@ -236,26 +236,29 @@ export function Calendar({
                       ? { boxShadow: "inset 0 0 0 2px var(--ink)" }
                       : undefined
                   }
-                  className={`flex h-full w-full min-h-11 min-w-11 flex-col items-center justify-center overflow-hidden ${
+                  className={`flex h-full w-full min-h-11 min-w-11 flex-col items-center justify-center gap-1 overflow-hidden ${
                     isWeb ? "px-3 py-2" : ""
                   } ${isWeb && selected ? "bg-surface" : ""} ${lineClass}`}
                 >
                   <span
-                    data-testid="day-number"
-                    className={dayNumberClassName(isWeb, selected, isToday)}
-                    style={{
-                      color: dateColorVar(
-                        cell.date,
-                        today,
-                        columnIndex,
-                        selected,
-                        isToday,
-                      ),
-                    }}
+                    data-testid="day-number-row"
+                    className={`flex items-center ${isWeb ? "flex-row gap-2" : "flex-col gap-1"}`}
                   >
-                    {day}
-                  </span>
-                  {count > 0 && (
+                    <span
+                      data-testid="day-number"
+                      className={dayNumberClassName(isWeb, selected, isToday)}
+                      style={{
+                        color: dateColorVar(
+                          cell.date,
+                          today,
+                          columnIndex,
+                          selected,
+                          isToday,
+                        ),
+                      }}
+                    >
+                      {day}
+                    </span>
                     <span
                       data-record-dot
                       aria-hidden
@@ -264,10 +267,11 @@ export function Calendar({
                         width: 5,
                         height: 5,
                         borderRadius: "50%",
-                        backgroundColor: "var(--signal-record)",
+                        backgroundColor:
+                          count > 0 ? "var(--signal-record)" : "transparent",
                       }}
                     />
-                  )}
+                  </span>
                   {isWeb && info?.primaryRecipeName && (
                     <span className="w-full truncate px-1 text-center">
                       {info.primaryRecipeName}

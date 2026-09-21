@@ -201,7 +201,13 @@ describe("HomePage", () => {
     renderWithQuery(<HomePage />);
 
     expect(await screen.findAllByRole("columnheader")).toHaveLength(7);
-    expect(document.querySelector("[data-record-dot]")).toBeNull();
+    // 갱신(2026-09-21, AC-HOMECAL-101): 점 자리는 이제 기록이 없어도 항상 렌더된다
+    // (투명 placeholder) — "점만 비운다"는 요소 부재가 아니라 무색으로 구현이 바뀌었다.
+    const dots = document.querySelectorAll<HTMLElement>("[data-record-dot]");
+    expect(dots.length).toBeGreaterThan(0);
+    for (const dot of dots) {
+      expect(dot.style.backgroundColor).toBe("transparent");
+    }
     expect(screen.queryByTestId("skeleton")).toBeNull();
   });
 });

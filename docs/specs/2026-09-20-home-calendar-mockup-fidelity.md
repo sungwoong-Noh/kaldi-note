@@ -288,11 +288,15 @@ plan: docs/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 웹 기록 점 위치
 
-#### AC-HOMECAL-118 · 웹 달력 셀에서 기록 점이 날짜 숫자 오른쪽 6px 간격에 렌더된다
+#### AC-HOMECAL-118 · 웹 달력 셀에서 기록 점이 날짜 숫자 오른쪽 8px 간격에 렌더된다
+
+> **2026-09-21 정정:** 목업 원값은 6px이지만 간격 스케일(4·8·12·16·24·32·48, `docs/conventions/frontend.md`)에
+> 6px가 없다. `|6-4|=2`와 `|6-8|=2`로 동점이라 계획 단계에서 "동점은 올림"으로 8px를 확정했다
+> (`docs/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md` Task 2).
 
 - **Given** 웹(≥760px) 달력 셀에 기록이 있는 날짜
 - **When** 렌더한다
-- **Then** 기록 점이 날짜 숫자 **아래**(모바일 배치)가 아니라 **오른쪽**에 6px `gap`으로
+- **Then** 기록 점이 날짜 숫자 **아래**(모바일 배치)가 아니라 **오른쪽**에 8px `gap`으로
   렌더된다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`(web variant)
 

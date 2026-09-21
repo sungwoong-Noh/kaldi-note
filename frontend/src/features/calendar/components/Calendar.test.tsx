@@ -361,6 +361,58 @@ describe("Calendar", () => {
     expect(number).toHaveClass("rounded-full", "border", "border-border");
   });
 
+  it("AC-HOMECAL-100 · 날짜 숫자와 기록 점 사이 gap이 4px(gap-1)다", () => {
+    const days = new Map([["2026-09-05", { count: 1 }]]);
+    render(
+      <Calendar
+        month="2026-09"
+        days={days}
+        selectedDate={null}
+        onSelect={() => {}}
+        variant="mobile"
+      />,
+    );
+
+    const cell = screen.getByRole("button", { name: "9월 5일, 기록 1건" });
+    expect(cell).toHaveClass("gap-1");
+  });
+
+  it("AC-HOMECAL-101 · 기록 0건인 날도 점 자리(투명)가 렌더된다", () => {
+    render(
+      <Calendar
+        month="2026-09"
+        days={new Map()}
+        selectedDate={null}
+        onSelect={() => {}}
+        variant="mobile"
+      />,
+    );
+
+    const cell = screen.getByRole("button", { name: "9월 1일, 기록 없음" });
+    const dot = cell.querySelector<HTMLElement>("[data-record-dot]");
+    expect(dot).not.toBeNull();
+    // toHaveStyle 대신 인라인 값을 직접 읽는다 — jsdom getComputedStyle이 "transparent"를
+    // "rgba(0, 0, 0, 0)"으로 정규화해 리터럴 비교가 어긋난다.
+    expect(dot!.style.backgroundColor).toBe("transparent");
+  });
+
+  it("AC-HOMECAL-118 · 웹에서 기록 점이 날짜 숫자 오른쪽 8px(gap-2)에 렌더된다", () => {
+    const days = new Map([["2026-09-05", { count: 1 }]]);
+    render(
+      <Calendar
+        month="2026-09"
+        days={days}
+        selectedDate={null}
+        onSelect={() => {}}
+        variant="web"
+      />,
+    );
+
+    const cell = screen.getByRole("button", { name: "9월 5일, 기록 1건" });
+    const row = within(cell).getByTestId("day-number-row");
+    expect(row).toHaveClass("flex-row", "gap-2");
+  });
+
   it("AC-HOMECAL-98a · 다크 모드 날짜 색이 기존 ink 스케일을 재사용한다", () => {
     const dark = darkBlockOf();
     expect(dark).toMatch(/--date-past-weekday:\s*var\(--ink\);/);

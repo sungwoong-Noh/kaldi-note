@@ -73,6 +73,7 @@ function RailTab({
           nickname={profile.nickname}
           profileImageUrl={profile.profileImageUrl}
           size={32}
+          userId={profile.id}
         />
         <span className={`text-body-sm ${selected ? "font-semibold" : ""}`}>
           {label}
@@ -99,6 +100,7 @@ function RailTab({
           nickname={profile.nickname}
           profileImageUrl={profile.profileImageUrl}
           size={50}
+          userId={profile.id}
         />
       </span>
       <span className={`text-body-sm ${selected ? "font-semibold" : "text-ink-3"}`}>

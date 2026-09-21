@@ -63,6 +63,7 @@ export function WebTopBar() {
                 nickname={me.data.nickname}
                 profileImageUrl={me.data.profileImageUrl}
                 size={36}
+                userId={me.data.id}
               />
             </Link>
           )}

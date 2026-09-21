@@ -165,6 +165,56 @@ test.describe("버튼 색 — hover", () => {
   });
 });
 
+test.describe("버튼 색 — 링크와 버튼이 같다", () => {
+  const VARIANTS = ["primary", "secondary", "ghost"] as const;
+
+  for (const variant of VARIANTS) {
+    test(`AC-BTN-14 · ${variant} 링크와 버튼의 색이 같다`, async ({
+      page,
+    }) => {
+      await openLight(page);
+
+      const pair = await page.evaluate(
+        ({ base, cls }) => {
+          const make = (tag: "button" | "a") => {
+            const el = document.createElement(tag);
+            el.className = `${base} ${cls}`;
+            el.textContent = "저장";
+            document.body.appendChild(el);
+            const s = getComputedStyle(el);
+            const read = { bg: s.backgroundColor, fg: s.color };
+            el.remove();
+            return read;
+          };
+          return { button: make("button"), link: make("a") };
+        },
+        { base: BUTTON_BASE, cls: BUTTON_VARIANT[variant] },
+      );
+
+      expect(pair.link.bg).toBe(pair.button.bg);
+      expect(pair.link.fg).toBe(pair.button.fg);
+    });
+  }
+
+  test("AC-BTN-14 · 실제 화면의 링크 버튼도 먹색이다", async ({ page }) => {
+    // 위 하네스는 컴포넌트가 실제로 이 상수를 쓰는지는 보증하지 않는다.
+    // ButtonLink가 렌더한 진짜 CTA를 재야 그것이 드러난다.
+    //
+    // /recipes/3는 스텁에서 kasuyaRecipe(ownerUserId: 11 = me.id)로 매핑된다 —
+    // /recipes/\d+ 기본 스텁은 hoffmann(제3자 소유)이라 "이 레시피로 내렸다" CTA가 안 뜬다.
+    await installStubs(page);
+    await page.goto("/recipes/3");
+    await page.waitForLoadState("networkidle");
+
+    const cta = page.getByRole("link", { name: "이 레시피로 내렸다" });
+    await expect(cta).toBeVisible();
+
+    expect(
+      await cta.evaluate((el) => getComputedStyle(el).backgroundColor),
+    ).toBe(await token(page, "ink"));
+  });
+});
+
 test.describe("버튼 색 — 다크", () => {
   test("AC-BTN-12 · 다크에서 primary가 저절로 반전된다", async ({ page }) => {
     await openDark(page);

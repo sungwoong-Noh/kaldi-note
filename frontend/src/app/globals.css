@@ -7,8 +7,9 @@
 @import "./fonts.css";
 
 /*
- * 색 토큰 16개 — Clean Ledger (docs/specs/2026-09-17-design-system-v2.md) +
- * signal-record (docs/specs/2026-09-19-home-calendar.md)
+ * 색 토큰 18개 — Clean Ledger (docs/specs/2026-09-17-design-system-v2.md) +
+ * signal-record (docs/specs/2026-09-19-home-calendar.md) +
+ * ink-hover·ink-disabled (docs/specs/2026-09-21-button-color-fidelity.md)
  *
  * ★ 값의 원천은 docs/design/design_handoff_kaldi_note/README.md다.
  *   어긋나면 그쪽이 옳다. 이 파일은 그것을 CSS로 옮긴 것이고,
@@ -35,6 +36,10 @@
   --ink: oklch(0.22 0.015 60);
   --ink-2: oklch(0.38 0.015 60);
   --ink-3: oklch(0.55 0.02 70);
+  /* primary 버튼 hover 배경. ink보다 어둡다 — 누르면 더 진해진다. */
+  --ink-hover: oklch(0.15 0.015 60);
+  /* disabled 버튼 글자. sunken 위에 놓인다. */
+  --ink-disabled: oklch(0.65 0.015 65);
   /* ink 배경 위 글자. primary 버튼이 이 조합이다. */
   --on-ink: oklch(0.97 0.004 85);
 
@@ -85,6 +90,8 @@
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
+  --color-ink-hover: var(--ink-hover);
+  --color-ink-disabled: var(--ink-disabled);
   --color-on-ink: var(--on-ink);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
@@ -211,6 +218,13 @@
     --ink: oklch(0.95 0.005 85);
     --ink-2: oklch(0.82 0.008 78);
     --ink-3: oklch(0.68 0.01 70);
+    /*
+     * primary 버튼 hover 배경. ink(0.95)보다 어둡다 — 라이트의 "더 어둡게"(0.22→0.15)를
+     * 그대로 대칭시키면 0.95+0.07=1.02로 표현 범위를 벗어나서, 밝은 면을 누르면
+     * 어두워지는 쪽을 택했다(docs/specs/2026-09-21-button-color-fidelity.md).
+     */
+    --ink-hover: oklch(0.88 0.005 85);
+    --ink-disabled: oklch(0.46 0.01 65);
     /* 다크에서는 ink가 밝으므로 그 위 글자가 뒤집힌다 — 핸드오프의 「primary 반전」. */
     --on-ink: oklch(0.2 0.015 60);
 
@@ -240,6 +254,8 @@
     --ink: oklch(0.95 0.005 85);
     --ink-2: oklch(0.82 0.008 78);
     --ink-3: oklch(0.68 0.01 70);
+    --ink-hover: oklch(0.88 0.005 85);
+    --ink-disabled: oklch(0.46 0.01 65);
     /* 다크에서는 ink가 밝으므로 그 위 글자가 뒤집힌다 — 핸드오프의 「primary 반전」. */
     --on-ink: oklch(0.2 0.015 60);
 

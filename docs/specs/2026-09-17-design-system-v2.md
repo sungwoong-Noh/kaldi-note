@@ -210,10 +210,14 @@ plan: docs/plans/2026-09-17-plan-design-system-v2.md
 > `signal-record`를 하나 더한다 — **16개**가 된다. 이 스펙이 정한 "토큰은 새로 늘리지 않는다"는
 > 원칙과 별개로, 그 스펙은 "이 시스템에 유채색이 에스프레소 한 색뿐"이라는 원래 전제에 신호색
 > 하나를 예외로 추가하는 것을 명시적으로 인터뷰로 확정했다.
+>
+> **2026-09-21 정정:** `docs/specs/2026-09-21-button-color-fidelity.md`가 버튼 전용 토큰
+> `ink-hover`·`ink-disabled`를 더한다 — **18개**가 된다. 둘 다 유채색이 아니라 먹색 계열의
+> 상태 변주라, "유채색은 에스프레소 한 색뿐"이라는 전제는 그대로다.
 
 - **Given** `frontend/src/app/globals.css`
 - **When** `:root`와 `@media (prefers-color-scheme: dark)` 블록의 색 토큰 이름을 모은다
-- **Then** 양쪽 모두 같은 개수(현재 **16개**)이고 이름이 같다
+- **Then** 양쪽 모두 같은 개수(현재 **18개**)이고 이름이 같다
 
 #### AC-DS2-02 · 모든 색 토큰이 oklch로 정의된다
 

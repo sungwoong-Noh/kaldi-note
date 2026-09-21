@@ -205,6 +205,18 @@
 }
 
 /*
+ * 월 헤더 라벨 — docs/specs/2026-09-20-home-calendar-mockup-fidelity.md(AC-HOMECAL-107).
+ * card-title(18px)로는 너무 작고 page-title(27px)은 너무 크다 — "각 스펙이 실제로
+ * 쓸 때 추가한다"는 design-system-v2 원칙대로 새 단계를 연다.
+ */
+@utility text-month-label {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+/*
  * 다크 값 — docs/specs/2026-09-17-dark-mode-toggle.md
  *
  * ★ 3단 구조다. **이 파일 안에서만 값이 두 곳에 산다 — 하나를 고치면 반드시 둘 다 고친다.**

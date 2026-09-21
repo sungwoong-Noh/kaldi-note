@@ -34,6 +34,8 @@ const SCALE = [
   "metric",
   // 갱신(2026-09-17): 리스킨이 히어로·아이브로우를 들이며 label에 자리가 생겼다.
   "label",
+  // 갱신(2026-09-21): 홈 달력 목업 정합성 보정(AC-HOMECAL-107)이 월 라벨 크기를 들인다.
+  "month-label",
 ] as const;
 
 /**

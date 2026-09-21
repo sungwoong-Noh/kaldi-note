@@ -29,17 +29,21 @@ export function MonthNav({
   return (
     <div className="flex items-center justify-between gap-3">
       <div>
-        <p className="text-card-title font-mono font-medium tracking-[-0.03em]">
+        <p className="text-month-label">
           {year}.{mon}
         </p>
         <p className="text-label text-ink-3">{label}</p>
       </div>
       <div className="flex gap-2">
         <Button aria-label="이전 달" onClick={onPrev}>
-          ‹
+          <span className="flex h-8 w-8 items-center justify-center rounded-control border border-border">
+            ‹
+          </span>
         </Button>
         <Button aria-label="다음 달" onClick={onNext} disabled={isCurrentMonth}>
-          ›
+          <span className="flex h-8 w-8 items-center justify-center rounded-control border border-border">
+            ›
+          </span>
         </Button>
       </div>
     </div>

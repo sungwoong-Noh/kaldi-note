@@ -1,7 +1,7 @@
 ---
 id: HOMECAL
 title: 홈 달력 목업 정합성 보정
-status: 승인
+status: 구현완료
 plan: docs/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 ---
 

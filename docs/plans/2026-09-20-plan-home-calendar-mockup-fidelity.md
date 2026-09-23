@@ -95,7 +95,7 @@ frontend/src/components/ui/Avatar.test.tsx                   (수정)
   `--date-past-weekday`, `--date-past-weekend`, `--date-future-weekday`,
   `--date-future-weekend`(라이트+다크 각각)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-HOMECAL-92 · 요일 헤더가 mono 10px·대문자·자간 0.08em이다", () => {
@@ -116,12 +116,12 @@ it("AC-HOMECAL-98a · 다크 모드에서 지난 평일 색이 --ink(다크)와 
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- Calendar`
 Expected: FAIL — 요일 헤더에 클래스가 없고, 날짜 숫자에 색 로직 자체가 없다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `globals.css`에 추가(`:root`):
 
@@ -155,12 +155,12 @@ today`(지난 날)·`columnIndex >= 5`(주말) 조합으로 4개 CSS 변수 중 
 `dayNumberClassName`이 이미 텍스트 색을 고정하므로(흰 텍스트 또는 기본색) 이 스타일을
 덮어쓰지 않게 조건부로 뺀다(AC-HOMECAL-99 회귀 확인).
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- Calendar`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm lint:fix
@@ -177,7 +177,7 @@ git add . && git commit -m "fix(calendar): 요일 헤더·날짜 색을 목업�
 
 **Covers:** AC-HOMECAL-100, 101, 118
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-HOMECAL-100 · 날짜 숫자와 기록 점 사이 gap이 4px다", () => {
@@ -199,12 +199,12 @@ it("AC-HOMECAL-118 · 웹에서 기록 점이 날짜 숫자 오른쪽 6px에 렌
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- Calendar`
 Expected: FAIL — 현재 점 span은 `count > 0`일 때만 렌더되고(자리 생략), gap 클래스가 없다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `count > 0 &&` 조건을 제거하고 항상 점 span을 렌더하되, `backgroundColor`를 `count > 0 ?
 "var(--signal-record)" : "transparent"`로 조건부 처리. 날짜 숫자를 감싼 flex 컨테이너에
@@ -220,12 +220,12 @@ Expected: FAIL — 현재 점 span은 `count > 0`일 때만 렌더되고(자리 
 > 계획 자체 검토에서 발견됐다. 스펙에 AC를 추가하지 않고 여기서 "동점은 올림" 규칙(Track A
 > 인터뷰에서 이미 확정)을 그대로 적용한다.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- Calendar`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm lint:fix
@@ -242,7 +242,7 @@ git add . && git commit -m "fix(calendar): 기록 점 간격을 고치고 빈 �
 
 **Covers:** AC-HOMECAL-102, 103, 104
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-HOMECAL-102 · 아이템 간 gap이 16px(gap-4)다", () => {
@@ -261,22 +261,22 @@ it("AC-HOMECAL-104 · 웹 선택 pill padding이 8px 16px 8px 8px(py-2 pr-4 pl-2
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- FollowRail`
 Expected: FAIL — 현재 `gap-3`·`gap-1`·`py-1 pr-3 pl-1`.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `gap-3` → `gap-4`(최상위 tablist), 모바일 `gap-1` → `gap-2`(아바타-라벨), 웹 pill
 `py-1 pr-3 pl-1` → `py-2 pr-4 pl-2`.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- FollowRail`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm lint:fix
@@ -298,7 +298,7 @@ git add . && git commit -m "fix(calendar): 팔로우 레일 간격을 스케일�
 **Interfaces:**
 - Produces: `text-month-label` 타입 스케일 유틸리티(mono 22px)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-HOMECAL-105 · 월 이동 버튼 클릭 영역이 44×44px다", () => {
@@ -319,12 +319,12 @@ it("AC-HOMECAL-107 · 월 라벨이 text-month-label(mono 22px)이다", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- MonthNav`
 Expected: FAIL — 버튼이 글자만 직접 렌더(내부 span 없음), 라벨이 `text-card-title`(18px)다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `globals.css`에 추가:
 
@@ -358,13 +358,13 @@ Expected: FAIL — 버튼이 글자만 직접 렌더(내부 span 없음), 라벨
 
 `Button`은 이미 `min-h-11 min-w-11`을 보장하므로 수정 불필요.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- MonthNav && pnpm test -- typography`
 Expected: PASS. `pnpm e2e -- touch-targets`도 재확인(클릭 영역이 여전히 44px임을 실제
 렌더로 검증하는 기존 스위트).
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm lint:fix
@@ -389,7 +389,7 @@ git add . && git commit -m "fix(calendar): 월 이동 버튼 시각 크기와 �
 - Produces: `text-caption` 타입 스케일 유틸리티(sans 11.5px)
 - Consumes: `DayList`가 이미 받는 `ownerNickname` prop(신규 파라미터 없음)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-HOMECAL-108 · 별점이 있으면 시각·별점 캡션이 text-caption으로 렌더된다", () => {
@@ -423,12 +423,12 @@ it("AC-HOMECAL-111 · 프로필 관계 문구에 닉네임이 보간된다", () 
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- DayList && pnpm test -- UserProfile`
 Expected: FAIL — 캡션 줄이 아예 없고, 관계 문구가 고정 텍스트다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `globals.css`에 `@utility text-caption { font-size: 11.5px; }`(sans, 기본 폰트 상속).
 `typography.test.ts`의 `SCALE`에 `"caption"` 추가.
@@ -444,12 +444,12 @@ text-ink-3">`로 레시피명 아래 렌더.
 `"맞팔로우 — 서로의 기록이 보입니다"` → `` `맞팔로우 상태여서 ${nickname} 님의 기록이
 보입니다.` ``. 호출부(`FollowSection`)에 `profile.data.nickname` 전달.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- DayList && pnpm test -- UserProfile && pnpm test -- typography`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm lint:fix
@@ -476,7 +476,7 @@ git add . && git commit -m "fix(calendar): 목록 행 캡션 줄을 추가하고
 - Consumes: `DayList`의 기존 `variant === "web"` 분기 — `web`일 때 `DayListRow` 대신
   `DayCard`를 렌더한다
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-HOMECAL-112 · 웹에서 기록이 카드(paper·border·radius 10·padding 20)로 렌더된다", () => {
@@ -509,12 +509,12 @@ it("AC-HOMECAL-117 · 메모가 없으면 메모 줄이 없다", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- DayCard && pnpm test -- DayList`
 Expected: FAIL — `DayCard` 파일 자체가 없고, 웹도 `DayListRow`(원장 행)를 그대로 쓴다.
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `globals.css`에 `@utility text-card-metric { font-family: var(--font-mono); font-size:
 17px; }`. `typography.test.ts` SCALE에 `"card-metric"` 추가.
@@ -538,12 +538,12 @@ italic`.
 
 `DayList.tsx`에서 `variant === "web"`이면 `DayListRow` 대신 `DayCard`를 렌더하도록 분기.
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- DayCard && pnpm test -- DayList && pnpm test -- typography`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm lint:fix
@@ -567,7 +567,7 @@ git add . && git commit -m "fix(calendar): 웹 우측 컬럼을 원장 행에서
 - Consumes: `Avatar({ nickname, profileImageUrl, size, userId })` — `userId` 필수 파라미터
   추가(기존 두 호출부 모두 이미 `id`를 갖고 있어 전달만 하면 된다)
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 it("AC-HOMECAL-119 · userId % 3에 따라 3색 중 하나가 배경색이 된다", () => {
@@ -585,12 +585,12 @@ it("AC-HOMECAL-120 · 같은 userId는 항상 같은 색이다", () => {
 });
 ```
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- Avatar`
 Expected: FAIL(컴파일 에러 — `userId`가 아직 필수 prop이 아니다).
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 ```tsx
 const AVATAR_TONES = [
@@ -612,12 +612,12 @@ backgroundColor: toneFor(userId), width: size, height: size }}`로 교체(사진
 `WebTopBar.tsx`의 `<Avatar>` 호출에 `userId={<현재 사용자 id>}` 추가(이미 해당 컴포넌트
 스코프에 있는 사용자 정보에서 가져온다).
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test -- Avatar && pnpm test -- FollowRail`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm lint:fix
@@ -645,7 +645,7 @@ git add . && git commit -m "fix(avatar): userId 기반 3색조를 추가한다 (
 
 **Covers:** AC-HOMECAL-121, 122, 123, 124, 125, 126, 127, 128
 
-- [ ] **Step 1: 실패하는 테스트 작성**
+- [x] **Step 1: 실패하는 테스트 작성**
 
 ```tsx
 // Calendar.test.tsx
@@ -712,7 +712,7 @@ test("AC-HOMECAL-128 · 모바일 날짜별 목록이 뷰포트 60%를 넘지 �
   `DayList.tsx`가 이미 갖고 있는 `weekdayOf` 로직을 영문 3글자에서 전체 영문으로 확장한
   헬퍼로 만든다(`SATURDAY` 전체 철자, 기존 `WEEKDAY_EN`은 `SAT` 3글자라 그대로 못 쓴다)
 
-- [ ] **Step 2: 테스트 실행 — 실패 확인**
+- [x] **Step 2: 테스트 실행 — 실패 확인**
 
 Run: `pnpm test -- Calendar && pnpm test -- DayList && pnpm test -- page && pnpm test -- WebTopBar`
 Expected: FAIL —
@@ -724,7 +724,7 @@ Run: `pnpm e2e -- home-calendar`
 Expected: FAIL — `AC-HOMECAL-128`은 현재 `flex-1`이라 짧은 목록에서도 큰 높이를 갖는다
 (정확한 실패 수치는 실제 뷰포트 나머지 공간에 따라 다르다 — 844×0.6=506.4px보다 크면 실패).
 
-- [ ] **Step 3: 최소 구현**
+- [x] **Step 3: 최소 구현**
 
 `Calendar.tsx` — web 셀의 `items-center justify-center`를 `isWeb`일 때만
 `items-start justify-start`로, `text-center`가 붙은 두 `<span>`(레시피명·"외 N건")도
@@ -768,7 +768,7 @@ leading-[1.65]` 클래스를 추가(기존 `text-body-sm text-ink-3`는 제거 �
 `page.tsx`의 `data-testid="day-scroll"` 클래스에서 `flex-1`을 제거하고
 `max-h-[60vh] overflow-y-auto`로 바꾼다(`min-h-0`는 flex 자식이 아니게 되므로 제거).
 
-- [ ] **Step 4: 테스트 실행 — 통과 확인**
+- [x] **Step 4: 테스트 실행 — 통과 확인**
 
 Run: `pnpm test && pnpm typecheck && pnpm lint && pnpm build`
 Expected: 전부 PASS. 특히 `AC-HOMECAL-85`(날짜별 목록만 스크롤) 회귀 확인 — `max-h-[60vh]
@@ -777,7 +777,7 @@ overflow-y-auto`가 여전히 내부 스크롤을 제공하는지 기존 테스�
 Run: `pnpm e2e -- home-calendar`
 Expected: PASS
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 pnpm format && pnpm lint:fix
@@ -789,13 +789,13 @@ git add . && git commit -m "fix(calendar): 재대조에서 찾은 격차 6개를
 
 ## 완료 기준
 
-- [ ] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
-- [ ] `pnpm test:worker` 통과
-- [ ] `./scripts/check-spec-coverage.sh` 통과(루트에서)
-- [ ] 스펙의 `status`를 `구현완료`로 변경
-- [ ] 회귀 확인: 기존 `AC-HOMECAL-01~91`(홈 달력 원본 스펙)·`AC-TOUCH-01`(터치 타깃)·
-      `AC-DS2-12/13`(타입 스케일) 전부 통과
-- [ ] 수동 확인 없음(스펙에 명시됨)
+- [x] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` 통과
+- [x] `pnpm test:worker` 통과
+- [x] `./scripts/check-spec-coverage.sh` 통과(루트에서)
+- [x] 스펙의 `status`를 `구현완료`로 변경
+- [x] 회귀 확인: 기존 `AC-HOMECAL-01~91`(홈 달력 원본 스펙)·`AC-TOUCH-01`(터치 타깃)·
+      `AC-DS2-12/13`(타입 스케일) 전부 통과 — 전체 e2e 260개 + 유닛 542개로 확인
+- [x] 수동 확인 없음(스펙에 명시됨)
 
 ---
 

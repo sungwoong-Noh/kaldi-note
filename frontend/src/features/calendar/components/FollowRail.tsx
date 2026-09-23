@@ -23,7 +23,7 @@ export function FollowRail({
   variant: "mobile" | "web";
 }) {
   return (
-    <div role="tablist" className="flex gap-3 overflow-x-auto">
+    <div role="tablist" className="flex gap-4 overflow-x-auto">
       <RailTab
         profile={me}
         label="나"
@@ -65,7 +65,7 @@ function RailTab({
         role="tab"
         aria-selected={selected}
         onClick={() => onSelect(profile.id)}
-        className={`flex shrink-0 items-center gap-2 rounded-control py-1 pr-3 pl-1 ${
+        className={`flex shrink-0 items-center gap-2 rounded-control py-2 pr-4 pl-2 ${
           selected ? "bg-ink text-on-ink" : "text-ink-2"
         }`}
       >
@@ -73,6 +73,7 @@ function RailTab({
           nickname={profile.nickname}
           profileImageUrl={profile.profileImageUrl}
           size={32}
+          userId={profile.id}
         />
         <span className={`text-body-sm ${selected ? "font-semibold" : ""}`}>
           {label}
@@ -87,7 +88,7 @@ function RailTab({
       role="tab"
       aria-selected={selected}
       onClick={() => onSelect(profile.id)}
-      className="flex min-w-11 shrink-0 flex-col items-center gap-1"
+      className="flex min-w-11 shrink-0 flex-col items-center gap-2"
     >
       {/* 원형 링이다. 그 유틸리티 클래스는 Avatar.tsx만 쓰기로 정했다
           (AC-SPACE-07, docs/specs/2026-09-09-spacing-system.md) — 인라인 스타일로 대신한다. */}
@@ -99,6 +100,7 @@ function RailTab({
           nickname={profile.nickname}
           profileImageUrl={profile.profileImageUrl}
           size={50}
+          userId={profile.id}
         />
       </span>
       <span className={`text-body-sm ${selected ? "font-semibold" : "text-ink-3"}`}>

@@ -11,9 +11,14 @@ import {
 import { LoadingState } from "@/components/LoadingState";
 import { Button } from "@/components/ui";
 
-/** 상태 넷을 문구 하나로 접는다. 화면이 boolean 셋을 직접 읽으면 조합을 빠뜨린다. */
-function noticeFor(status: FollowStatus): string | null {
-  if (status.mutual) return "맞팔로우 — 서로의 기록이 보입니다";
+/**
+ * 상태 넷을 문구 하나로 접는다. 화면이 boolean 셋을 직접 읽으면 조합을 빠뜨린다.
+ *
+ * <p>맞팔로우 문구는 상대 닉네임을 보간한다(AC-HOMECAL-111) — 홈 달력의 같은 문구
+ * (AC-HOMECAL-110)와 형식을 맞춘다.
+ */
+function noticeFor(status: FollowStatus, nickname: string): string | null {
+  if (status.mutual) return `맞팔로우 상태여서 ${nickname} 님의 기록이 보입니다.`;
   if (status.following) return "상대도 나를 팔로우하면 서로의 기록이 보입니다";
   if (status.followedBy) return "나를 팔로우하고 있습니다";
   return null;
@@ -66,15 +71,29 @@ export function UserProfile({ id }: { id: number }) {
       {isMe ? (
         <p className="text-ink-3">나</p>
       ) : (
-        status.isSuccess && <FollowSection id={id} status={status.data} />
+        status.isSuccess && (
+          <FollowSection
+            id={id}
+            status={status.data}
+            nickname={profile.data.nickname}
+          />
+        )
       )}
     </Shell>
   );
 }
 
-function FollowSection({ id, status }: { id: number; status: FollowStatus }) {
+function FollowSection({
+  id,
+  status,
+  nickname,
+}: {
+  id: number;
+  status: FollowStatus;
+  nickname: string;
+}) {
   const toggle = useToggleFollow(id);
-  const notice = noticeFor(status);
+  const notice = noticeFor(status, nickname);
 
   return (
     <div className="flex flex-col gap-3">

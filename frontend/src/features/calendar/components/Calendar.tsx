@@ -48,6 +48,28 @@ function dayNumberClassName(
 }
 
 /**
+ * 지난/미래 × 평일/주말 4색 규칙(AC-HOMECAL-95~98). 선택되거나 오늘인 셀은 대상이 아니다 —
+ * `dayNumberClassName`의 원/링 스타일이 우선한다(AC-HOMECAL-99).
+ */
+function dateColorVar(
+  cellDate: string,
+  today: string | undefined,
+  columnIndex: number,
+  selected: boolean,
+  isToday: boolean,
+): string | undefined {
+  if (selected || isToday || today === undefined) return undefined;
+  const isPast = cellDate < today;
+  const isWeekend = columnIndex >= 5;
+  if (isPast) {
+    return isWeekend ? "var(--date-past-weekend)" : "var(--date-past-weekday)";
+  }
+  return isWeekend
+    ? "var(--date-future-weekend)"
+    : "var(--date-future-weekday)";
+}
+
+/**
  * 달력 그리드. 모바일·웹이 같은 컴포넌트를 쓰고 `variant`로 CSS만 가른다
  * (docs/specs/2026-09-19-home-calendar.md) — 두 벌로 만들면 aria-label·키보드 이동 같은
  * 규칙이 한쪽에만 적용되는 사고가 난다.
@@ -129,8 +151,20 @@ export function Calendar({
       className={fillHeight ? "flex flex-1 flex-col" : undefined}
     >
       <div role="row" className="grid grid-cols-7">
-        {WEEKDAY_LABELS.map((label) => (
-          <div key={label} role="columnheader">
+        {WEEKDAY_LABELS.map((label, index) => (
+          <div
+            key={label}
+            role="columnheader"
+            className="text-label"
+            style={{
+              // text-label의 자간은 0.12em이다 — 이 헤더만 목업 값 0.08em으로 덮어쓴다.
+              letterSpacing: "0.08em",
+              color:
+                index >= 5
+                  ? "var(--weekday-header-weekend)"
+                  : "var(--weekday-header)",
+            }}
+          >
             {label}
           </div>
         ))}
@@ -202,17 +236,31 @@ export function Calendar({
                       ? { boxShadow: "inset 0 0 0 2px var(--ink)" }
                       : undefined
                   }
-                  className={`flex h-full w-full min-h-11 min-w-11 flex-col items-center justify-center overflow-hidden ${
-                    isWeb ? "px-3 py-2" : ""
+                  className={`flex h-full w-full min-h-11 min-w-11 flex-col gap-1 overflow-hidden ${
+                    isWeb
+                      ? "items-start justify-start px-3 py-2"
+                      : "items-center justify-center"
                   } ${isWeb && selected ? "bg-surface" : ""} ${lineClass}`}
                 >
                   <span
-                    data-testid="day-number"
-                    className={dayNumberClassName(isWeb, selected, isToday)}
+                    data-testid="day-number-row"
+                    className={`flex items-center ${isWeb ? "flex-row gap-2" : "flex-col gap-1"}`}
                   >
-                    {day}
-                  </span>
-                  {count > 0 && (
+                    <span
+                      data-testid="day-number"
+                      className={dayNumberClassName(isWeb, selected, isToday)}
+                      style={{
+                        color: dateColorVar(
+                          cell.date,
+                          today,
+                          columnIndex,
+                          selected,
+                          isToday,
+                        ),
+                      }}
+                    >
+                      {day}
+                    </span>
                     <span
                       data-record-dot
                       aria-hidden
@@ -221,17 +269,18 @@ export function Calendar({
                         width: 5,
                         height: 5,
                         borderRadius: "50%",
-                        backgroundColor: "var(--signal-record)",
+                        backgroundColor:
+                          count > 0 ? "var(--signal-record)" : "transparent",
                       }}
                     />
-                  )}
+                  </span>
                   {isWeb && info?.primaryRecipeName && (
-                    <span className="w-full truncate px-1 text-center">
+                    <span className="w-full truncate px-1 text-left">
                       {info.primaryRecipeName}
                     </span>
                   )}
                   {isWeb && count > 1 && (
-                    <span className="w-full truncate px-1 text-center">
+                    <span className="w-full truncate px-1 text-left">
                       외 {count - 1}건
                     </span>
                   )}

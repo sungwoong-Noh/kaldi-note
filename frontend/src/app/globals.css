@@ -7,8 +7,9 @@
 @import "./fonts.css";
 
 /*
- * 색 토큰 16개 — Clean Ledger (docs/specs/2026-09-17-design-system-v2.md) +
- * signal-record (docs/specs/2026-09-19-home-calendar.md)
+ * 색 토큰 18개 — Clean Ledger (docs/specs/2026-09-17-design-system-v2.md) +
+ * signal-record (docs/specs/2026-09-19-home-calendar.md) +
+ * ink-hover·ink-disabled (docs/specs/2026-09-21-button-color-fidelity.md)
  *
  * ★ 값의 원천은 docs/design/design_handoff_kaldi_note/README.md다.
  *   어긋나면 그쪽이 옳다. 이 파일은 그것을 CSS로 옮긴 것이고,
@@ -35,6 +36,10 @@
   --ink: oklch(0.22 0.015 60);
   --ink-2: oklch(0.38 0.015 60);
   --ink-3: oklch(0.55 0.02 70);
+  /* primary 버튼 hover 배경. ink보다 어둡다 — 누르면 더 진해진다. */
+  --ink-hover: oklch(0.15 0.015 60);
+  /* disabled 버튼 글자. sunken 위에 놓인다. */
+  --ink-disabled: oklch(0.65 0.015 65);
   /* ink 배경 위 글자. primary 버튼이 이 조합이다. */
   --on-ink: oklch(0.97 0.004 85);
 
@@ -72,6 +77,18 @@
   --on-hero: oklch(0.97 0.004 85);
   --hero-line: oklch(0.34 0.015 60);
   --on-hero-dim: oklch(0.72 0.05 55);
+
+  /*
+   * 홈 달력 전용 파생 토큰 — docs/specs/2026-09-20-home-calendar-mockup-fidelity.md
+   * (AC-HOMECAL-92~98). 핵심 팔레트(TOKEN_NAMES 18개)에는 넣지 않는다 — 이 화면
+   * 밖에서는 쓰지 않는 값이다.
+   */
+  --weekday-header: oklch(0.58 0.02 70);
+  --weekday-header-weekend: oklch(0.62 0.02 70);
+  --date-past-weekday: oklch(0.3 0.015 60);
+  --date-past-weekend: oklch(0.5 0.015 60);
+  --date-future-weekday: oklch(0.72 0.012 70);
+  --date-future-weekend: oklch(0.78 0.012 70);
 }
 
 @theme inline {
@@ -85,6 +102,8 @@
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
+  --color-ink-hover: var(--ink-hover);
+  --color-ink-disabled: var(--ink-disabled);
   --color-on-ink: var(--on-ink);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
@@ -186,6 +205,36 @@
 }
 
 /*
+ * 월 헤더 라벨 — docs/specs/2026-09-20-home-calendar-mockup-fidelity.md(AC-HOMECAL-107).
+ * card-title(18px)로는 너무 작고 page-title(27px)은 너무 크다 — "각 스펙이 실제로
+ * 쓸 때 추가한다"는 design-system-v2 원칙대로 새 단계를 연다.
+ */
+@utility text-month-label {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+/*
+ * 목록 행의 시각·별점 캡션 — docs/specs/2026-09-20-home-calendar-mockup-fidelity.md
+ * (AC-HOMECAL-108). body-sm(13px)보다 한 단 작다.
+ */
+@utility text-caption {
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
+/*
+ * 웹 카드의 대표 수치 — docs/specs/2026-09-20-home-calendar-mockup-fidelity.md
+ * (AC-HOMECAL-114). 계측값이라 Mono다.
+ */
+@utility text-card-metric {
+  font-family: var(--font-mono);
+  font-size: 17px;
+}
+
+/*
  * 다크 값 — docs/specs/2026-09-17-dark-mode-toggle.md
  *
  * ★ 3단 구조다. **이 파일 안에서만 값이 두 곳에 산다 — 하나를 고치면 반드시 둘 다 고친다.**
@@ -211,6 +260,13 @@
     --ink: oklch(0.95 0.005 85);
     --ink-2: oklch(0.82 0.008 78);
     --ink-3: oklch(0.68 0.01 70);
+    /*
+     * primary 버튼 hover 배경. ink(0.95)보다 어둡다 — 라이트의 "더 어둡게"(0.22→0.15)를
+     * 그대로 대칭시키면 0.95+0.07=1.02로 표현 범위를 벗어나서, 밝은 면을 누르면
+     * 어두워지는 쪽을 택했다(docs/specs/2026-09-21-button-color-fidelity.md).
+     */
+    --ink-hover: oklch(0.88 0.005 85);
+    --ink-disabled: oklch(0.46 0.01 65);
     /* 다크에서는 ink가 밝으므로 그 위 글자가 뒤집힌다 — 핸드오프의 「primary 반전」. */
     --on-ink: oklch(0.2 0.015 60);
 
@@ -222,35 +278,51 @@
 
     --danger: oklch(0.72 0.15 28);
     --signal-record: oklch(0.65 0.17 30);
+
+    --weekday-header: var(--ink-3);
+    --weekday-header-weekend: var(--ink-3);
+    --date-past-weekday: var(--ink);
+    --date-past-weekend: var(--ink-2);
+    --date-future-weekday: var(--ink-3);
+    --date-future-weekend: oklch(0.55 0.012 70);
   }
 }
 
 :root[data-theme="dark"] {
-    --paper: oklch(0.17 0.008 60);
-    --surface: oklch(0.21 0.009 60);
-    /* 도출: 라이트에서 sunken은 paper보다 가라앉는다. 다크에서도 같은 방향으로 어둡게. */
-    --sunken: oklch(0.13 0.008 60);
-    --raised: oklch(0.23 0.014 60);
+  --paper: oklch(0.17 0.008 60);
+  --surface: oklch(0.21 0.009 60);
+  /* 도출: 라이트에서 sunken은 paper보다 가라앉는다. 다크에서도 같은 방향으로 어둡게. */
+  --sunken: oklch(0.13 0.008 60);
+  --raised: oklch(0.23 0.014 60);
 
-    --border: oklch(0.29 0.01 60);
-    --divider: oklch(0.26 0.012 60);
-    /* 도출: 라이트에서 divider-strong이 divider보다 진하다. 다크에서 진함은 밝음이다. */
-    --divider-strong: oklch(0.33 0.012 60);
+  --border: oklch(0.29 0.01 60);
+  --divider: oklch(0.26 0.012 60);
+  /* 도출: 라이트에서 divider-strong이 divider보다 진하다. 다크에서 진함은 밝음이다. */
+  --divider-strong: oklch(0.33 0.012 60);
 
-    --ink: oklch(0.95 0.005 85);
-    --ink-2: oklch(0.82 0.008 78);
-    --ink-3: oklch(0.68 0.01 70);
-    /* 다크에서는 ink가 밝으므로 그 위 글자가 뒤집힌다 — 핸드오프의 「primary 반전」. */
-    --on-ink: oklch(0.2 0.015 60);
+  --ink: oklch(0.95 0.005 85);
+  --ink-2: oklch(0.82 0.008 78);
+  --ink-3: oklch(0.68 0.01 70);
+  --ink-hover: oklch(0.88 0.005 85);
+  --ink-disabled: oklch(0.46 0.01 65);
+  /* 다크에서는 ink가 밝으므로 그 위 글자가 뒤집힌다 — 핸드오프의 「primary 반전」. */
+  --on-ink: oklch(0.2 0.015 60);
 
-    --accent: oklch(0.72 0.07 55);
-    /* 도출: 라이트에서 accent-soft가 accent보다 밝다(0.42→0.62). 다크에서도 위로. */
-    --accent-soft: oklch(0.8 0.05 55);
-    /* 도출: wash는 배경이다. 라이트에서 paper 근처였듯 다크에서도 paper 근처로. */
-    --accent-wash: oklch(0.26 0.03 50);
+  --accent: oklch(0.72 0.07 55);
+  /* 도출: 라이트에서 accent-soft가 accent보다 밝다(0.42→0.62). 다크에서도 위로. */
+  --accent-soft: oklch(0.8 0.05 55);
+  /* 도출: wash는 배경이다. 라이트에서 paper 근처였듯 다크에서도 paper 근처로. */
+  --accent-wash: oklch(0.26 0.03 50);
 
-    --danger: oklch(0.72 0.15 28);
-    --signal-record: oklch(0.65 0.17 30);
+  --danger: oklch(0.72 0.15 28);
+  --signal-record: oklch(0.65 0.17 30);
+
+  --weekday-header: var(--ink-3);
+  --weekday-header-weekend: var(--ink-3);
+  --date-past-weekday: var(--ink);
+  --date-past-weekend: var(--ink-2);
+  --date-future-weekday: var(--ink-3);
+  --date-future-weekend: oklch(0.55 0.012 70);
 }
 
 body {
@@ -280,13 +352,11 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"])
-  .select-chevron {
+  :root:not([data-theme="light"]) .select-chevron {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%239c9792' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
   }
 }
 
-:root[data-theme="dark"]
-  .select-chevron {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%239c9792' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-  }
+:root[data-theme="dark"] .select-chevron {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%239c9792' stroke-width='1.5'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+}

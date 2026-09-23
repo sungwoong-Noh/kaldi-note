@@ -23,12 +23,31 @@ function offenders(pattern: RegExp): string[] {
 }
 
 describe("디자인 토큰", () => {
-  it("AC-VISUAL-06 · AC-READ-04 · AC-DS2-01 · 토큰 16개가 라이트·다크 값을 모두 갖는다", () => {
+  it("AC-VISUAL-06 · AC-READ-04 · AC-DS2-01 · 토큰 18개가 라이트·다크 값을 모두 갖는다", () => {
     const { light, dark } = readPalettes();
     const expected = [...TOKEN_NAMES].sort();
 
     expect(Object.keys(light).sort()).toEqual(expected);
     expect(Object.keys(dark).sort()).toEqual(expected);
+  });
+
+  it("AC-BTN-01 · --ink-hover가 라이트·다크 값을 갖는다", () => {
+    const { light, dark } = readPalettes();
+    expect(light["ink-hover"]).toBe("oklch(0.15 0.015 60)");
+    expect(dark["ink-hover"]).toBe("oklch(0.88 0.005 85)");
+  });
+
+  it("AC-BTN-02 · --ink-disabled가 라이트·다크 값을 갖는다", () => {
+    const { light, dark } = readPalettes();
+    expect(light["ink-disabled"]).toBe("oklch(0.65 0.015 65)");
+    expect(dark["ink-disabled"]).toBe("oklch(0.46 0.01 65)");
+  });
+
+  it("AC-BTN-03 · 색 토큰이 양쪽 팔레트에 18개씩 있다", () => {
+    const { light, dark } = readPalettes();
+    expect(TOKEN_NAMES).toHaveLength(18);
+    expect(Object.keys(light).sort()).toEqual([...TOKEN_NAMES].sort());
+    expect(Object.keys(dark).sort()).toEqual([...TOKEN_NAMES].sort());
   });
 
   it("AC-DS2-02 · 모든 색 토큰이 oklch로 정의된다", () => {

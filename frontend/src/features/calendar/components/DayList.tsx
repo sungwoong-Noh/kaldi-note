@@ -1,11 +1,24 @@
 import Link from "next/link";
 import type { BrewLogSummary } from "@/features/brewlog/schema";
-import { formatRatio } from "@/lib/format";
+import { Eyebrow } from "@/components/ui";
 import { brewCountLabel } from "../brewCountLabel";
+import { kstTimeOf, representativeMetric } from "../dayListFormat";
 import { useRoastLevel } from "../useRoastLevel";
+import { DayCard } from "./DayCard";
 import { RoastDot } from "./RoastDot";
 
 const WEEKDAY_EN = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
+
+/** 웹 우측 컬럼 헤더 전용 — 모바일 목록 헤더의 3글자 약어와 다르다(AC-HOMECAL-123). */
+const WEEKDAY_EN_FULL = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+] as const;
 
 /** `2026-09-19` → `09.19`. */
 function formatDayHeader(date: string): string {
@@ -18,15 +31,16 @@ function weekdayOf(date: string): string {
   return WEEKDAY_EN[(d.getUTCDay() + 6) % 7];
 }
 
-/** 수율이 있으면 수율, 없으면 비율 — 내 기록과 남의 기록에 같은 규칙을 쓴다(AC-HOMECAL-43). */
-function representativeMetric(log: BrewLogSummary): string | undefined {
-  if (log.extractionYieldPercent !== undefined) {
-    return `${log.extractionYieldPercent} %`;
-  }
-  if (log.brewRatio !== undefined) {
-    return formatRatio(log.brewRatio);
-  }
-  return undefined;
+function weekdayEnglishOf(date: string): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  return WEEKDAY_EN_FULL[(d.getUTCDay() + 6) % 7];
+}
+
+/** 시각 + 별점(있을 때만). 모바일 원장 행 캡션(AC-HOMECAL-108·109) 전용 — 웹 카드는 별점을
+ * 태그 줄에 따로 보여준다(AC-HOMECAL-115). */
+function formatCaption(brewedAt: string, rating: number | undefined): string {
+  const time = kstTimeOf(brewedAt);
+  return rating !== undefined ? `${time} · ★ ${rating}` : time;
 }
 
 /**
@@ -55,19 +69,50 @@ export function DayList({
 
   return (
     <div data-day-list data-variant={variant}>
-      <p className="text-label text-ink-3">{header}</p>
-      <ul>
-        {logs.map((log) => (
-          <DayListRow
-            key={log.id}
-            log={log}
-            recipeLabel={recipeLabels?.get(log.recipeId)}
-            variant={variant}
-          />
-        ))}
+      {variant === "web" ? (
+        <div className="flex items-baseline justify-between">
+          <div>
+            <Eyebrow>
+              {weekdayEnglishOf(date)}
+              {ownerNickname !== undefined ? ` · ${ownerNickname}` : ""}
+            </Eyebrow>
+            <p
+              data-testid="day-header-date"
+              className="text-page-title font-semibold"
+            >
+              {Number(date.slice(8, 10))}
+            </p>
+          </div>
+          <span
+            data-testid="day-header-count"
+            className="text-caption font-mono text-ink-3"
+          >
+            {logs.length}건
+          </span>
+        </div>
+      ) : (
+        <p className="text-label text-ink-3">{header}</p>
+      )}
+      <ul className={variant === "web" ? "flex flex-col gap-3" : undefined}>
+        {logs.map((log) =>
+          variant === "web" ? (
+            <li key={log.id}>
+              <DayCard log={log} recipeLabel={recipeLabels?.get(log.recipeId)} />
+            </li>
+          ) : (
+            <DayListRow
+              key={log.id}
+              log={log}
+              recipeLabel={recipeLabels?.get(log.recipeId)}
+              variant={variant}
+            />
+          ),
+        )}
       </ul>
       {ownerNickname !== undefined && (
-        <p className="text-body-sm text-ink-3">맞팔로우 — 서로의 기록이 보입니다</p>
+        <p className="rounded-control border-l-2 border-accent bg-surface px-3 py-2 text-body-sm leading-[1.65]">
+          맞팔로우 상태여서 {ownerNickname} 님의 기록이 보입니다.
+        </p>
       )}
     </div>
   );
@@ -92,8 +137,13 @@ function DayListRow({
         className="flex min-h-11 items-center gap-2"
       >
         <RoastDot roastLevel={roastLevel} />
-        <span className="flex-1 truncate text-body font-medium">
-          {recipeLabel ?? ""}
+        <span className="flex-1 truncate">
+          <span className="block truncate text-body font-medium">
+            {recipeLabel ?? ""}
+          </span>
+          <span className="text-caption text-ink-3">
+            {formatCaption(log.brewedAt, log.rating)}
+          </span>
         </span>
         {metric !== undefined && <span className="text-metric">{metric}</span>}
       </Link>

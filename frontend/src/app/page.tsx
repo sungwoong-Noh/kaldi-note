@@ -166,7 +166,7 @@ export default function HomePage() {
           <div className="flex flex-1 flex-col">{calendarBlock}</div>
           <div
             data-testid="day-column"
-            className="flex w-[420px] shrink-0 flex-col gap-3 overflow-y-auto bg-surface p-4"
+            className="flex w-[420px] shrink-0 flex-col gap-3 overflow-y-auto bg-surface py-4 px-12"
             style={{ maxHeight: 600 }}
           >
             {daySection}
@@ -182,7 +182,7 @@ export default function HomePage() {
           {calendarBlock}
           <div
             data-testid="day-scroll"
-            className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto"
+            className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto"
           >
             {daySection}
           </div>
@@ -195,7 +195,7 @@ export default function HomePage() {
         block
         className="min-[1100px]:hidden"
       >
-        기록하기
+        이 레시피로 내렸다
       </ButtonLink>
     </Shell>
   );

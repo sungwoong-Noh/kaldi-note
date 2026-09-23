@@ -332,10 +332,16 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 
 #### AC-VISUAL-14 · 주 액션 버튼이 브랜드 색으로 칠해진다
 
+> **2026-09-21 갱신.** `docs/specs/2026-09-21-button-color-fidelity.md`가 이 조건의 색을
+> **`accent`에서 `ink`로** 바꾼다. `design-system-v2`(2026-09-17)가 이미 "primary 버튼 배경 =
+> ink"로 정했는데, 이 스펙이 갱신 때 크기·토큰 개수·대비 방식만 옮기고 **색 자체는 그대로
+> 둔** 어긋남이었다 — 실제로 그동안의 구현(`bg-accent`)은 버그가 아니라 이 스펙을 정확히
+> 따른 것이었다. 조건의 뜻("주 액션은 브랜드/구조색으로 눈에 띈다")은 그대로다.
+
 - **Given** `/recipes/new`를 라이트 모드로 연다
 - **When** 주 액션 버튼의 `background-color`를 읽는다
-- **Then** `rgb(111, 78, 55)`이다
-- **검증** e2e `visual.spec.ts`
+- **Then** `ink` 토큰 값과 같다
+- **검증** e2e `visual.spec.ts`, `button-color.spec.ts`
 
 #### AC-VISUAL-15 · 화면 제목이 24px로 렌더된다
 
@@ -364,10 +370,13 @@ plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
 
 #### AC-VISUAL-18 · 다크 모드에서 토큰 쌍이 바뀐다
 
+> **2026-09-21 갱신.** `AC-VISUAL-14`와 같은 이유로 `background-color`의 기준이 `accent`에서
+> `ink`로 바뀐다. `color`는 원래도 `on-ink`였다 — 바뀌지 않는다.
+
 - **Given** `colorScheme: "dark"`로 `/recipes/new`를 연다
 - **When** 주 액션 버튼의 `background-color`와 `color`를 읽는다
-- **Then** `background-color`가 `rgb(201, 169, 138)`이고 `color`가 `rgb(23, 23, 23)`이다
-- **검증** e2e `visual.spec.ts`
+- **Then** `background-color`가 다크 `ink` 토큰 값과 같고 `color`가 다크 `on-ink` 토큰 값과 같다
+- **검증** e2e `visual.spec.ts`, `button-color.spec.ts`
 
 ### 경계값
 

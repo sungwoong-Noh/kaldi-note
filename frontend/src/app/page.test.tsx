@@ -98,6 +98,15 @@ async function renderHome() {
 }
 
 describe("HomePage", () => {
+  it("AC-HOMECAL-127 · 모바일 하단 CTA 문구가 이 레시피로 내렸다다", async () => {
+    await renderHome();
+
+    expect(
+      screen.getByRole("link", { name: "이 레시피로 내렸다" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "기록하기" })).not.toBeInTheDocument();
+  });
+
   it("AC-HOMECAL-27 · 진입하면 오늘이 선택돼 있다", async () => {
     await renderHome();
 
@@ -113,8 +122,11 @@ describe("HomePage", () => {
       await screen.findByRole("button", { name: "9월 5일, 기록 2건" }),
     );
 
-    expect(await screen.findByText("09.05 SAT · 2 BREWS")).toBeInTheDocument();
-    expect(screen.getAllByTestId("day-list-row")).toHaveLength(2);
+    // 갱신(2026-09-21): jsdom 기본 폭(1024px)이 웹 임계값(760px)을 넘어 이 테스트는
+    // 원장 행이 아니라 웹 헤더(요일 아이브로우+날짜, AC-HOMECAL-123~125)와 카드를 본다.
+    expect(await screen.findByText("SATURDAY")).toBeInTheDocument();
+    expect(screen.getByTestId("day-header-date")).toHaveTextContent("5");
+    expect(screen.getAllByTestId("day-card")).toHaveLength(2);
   });
 
   it("AC-HOMECAL-29 · 빈 날짜를 누르면 선택되고 빈 문구가 뜬다", async () => {
@@ -166,8 +178,9 @@ describe("HomePage", () => {
       await screen.findByRole("button", { name: "9월 10일, 기록 1건" }),
     );
 
+    // 갱신(2026-09-21, AC-HOMECAL-110): 고정 문구가 상대 닉네임을 보간하는 문구로 바뀌었다.
     expect(
-      await screen.findByText("맞팔로우 — 서로의 기록이 보입니다"),
+      await screen.findByText("맞팔로우 상태여서 지연 님의 기록이 보입니다."),
     ).toBeInTheDocument();
   });
 
@@ -201,7 +214,13 @@ describe("HomePage", () => {
     renderWithQuery(<HomePage />);
 
     expect(await screen.findAllByRole("columnheader")).toHaveLength(7);
-    expect(document.querySelector("[data-record-dot]")).toBeNull();
+    // 갱신(2026-09-21, AC-HOMECAL-101): 점 자리는 이제 기록이 없어도 항상 렌더된다
+    // (투명 placeholder) — "점만 비운다"는 요소 부재가 아니라 무색으로 구현이 바뀌었다.
+    const dots = document.querySelectorAll<HTMLElement>("[data-record-dot]");
+    expect(dots.length).toBeGreaterThan(0);
+    for (const dot of dots) {
+      expect(dot.style.backgroundColor).toBe("transparent");
+    }
     expect(screen.queryByTestId("skeleton")).toBeNull();
   });
 });

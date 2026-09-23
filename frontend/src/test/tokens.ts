@@ -11,6 +11,9 @@ import { join } from "node:path";
  *
  * <p>2026-09-19에 `signal-record`가 더해져 16개가 됐다 — 달력의 기록 점 전용 신호색이다
  * (`docs/specs/2026-09-19-home-calendar.md`).
+ *
+ * <p>2026-09-21에 `ink-hover`·`ink-disabled`가 더해져 18개가 됐다 — 버튼 hover 배경과
+ * disabled 글자 전용이다(`docs/specs/2026-09-21-button-color-fidelity.md`).
  */
 export const TOKEN_NAMES = [
   // 면
@@ -26,6 +29,9 @@ export const TOKEN_NAMES = [
   "ink",
   "ink-2",
   "ink-3",
+  // 버튼 전용 — hover 배경과 disabled 글자 (docs/specs/2026-09-21-button-color-fidelity.md)
+  "ink-hover",
+  "ink-disabled",
   "on-ink",
   // 강조
   "accent",

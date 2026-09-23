@@ -66,7 +66,7 @@ describe("UserProfilePage", () => {
       screen.queryByText("나를 팔로우하고 있습니다"),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByText("맞팔로우 — 서로의 기록이 보입니다"),
+      screen.queryByText(/맞팔로우 상태여서/),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByText("상대도 나를 팔로우하면 서로의 기록이 보입니다"),
@@ -123,7 +123,24 @@ describe("UserProfilePage", () => {
       await screen.findByRole("button", { name: "팔로우 취소" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText("맞팔로우 — 서로의 기록이 보입니다"),
+      screen.getByText("맞팔로우 상태여서 확인용친구 님의 기록이 보입니다."),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-HOMECAL-111 · 관계 문구에 상대 닉네임이 보간된다", async () => {
+    server.use(
+      http.get(`${BASE}/users/12`, () => HttpResponse.json(friendProfile)),
+      http.get(`${BASE}/users/12/follow`, () =>
+        HttpResponse.json(
+          status({ following: true, followedBy: true, mutual: true }),
+        ),
+      ),
+    );
+
+    await renderProfile(12);
+
+    expect(
+      await screen.findByText("맞팔로우 상태여서 확인용친구 님의 기록이 보입니다."),
     ).toBeInTheDocument();
   });
 
@@ -270,7 +287,7 @@ describe("UserProfilePage", () => {
 
     await renderProfile(12);
     expect(
-      await screen.findByText("맞팔로우 — 서로의 기록이 보입니다"),
+      await screen.findByText("맞팔로우 상태여서 확인용친구 님의 기록이 보입니다."),
     ).toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "팔로우 취소" }));
@@ -279,7 +296,7 @@ describe("UserProfilePage", () => {
       await screen.findByText("나를 팔로우하고 있습니다"),
     ).toBeInTheDocument();
     expect(
-      screen.queryByText("맞팔로우 — 서로의 기록이 보입니다"),
+      screen.queryByText("맞팔로우 상태여서 확인용친구 님의 기록이 보입니다."),
     ).not.toBeInTheDocument();
   });
 

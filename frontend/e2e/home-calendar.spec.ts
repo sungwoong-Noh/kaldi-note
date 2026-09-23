@@ -113,7 +113,7 @@ test.describe("홈 달력 — 모바일", () => {
     await installStubs(page);
     await page.goto("/");
 
-    await page.getByRole("link", { name: "기록하기" }).click();
+    await page.getByRole("link", { name: "이 레시피로 내렸다" }).click();
 
     await expect(page).toHaveURL("/recipes");
   });
@@ -244,7 +244,7 @@ test.describe("홈 달력 — 모바일 헤더", () => {
     await page.goto("/");
 
     const header = page.locator("header");
-    await expect(header.getByRole("link", { name: "기록하기" })).toBeHidden();
+    await expect(header.getByRole("link", { name: "이 레시피로 내렸다" })).toBeHidden();
     await expect(header.getByRole("link", { name: "더보기" })).toBeHidden();
   });
 });
@@ -336,6 +336,54 @@ test.describe("홈 달력 — 모바일 스크롤 고정", () => {
     const after = await page.getByRole("grid").boundingBox();
 
     expect(after?.y).toBe(before?.y);
+  });
+
+  test("AC-HOMECAL-128 · 짧은 목록이어도 날짜별 목록 영역이 뷰포트 60%를 넘지 않는다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.goto("/");
+    await page.getByRole("button", { name: "9월 5일, 기록 2건" }).click();
+
+    const viewport = page.viewportSize();
+    const box = await page.getByTestId("day-scroll").boundingBox();
+
+    expect(box!.height).toBeLessThanOrEqual(viewport!.height * 0.6 + 1);
+  });
+
+  test("AC-HOMECAL-128 · 긴 목록은 상한 안에서 계속 내부 스크롤된다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.route("**/api/v1/brew-logs*", (route) => {
+      if (new URL(route.request().url()).pathname !== "/api/v1/brew-logs") {
+        return route.fallback();
+      }
+      const content = Array.from({ length: 10 }, (_, i) => ({
+        ...brewLogPage.content[0],
+        id: 200 + i,
+      }));
+      return route.fulfill({
+        json: {
+          content,
+          page: 0,
+          size: 100,
+          totalElements: content.length,
+          totalPages: 1,
+          hasNext: false,
+        },
+      });
+    });
+    await page.goto("/");
+    await page.getByRole("button", { name: "9월 2일, 기록 1건" }).click();
+
+    const viewport = page.viewportSize();
+    const dayScroll = page.getByTestId("day-scroll");
+    const box = await dayScroll.boundingBox();
+
+    expect(box!.height).toBeLessThanOrEqual(viewport!.height * 0.6 + 1);
+    const scrollHeight = await dayScroll.evaluate((el) => el.scrollHeight);
+    expect(scrollHeight).toBeGreaterThan(box!.height);
   });
 });
 

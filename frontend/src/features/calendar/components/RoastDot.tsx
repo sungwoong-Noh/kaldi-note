@@ -12,8 +12,18 @@ const ROAST_COLOR: Record<RoastLevel, string> = {
   DARK: "oklch(0.4 0.05 45)",
 };
 
-/** 원두를 연결하지 않은 기록은 아무것도 렌더하지 않는다(AC-HOMECAL-76). */
-export function RoastDot({ roastLevel }: { roastLevel?: RoastLevel }) {
+/**
+ * 원두를 연결하지 않은 기록은 아무것도 렌더하지 않는다(AC-HOMECAL-76).
+ *
+ * @param size 기본 9px(모바일 원장 행). 웹 카드는 10px를 쓴다(AC-HOMECAL-113).
+ */
+export function RoastDot({
+  roastLevel,
+  size = 9,
+}: {
+  roastLevel?: RoastLevel;
+  size?: number;
+}) {
   if (roastLevel === undefined) return null;
 
   return (
@@ -22,8 +32,8 @@ export function RoastDot({ roastLevel }: { roastLevel?: RoastLevel }) {
       aria-hidden
       style={{
         display: "inline-block",
-        width: 9,
-        height: 9,
+        width: size,
+        height: size,
         borderRadius: "50%",
         backgroundColor: ROAST_COLOR[roastLevel],
       }}

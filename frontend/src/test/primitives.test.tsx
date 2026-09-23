@@ -70,6 +70,20 @@ describe("UI 프리미티브", () => {
     expect(disabled).toMatch(/disabled:/);
   });
 
+  it("AC-BTN-15 · ButtonLink가 변형 색 테이블을 자체 선언하지 않는다", () => {
+    // docs/specs/2026-09-21-button-color-fidelity.md — 색 테이블이 두 곳에 복붙돼 있으면
+    // 한쪽만 고쳤을 때 같은 화면에서 두 색이 섞인다.
+    const source = readFileSync(
+      join("src", "components", "ui", "ButtonLink.tsx"),
+      "utf8",
+    );
+
+    expect(source).not.toMatch(/const\s+VARIANT\s*[:=]/);
+    expect(source).toMatch(
+      /import\s*\{[^}]*BUTTON_VARIANT[^}]*\}\s*from\s*"\.\/Button"/,
+    );
+  });
+
   it("AC-DS2-21 · 프리미티브가 터치 타깃 44px을 보장한다", () => {
     // jsdom은 Tailwind를 로드하지 않아 계산된 높이를 잴 수 없다. 클래스로 본다 —
     // 실제 렌더 높이는 e2e의 AC-TOUCH-01이 스윕으로 잰다.

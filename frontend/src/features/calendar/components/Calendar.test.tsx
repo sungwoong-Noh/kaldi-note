@@ -251,7 +251,7 @@ describe("Calendar", () => {
     expect(header.style.letterSpacing).toBe("0.08em");
   });
 
-  it("AC-HOMECAL-93·94 · 요일 헤더 평일·주말 색이 다르다", () => {
+  it("AC-HOMECAL-93 · AC-HOMECAL-94 · 요일 헤더 평일·주말 색이 다르다", () => {
     render(
       <Calendar
         month="2026-09"

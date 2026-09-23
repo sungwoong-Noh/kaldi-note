@@ -236,8 +236,10 @@ export function Calendar({
                       ? { boxShadow: "inset 0 0 0 2px var(--ink)" }
                       : undefined
                   }
-                  className={`flex h-full w-full min-h-11 min-w-11 flex-col items-center justify-center gap-1 overflow-hidden ${
-                    isWeb ? "px-3 py-2" : ""
+                  className={`flex h-full w-full min-h-11 min-w-11 flex-col gap-1 overflow-hidden ${
+                    isWeb
+                      ? "items-start justify-start px-3 py-2"
+                      : "items-center justify-center"
                   } ${isWeb && selected ? "bg-surface" : ""} ${lineClass}`}
                 >
                   <span
@@ -273,12 +275,12 @@ export function Calendar({
                     />
                   </span>
                   {isWeb && info?.primaryRecipeName && (
-                    <span className="w-full truncate px-1 text-center">
+                    <span className="w-full truncate px-1 text-left">
                       {info.primaryRecipeName}
                     </span>
                   )}
                   {isWeb && count > 1 && (
-                    <span className="w-full truncate px-1 text-center">
+                    <span className="w-full truncate px-1 text-left">
                       외 {count - 1}건
                     </span>
                   )}

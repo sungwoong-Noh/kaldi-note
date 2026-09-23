@@ -55,7 +55,7 @@ export function WebTopBar() {
         </nav>
         <div className="flex items-center gap-4">
           <ButtonLink href="/recipes" variant="primary">
-            기록하기
+            이 레시피로 내렸다
           </ButtonLink>
           {me.data && (
             <Link href="/more" aria-label="더보기">

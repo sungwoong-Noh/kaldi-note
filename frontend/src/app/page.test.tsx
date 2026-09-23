@@ -98,6 +98,15 @@ async function renderHome() {
 }
 
 describe("HomePage", () => {
+  it("AC-HOMECAL-127 · 모바일 하단 CTA 문구가 이 레시피로 내렸다다", async () => {
+    await renderHome();
+
+    expect(
+      screen.getByRole("link", { name: "이 레시피로 내렸다" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "기록하기" })).not.toBeInTheDocument();
+  });
+
   it("AC-HOMECAL-27 · 진입하면 오늘이 선택돼 있다", async () => {
     await renderHome();
 
@@ -113,9 +122,10 @@ describe("HomePage", () => {
       await screen.findByRole("button", { name: "9월 5일, 기록 2건" }),
     );
 
-    expect(await screen.findByText("09.05 SAT · 2 BREWS")).toBeInTheDocument();
-    // 갱신(2026-09-21, AC-HOMECAL-112): jsdom 기본 폭(1024px)이 웹 임계값(760px)을 넘어
-    // 이 테스트는 이제 원장 행이 아니라 카드를 본다.
+    // 갱신(2026-09-21): jsdom 기본 폭(1024px)이 웹 임계값(760px)을 넘어 이 테스트는
+    // 원장 행이 아니라 웹 헤더(요일 아이브로우+날짜, AC-HOMECAL-123~125)와 카드를 본다.
+    expect(await screen.findByText("SATURDAY")).toBeInTheDocument();
+    expect(screen.getByTestId("day-header-date")).toHaveTextContent("5");
     expect(screen.getAllByTestId("day-card")).toHaveLength(2);
   });
 

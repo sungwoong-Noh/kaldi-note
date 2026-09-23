@@ -32,6 +32,32 @@ test.describe("홈 달력 — 웹", () => {
     expect((await column.boundingBox())?.width).toBe(420);
   });
 
+  test("AC-HOMECAL-122 · 우측 컬럼 padding이 좌우 48px, 배경이 surface다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    const column = page.getByTestId("day-column");
+    const style = await column.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { pl: s.paddingLeft, pr: s.paddingRight, bg: s.backgroundColor };
+    });
+    const surface = await page.evaluate(() => {
+      const probe = document.createElement("span");
+      probe.style.color = "var(--surface)";
+      document.body.appendChild(probe);
+      const v = getComputedStyle(probe).color;
+      probe.remove();
+      return v;
+    });
+
+    expect(style.pl).toBe("48px");
+    expect(style.pr).toBe("48px");
+    expect(style.bg).toBe(surface);
+  });
+
   test("AC-HOMECAL-84 · 1440px에서 달력 그리드가 Shell의 max-w-2xl에 눌리지 않는다", async ({
     page,
   }) => {
@@ -67,11 +93,11 @@ test.describe("홈 달력 — 웹", () => {
     const header = page.locator("header");
     await expect(header.getByText("kaldi")).toBeVisible();
     await expect(header.getByRole("link", { name: "홈" })).toBeVisible();
-    await expect(header.getByRole("link", { name: "레시피" })).toBeVisible();
+    await expect(header.getByRole("link", { name: "레시피", exact: true })).toBeVisible();
     await expect(
       header.getByRole("link", { name: "기록", exact: true }),
     ).toBeVisible();
-    await expect(header.getByRole("link", { name: "기록하기" })).toBeVisible();
+    await expect(header.getByRole("link", { name: "이 레시피로 내렸다" })).toBeVisible();
     await expect(header.getByRole("link", { name: "더보기" })).toBeVisible();
     await expect(page.locator("nav[aria-label='주요 화면']")).toBeHidden();
   });
@@ -95,7 +121,7 @@ test.describe("홈 달력 — 웹", () => {
 
     await page
       .locator("header")
-      .getByRole("link", { name: "기록하기" })
+      .getByRole("link", { name: "이 레시피로 내렸다" })
       .click();
 
     await expect(page).toHaveURL("/recipes");

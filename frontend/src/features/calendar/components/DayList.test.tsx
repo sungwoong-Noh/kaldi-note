@@ -113,6 +113,83 @@ describe("DayList", () => {
     ).toBeInTheDocument();
   });
 
+  it("AC-HOMECAL-123 · 웹 우측 컬럼에 요일 아이브로우가 렌더된다", () => {
+    // 2026-09-19는 토요일이다.
+    renderWithQuery(
+      <DayList
+        date="2026-09-19"
+        logs={[{ ...logA, id: 1, beanBatchId: undefined }]}
+        variant="web"
+      />,
+    );
+
+    const eyebrow = screen.getByText("SATURDAY");
+    expect(eyebrow).toHaveAttribute("data-eyebrow");
+  });
+
+  it("AC-HOMECAL-123 · 남의 달력이면 요일 뒤에 닉네임이 붙는다", () => {
+    renderWithQuery(
+      <DayList
+        date="2026-09-19"
+        logs={[{ ...logA, id: 1, beanBatchId: undefined }]}
+        ownerNickname="지연"
+        variant="web"
+      />,
+    );
+
+    expect(screen.getByText("SATURDAY · 지연")).toBeInTheDocument();
+  });
+
+  it("AC-HOMECAL-124 · 웹 헤더 날짜가 text-page-title font-semibold다", () => {
+    renderWithQuery(
+      <DayList
+        date="2026-09-19"
+        logs={[{ ...logA, id: 1, beanBatchId: undefined }]}
+        variant="web"
+      />,
+    );
+
+    const dateEl = screen.getByTestId("day-header-date");
+    expect(dateEl).toHaveTextContent("19");
+    expect(dateEl).toHaveClass("text-page-title", "font-semibold");
+  });
+
+  it("AC-HOMECAL-125 · 웹 헤더 오른쪽에 mono caption(11.5px) 건수가 있다", () => {
+    renderWithQuery(
+      <DayList
+        date="2026-09-19"
+        logs={[
+          { ...logA, id: 1, beanBatchId: undefined },
+          { ...logA, id: 2, beanBatchId: undefined },
+        ]}
+        variant="web"
+      />,
+    );
+
+    const count = screen.getByTestId("day-header-count");
+    expect(count).toHaveTextContent("2건");
+    expect(count).toHaveClass("font-mono", "text-caption");
+  });
+
+  it("AC-HOMECAL-126 · 관계 문구가 Observation 블록 스타일이다", () => {
+    renderWithQuery(
+      <DayList
+        date="2026-09-19"
+        logs={[{ ...logA, id: 1, beanBatchId: undefined }]}
+        ownerNickname="지연"
+        variant="mobile"
+      />,
+    );
+
+    const notice = screen.getByText("맞팔로우 상태여서 지연 님의 기록이 보입니다.");
+    expect(notice).toHaveClass(
+      "bg-surface",
+      "border-l-2",
+      "border-accent",
+      "rounded-control",
+    );
+  });
+
   it("AC-HOMECAL-112 · 웹에서 기록이 카드(paper·border·rounded-surface·p-5)로 렌더된다", () => {
     renderWithQuery(
       <DayList

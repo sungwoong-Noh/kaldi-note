@@ -50,7 +50,7 @@ test.describe("웹 헤더 롤아웃", () => {
 
     const header = page.locator("header");
     await expect(header.getByRole("link", { name: "홈" })).toBeHidden();
-    await expect(header.getByRole("link", { name: "기록하기" })).toBeHidden();
+    await expect(header.getByRole("link", { name: "이 레시피로 내렸다" })).toBeHidden();
     await expect(header.getByRole("link", { name: "더보기" })).toBeHidden();
   });
 
@@ -63,11 +63,11 @@ test.describe("웹 헤더 롤아웃", () => {
 
     const header = page.locator("header");
     await expect(header.getByRole("link", { name: "홈" })).toBeVisible();
-    await expect(header.getByRole("link", { name: "레시피" })).toBeVisible();
+    await expect(header.getByRole("link", { name: "레시피", exact: true })).toBeVisible();
     await expect(
       header.getByRole("link", { name: "기록", exact: true }),
     ).toBeVisible();
-    const cta = header.getByRole("link", { name: "기록하기" });
+    const cta = header.getByRole("link", { name: "이 레시피로 내렸다" });
     await expect(cta).toBeVisible();
     await expect(cta).toHaveAttribute("href", "/recipes");
     await expect(header.getByRole("link", { name: "더보기" })).toBeVisible();
@@ -81,7 +81,7 @@ test.describe("웹 헤더 롤아웃", () => {
     await page.goto("/recipes");
 
     const header = page.locator("header");
-    await expect(header.getByRole("link", { name: "레시피" })).toHaveAttribute(
+    await expect(header.getByRole("link", { name: "레시피", exact: true })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -107,7 +107,7 @@ test.describe("웹 헤더 롤아웃", () => {
     await page.goto("/recipes");
 
     await expect(
-      page.locator("header").getByRole("link", { name: "레시피" }),
+      page.locator("header").getByRole("link", { name: "레시피", exact: true }),
     ).toBeVisible();
   });
 
@@ -118,7 +118,7 @@ test.describe("웹 헤더 롤아웃", () => {
 
     const header = page.locator("header");
     await expect(header.locator("svg")).toBeVisible();
-    await expect(header.getByRole("link", { name: "레시피" })).toBeHidden();
+    await expect(header.getByRole("link", { name: "레시피", exact: true })).toBeHidden();
   });
 
   for (const path of EXCLUDED_PAGES) {

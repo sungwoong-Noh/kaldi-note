@@ -413,6 +413,27 @@ describe("Calendar", () => {
     expect(row).toHaveClass("flex-row", "gap-2");
   });
 
+  it("AC-HOMECAL-121 · 웹 달력 셀의 콘텐츠가 좌상단 정렬된다", () => {
+    const days = new Map([
+      ["2026-09-05", { count: 2, primaryRecipeName: "V60 레시피" }],
+    ]);
+    render(
+      <Calendar
+        month="2026-09"
+        days={days}
+        selectedDate={null}
+        onSelect={() => {}}
+        variant="web"
+      />,
+    );
+
+    const cell = screen.getByRole("button", { name: "9월 5일, 기록 2건" });
+    expect(cell).toHaveClass("items-start", "justify-start");
+    const summary = screen.getByText("V60 레시피");
+    expect(summary).not.toHaveClass("text-center");
+    expect(screen.getByText("외 1건")).not.toHaveClass("text-center");
+  });
+
   it("AC-HOMECAL-98a · 다크 모드 날짜 색이 기존 ink 스케일을 재사용한다", () => {
     const dark = darkBlockOf();
     expect(dark).toMatch(/--date-past-weekday:\s*var\(--ink\);/);

@@ -353,12 +353,15 @@ plan: docs/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   좌상단이 맞다)
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`(web variant)
 
-#### AC-HOMECAL-122 · 웹 우측 컬럼 컨테이너의 padding이 좌우 40px, 배경이 surface다
+#### AC-HOMECAL-122 · 웹 우측 컬럼 컨테이너의 padding이 좌우 48px, 배경이 surface다
+
+> **2026-09-21 구현 확정:** 목업 원값 40px은 간격 스케일(4·8·12·16·24·32·48)에 없다.
+> `|40-24|=16`, `|40-48|=8`로 48px이 더 가깝다.
 
 - **Given** 웹(≥1100px) 2컬럼 레이아웃의 우측 컬럼 컨테이너(`data-testid="day-column"`)
 - **When** 렌더한다
-- **Then** `padding-left`·`padding-right`가 40px이고 `background-color`가 `surface` 토큰
-  값이다(현재 `p-4`로 16px 균등 padding만 적용돼 목업의 "여유로운 판" 느낌이 아니라
+- **Then** `padding-left`·`padding-right`가 48px(`px-12`)이고 `background-color`가 `surface`
+  토큰 값이다(현재 `p-4`로 16px 균등 padding만 적용돼 목업의 "여유로운 판" 느낌이 아니라
   좁은 박스처럼 보인다)
 - **검증** 컴포넌트 테스트 또는 e2e `home-calendar-web.spec.ts`
 
@@ -380,22 +383,33 @@ plan: docs/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant) + `src/test/typography.test.ts`(기존
   단계 재사용이므로 새 등록 불필요)
 
-#### AC-HOMECAL-125 · 웹 우측 컬럼 헤더 오른쪽에 건수가 mono 12px로 렌더된다
+#### AC-HOMECAL-125 · 웹 우측 컬럼 헤더 오른쪽에 건수가 mono·caption(11.5px)으로 렌더된다
+
+> **2026-09-21 구현 확정:** 목업 12px는 타입 스케일에 없다. 기존 `caption`(11.5px, 차이
+> 0.5px)으로 근사한다 — 새 단계 대신 근사가 이 스펙의 다른 항목(레시피명 15.5→15,
+> 캡션 12→11.5)과 일관된다.
 
 - **Given** 위와 같음
 - **When** 렌더한다
-- **Then** 헤더 우측에 `{count}건`(예: `2건`) 또는 목업 표기대로 건수가 `font-family` mono,
-  `font-size` 12px로 렌더된다
+- **Then** 헤더 우측에 `{count}건`(예: `2건`)이 `text-caption`(11.5px) + `font-mono`로
+  렌더된다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant)
 
 #### AC-HOMECAL-126 · 관계 문구가 Observation 블록 스타일로 렌더된다
 
+> **2026-09-21 구현 확정 — 값 2개를 프로젝트 규칙에 맞춘다:**
+> - `font-size` 13.5px → 타입 스케일에 없다. 기존 `body-sm`(13px, 차이 0.5px)으로 근사한다.
+> - `border-radius` `0 8px 8px 0`(비대칭) → 이 프로젝트는 모서리를 역할로만 쓰고
+>   비대칭(한쪽만 둥근) 역할이 없다. 이미 같은 "좌측 강조 보더 + 배경" 패턴을 쓰는
+>   빈 상태 문구(`page.tsx`의 "이 날에는 기록이 없습니다")가 4면 전부
+>   `rounded-control`(7px)을 쓰고 있어 그 전례를 그대로 따른다 — 비대칭 모서리를
+>   새로 만들지 않는다.
+
 - **Given** 남의 달력(맞팔로우 상태)의 날짜별 목록 하단
 - **When** 관계 문구를 렌더한다
-- **Then** `surface` 배경 + 좌측 2px `accent` 보더 + `border-radius` `0 8px 8px 0`(우측 두
-  모서리만 8px, Tailwind `rounded-r-lg`) 박스 안에 `font-size` 13.5px·`line-height` 1.65로
-  렌더된다(현재는 배경·보더 없는 평범한 `<p>`다). 라벨(대문자 mono 9.5px)은 붙이지 않는다 —
-  목업이 이 관계 문구에는 라벨을 쓰지 않는다
+- **Then** `surface` 배경 + 좌측 2px `accent` 보더 + `rounded-control`(7px, 4면) 박스 안에
+  `text-body-sm`(13px)·`line-height` 1.65로 렌더된다(현재는 배경·보더 없는 평범한 `<p>`다).
+  라벨(대문자 mono 9.5px)은 붙이지 않는다 — 목업이 이 관계 문구에는 라벨을 쓰지 않는다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`
 
 #### AC-HOMECAL-127 · 전역 CTA 문구가 "이 레시피로 내렸다"다

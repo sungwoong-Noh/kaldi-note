@@ -5,6 +5,7 @@ import com.kaldinote.brewlog.presentation.dto.BrewLogCalendarResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogPatchRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
+import com.kaldinote.brewlog.presentation.dto.BrewLogStatsResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogSummaryResponse;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
@@ -94,6 +95,14 @@ public class BrewLogController {
           String month,
       AuthenticatedUser user) {
     return brewLogService.calendar(user.id(), userId, month);
+  }
+
+  @GetMapping("/stats")
+  @Operation(
+      summary = "내 잔 통계",
+      description = "이번 달(KST) 건수, 평균 별점, 최빈 원두량, 즐겨 쓰는 레시피. 항상 호출자 본인 것만 조회된다.")
+  public BrewLogStatsResponse stats(AuthenticatedUser user) {
+    return brewLogService.stats(user.id());
   }
 
   @GetMapping("/{id}")

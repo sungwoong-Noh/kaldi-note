@@ -1,6 +1,7 @@
 package com.kaldinote.brewlog.infrastructure;
 
 import com.kaldinote.brewlog.domain.BrewLog;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +17,47 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
   Optional<BrewLog> findByIdAndDeletedAtIsNull(Long id);
 
   long countByRecipeIdAndDeletedAtIsNull(Long recipeId);
+
+  /** 잔 통계 — 이번 달(KST) 건수(AC-RECIPESBREWS-21). */
+  @Query(
+      value =
+          "select count(*) from brew_logs "
+              + "where user_id = :userId and deleted_at is null "
+              + "and brewed_at >= :startInclusive and brewed_at < :endExclusive",
+      nativeQuery = true)
+  long countThisMonth(
+      @Param("userId") Long userId,
+      @Param("startInclusive") Instant startInclusive,
+      @Param("endExclusive") Instant endExclusive);
+
+  /** 잔 통계 — 평균 별점. rating이 null인 로그는 avg()가 자동으로 제외한다(AC-RECIPESBREWS-23). 로그가 0건이면 null이다. */
+  @Query(
+      value = "select avg(rating) from brew_logs where user_id = :userId and deleted_at is null",
+      nativeQuery = true)
+  BigDecimal averageRating(@Param("userId") Long userId);
+
+  /**
+   * 잔 통계 — actualDoseG의 최빈값. 동점이면 가장 최근 brewedAt인 값을 돌려준다(AC-RECIPESBREWS-25). PostgreSQL의 {@code
+   * mode() within group}은 동점 처리를 해 주지 않아 직접 집계한다.
+   */
+  @Query(
+      value =
+          "select actual_dose_g from brew_logs where user_id = :userId and deleted_at is null "
+              + "group by actual_dose_g order by count(*) desc, max(brewed_at) desc limit 1",
+      nativeQuery = true)
+  BigDecimal favoriteDoseG(@Param("userId") Long userId);
+
+  /**
+   * 잔 통계 — 전체 기간 최다 브루 레시피 id. 동점이면 가장 최근 brewedAt인 레시피다(AC-RECIPESBREWS-27). recipeId가 null인
+   * 로그(원본이 지워진 스냅샷 전용 잔)는 집계에서 뺀다.
+   */
+  @Query(
+      value =
+          "select recipe_id from brew_logs "
+              + "where user_id = :userId and deleted_at is null and recipe_id is not null "
+              + "group by recipe_id order by count(*) desc, max(brewed_at) desc limit 1",
+      nativeQuery = true)
+  Long favoriteRecipeId(@Param("userId") Long userId);
 
   /**
    * 목록용 공개범위 판정. RecipeRepository.findVisible과 같은 구조다. 소유자 컬럼 이름과 enum 타입만 다르다.

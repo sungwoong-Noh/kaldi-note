@@ -10,6 +10,7 @@ import com.kaldinote.brewlog.presentation.dto.BrewLogCalendarResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogPatchRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
+import com.kaldinote.brewlog.presentation.dto.BrewLogStatsResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogSummaryResponse;
 import com.kaldinote.brewlog.presentation.dto.CalendarDayResponse;
 import com.kaldinote.common.error.BusinessException;
@@ -34,8 +35,10 @@ import com.kaldinote.recipe.domain.RecipeStep;
 import com.kaldinote.recipe.infrastructure.RecipeRepository;
 import com.kaldinote.user.application.FollowService;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
@@ -196,6 +199,31 @@ public class BrewLogService {
 
     long total = days.stream().mapToLong(CalendarDayResponse::count).sum();
     return new BrewLogCalendarResponse(month.format(), total, days);
+  }
+
+  /**
+   * 내 잔 통계 4칸. userId 파라미터를 열지 않는다 — 항상 호출자 본인 것만 조회된다(AC-RECIPESBREWS-29).
+   *
+   * <p>기록이 0건이면 monthCount만 0이고 나머지는 전부 null이다(AC-RECIPESBREWS-28) — DB 집계 함수들이 빈 결과에서 자연히 null을
+   * 돌려주므로 여기서 따로 분기하지 않는다.
+   */
+  public BrewLogStatsResponse stats(Long userId) {
+    CalendarMonth thisMonth = new CalendarMonth(YearMonth.now(CalendarMonth.KST));
+    long monthCount =
+        brewLogRepository.countThisMonth(
+            userId, thisMonth.startInclusive(), thisMonth.endExclusive());
+    BigDecimal averageRating = brewLogRepository.averageRating(userId);
+    if (averageRating != null) {
+      averageRating = averageRating.setScale(1, RoundingMode.HALF_UP);
+    }
+    BigDecimal favoriteDoseG = brewLogRepository.favoriteDoseG(userId);
+    Long favoriteRecipeId = brewLogRepository.favoriteRecipeId(userId);
+    String favoriteRecipeTitle =
+        favoriteRecipeId == null
+            ? null
+            : recipeRepository.findById(favoriteRecipeId).map(Recipe::getTitle).orElse(null);
+    return new BrewLogStatsResponse(
+        (int) monthCount, averageRating, favoriteDoseG, favoriteRecipeId, favoriteRecipeTitle);
   }
 
   /** 날짜별 대표 레시피명. 쿼리가 brewedAt 내림차순이므로 **각 날짜에 처음 나타나는 행**이 그날 마지막 기록이다(AC-HOMECAL-66). */

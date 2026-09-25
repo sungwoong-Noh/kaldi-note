@@ -306,10 +306,17 @@ Authorization: Bearer <토큰>
 
 #### AC-LIST-11 · 상호 팔로우 상대의 FRIENDS 레시피는 포함된다
 
+> **대체됨 (2026-09-25, `docs/specs/2026-09-21-recipes-and-brews-search-api.md`).** `GET
+> /recipes`의 scope 생략 기본값이 DRAWER(내 서랍)로 바뀌면서(AC-RECIPESBREWS-19), 목록
+> 엔드포인트에는 이 동작을 재현할 scope 값이 더 이상 없다 — `scope=PUBLIC`은 FRIENDS를
+> 명시적으로 제외하고(AC-RECIPESBREWS-19a), `scope=DRAWER`는 내 것/담아온 것만 보여준다.
+> 이 AC가 지키던 동작(상호 팔로우 FRIENDS의 단건 조회 가시성)은 `AC-VIS-05`가 계속
+> 검증한다. 테스트는 삭제됐다(사용자 확인 완료) — 이 항목은 역사적 기록으로 남긴다.
+
 - **Given** 사용자 B가 소유한 `visibility: FRIENDS` 레시피가 1건 있고, `follows`에 `(A→B)`와 `(B→A)`가 모두 있다
 - **When** A가 `GET /api/v1/recipes`
 - **Then** `content`에 그 레시피의 `id`가 있다
-- **검증** API 테스트 `RecipeControllerTest`
+- **검증** ~~API 테스트 `RecipeControllerTest`~~ 대체됨 — 위 참고
 
 #### AC-LIST-12 · 단방향 팔로우 상대의 FRIENDS 레시피는 제외된다
 

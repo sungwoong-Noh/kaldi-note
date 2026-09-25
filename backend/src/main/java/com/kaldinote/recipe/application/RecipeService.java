@@ -5,14 +5,19 @@ import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
 import com.kaldinote.common.response.PageParams;
 import com.kaldinote.common.response.PageResponse;
+import com.kaldinote.gear.domain.Brewer;
 import com.kaldinote.gear.domain.GrinderModel;
 import com.kaldinote.gear.infrastructure.BrewerRepository;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
 import com.kaldinote.grind.domain.GrindConverter;
 import com.kaldinote.grind.domain.GrindSpec;
+import com.kaldinote.recipe.domain.DripperFilter;
 import com.kaldinote.recipe.domain.GrindSettingUnit;
 import com.kaldinote.recipe.domain.Recipe;
 import com.kaldinote.recipe.domain.RecipeRoastLevel;
+import com.kaldinote.recipe.domain.RecipeSearchOwner;
+import com.kaldinote.recipe.domain.RecipeSearchScope;
+import com.kaldinote.recipe.domain.RecipeSearchSort;
 import com.kaldinote.recipe.domain.RecipeSourceType;
 import com.kaldinote.recipe.domain.RecipeStep;
 import com.kaldinote.recipe.domain.RecipeTemperatureType;
@@ -21,6 +26,7 @@ import com.kaldinote.recipe.domain.StepType;
 import com.kaldinote.recipe.infrastructure.RecipeRepository;
 import com.kaldinote.recipe.infrastructure.RecipeStepRepository;
 import com.kaldinote.recipe.presentation.dto.CreateRecipeRequest;
+import com.kaldinote.recipe.presentation.dto.ForkRequest;
 import com.kaldinote.recipe.presentation.dto.RecipeResponse;
 import com.kaldinote.recipe.presentation.dto.RecipeSummaryResponse;
 import com.kaldinote.recipe.presentation.dto.StepRequest;
@@ -30,8 +36,11 @@ import com.kaldinote.user.application.UserService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,22 +124,156 @@ public class RecipeService {
    */
   public PageResponse<RecipeSummaryResponse> list(
       Long viewerId, Long ownerUserId, PageParams params) {
+    var page = recipeRepository.findVisible(viewerId, ownerUserId, params.toPageable(LIST_SORT));
+    Map<Long, Long> savedCounts = savedCountsFor(page.getContent());
     return PageResponse.from(
-        recipeRepository.findVisible(viewerId, ownerUserId, params.toPageable(LIST_SORT)),
-        RecipeSummaryResponse::from);
+        page, r -> RecipeSummaryResponse.from(r, savedCounts.getOrDefault(r.getId(), 0L)));
+  }
+
+  /** 페이지 안 레시피들의 savedCount를 한 번에 조회한다. 빈 목록이면 쿼리를 아예 안 부른다. */
+  private Map<Long, Long> savedCountsFor(List<Recipe> recipes) {
+    if (recipes.isEmpty()) {
+      return Map.of();
+    }
+    List<Long> ids = recipes.stream().map(Recipe::getId).toList();
+    Map<Long, Long> counts = new HashMap<>();
+    for (RecipeRepository.SavedCountRow row : recipeRepository.countSavedForIds(ids)) {
+      counts.put(row.getParentRecipeId(), row.getCnt());
+    }
+    return counts;
   }
 
   /**
-   * 포크. 인가는 조회 인가와 동일하다(findViewable 재사용) — 스펙이 "볼 수 있으면 포크 가능"으로 정의했다. 원본과 스텝을 깊은 복사하므로 이후 원본이
+   * 검색·필터·정렬·범위(내 서랍/둘러보기).
+   *
+   * <p>doseMin이 doseMax보다 크면(둘 다 있을 때) 400이다(AC-RECIPESBREWS-41).
+   *
+   * <p>scope=DRAWER에서는 ownerUserId·sort를 무시하고 항상 호출자 본인 기준·createdAt desc, id desc로
+   * 고정한다(AC-RECIPESBREWS-13·17). scope·ownerUserId가 둘 다 생략되면 이것도 DRAWER로 취급한다(AC-RECIPESBREWS-19) —
+   * 다만 scope는 생략하고 ownerUserId만 준 옛 방식 호출(AC-LIST-16·33)은 하위 호환을 위해 기존 list()로 그대로 처리한다.
+   */
+  public PageResponse<RecipeSummaryResponse> search(
+      Long userId,
+      Long ownerUserId,
+      RecipeSearchScope scope,
+      String q,
+      RecipeTemperatureType temp,
+      List<RecipeRoastLevel> roast,
+      BigDecimal doseMin,
+      BigDecimal doseMax,
+      List<DripperFilter> dripper,
+      RecipeSearchOwner owner,
+      RecipeSearchSort sort,
+      PageParams params) {
+    if (doseMin != null && doseMax != null && doseMin.compareTo(doseMax) > 0) {
+      throw new BusinessException(
+          ErrorCode.INVALID_REQUEST, "doseMin은 doseMax보다 클 수 없습니다: " + doseMin + " > " + doseMax);
+    }
+
+    if (scope == RecipeSearchScope.PUBLIC) {
+      Page<Recipe> page =
+          recipeRepository.searchPublic(
+              q,
+              temp == null ? null : temp.name(),
+              toArray(roast),
+              doseMin,
+              doseMax,
+              resolveBrewerIds(dripper),
+              sort == null ? null : sort.name(),
+              params.toPageable(Sort.unsorted())); // 정렬은 네이티브 쿼리의 ORDER BY가 이미 정한다
+      Map<Long, Long> savedCounts = savedCountsFor(page.getContent());
+      return PageResponse.from(
+          page, r -> RecipeSummaryResponse.from(r, savedCounts.getOrDefault(r.getId(), 0L)));
+    }
+
+    if (scope == null && ownerUserId != null) {
+      return list(userId, ownerUserId, params);
+    }
+
+    Page<Recipe> page =
+        recipeRepository.searchDrawer(
+            userId,
+            owner == null || owner == RecipeSearchOwner.ALL ? null : owner.name(),
+            params.toPageable(Sort.unsorted())); // 정렬은 네이티브 쿼리의 ORDER BY가 이미 정한다
+    Map<Long, Long> savedCounts = savedCountsFor(page.getContent());
+    return PageResponse.from(
+        page, r -> RecipeSummaryResponse.from(r, savedCounts.getOrDefault(r.getId(), 0L)));
+  }
+
+  private String[] toArray(List<RecipeRoastLevel> roast) {
+    if (roast == null || roast.isEmpty()) {
+      return null;
+    }
+    return roast.stream().map(Enum::name).toArray(String[]::new);
+  }
+
+  /**
+   * 기구(dripper) 필터를 실제 브루어 id 목록으로 바꾼다. "V60"은 브랜드가 아니라 Hario의 제품 라인명이라 이름으로 찾고, 나머지는 브랜드로
+   * 찾는다(AC-RECIPESBREWS-08·09·10).
+   */
+  private Long[] resolveBrewerIds(List<DripperFilter> dripper) {
+    if (dripper == null || dripper.isEmpty()) {
+      return null;
+    }
+    return dripper.stream()
+        .flatMap(
+            d ->
+                switch (d) {
+                  case V60 -> brewerRepository.findByNameStartingWithIgnoreCase("V60").stream();
+                  case KALITA -> brewerRepository.findByBrandIgnoreCase("Kalita").stream();
+                  case ORIGAMI -> brewerRepository.findByBrandIgnoreCase("Origami").stream();
+                  case CLEVER -> brewerRepository.findByBrandIgnoreCase("Clever").stream();
+                })
+        .map(Brewer::getId)
+        .toArray(Long[]::new);
+  }
+
+  /**
+   * 포크(담기). 인가는 조회 인가와 동일하다(findViewable 재사용) — 스펙이 "볼 수 있으면 포크 가능"으로 정의했다. 원본과 스텝을 깊은 복사하므로 이후 원본이
    * 수정·삭제돼도 포크본은 변하지 않는다.
+   *
+   * <p>바디로 넘긴 필드는 그 값으로, 생략한 필드는 원본 값으로 덮어쓴다(AC-RECIPESBREWS-30~32). request가 null(바디 없음)이면 원본
+   * 그대로다. parentRecipeId·sourceAuthorName은 바디와 무관하게 forkFrom이 이미 정한 값을 유지한다(AC-RECIPESBREWS-33).
    */
   @Transactional
-  public RecipeResponse fork(Long userId, Long recipeId) {
+  public RecipeResponse fork(Long userId, Long recipeId, ForkRequest request) {
     Recipe original = findViewable(userId, recipeId);
     Recipe fork = Recipe.forkFrom(original, userId, sourceAuthorNameOf(original));
     List<RecipeStep> copiedSteps = original.getSteps().stream().map(RecipeStep::copyOf).toList();
     fork.replaceSteps(copiedSteps);
+
+    if (request != null) {
+      requireExists(request.brewerId(), brewerRepository::existsById, "브루어");
+      Long grinderModelId = firstNonNull(request.grinderModelId(), original.getGrinderModelId());
+      GrindSettingUnit grindSettingUnit =
+          firstNonNull(request.grindSettingUnit(), original.getGrindSettingUnit());
+      BigDecimal grindSettingValue =
+          firstNonNull(request.grindSettingValue(), original.getGrindSettingValue());
+      BigDecimal micron =
+          computeGrindMicronEstimated(grindSettingUnit, grindSettingValue, grinderModelId);
+
+      fork.applyForkOverrides(
+          firstNonNull(request.title(), original.getTitle()),
+          firstNonNull(request.description(), original.getDescription()),
+          firstNonNull(request.doseG(), original.getDoseG()),
+          firstNonNull(request.waterG(), original.getWaterG()),
+          firstNonNull(request.waterTempC(), original.getWaterTempC()),
+          firstNonNull(request.totalTimeSeconds(), original.getTotalTimeSeconds()),
+          firstNonNull(request.brewerId(), original.getBrewerId()),
+          firstNonNull(request.filterId(), original.getFilterId()),
+          grinderModelId,
+          grindSettingValue,
+          grindSettingUnit,
+          micron,
+          firstNonNull(request.temperatureType(), original.getTemperatureType()),
+          firstNonNull(request.recommendedRoastLevel(), original.getRecommendedRoastLevel()));
+    }
+
     return RecipeResponse.from(recipeRepository.save(fork), 0L, 0L);
+  }
+
+  private <T> T firstNonNull(T override, T original) {
+    return override != null ? override : original;
   }
 
   /**

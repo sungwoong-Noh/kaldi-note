@@ -539,4 +539,111 @@ class RecipeForkControllerTest extends AbstractIntegrationTest {
 
     mockMvc.perform(post("/api/v1/recipes/{id}/fork", r1)).andExpect(status().isUnauthorized());
   }
+
+  // ===== 담기 바디 지원 (AC-RECIPESBREWS-30~33·52) =====
+
+  private ResultActions forkRecipeWithBody(String token, Long recipeId, String body)
+      throws Exception {
+    return mockMvc.perform(
+        post("/api/v1/recipes/{id}/fork", recipeId)
+            .header(HttpHeaders.AUTHORIZATION, token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-30 · 바디 없이 fork하면 원본 그대로 복제된다")
+  void 바디_없이_fork는_원본_그대로() throws Exception {
+    User a = newUser("recipesbrews-30a");
+    User b = newUser("recipesbrews-30b");
+    Long r1 = recipeWith(tokenOf(a), "PUBLIC"); // doseG 15.0
+
+    forkRecipe(tokenOf(b), r1)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.doseG").value(15.0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-31 · 바디로 넘긴 필드는 그 값으로 저장된다")
+  void 바디_필드는_덮어써진다() throws Exception {
+    User a = newUser("recipesbrews-31a");
+    User b = newUser("recipesbrews-31b");
+    Long r1 = recipeWith(tokenOf(a), "PUBLIC");
+
+    forkRecipeWithBody(
+            tokenOf(b),
+            r1,
+            """
+        {"doseG": 16.0}
+        """)
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.doseG").value(16.0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-32 · 바디에서 생략한 필드는 원본 값을 그대로 물려받는다")
+  void 생략한_필드는_원본값() throws Exception {
+    User a = newUser("recipesbrews-32a");
+    User b = newUser("recipesbrews-32b");
+    Long r1 = recipeWith(tokenOf(a), "PUBLIC"); // waterG 250.0
+
+    forkRecipeWithBody(
+            tokenOf(b),
+            r1,
+            """
+        {"doseG": 16.0}
+        """)
+        .andExpect(jsonPath("$.waterG").value(250.0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-33 · 담기 후에도 parentRecipeId·sourceAuthorName은 기존 규칙대로 채워진다")
+  void 담기_후에도_출처_필드는_영향받지_않는다() throws Exception {
+    User a = newUser("지연");
+    User b = newUser("recipesbrews-33b");
+    Long r1 = recipeWith(tokenOf(a), "PUBLIC");
+
+    forkRecipeWithBody(
+            tokenOf(b),
+            r1,
+            """
+        {"doseG": 16.0}
+        """)
+        .andExpect(jsonPath("$.parentRecipeId").value(r1))
+        .andExpect(jsonPath("$.sourceAuthorName").value("지연"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-52 · 담기 바디의 필드 검증은 CreateRecipeRequest와 동일하게 적용된다")
+  void 담기_바디_검증_실패는_400() throws Exception {
+    User a = newUser("recipesbrews-52a");
+    User b = newUser("recipesbrews-52b");
+    Long r1 = recipeWith(tokenOf(a), "PUBLIC");
+
+    forkRecipeWithBody(
+            tokenOf(b),
+            r1,
+            """
+        {"doseG": -1.0}
+        """)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-53 · 가시성 없는 레시피는 담기 바디를 보내도 403이다")
+  void 가시성_없는_레시피는_바디를_보내도_403이다() throws Exception {
+    User a = newUser("recipesbrews-53a");
+    User b = newUser("recipesbrews-53b");
+    Long r1 = recipeWith(tokenOf(a), "PRIVATE");
+
+    forkRecipeWithBody(
+            tokenOf(b),
+            r1,
+            """
+        {"doseG": 16.0}
+        """)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+  }
 }

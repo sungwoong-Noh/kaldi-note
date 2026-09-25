@@ -17,6 +17,7 @@ import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
 import com.kaldinote.brewlog.domain.BrewLog;
 import com.kaldinote.brewlog.domain.BrewLogVisibility;
+import com.kaldinote.brewlog.domain.CalendarMonth;
 import com.kaldinote.brewlog.domain.RecipeSnapshot;
 import com.kaldinote.brewlog.infrastructure.BrewLogRepository;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
@@ -26,6 +27,7 @@ import com.kaldinote.user.infrastructure.UserRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -969,6 +971,53 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
     return brewLogRepository.save(log).getId();
   }
 
+  /** actualDoseG·rating을 지정해 브루잉 로그를 직접 저장한다(잔 통계 테스트용). */
+  private Long saveBrewLogWith(
+      User owner,
+      Long recipeId,
+      Long beanBatchId,
+      Long userGrinderId,
+      Instant brewedAt,
+      BigDecimal actualDoseG,
+      BigDecimal rating) {
+    BrewLog log =
+        BrewLog.create(
+            owner.getId(),
+            recipeId,
+            new RecipeSnapshot(
+                "테스트 레시피",
+                "테스터",
+                new BigDecimal("15.0"),
+                new BigDecimal("250.0"),
+                null,
+                null,
+                new RecipeSnapshot.GrindValueSnapshot(new BigDecimal("22.0"), "CLICK"),
+                java.util.List.of()),
+            beanBatchId,
+            brewedAt,
+            BrewLogVisibility.PRIVATE,
+            actualDoseG,
+            new BigDecimal("250.0"),
+            new BigDecimal("92.0"),
+            null,
+            null,
+            userGrinderId,
+            new BigDecimal("22.0"),
+            null,
+            null,
+            null,
+            10,
+            DegassingStatus.IDEAL.name(),
+            rating,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
+    return brewLogRepository.save(log).getId();
+  }
+
   /** visibility를 지정해 브루잉 로그를 만들고 id를 돌려준다. */
   private Long brewLogWith(String token, String visibility) throws Exception {
     Long recipe = recipeId(token);
@@ -1763,5 +1812,287 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
         bodyWith(recipeId, beanBatchId, BREWED_AT, userGrinderId, "\"overallNote\":\"산미가 강했다\""));
 
     listBrewLogs(token, "").andExpect(jsonPath("$.content[0].overallNote").value("산미가 강했다"));
+  }
+
+  // ===== 잔 통계 (AC-RECIPESBREWS-21~29) =====
+
+  private Instant thisMonthDay(int dayOfMonth) {
+    return YearMonth.now(CalendarMonth.KST)
+        .atDay(dayOfMonth)
+        .atStartOfDay(CalendarMonth.KST)
+        .toInstant()
+        .plus(1, ChronoUnit.HOURS);
+  }
+
+  private Instant lastMonthDay(int dayOfMonth) {
+    return YearMonth.now(CalendarMonth.KST)
+        .minusMonths(1)
+        .atDay(dayOfMonth)
+        .atStartOfDay(CalendarMonth.KST)
+        .toInstant()
+        .plus(1, ChronoUnit.HOURS);
+  }
+
+  private ResultActions getStats(String token) throws Exception {
+    return mockMvc.perform(get("/api/v1/brew-logs/stats").header(HttpHeaders.AUTHORIZATION, token));
+  }
+
+  private Long recipeTitled(String token, String title) throws Exception {
+    return createdId(
+        mockMvc.perform(
+            post("/api/v1/recipes")
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title":"%s","doseG":15.0,"waterG":250.0}
+                    """
+                        .formatted(title))));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-21 · monthCount가 이번 달(KST) 브루 건수다")
+  void 이번달_건수() throws Exception {
+    User owner = newUser("stats-21");
+    String token = tokenOf(owner);
+    Long recipeId = recipeId(token);
+    Long batchId = beanBatchId(token, BREWED_AT, 6);
+    Long grinderId = userGrinderId(token, c40Id());
+
+    for (int day : new int[] {15, 16, 17}) {
+      saveBrewLogWith(
+          owner, recipeId, batchId, grinderId, thisMonthDay(day), new BigDecimal("15.0"), null);
+    }
+    for (int day : new int[] {15, 16}) {
+      saveBrewLogWith(
+          owner, recipeId, batchId, grinderId, lastMonthDay(day), new BigDecimal("15.0"), null);
+    }
+
+    getStats(token).andExpect(status().isOk()).andExpect(jsonPath("$.monthCount").value(3));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-22 · averageRating이 소수 1자리 HALF_UP으로 반올림된다")
+  void 평균_별점_반올림() throws Exception {
+    User owner = newUser("stats-22");
+    String token = tokenOf(owner);
+    Long recipeId = recipeId(token);
+    Long batchId = beanBatchId(token, BREWED_AT, 6);
+    Long grinderId = userGrinderId(token, c40Id());
+
+    saveBrewLogWith(
+        owner,
+        recipeId,
+        batchId,
+        grinderId,
+        BREWED_AT,
+        new BigDecimal("15.0"),
+        new BigDecimal("4.0"));
+    saveBrewLogWith(
+        owner,
+        recipeId,
+        batchId,
+        grinderId,
+        BREWED_AT.minusSeconds(60),
+        new BigDecimal("15.0"),
+        new BigDecimal("4.5"));
+    saveBrewLogWith(
+        owner,
+        recipeId,
+        batchId,
+        grinderId,
+        BREWED_AT.minusSeconds(120),
+        new BigDecimal("15.0"),
+        new BigDecimal("4.5"));
+
+    getStats(token).andExpect(jsonPath("$.averageRating").value(4.3));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-23 · rating이 null인 로그는 평균 계산에서 제외된다")
+  void rating_null인_로그는_평균에서_제외된다() throws Exception {
+    User owner = newUser("stats-23");
+    String token = tokenOf(owner);
+    Long recipeId = recipeId(token);
+    Long batchId = beanBatchId(token, BREWED_AT, 6);
+    Long grinderId = userGrinderId(token, c40Id());
+
+    saveBrewLogWith(
+        owner,
+        recipeId,
+        batchId,
+        grinderId,
+        BREWED_AT,
+        new BigDecimal("15.0"),
+        new BigDecimal("4.0"));
+    saveBrewLogWith(
+        owner,
+        recipeId,
+        batchId,
+        grinderId,
+        BREWED_AT.minusSeconds(60),
+        new BigDecimal("15.0"),
+        null);
+
+    getStats(token).andExpect(jsonPath("$.averageRating").value(4.0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-24 · favoriteDoseG는 actualDoseG의 최빈값이다")
+  void 최빈_원두량() throws Exception {
+    User owner = newUser("stats-24");
+    String token = tokenOf(owner);
+    Long recipeId = recipeId(token);
+    Long batchId = beanBatchId(token, BREWED_AT, 6);
+    Long grinderId = userGrinderId(token, c40Id());
+
+    saveBrewLogWith(owner, recipeId, batchId, grinderId, BREWED_AT, new BigDecimal("15.0"), null);
+    saveBrewLogWith(
+        owner,
+        recipeId,
+        batchId,
+        grinderId,
+        BREWED_AT.minusSeconds(60),
+        new BigDecimal("15.0"),
+        null);
+    saveBrewLogWith(
+        owner,
+        recipeId,
+        batchId,
+        grinderId,
+        BREWED_AT.minusSeconds(120),
+        new BigDecimal("20.0"),
+        null);
+
+    getStats(token).andExpect(jsonPath("$.favoriteDoseG").value(15.0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-25 · favoriteDoseG 동점이면 가장 최근에 쓴 값을 돌려준다")
+  void 최빈_원두량_동점_최근값() throws Exception {
+    User owner = newUser("stats-25");
+    String token = tokenOf(owner);
+    Long recipeId = recipeId(token);
+    Long batchId = beanBatchId(token, BREWED_AT, 6);
+    Long grinderId = userGrinderId(token, c40Id());
+
+    saveBrewLogWith(
+        owner,
+        recipeId,
+        batchId,
+        grinderId,
+        BREWED_AT.minus(3, ChronoUnit.DAYS),
+        new BigDecimal("15.0"),
+        null);
+    saveBrewLogWith(
+        owner,
+        recipeId,
+        batchId,
+        grinderId,
+        BREWED_AT.minus(1, ChronoUnit.DAYS),
+        new BigDecimal("20.0"),
+        null);
+
+    getStats(token).andExpect(jsonPath("$.favoriteDoseG").value(20.0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-26 · favoriteRecipe는 전체 기간 최다 브루 레시피다")
+  void 즐겨_쓰는_레시피() throws Exception {
+    User owner = newUser("stats-26");
+    String token = tokenOf(owner);
+    Long recipeA = recipeTitled(token, "레시피 A");
+    Long recipeB = recipeTitled(token, "레시피 B");
+    Long batchId = beanBatchId(token, BREWED_AT, 6);
+    Long grinderId = userGrinderId(token, c40Id());
+
+    for (int i = 0; i < 3; i++) {
+      saveBrewLogWith(
+          owner,
+          recipeA,
+          batchId,
+          grinderId,
+          BREWED_AT.minusSeconds(60L * i),
+          new BigDecimal("15.0"),
+          null);
+    }
+    saveBrewLogWith(owner, recipeB, batchId, grinderId, BREWED_AT, new BigDecimal("15.0"), null);
+
+    getStats(token)
+        .andExpect(jsonPath("$.favoriteRecipeId").value(recipeA))
+        .andExpect(jsonPath("$.favoriteRecipeTitle").value("레시피 A"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-27 · favoriteRecipe 동점이면 가장 최근에 브루한 레시피를 돌려준다")
+  void 즐겨_쓰는_레시피_동점_최근값() throws Exception {
+    User owner = newUser("stats-27");
+    String token = tokenOf(owner);
+    Long recipeA = recipeTitled(token, "레시피 A");
+    Long recipeB = recipeTitled(token, "레시피 B");
+    Long batchId = beanBatchId(token, BREWED_AT, 6);
+    Long grinderId = userGrinderId(token, c40Id());
+
+    saveBrewLogWith(
+        owner,
+        recipeA,
+        batchId,
+        grinderId,
+        BREWED_AT.minus(3, ChronoUnit.DAYS),
+        new BigDecimal("15.0"),
+        null);
+    saveBrewLogWith(
+        owner,
+        recipeB,
+        batchId,
+        grinderId,
+        BREWED_AT.minus(1, ChronoUnit.DAYS),
+        new BigDecimal("15.0"),
+        null);
+
+    getStats(token)
+        .andExpect(jsonPath("$.favoriteRecipeId").value(recipeB))
+        .andExpect(jsonPath("$.favoriteRecipeTitle").value("레시피 B"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-28 · 브루 로그가 0건이면 통계 전부 0 또는 null이다")
+  void 기록_0건_통계() throws Exception {
+    String token = token("stats-28");
+
+    getStats(token)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.monthCount").value(0))
+        .andExpect(jsonPath("$.averageRating").doesNotExist())
+        .andExpect(jsonPath("$.favoriteDoseG").doesNotExist())
+        .andExpect(jsonPath("$.favoriteRecipeId").doesNotExist())
+        .andExpect(jsonPath("$.favoriteRecipeTitle").doesNotExist());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-29 · 통계는 호출자 본인 것만 조회된다(userId 파라미터 없음)")
+  void 통계는_본인_것만() throws Exception {
+    User a = newUser("stats-29-a");
+    User b = newUser("stats-29-b");
+    String tokenA = tokenOf(a);
+    String tokenB = tokenOf(b);
+    Long recipeB = recipeId(tokenB);
+    Long batchB = beanBatchId(tokenB, BREWED_AT, 6);
+    Long grinderB = userGrinderId(tokenB, c40Id());
+    for (int i = 0; i < 5; i++) {
+      saveBrewLogWith(
+          b,
+          recipeB,
+          batchB,
+          grinderB,
+          BREWED_AT.minusSeconds(60L * i),
+          new BigDecimal("15.0"),
+          null);
+    }
+
+    getStats(tokenA)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.monthCount").value(0))
+        .andExpect(jsonPath("$.favoriteRecipeId").doesNotExist());
   }
 }

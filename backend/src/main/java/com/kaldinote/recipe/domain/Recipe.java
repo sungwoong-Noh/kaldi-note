@@ -266,4 +266,39 @@ public class Recipe extends BaseTimeEntity {
     fork.sourceAuthorName = sourceAuthorName;
     return fork;
   }
+
+  /**
+   * 담기(fork) 바디로 넘어온 값을 덮어쓴다(AC-RECIPESBREWS-31). applyUpdate와 달리 부분 병합이라, "생략한 필드는 원본 값
+   * 유지"(AC-RECIPESBREWS-32) 판단은 호출자(RecipeService.fork)가 원본 값으로 미리 채워 넘긴다 — 여기서는 무조건 덮어쓴다.
+   */
+  public void applyForkOverrides(
+      String title,
+      String description,
+      BigDecimal doseG,
+      BigDecimal waterG,
+      BigDecimal waterTempC,
+      Integer totalTimeSeconds,
+      Long brewerId,
+      Long filterId,
+      Long grinderModelId,
+      BigDecimal grindSettingValue,
+      GrindSettingUnit grindSettingUnit,
+      BigDecimal grindMicronEstimated,
+      RecipeTemperatureType temperatureType,
+      RecipeRoastLevel recommendedRoastLevel) {
+    this.title = title;
+    this.description = description;
+    this.doseG = doseG;
+    this.waterG = waterG;
+    this.waterTempC = waterTempC;
+    this.totalTimeSeconds = totalTimeSeconds;
+    this.brewerId = brewerId;
+    this.filterId = filterId;
+    this.grinderModelId = grinderModelId;
+    this.grindSettingValue = grindSettingValue;
+    this.grindSettingUnit = grindSettingUnit;
+    this.grindMicronEstimated = grindMicronEstimated;
+    this.temperatureType = temperatureType;
+    this.recommendedRoastLevel = recommendedRoastLevel;
+  }
 }

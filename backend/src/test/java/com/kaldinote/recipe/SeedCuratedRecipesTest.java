@@ -185,11 +185,14 @@ class SeedCuratedRecipesTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @DisplayName("AC-SEED-10 · 레시피가 없는 신규 사용자의 목록에 시드 2건이 보인다")
+  @DisplayName("AC-SEED-10 · 레시피가 없는 신규 사용자의 둘러보기 목록에 시드 2건이 보인다")
   void 신규_사용자_목록에_시드_2건이_보인다() throws Exception {
+    // scope 생략 시 기본값이 DRAWER(내 서랍)로 바뀌어(AC-RECIPESBREWS-19), 주인 없는 CURATED
+    // 시드를 보려면 둘러보기(scope=PUBLIC)를 명시해야 한다.
     mockMvc
         .perform(
-            get("/api/v1/recipes").header(HttpHeaders.AUTHORIZATION, tokenOf(newUser("신규가입자"))))
+            get("/api/v1/recipes?scope=PUBLIC")
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(newUser("신규가입자"))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(2))
         .andExpect(jsonPath("$.content[*].title", hasItem(HOFFMANN)))

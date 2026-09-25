@@ -13,6 +13,8 @@ import com.kaldinote.grind.domain.GrindSpec;
 import com.kaldinote.recipe.domain.GrindSettingUnit;
 import com.kaldinote.recipe.domain.Recipe;
 import com.kaldinote.recipe.domain.RecipeRoastLevel;
+import com.kaldinote.recipe.domain.RecipeSearchScope;
+import com.kaldinote.recipe.domain.RecipeSearchSort;
 import com.kaldinote.recipe.domain.RecipeSourceType;
 import com.kaldinote.recipe.domain.RecipeStep;
 import com.kaldinote.recipe.domain.RecipeTemperatureType;
@@ -34,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -134,6 +137,54 @@ public class RecipeService {
       counts.put(row.getParentRecipeId(), row.getCnt());
     }
     return counts;
+  }
+
+  /**
+   * 검색·필터·정렬·범위(내 서랍/둘러보기). scope=PUBLIC(둘러보기)만 이 메서드가 다룬다 — scope=DRAWER(내 서랍)는 이후 태스크에서 채운다.
+   *
+   * <p>doseMin이 doseMax보다 크면(둘 다 있을 때) 400이다(AC-RECIPESBREWS-41).
+   */
+  public PageResponse<RecipeSummaryResponse> search(
+      Long userId,
+      Long ownerUserId,
+      RecipeSearchScope scope,
+      String q,
+      RecipeTemperatureType temp,
+      List<RecipeRoastLevel> roast,
+      BigDecimal doseMin,
+      BigDecimal doseMax,
+      RecipeSearchSort sort,
+      PageParams params) {
+    if (doseMin != null && doseMax != null && doseMin.compareTo(doseMax) > 0) {
+      throw new BusinessException(
+          ErrorCode.INVALID_REQUEST, "doseMin은 doseMax보다 클 수 없습니다: " + doseMin + " > " + doseMax);
+    }
+
+    if (scope == RecipeSearchScope.PUBLIC) {
+      Page<Recipe> page =
+          recipeRepository.searchPublic(
+              q,
+              temp == null ? null : temp.name(),
+              toArray(roast),
+              doseMin,
+              doseMax,
+              null, // brewerIds — dripper 필터는 다음 태스크
+              sort == null ? null : sort.name(),
+              params.toPageable(Sort.unsorted())); // 정렬은 네이티브 쿼리의 ORDER BY가 이미 정한다
+      Map<Long, Long> savedCounts = savedCountsFor(page.getContent());
+      return PageResponse.from(
+          page, r -> RecipeSummaryResponse.from(r, savedCounts.getOrDefault(r.getId(), 0L)));
+    }
+
+    // scope == DRAWER — 다음 태스크에서 전용 쿼리로 바꾼다. 지금은 기존 list()로 대체한다.
+    return list(userId, ownerUserId, params);
+  }
+
+  private String[] toArray(List<RecipeRoastLevel> roast) {
+    if (roast == null || roast.isEmpty()) {
+      return null;
+    }
+    return roast.stream().map(Enum::name).toArray(String[]::new);
   }
 
   /**

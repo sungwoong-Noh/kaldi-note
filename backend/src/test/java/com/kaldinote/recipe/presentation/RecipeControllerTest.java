@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
+import com.kaldinote.gear.infrastructure.BrewerRepository;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
 import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.UserRepository;
@@ -32,6 +33,11 @@ class RecipeControllerTest extends AbstractIntegrationTest {
   @Autowired private JwtTokenProvider tokenProvider;
   @Autowired private UserRepository userRepository;
   @Autowired private GrinderModelRepository grinderRepository;
+  @Autowired private BrewerRepository brewerRepository;
+
+  private Long brewerId(String brand, String name) {
+    return brewerRepository.findByBrandAndName(brand, name).orElseThrow().getId();
+  }
 
   private String token() {
     User user = userRepository.save(User.create(null, "테스터", null));
@@ -1765,5 +1771,204 @@ class RecipeControllerTest extends AbstractIntegrationTest {
         .andExpect(
             jsonPath("$.content[?(@.id == %d)].recommendedRoastLevel".formatted(id)).value("DARK"))
         .andExpect(jsonPath("$.content[?(@.id == %d)].savedCount".formatted(id)).value(1));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-01 · q로 레시피 제목이 부분 일치 검색된다")
+  void q로_제목이_검색된다() throws Exception {
+    String owner = token();
+    createRecipe(
+        owner,
+        """
+        {"title":"아침에 마시는 밝은 워시드","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+        """);
+
+    listRecipes(owner, "?scope=PUBLIC&q=워시드")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(1));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-02 · q로 기구(브루어) 이름도 매칭된다")
+  void q로_기구_이름도_매칭된다() throws Exception {
+    String owner = token();
+    Long v60 = brewerId("Hario", "V60 01");
+    createRecipe(
+        owner,
+        """
+        {"title":"기구 검색용","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC","brewerId":%d}
+        """
+            .formatted(v60));
+
+    listRecipes(owner, "?scope=PUBLIC&q=V60")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(1));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-03 · q가 제목·기구명 어디에도 안 맞으면 빈 결과다(200)")
+  void q가_안_맞으면_빈_결과다() throws Exception {
+    String owner = token();
+    createRecipe(
+        owner,
+        """
+        {"title":"검색 대상","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+        """);
+
+    listRecipes(owner, "?scope=PUBLIC&q=존재하지않는검색어999")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(0))
+        .andExpect(jsonPath("$.totalElements").value(0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-04 · temp=HOT이면 HOT 레시피만 남는다")
+  void temp_HOT이면_HOT만_남는다() throws Exception {
+    String owner = token();
+    createRecipe(
+        owner,
+        """
+        {"title":"HOT-1","doseG":15.0,"waterG":250.0,"temperatureType":"HOT","visibility":"PUBLIC"}
+        """);
+    createRecipe(
+        owner,
+        """
+        {"title":"ICE-1","doseG":15.0,"waterG":250.0,"temperatureType":"ICE","visibility":"PUBLIC"}
+        """);
+
+    listRecipes(owner, "?scope=PUBLIC&temp=HOT")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[*].temperatureType", everyItem(equalTo("HOT"))));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-05 · roast를 2개 넘기면 OR로 매칭된다")
+  void roast_2개는_OR로_매칭된다() throws Exception {
+    String owner = token();
+    for (String roast : new String[] {"LIGHT", "MEDIUM", "DARK"}) {
+      createRecipe(
+          owner,
+          """
+          {"title":"roast-%s","doseG":15.0,"waterG":250.0,"recommendedRoastLevel":"%s","visibility":"PUBLIC"}
+          """
+              .formatted(roast, roast));
+    }
+
+    listRecipes(owner, "?scope=PUBLIC&roast=LIGHT&roast=DARK")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(2))
+        .andExpect(
+            jsonPath(
+                "$.content[*].recommendedRoastLevel",
+                everyItem(org.hamcrest.Matchers.isOneOf("LIGHT", "DARK"))));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-06 · doseMin·doseMax 둘 다 주면 그 사이(포함) 레시피만 남는다")
+  void 원두량_범위_필터() throws Exception {
+    String owner = token();
+    for (String dose : new String[] {"10.0", "15.0", "20.0", "30.0"}) {
+      createRecipe(
+          owner,
+          """
+          {"title":"dose-%s","doseG":%s,"waterG":250.0,"visibility":"PUBLIC"}
+          """
+              .formatted(dose, dose));
+    }
+
+    listRecipes(owner, "?scope=PUBLIC&doseMin=15&doseMax=20")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(2));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-07 · doseMin만 주면 그 이상만 남는다")
+  void doseMin만_주면_그_이상만_남는다() throws Exception {
+    String owner = token();
+    createRecipe(
+        owner,
+        """
+        {"title":"dose-10","doseG":10.0,"waterG":250.0,"visibility":"PUBLIC"}
+        """);
+    createRecipe(
+        owner,
+        """
+        {"title":"dose-20","doseG":20.0,"waterG":250.0,"visibility":"PUBLIC"}
+        """);
+
+    listRecipes(owner, "?scope=PUBLIC&doseMin=15")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(1))
+        .andExpect(jsonPath("$.content[0].title").value("dose-20"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-40 · doseMin=doseMax(같은 값)이면 그 값과 정확히 같은 레시피만 남는다")
+  void 원두량_경계값_포함() throws Exception {
+    String owner = token();
+    createRecipe(
+        owner,
+        """
+        {"title":"dose-15","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+        """);
+    createRecipe(
+        owner,
+        """
+        {"title":"dose-16","doseG":16.0,"waterG":250.0,"visibility":"PUBLIC"}
+        """);
+
+    listRecipes(owner, "?scope=PUBLIC&doseMin=15&doseMax=15")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(1))
+        .andExpect(jsonPath("$.content[0].title").value("dose-15"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-41 · doseMin이 doseMax보다 크면 400이다")
+  void 원두량_범위_역전은_400이다() throws Exception {
+    listRecipes(token(), "?scope=PUBLIC&doseMin=20&doseMax=10")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-19a · scope=PUBLIC은 visibility=PUBLIC인 레시피만 보여준다(FRIENDS 제외)")
+  void PUBLIC_스코프는_FRIENDS를_제외한다() throws Exception {
+    User a = newUser("recipesbrews-19a");
+    User b = newUser("recipesbrews-19b");
+    mutualFollow(a, b);
+    createRecipe(
+        tokenOf(a),
+        """
+        {"title":"FRIENDS 전용 검색어XYZ","doseG":15.0,"waterG":250.0,"visibility":"FRIENDS"}
+        """);
+
+    listRecipes(tokenOf(b), "?scope=PUBLIC&q=검색어XYZ")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(0));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-50 · scope에 잘못된 값을 보내면 400이다")
+  void scope_잘못된_값은_400이다() throws Exception {
+    listRecipes(token(), "?scope=INVALID")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-51 · temp에 잘못된 값을 보내면 400이다")
+  void temp_잘못된_값은_400이다() throws Exception {
+    listRecipes(token(), "?scope=PUBLIC&temp=WARM")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-51 · roast에 잘못된 값을 보내면 400이다")
+  void roast_잘못된_값은_400이다() throws Exception {
+    listRecipes(token(), "?scope=PUBLIC&roast=EXTRA_DARK")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
   }
 }

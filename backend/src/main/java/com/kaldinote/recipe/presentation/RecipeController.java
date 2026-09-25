@@ -4,6 +4,10 @@ import com.kaldinote.common.response.PageParams;
 import com.kaldinote.common.response.PageResponse;
 import com.kaldinote.common.security.AuthenticatedUser;
 import com.kaldinote.recipe.application.RecipeService;
+import com.kaldinote.recipe.domain.RecipeRoastLevel;
+import com.kaldinote.recipe.domain.RecipeSearchScope;
+import com.kaldinote.recipe.domain.RecipeSearchSort;
+import com.kaldinote.recipe.domain.RecipeTemperatureType;
 import com.kaldinote.recipe.presentation.dto.CreateRecipeRequest;
 import com.kaldinote.recipe.presentation.dto.RecipeResponse;
 import com.kaldinote.recipe.presentation.dto.RecipeSummaryResponse;
@@ -13,6 +17,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -55,10 +61,39 @@ public class RecipeController {
               schema = @Schema(defaultValue = "20"))
           @RequestParam(required = false)
           Integer size,
-      @Parameter(description = "지정하면 그 사용자가 소유한 레시피만. 없는 id면 빈 목록.") @RequestParam(required = false)
+      @Parameter(description = "지정하면 그 사용자가 소유한 레시피만. 없는 id면 빈 목록. scope=DRAWER에서는 무시된다.")
+          @RequestParam(required = false)
           Long ownerUserId,
+      @Parameter(description = "DRAWER(내 서랍) | PUBLIC(둘러보기). 생략하면 DRAWER.")
+          @RequestParam(required = false)
+          RecipeSearchScope scope,
+      @Parameter(description = "검색어 — 제목·기구명 부분 일치. scope=PUBLIC 전용.")
+          @RequestParam(required = false)
+          String q,
+      @Parameter(description = "HOT | ICE. scope=PUBLIC 전용.") @RequestParam(required = false)
+          RecipeTemperatureType temp,
+      @Parameter(description = "LIGHT | MEDIUM | DARK, 여러 개면 OR. scope=PUBLIC 전용.")
+          @RequestParam(required = false)
+          List<RecipeRoastLevel> roast,
+      @Parameter(description = "원두량(g) 하한(포함). scope=PUBLIC 전용.") @RequestParam(required = false)
+          BigDecimal doseMin,
+      @Parameter(description = "원두량(g) 상한(포함). scope=PUBLIC 전용.") @RequestParam(required = false)
+          BigDecimal doseMax,
+      @Parameter(description = "POPULAR(기본) | RECENT. scope=PUBLIC 전용, scope=DRAWER에서는 무시된다.")
+          @RequestParam(required = false)
+          RecipeSearchSort sort,
       AuthenticatedUser user) {
-    return recipeService.list(user.id(), ownerUserId, PageParams.of(page, size));
+    return recipeService.search(
+        user.id(),
+        ownerUserId,
+        scope,
+        q,
+        temp,
+        roast,
+        doseMin,
+        doseMax,
+        sort,
+        PageParams.of(page, size));
   }
 
   @GetMapping("/{id}")

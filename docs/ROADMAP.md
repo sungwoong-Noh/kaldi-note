@@ -53,10 +53,8 @@
 
 | 스펙 | 상태 |
 |---|---|
-| 검색·필터·통계·담기 API (`2026-09-21-recipes-and-brews-search-api.md`) | 승인 · 브랜치 `feat/recipes-and-brews-search-api` · 커밋 0 |
-| 웹 둘러보기 / 내 서랍 (RW1·RW2) | 미작성 |
-| 웹 상세 / 담기 / 내 잔 (RW3·BW1) | 미작성 |
-| 모바일 전체 (RM1~RM5·BM1) | 미작성 |
+| 검색·필터·통계·담기 API (`2026-09-21-recipes-and-brews-search-api.md`) | **구현완료** (PR #154) |
+| 레시피 서랍 화면 — 웹·모바일 둘러보기/내 서랍/상세/내 잔 (`2026-09-25-recipe-drawer-screens.md`, RW1~RW3·BW1·RM1~RM4·BM1) | 초안 (이슈 #137·#138·#139 통합) |
 
 - 흡수: ⑥~⑧ (Track B)
 - 디자인: `docs/design/kaldi-note-design/`(정본, 2026-09-25) — `docs/RECIPES-AND-BREWS.md` +
@@ -126,7 +124,7 @@
 | 마일스톤 | 상태 |
 |---|---|
 | M0 정리 | 완료 (2026-09-25, `chore/workflow-revision`) |
-| M1 레시피 서랍 | 스펙 1/4 승인, 구현 0 |
+| M1 레시피 서랍 | API 구현완료(PR #154), 화면 스펙 초안(#137·#138·#139 통합) |
 | M2 기록 흐름 | 대기 |
 | M3 추출 도구 | 대기 |
 | M4 친구 피드 | 대기 |

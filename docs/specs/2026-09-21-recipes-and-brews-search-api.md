@@ -1,7 +1,7 @@
 ---
 id: RECIPESBREWS
 title: 레시피 검색·필터 + 잔 통계 + 담기(포크) API 개편
-status: 승인
+status: 구현완료
 milestone: M1
 ---
 

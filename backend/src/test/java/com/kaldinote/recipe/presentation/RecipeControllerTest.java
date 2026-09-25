@@ -1342,6 +1342,10 @@ class RecipeControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.content[0].id").value(id));
   }
 
+  // AC-LIST-11 · 상호 팔로우 상대의 FRIENDS 레시피는 포함된다 — 대체됨(docs/specs/2026-08-19-list-query-api.md 참고).
+  // scope 생략 기본값이 DRAWER로 바뀌어(AC-RECIPESBREWS-19) 이 동작을 재현할 scope 값이 없다.
+  // 단건 조회의 FRIENDS 가시성은 AC-VIS-05가 계속 검증한다(사용자 확인 완료, 테스트 삭제).
+
   @Test
   @DisplayName("AC-LIST-12 · 단방향 팔로우 상대의 FRIENDS 레시피는 제외된다")
   void 단방향_팔로우_상대의_FRIENDS_레시피는_제외된다() throws Exception {

@@ -422,7 +422,7 @@ supersedes:
 
 ## 구현 순서
 
-- [ ] **Task 0: 계약·백엔드 필드 3개** — Covers: AC-RECIPESBREWS-55, 56, 57
+- [x] **Task 0: 계약·백엔드 필드 3개** — Covers: AC-RECIPESBREWS-55, 56, 57
 
   ```
   1. docs/contracts/2026-09-21-recipes-and-brews-search-api.json의 RecipeSummary에

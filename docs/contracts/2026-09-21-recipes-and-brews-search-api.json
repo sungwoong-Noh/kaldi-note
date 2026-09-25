@@ -99,10 +99,13 @@
           "temperatureType": { "type": "string", "enum": ["HOT", "ICE"] },
           "recommendedRoastLevel": { "type": "string", "enum": ["LIGHT", "MEDIUM", "DARK"] },
           "savedCount": { "type": "integer" },
+          "authorDisplayName": { "type": "string" },
+          "sourceAuthorName": { "type": "string", "nullable": true },
+          "brewCount": { "type": "integer" },
           "createdAt": { "type": "string" },
           "updatedAt": { "type": "string" }
         },
-        "required": ["id", "title", "sourceType", "visibility", "doseG", "waterG", "temperatureType", "recommendedRoastLevel", "savedCount"]
+        "required": ["id", "title", "sourceType", "visibility", "doseG", "waterG", "temperatureType", "recommendedRoastLevel", "savedCount", "authorDisplayName", "brewCount"]
       },
       "RecipeStep": {
         "type": "object",

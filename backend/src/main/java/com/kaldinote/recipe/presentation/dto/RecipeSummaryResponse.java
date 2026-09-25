@@ -34,13 +34,17 @@ public record RecipeSummaryResponse(
     String temperatureType,
     String recommendedRoastLevel,
     Long savedCount,
+    String authorDisplayName,
+    String sourceAuthorName,
+    Long brewCount,
     Instant createdAt,
     Instant updatedAt) {
 
   private static final int DIVISION_SCALE = 6;
   private static final int RATIO_SCALE = 1;
 
-  public static RecipeSummaryResponse from(Recipe r, long savedCount) {
+  public static RecipeSummaryResponse from(
+      Recipe r, long savedCount, String authorDisplayName, long brewCount) {
     return new RecipeSummaryResponse(
         r.getId(),
         r.getOwnerUserId(),
@@ -65,6 +69,9 @@ public record RecipeSummaryResponse(
         r.getTemperatureType().name(),
         r.getRecommendedRoastLevel().name(),
         savedCount,
+        authorDisplayName,
+        r.getSourceAuthorName(),
+        brewCount,
         r.getCreatedAt(),
         r.getUpdatedAt());
   }

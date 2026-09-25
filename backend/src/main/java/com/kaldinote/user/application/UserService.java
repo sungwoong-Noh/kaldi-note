@@ -2,11 +2,14 @@ package com.kaldinote.user.application;
 
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
+import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.FollowRepository;
 import com.kaldinote.user.infrastructure.UserRepository;
 import com.kaldinote.user.presentation.dto.MeResponse;
 import com.kaldinote.user.presentation.dto.PublicProfileResponse;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,5 +42,14 @@ public class UserService {
     return followRepository.findMutualFollowsOrderedByLastBrew(viewerId).stream()
         .map(PublicProfileResponse::from)
         .toList();
+  }
+
+  /** id 목록의 닉네임을 한 번에 조회한다(N+1 방지). 탈퇴 등으로 없는 id는 결과 맵에서 빠진다. */
+  public Map<Long, String> nicknamesByIds(List<Long> userIds) {
+    if (userIds.isEmpty()) {
+      return Map.of();
+    }
+    return userRepository.findAllById(userIds).stream()
+        .collect(Collectors.toMap(User::getId, User::getNickname));
   }
 }

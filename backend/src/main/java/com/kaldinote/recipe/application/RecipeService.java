@@ -125,9 +125,23 @@ public class RecipeService {
   public PageResponse<RecipeSummaryResponse> list(
       Long viewerId, Long ownerUserId, PageParams params) {
     var page = recipeRepository.findVisible(viewerId, ownerUserId, params.toPageable(LIST_SORT));
-    Map<Long, Long> savedCounts = savedCountsFor(page.getContent());
+    return toSummaryPage(page);
+  }
+
+  /** RecipeSummaryResponse 배치 조회 3종(savedCount·authorDisplayName·brewCount)을 페이지 하나에 적용한다. */
+  private PageResponse<RecipeSummaryResponse> toSummaryPage(Page<Recipe> page) {
+    List<Recipe> recipes = page.getContent();
+    Map<Long, Long> savedCounts = savedCountsFor(recipes);
+    Map<Long, Long> brewCounts = brewCountsFor(recipes);
+    Map<Long, String> authorDisplayNames = authorDisplayNamesFor(recipes);
     return PageResponse.from(
-        page, r -> RecipeSummaryResponse.from(r, savedCounts.getOrDefault(r.getId(), 0L)));
+        page,
+        r ->
+            RecipeSummaryResponse.from(
+                r,
+                savedCounts.getOrDefault(r.getId(), 0L),
+                authorDisplayNames.get(r.getId()),
+                brewCounts.getOrDefault(r.getId(), 0L)));
   }
 
   /** 페이지 안 레시피들의 savedCount를 한 번에 조회한다. 빈 목록이면 쿼리를 아예 안 부른다. */
@@ -141,6 +155,43 @@ public class RecipeService {
       counts.put(row.getParentRecipeId(), row.getCnt());
     }
     return counts;
+  }
+
+  /** 페이지 안 레시피들의 brewCount를 한 번에 조회한다. */
+  private Map<Long, Long> brewCountsFor(List<Recipe> recipes) {
+    if (recipes.isEmpty()) {
+      return Map.of();
+    }
+    List<Long> ids = recipes.stream().map(Recipe::getId).toList();
+    Map<Long, Long> counts = new HashMap<>();
+    for (BrewLogRepository.BrewCountRow row : brewLogRepository.countBrewsForIds(ids)) {
+      counts.put(row.getRecipeId(), row.getCnt());
+    }
+    return counts;
+  }
+
+  /**
+   * 페이지 안 레시피들의 authorDisplayName을 채운다. CURATED는 authorName을 그대로 쓰고(배치 불필요), USER 소유는 ownerUserId
+   * 목록을 한 번에 조회해 닉네임을 채운다. ownerUserId가 null(유기물)이면 authorName으로 대체한다.
+   */
+  private Map<Long, String> authorDisplayNamesFor(List<Recipe> recipes) {
+    List<Long> ownerIds =
+        recipes.stream()
+            .filter(r -> r.getSourceType() != RecipeSourceType.CURATED)
+            .map(Recipe::getOwnerUserId)
+            .filter(java.util.Objects::nonNull)
+            .toList();
+    Map<Long, String> nicknames = userService.nicknamesByIds(ownerIds);
+
+    Map<Long, String> result = new HashMap<>();
+    for (Recipe r : recipes) {
+      if (r.getSourceType() == RecipeSourceType.CURATED || r.getOwnerUserId() == null) {
+        result.put(r.getId(), r.getAuthorName());
+      } else {
+        result.put(r.getId(), nicknames.get(r.getOwnerUserId()));
+      }
+    }
+    return result;
   }
 
   /**
@@ -181,9 +232,7 @@ public class RecipeService {
               resolveBrewerIds(dripper),
               sort == null ? null : sort.name(),
               params.toPageable(Sort.unsorted())); // 정렬은 네이티브 쿼리의 ORDER BY가 이미 정한다
-      Map<Long, Long> savedCounts = savedCountsFor(page.getContent());
-      return PageResponse.from(
-          page, r -> RecipeSummaryResponse.from(r, savedCounts.getOrDefault(r.getId(), 0L)));
+      return toSummaryPage(page);
     }
 
     if (scope == null && ownerUserId != null) {
@@ -195,9 +244,7 @@ public class RecipeService {
             userId,
             owner == null || owner == RecipeSearchOwner.ALL ? null : owner.name(),
             params.toPageable(Sort.unsorted())); // 정렬은 네이티브 쿼리의 ORDER BY가 이미 정한다
-    Map<Long, Long> savedCounts = savedCountsFor(page.getContent());
-    return PageResponse.from(
-        page, r -> RecipeSummaryResponse.from(r, savedCounts.getOrDefault(r.getId(), 0L)));
+    return toSummaryPage(page);
   }
 
   private String[] toArray(List<RecipeRoastLevel> roast) {

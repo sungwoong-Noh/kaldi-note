@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "sync-fonts": "node scripts/sync-fonts.mjs",
+    "generate:contracts": "node ../scripts/generate-contract-types.mjs",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "format": "prettier --write .",

@@ -52,6 +52,7 @@ Issues/Project 보드가 안다.** 이 파일은 지도만 담는다 — 상태�
 kaldi-note/
 ├── CLAUDE.md                 이 파일. 지도만
 ├── .claude/commands/         /interview · /resume · /handover · /fix
+├── .claude/agents/           explorer · mockup-checker · reviewer (서브에이전트)
 ├── backend/                  Spring Boot 4.1 API 서버 — 작업 전 backend/CLAUDE.md
 ├── frontend/                 Next.js PWA — 작업 전 frontend/CLAUDE.md
 ├── docs/

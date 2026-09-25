@@ -1,0 +1,196 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "레시피 검색·필터 + 잔 통계 + 담기(포크) API 개편",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/recipes": {
+      "get": {
+        "operationId": "searchRecipes",
+        "parameters": [
+          { "name": "q", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "temp", "in": "query", "required": false, "schema": { "type": "string", "enum": ["HOT", "ICE"] } },
+          { "name": "roast", "in": "query", "required": false, "schema": { "type": "array", "items": { "type": "string", "enum": ["LIGHT", "MEDIUM", "DARK"] } } },
+          { "name": "doseMin", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "doseMax", "in": "query", "required": false, "schema": { "type": "number" } },
+          { "name": "dripper", "in": "query", "required": false, "schema": { "type": "string", "enum": ["V60", "KALITA", "ORIGAMI", "CLEVER"] } },
+          { "name": "sort", "in": "query", "required": false, "schema": { "type": "string", "enum": ["POPULAR", "RECENT"] } },
+          { "name": "scope", "in": "query", "required": false, "schema": { "type": "string", "enum": ["PUBLIC", "DRAWER"] } },
+          { "name": "owner", "in": "query", "required": false, "schema": { "type": "string", "enum": ["ALL", "MINE", "SAVED"] } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "size", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "검색·필터·정렬된 레시피 목록",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PageOfRecipeSummary" } }
+            }
+          },
+          "401": { "description": "인증 없음" }
+        }
+      }
+    },
+    "/api/v1/brew-logs/stats": {
+      "get": {
+        "operationId": "getBrewLogStats",
+        "responses": {
+          "200": {
+            "description": "내 잔 통계 4칸",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/BrewLogStats" } }
+            }
+          },
+          "401": { "description": "인증 없음" }
+        }
+      }
+    },
+    "/api/v1/recipes/{id}/fork": {
+      "post": {
+        "operationId": "forkRecipe",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/RecipeForkRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "담기(포크) 완료 — 저장 시점에 수정 반영",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Recipe" } }
+            }
+          },
+          "401": { "description": "인증 없음" },
+          "403": { "description": "가시성 없는 레시피" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RecipeSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "ownerUserId": { "type": "integer", "nullable": true },
+          "sourceType": { "type": "string", "enum": ["USER", "CURATED"] },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "brewMethod": { "type": "string", "enum": ["POUR_OVER"] },
+          "visibility": { "type": "string", "enum": ["PRIVATE", "FRIENDS", "PUBLIC"] },
+          "parentRecipeId": { "type": "integer", "nullable": true },
+          "forkRootId": { "type": "integer", "nullable": true },
+          "doseG": { "type": "number" },
+          "waterG": { "type": "number" },
+          "ratio": { "type": "number", "nullable": true },
+          "waterTempC": { "type": "number", "nullable": true },
+          "totalTimeSeconds": { "type": "integer", "nullable": true },
+          "brewerId": { "type": "integer", "nullable": true },
+          "filterId": { "type": "integer", "nullable": true },
+          "grinderModelId": { "type": "integer", "nullable": true },
+          "grindSettingValue": { "type": "number", "nullable": true },
+          "grindSettingUnit": { "type": "string", "nullable": true },
+          "grindMicronEstimated": { "type": "number", "nullable": true },
+          "temperatureType": { "type": "string", "enum": ["HOT", "ICE"] },
+          "recommendedRoastLevel": { "type": "string", "enum": ["LIGHT", "MEDIUM", "DARK"] },
+          "savedCount": { "type": "integer" },
+          "createdAt": { "type": "string" },
+          "updatedAt": { "type": "string" }
+        },
+        "required": ["id", "title", "sourceType", "visibility", "doseG", "waterG", "temperatureType", "recommendedRoastLevel", "savedCount"]
+      },
+      "RecipeStep": {
+        "type": "object",
+        "properties": {
+          "stepOrder": { "type": "integer" },
+          "stepType": { "type": "string" },
+          "startAtSeconds": { "type": "integer", "nullable": true },
+          "durationSeconds": { "type": "integer", "nullable": true },
+          "waterG": { "type": "number", "nullable": true },
+          "cumulativeWaterG": { "type": "number" },
+          "pourTechnique": { "type": "string", "nullable": true },
+          "agitation": { "type": "string", "nullable": true },
+          "note": { "type": "string", "nullable": true }
+        },
+        "required": ["stepOrder", "stepType", "cumulativeWaterG"]
+      },
+      "Recipe": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "ownerUserId": { "type": "integer", "nullable": true },
+          "sourceType": { "type": "string", "enum": ["USER", "CURATED"] },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "brewMethod": { "type": "string", "enum": ["POUR_OVER"] },
+          "visibility": { "type": "string", "enum": ["PRIVATE", "FRIENDS", "PUBLIC"] },
+          "parentRecipeId": { "type": "integer", "nullable": true },
+          "forkRootId": { "type": "integer", "nullable": true },
+          "doseG": { "type": "number" },
+          "waterG": { "type": "number" },
+          "ratio": { "type": "number" },
+          "waterTempC": { "type": "number", "nullable": true },
+          "totalTimeSeconds": { "type": "integer", "nullable": true },
+          "brewerId": { "type": "integer", "nullable": true },
+          "filterId": { "type": "integer", "nullable": true },
+          "grinderModelId": { "type": "integer", "nullable": true },
+          "grindSettingValue": { "type": "number", "nullable": true },
+          "grindSettingUnit": { "type": "string", "nullable": true },
+          "grindMicronEstimated": { "type": "number", "nullable": true },
+          "temperatureType": { "type": "string", "enum": ["HOT", "ICE"] },
+          "recommendedRoastLevel": { "type": "string", "enum": ["LIGHT", "MEDIUM", "DARK"] },
+          "sourceAuthorName": { "type": "string", "nullable": true },
+          "savedCount": { "type": "integer" },
+          "brewCount": { "type": "integer" },
+          "steps": { "type": "array", "items": { "$ref": "#/components/schemas/RecipeStep" } },
+          "createdAt": { "type": "string" },
+          "updatedAt": { "type": "string" }
+        },
+        "required": ["id", "title", "sourceType", "visibility", "doseG", "waterG", "ratio", "temperatureType", "recommendedRoastLevel", "savedCount", "brewCount", "steps"]
+      },
+      "RecipeForkRequest": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string", "nullable": true },
+          "description": { "type": "string", "nullable": true },
+          "doseG": { "type": "number", "nullable": true },
+          "waterG": { "type": "number", "nullable": true },
+          "waterTempC": { "type": "number", "nullable": true },
+          "totalTimeSeconds": { "type": "integer", "nullable": true },
+          "brewerId": { "type": "integer", "nullable": true },
+          "filterId": { "type": "integer", "nullable": true },
+          "grinderModelId": { "type": "integer", "nullable": true },
+          "grindSettingValue": { "type": "number", "nullable": true }
+        },
+        "required": []
+      },
+      "BrewLogStats": {
+        "type": "object",
+        "properties": {
+          "monthCount": { "type": "integer" },
+          "averageRating": { "type": "number", "nullable": true },
+          "favoriteDoseG": { "type": "number", "nullable": true },
+          "favoriteRecipeId": { "type": "integer", "nullable": true },
+          "favoriteRecipeTitle": { "type": "string", "nullable": true }
+        },
+        "required": ["monthCount"]
+      },
+      "PageOfRecipeSummary": {
+        "type": "object",
+        "properties": {
+          "content": { "type": "array", "items": { "$ref": "#/components/schemas/RecipeSummary" } },
+          "page": { "type": "integer" },
+          "size": { "type": "integer" },
+          "totalElements": { "type": "integer" },
+          "totalPages": { "type": "integer" }
+        },
+        "required": ["content", "page", "size", "totalElements", "totalPages"]
+      }
+    }
+  }
+}

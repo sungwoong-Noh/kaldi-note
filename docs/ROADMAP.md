@@ -3,6 +3,9 @@
 > **이 문서가 "다음에 무엇을 하는가"의 유일한 출처다.** JOURNAL의 순서 목록(①~⑩)과
 > `2026-09-16-product-direction.md`의 「단계와 스펙」 표는 이 문서로 대체된다.
 > 개별 기능의 "무엇을·왜·어떻게"는 여전히 `docs/specs/`가 정한다.
+>
+> **GitHub Project 보드**: https://github.com/users/sungwoong-Noh/projects/3 — 이슈·PR의
+> 실시간 상태(Backlog/Next/In progress/Review/Done)는 이 문서가 아니라 보드가 정본이다.
 
 작성: 2026-09-23 (Claude 앱 세션) · 상태: **확정** (2026-09-25 `docs/design/2026-09-25-workflow-revision.md` 승인으로 `docs/design/`에서 이 경로로 이동)
 

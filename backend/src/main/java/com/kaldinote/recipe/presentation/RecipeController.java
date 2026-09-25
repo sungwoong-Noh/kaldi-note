@@ -4,6 +4,7 @@ import com.kaldinote.common.response.PageParams;
 import com.kaldinote.common.response.PageResponse;
 import com.kaldinote.common.security.AuthenticatedUser;
 import com.kaldinote.recipe.application.RecipeService;
+import com.kaldinote.recipe.domain.DripperFilter;
 import com.kaldinote.recipe.domain.RecipeRoastLevel;
 import com.kaldinote.recipe.domain.RecipeSearchScope;
 import com.kaldinote.recipe.domain.RecipeSearchSort;
@@ -79,6 +80,9 @@ public class RecipeController {
           BigDecimal doseMin,
       @Parameter(description = "원두량(g) 상한(포함). scope=PUBLIC 전용.") @RequestParam(required = false)
           BigDecimal doseMax,
+      @Parameter(description = "V60 | KALITA | ORIGAMI | CLEVER, 여러 개면 OR. scope=PUBLIC 전용.")
+          @RequestParam(required = false)
+          List<DripperFilter> dripper,
       @Parameter(description = "POPULAR(기본) | RECENT. scope=PUBLIC 전용, scope=DRAWER에서는 무시된다.")
           @RequestParam(required = false)
           RecipeSearchSort sort,
@@ -92,6 +96,7 @@ public class RecipeController {
         roast,
         doseMin,
         doseMax,
+        dripper,
         sort,
         PageParams.of(page, size));
   }

@@ -5,11 +5,13 @@ import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
 import com.kaldinote.common.response.PageParams;
 import com.kaldinote.common.response.PageResponse;
+import com.kaldinote.gear.domain.Brewer;
 import com.kaldinote.gear.domain.GrinderModel;
 import com.kaldinote.gear.infrastructure.BrewerRepository;
 import com.kaldinote.gear.infrastructure.GrinderModelRepository;
 import com.kaldinote.grind.domain.GrindConverter;
 import com.kaldinote.grind.domain.GrindSpec;
+import com.kaldinote.recipe.domain.DripperFilter;
 import com.kaldinote.recipe.domain.GrindSettingUnit;
 import com.kaldinote.recipe.domain.Recipe;
 import com.kaldinote.recipe.domain.RecipeRoastLevel;
@@ -153,6 +155,7 @@ public class RecipeService {
       List<RecipeRoastLevel> roast,
       BigDecimal doseMin,
       BigDecimal doseMax,
+      List<DripperFilter> dripper,
       RecipeSearchSort sort,
       PageParams params) {
     if (doseMin != null && doseMax != null && doseMin.compareTo(doseMax) > 0) {
@@ -168,7 +171,7 @@ public class RecipeService {
               toArray(roast),
               doseMin,
               doseMax,
-              null, // brewerIds — dripper 필터는 다음 태스크
+              resolveBrewerIds(dripper),
               sort == null ? null : sort.name(),
               params.toPageable(Sort.unsorted())); // 정렬은 네이티브 쿼리의 ORDER BY가 이미 정한다
       Map<Long, Long> savedCounts = savedCountsFor(page.getContent());
@@ -185,6 +188,27 @@ public class RecipeService {
       return null;
     }
     return roast.stream().map(Enum::name).toArray(String[]::new);
+  }
+
+  /**
+   * 기구(dripper) 필터를 실제 브루어 id 목록으로 바꾼다. "V60"은 브랜드가 아니라 Hario의 제품 라인명이라 이름으로 찾고, 나머지는 브랜드로
+   * 찾는다(AC-RECIPESBREWS-08·09·10).
+   */
+  private Long[] resolveBrewerIds(List<DripperFilter> dripper) {
+    if (dripper == null || dripper.isEmpty()) {
+      return null;
+    }
+    return dripper.stream()
+        .flatMap(
+            d ->
+                switch (d) {
+                  case V60 -> brewerRepository.findByNameStartingWithIgnoreCase("V60").stream();
+                  case KALITA -> brewerRepository.findByBrandIgnoreCase("Kalita").stream();
+                  case ORIGAMI -> brewerRepository.findByBrandIgnoreCase("Origami").stream();
+                  case CLEVER -> brewerRepository.findByBrandIgnoreCase("Clever").stream();
+                })
+        .map(Brewer::getId)
+        .toArray(Long[]::new);
   }
 
   /**

@@ -4,5 +4,6 @@ public enum BrewerType {
   CONE,
   FLAT_BOTTOM,
   WAVE,
-  HYBRID
+  HYBRID,
+  IMMERSION
 }

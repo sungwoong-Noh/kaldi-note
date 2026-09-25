@@ -1971,4 +1971,79 @@ class RecipeControllerTest extends AbstractIntegrationTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
   }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-08 · dripper=V60이면 이름이 V60으로 시작하는 브루어만 남긴다")
+  void dripper_V60_필터() throws Exception {
+    String owner = token();
+    Long v60 = brewerId("Hario", "V60 01");
+    Long wave = brewerId("Kalita", "Wave 155");
+    createRecipe(
+        owner,
+        """
+        {"title":"V60 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC","brewerId":%d}
+        """
+            .formatted(v60));
+    createRecipe(
+        owner,
+        """
+        {"title":"Kalita 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC","brewerId":%d}
+        """
+            .formatted(wave));
+
+    listRecipes(owner, "?scope=PUBLIC&dripper=V60")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(1))
+        .andExpect(jsonPath("$.content[0].title").value("V60 레시피"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-09 · dripper=KALITA/ORIGAMI는 brand로 매칭된다")
+  void dripper_KALITA_ORIGAMI_필터() throws Exception {
+    String owner = token();
+    Long kalita = brewerId("Kalita", "Wave 155");
+    Long origami = brewerId("Origami", "Dripper S");
+    createRecipe(
+        owner,
+        """
+        {"title":"Kalita 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC","brewerId":%d}
+        """
+            .formatted(kalita));
+    createRecipe(
+        owner,
+        """
+        {"title":"Origami 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC","brewerId":%d}
+        """
+            .formatted(origami));
+
+    listRecipes(owner, "?scope=PUBLIC&dripper=KALITA")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(1))
+        .andExpect(jsonPath("$.content[0].title").value("Kalita 레시피"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-10 · dripper=CLEVER가 새로 시드된 Clever 브루어와 매칭된다")
+  void dripper_CLEVER_필터() throws Exception {
+    String owner = token();
+    Long clever = brewerId("Clever", "Clever Dripper");
+    createRecipe(
+        owner,
+        """
+        {"title":"Clever 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC","brewerId":%d}
+        """
+            .formatted(clever));
+
+    listRecipes(owner, "?scope=PUBLIC&dripper=CLEVER")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(1));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-51 · dripper에 잘못된 값을 보내면 400이다")
+  void dripper_잘못된_값은_400이다() throws Exception {
+    listRecipes(token(), "?scope=PUBLIC&dripper=NONSENSE")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
 }

@@ -73,8 +73,8 @@ kaldi-note/
 └── .github/workflows/           CI
 ```
 
-GitHub Issues + Project 보드가 백로그·버그·시각 보정을 추적한다. Milestone은
-`docs/ROADMAP.md`의 마일스톤과 같다.
+GitHub Issues + [Project 보드](https://github.com/users/sungwoong-Noh/projects/3)가
+백로그·버그·시각 보정을 추적한다. Milestone은 `docs/ROADMAP.md`의 마일스톤과 같다.
 
 ---
 

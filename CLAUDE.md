@@ -1,92 +1,44 @@
 # kaldi note
 
-커피 레시피를 재현 가능한 형태로 기록하고 공유하는 서비스. 푸어오버 레시피의 **푸어 스텝 시퀀스**를 구조화해 저장하고, 실제 추출 기록을 레시피와 분리해 누적하며, 서로 다른 그라인더 간 분쇄도를 환산한다.
+커피 레시피를 재현 가능한 형태로 기록하고 공유하는 서비스. 푸어오버 레시피의 **푸어 스텝
+시퀀스**를 구조화해 저장하고, 실제 추출 기록을 레시피와 분리해 누적하며, 서로 다른 그라인더
+간 분쇄도를 환산한다. 지금은 **둘이 매일 쓰는 도구**가 목표다 — 공개 서비스 전환은 보류됐다
+(`docs/decisions/0009-public-service-deferred.md`).
 
-> **현재 상태: 인터넷에 떠 있고, 폰에 설치되며, 오프라인에서도 레시피가 열린다.** 백엔드는 OCI VM에
-> (`https://api.kaldi-note.today`), 프론트는 Cloudflare Workers에(`https://kaldi-note.today`) 배포돼 있다.
-> **백엔드 505개 · 프론트 393개 · e2e 167개 · 인수 조건 781개**가 초록이다(2026-09-16).
->
-> **★ 시각 재설계 3부작이 끝났다.** ①읽힘(`2026-09-15-readability.md`)이 색 대비와 글자
-> 5단계를, ②③구조와 폼(`2026-09-15-structure.md`)이 폼 정렬·컨트롤·타임라인·기록 비교표를
-> 닫았다. **처음 진단한 문제 8개가 전부 해결됐다.** 이어서 할 태스크는 없다 — 새 기능은
-> `/interview`로 연다.
->
-> **★ 스펙 33개가 전부 `구현완료`다. `초안`이 하나도 없다.**
->
-> **이제 테스트 로그인을 끌 수 있다.** 그 기능이 존재한 이유가 「카카오 계정이 없고 구글 버튼이
-> 없다」였는데 2026-09-07에 **구글 로그인**이 운영에서 동작하는 것을 확인했다. **시크릿은 아직
-> 운영 `.env`에 살아 있다** — 끄려면 그 줄을 지우고 **재기동한다**
-> (`docs/specs/2026-09-05-test-login.md`).
->
-> **★ 차단형 수동 확인이 0개다.** 자동 테스트가 닿지 못하는 경로는 2026-09-06~07에 전부 운영에서
-> 밟았다 — 테스트 로그인·맞팔로우·사진 업로드 OCI 실연동·백업·방화벽·인증서·자동 롤백·**구글 로그인**.
-> 남은 22개는 폰 조작감이나 문구처럼 `status`를 막지 않는 것들이다
-> (`docs/conventions/verification.md`).
->
-> **재해 복구는 실제로 검증됐다.** 백업은 `0 3 * * *` cron으로 돌고 **날짜가 빠지지 않은 7개**가
-> private 버킷에 있다. 배포가 헬스체크에 실패하면 **직전 `:<git-sha>`로 자동 롤백된다** —
-> `infra/scripts/verify-rollback.sh`로 재현 가능하며, **`deploy.sh`나 인프라를 손댈 때마다 다시
-> 돌린다**(2026-09-05 변경 뒤 돌리지 않아 결과가 3주간 낡아 있었다).
+**지금 무엇을 하는지는 이 파일이 아니라 [`docs/ROADMAP.md`](docs/ROADMAP.md) + GitHub
+Issues/Project 보드가 안다.** 이 파일은 지도만 담는다 — 상태·숫자·진행률은 여기 두지 않는다.
 
 ---
 
-## ★ 작업 규칙 — 스펙 → 계획 → 코드
+## ★ 작업 규칙 — 스펙 → 코드
 
-**모든 기능 개발은 세 단계를 순서대로 거친다. 건너뛰지 않는다.**
-
-```
-1. 스펙 (docs/specs/)    무엇을 · 왜 · 어떻게 동작해야 하는가   → 승인
-2. 계획 (docs/plans/)    어떻게 개발할 것인가 (태스크 단위)     → 승인
-3. 코드                   TDD로 구현
-```
-
-**스펙은 인터뷰로 만든다.** 요구사항을 추측하지 않는다.
+**모든 기능 개발(갈래 A)은 두 단계를 순서대로 거친다.**
 
 ```
-/interview <만들려는 기능 한 줄>
+1. 스펙 (docs/specs/)   무엇을·왜·어떻게 동작해야 하는가 + 구현 순서   → 승인
+2. 코드                  TDD로 구현
 ```
 
-한 번에 한 주제만 묻고, 숫자가 확정될 때까지 전진하지 않는다. 인터뷰가 끝나면 결정 목록을 확인받고 스펙 파일을 만든다.
+스펙은 `/interview`로 만든다. 인수 조건은 기계적으로 검증 가능해야 하고, 테스트에
+`AC-<기능>-<번호>` ID를 남긴다 — `./scripts/check-spec-coverage.sh`가 CI에서 이를 검사한다.
 
-가장 중요한 것: **스펙의 인수 조건은 기계적으로 검증 가능해야 한다.** 자동화된 테스트로 옮길 수 없는 조건은 인수 조건이 아니다. "적절히", "빠르게", "잘 동작한다" 같은 표현은 금지이며, 구체적인 리터럴 값으로 쓴다.
+작업은 **갈래(A 풀 흐름 / B 시각 / C 버그·잔손질)**로 나뉜다. 애매하면 A.
 
-각 인수 조건에는 `AC-<기능>-<번호>` 형태의 ID를 붙이고, **테스트에 그 ID를 남긴다.** 이게 스펙과 코드를 잇는 유일한 끈이다.
-
-```java
-@DisplayName("AC-GRIND-01 · C40 22클릭은 660마이크론이다")
-```
-
-`./scripts/check-spec-coverage.sh`가 모든 AC ID가 테스트에 존재하는지 검사한다. CI에서도 돌아간다.
-
-**상세 규칙: [`docs/conventions/workflow.md`](docs/conventions/workflow.md) — 코드를 쓰기 전에 반드시 읽는다.**
+**상세 규칙: [`docs/conventions/workflow.md`](docs/conventions/workflow.md) — 코드를 쓰기 전에
+반드시 읽는다.**
 
 ---
 
 ## ★ 세션 핸드오버
 
-작업은 세션 단위로 나뉘고, **세션마다 다른 에이전트가 붙는다.** 새 에이전트는 이전 대화를 보지 못하고 저장소에 남은 것만 본다.
-
 ```
 세션 시작:  /resume     상태 파악 + 테스트 실행 + 할 일 제안 → 승인 후 시작
-세션 종료:  /handover   검증 + 체크박스 갱신 + JOURNAL 기록 + 커밋/PR
+세션 종료:  /handover   검증 + 체크박스 갱신 + PR 본문 작성 + 커밋/PR
 ```
 
-| 정보 | 어디에 |
-|---|---|
-| 어디까지 했나 | `docs/plans/*.md`의 `- [ ]` 체크박스 — **단일 진실 원천** |
-| 왜 그렇게 했나 | [`docs/JOURNAL.md`](docs/JOURNAL.md) — 막힌 지점, 계획과 달라진 이유 |
-
-**세션 1개 = 브랜치 1개 = PR 1개.** 한 세션에서 태스크를 여러 개 진행해도 브랜치와 PR은 하나다. 태스크 경계는 **커밋**으로 남기고, 진행 상황은 계획 문서의 체크박스가 담당한다. **스택 PR(브랜치가 서로를 base로 잡는 구조)은 쓰지 않는다** — 두 번 연속 사고가 났다(`docs/JOURNAL.md` 2026-08-17). 브랜치명은 `feat/brew-log`처럼 기능 단위로 짓는다. **설계·디자인 세션도 PR을 거친다** (`docs/spec-*`, `design/*`).
-
-**`/resume`은 반드시 테스트를 실행한다.** 초록이라고 가정하고 시작하면, 앞 세션의 실패를 내 작업 탓으로 오해하며 시간을 날린다.
-
-### 병렬 작업 시 worktree 필수
-
-**다른 세션이 동시에 돌고 있다면 반드시 worktree를 만들어 작업한다.** 세션 시작 시 `EnterWorktree`를 호출해 격리된 작업 공간을 얻는다. 같은 디렉터리에서 두 세션이 돌면 한쪽의 `git switch`가 다른 쪽 파일을 갈아치운다.
-
-순차 작업(한 번에 한 세션)이면 worktree가 필요 없다. 브랜치 전환으로 충분하다.
-
-**백엔드 세션은 하나만 돌린다.** PostgreSQL 5432 포트와 Testcontainers 재사용 컨테이너를 공유하므로, 둘을 동시에 돌리면 테스트 데이터가 섞여 실패 원인을 자기 코드에서 찾게 된다. 병렬은 **백엔드 1 + 프론트 1 + 디자인 1** 조합으로만 한다.
+**세션 1개 = 브랜치 1개 = PR 1개.** 스택 PR(브랜치가 서로를 base로 잡는 구조)은 쓰지 않는다
+(`docs/conventions/git.md`). **다른 세션이 동시에 돈다면 `EnterWorktree`로 격리한다.** 백엔드
+세션은 하나만 돌린다 — 5432 포트와 Testcontainers 재사용 컨테이너를 공유한다.
 
 **상세 규칙: [`docs/conventions/handover.md`](docs/conventions/handover.md)**
 
@@ -94,45 +46,34 @@
 
 ## 저장소 구조
 
-프론트엔드와 백엔드를 한 저장소에 두는 모노레포다. 배포 대상은 서로 다르다(백엔드 → OCI VM, 프론트 → Cloudflare Workers).
+모노레포다. 배포 대상은 서로 다르다(백엔드 → OCI VM, 프론트 → Cloudflare Workers).
 
 ```
 kaldi-note/
-├── CLAUDE.md                 ← 이 파일. 전체 개요와 문서 지도
-├── .claude/commands/
-│   ├── interview.md          /interview — 스펙 작성 전 요구사항 인터뷰
-│   ├── resume.md             /resume   — 세션 시작
-│   └── handover.md           /handover — 세션 종료
-├── backend/                  Spring Boot 4.1 API 서버
-│   └── CLAUDE.md             ← 백엔드 작업 시 반드시 먼저 읽을 것
-├── frontend/                 Next.js PWA
-│   └── CLAUDE.md             ← 프론트 작업 시 반드시 먼저 읽을 것
+├── CLAUDE.md                 이 파일. 지도만
+├── .claude/commands/         /interview · /resume · /handover · /fix
+├── backend/                  Spring Boot 4.1 API 서버 — 작업 전 backend/CLAUDE.md
+├── frontend/                 Next.js PWA — 작업 전 frontend/CLAUDE.md
 ├── docs/
-│   ├── JOURNAL.md            ★ 세션 일지 — 왜 지금 이 상태인가
-│   ├── design/               전체 아키텍처·브랜드 — 왜 이런 구조인가
-│   │   ├── 2026-08-14-architecture.md
-│   │   └── 2026-09-08-brand.md   ★ 목소리·색·타이포. 토큰 값은 globals.css를 가리킨다
-│   ├── specs/                ★ 기능 스펙 — AC를 가진 문서만 여기 둔다 (33개, AC 781개)
-│   │   ├── TEMPLATE.md
-│   │   └── YYYY-MM-DD-<기능>.md   날짜순. **33개 전부 `구현완료`** — `초안`이 없다
-│   ├── plans/                구현 계획 (태스크 단위, 33개 — 전부 구현 완료)
-│   │   ├── TEMPLATE.md
-│   │   └── YYYY-MM-DD-plan-<기능>.md
+│   ├── ROADMAP.md             ★ 유일한 계획 문서 — 마일스톤 목표·완료 정의
+│   ├── decisions/              ADR — 되돌리기 어려운 설계 결정
+│   ├── specs/                  ★ AC를 가진 기능 스펙만 (README.md에 작성 규칙)
+│   ├── contracts/               OpenAPI 조각
+│   ├── design/                  목업·브랜드·아키텍처 (입력물, AC 없음)
+│   ├── GOTCHAS.md               지금 유효한 함정만
+│   ├── archive/                 역할이 끝난 문서 (plans/, JOURNAL.md)
 │   └── conventions/
-│       ├── workflow.md       ★ 스펙 → 계획 → 코드. 코드 쓰기 전 필독
-│       ├── handover.md       ★ 세션 인계 프로토콜
-│       ├── git.md            커밋·브랜치·PR (공통)
-│       ├── verification.md   ★ 수동 확인 — 두 계정 확인, 결과를 어디에 적나
-│       ├── backend.md        Java / Spring Boot
-│       └── frontend.md       TypeScript / Next.js
+│       ├── workflow.md         ★ 갈래·흐름·문서 수명. 코드 쓰기 전 필독
+│       ├── handover.md         ★ 세션 인계
+│       ├── git.md · verification.md · backend.md · frontend.md
 ├── scripts/
 │   ├── check-spec-coverage.sh   AC ID가 테스트에 있는지 검사
-│   └── open-as.mjs              그 사용자로 로그인된 창을 연다 (로컬 확인용)
-├── docker-compose.yml        로컬 개발용 PostgreSQL
-└── .github/workflows/        CI (백엔드/프론트/스펙 분리)
+│   └── status.sh                 현황 계산 — 저장하지 않는다
+└── .github/workflows/           CI
 ```
 
-**`docs/design/`과 `docs/specs/`의 차이:** `design/`은 시스템 전체가 왜 이렇게 생겼는지를 설명하는 문서로 AC가 없다. `specs/`는 개별 기능의 동작을 인수 조건으로 못박는 문서다. 커버리지 스크립트는 `specs/`만 검사한다.
+GitHub Issues + Project 보드가 백로그·버그·시각 보정을 추적한다. Milestone은
+`docs/ROADMAP.md`의 마일스톤과 같다.
 
 ---
 
@@ -142,90 +83,52 @@ kaldi-note/
 |---|---|
 | **세션을 시작할 때** | **`/resume`** (그 전에 아무것도 하지 않는다) |
 | **무엇이든** | 이 파일 → **`docs/conventions/workflow.md`** → `docs/conventions/git.md` |
-| 세션을 마칠 때 | **`/handover`** → `docs/conventions/handover.md` |
-| 기능 스펙 작성 | `docs/conventions/workflow.md` → `docs/specs/TEMPLATE.md` |
-| 구현 계획 작성 | `docs/conventions/workflow.md` → `docs/plans/TEMPLATE.md` |
+| 세션을 마칠 때 | **`/handover`** |
+| 기능 스펙 작성 | `docs/specs/README.md` |
 | 백엔드 코드 작성 | `backend/CLAUDE.md` → `docs/conventions/backend.md` |
 | 프론트 코드 작성 | `frontend/CLAUDE.md` → `docs/conventions/frontend.md` |
-| 스펙의 「수동 확인」을 밟을 때 | **`docs/conventions/verification.md`** |
-| "왜 이런 구조인가" 판단이 필요할 때 | `docs/design/2026-08-14-architecture.md` |
-
----
-
-## 구현 순서
-
-**네 단계 모두 끝났다.** 처음 계획한 순서는 아래와 같았고, 실제로는 각 단계가 「계획 문서 하나」가 아니라
-**기능 단위 스펙 여러 개**로 쪼개져 진행됐다(`docs/specs/`에 31개, `docs/plans/`에 31개).
-
-| 단계 | 상태 | 무엇이 생겼나 |
-|---|---|---|
-| **1 — Foundation** | ✅ 완료 | 스캐폴딩, `grind`/`extraction` 순수 도메인, 인증(OAuth2+JWT), 마스터 데이터 |
-| **2 — Core Domain** | ✅ 완료 | 원두 재고, 레시피+스텝, 브루잉 로그(EY/SCA), 포크, 공개범위 인가, 목록 조회, 시드 |
-| **3 — Media & Deploy** | ✅ 완료 | 사진 첨부(Object Storage), OCI 배포, CI/CD, 백업 스크립트, 배포 버전 대조 |
-| **4 — Frontend** | ✅ 완료 | Next.js PWA — 로그인·레시피 CRUD·브루잉 로그 CRUD·분쇄도 환산·앱 셸·팔로우·홈화면 설치·오프라인 캐시 |
-| **5 — 시각 정비** | ✅ 완료 | 색 8토큰·글자 5단계·터치 44px·간격 6단계·모서리 2역할·읽힘(대비·크기)·**구조와 폼**(폼 정렬·컨트롤·타임라인·기록 비교표) |
-
-**새 기능은 이제 이 표가 아니라 개별 스펙으로 시작한다.** `/interview` → `docs/specs/` → `docs/plans/` → 코드.
-「Plan 2를 이어서 한다」 같은 단위는 더 이상 없다.
-
-> **주의:** 배포된 것이 곧 검증된 것은 아니지만, **2026-09-07 기준 차단형은 0개다.** 남은 수동 확인
-> 22개는 폰 조작감·문구처럼 `status`를 막지 않는 것들이다. 구글 로그인까지 운영에서 밟았으므로
-> **「한 번도 확인된 적 없는 경로」는 이제 없다.**
+| 「수동 확인」을 밟을 때 | `docs/conventions/verification.md` |
+| 되돌리면 안 되는 결정인지 확인할 때 | `docs/decisions/` |
 
 ---
 
 ## 뒤집으면 안 되는 설계 결정
 
-인터뷰로 확정된 것들이다. 코드만 보면 "왜 이렇게 복잡한가" 싶을 수 있으나 각각 이유가 있다. **바꿔야 할 근거가 생기면 먼저 사람에게 확인받는다.**
-
-1. **Recipe(설계도) ↔ BrewLog(실행 기록)는 분리한다.** 같은 레시피를 여러 번 내렸을 때 결과 차이를 추적하는 것이 이 서비스의 존재 이유다. 합치자는 제안은 요구사항 위반이다.
-2. **BrewLog는 레시피 값을 스냅샷으로 복사해 갖는다.** 레시피의 `dose_g`를 15g→16g로 수정해도 과거 기록은 15g으로 남아야 한다. FK 참조만으로 대체하면 과거가 조작된다.
-3. **분쇄도 환산 결과는 언제나 "추정치"다.** 버 형상·입도 분포가 달라 정확한 등가 변환은 물리적으로 불가능하다. 확정값처럼 표시하면 안 된다.
-4. **TDS 없이도 앱이 온전히 동작해야 한다.** 리프랙토미터가 없는 게 기본 상황이다. 추출 수율은 옵션 정보다.
-5. **`users.role`과 JWT role claim은 MVP에 포함한다.** 관리자 API·화면은 후속이지만, 역할 컬럼을 나중에 넣으면 발급된 토큰이 전부 무효화되고 전체 인가 정책을 다시 훑어야 한다.
-6. **마스터 데이터(품종·가공법·그라인더)는 FK로 정규화한다.** 문자열로 박으면 나중에 중복 병합이 불가능해진다.
-7. **PostgreSQL을 쓴다.** Oracle 프리티어를 쓰면서도 Autonomous DB를 쓰지 않는 이유는 7일 유휴 자동 정지·90일 미사용 삭제 정책과 로컬 환경 불일치 때문이다.
-8. **에스프레소는 MVP 제외.** 머신을 보유하지 않았다. `brew_method` enum에 자리만 확보한다.
-
----
+**`docs/decisions/`가 정본이다** (ADR 0001~0009). 코드만 보면 "왜 이렇게 복잡한가" 싶을 수
+있으나 각각 이유가 있다. 바꿔야 할 근거가 생기면 먼저 사람에게 확인받는다.
 
 ## 배포 환경 제약
 
-- **OCI Always Free ARM VM: 2 OCPU / 12GB** (인스턴스 생성 완료). 2026-06-15부로 한도가 4 OCPU/24GB에서 절반으로 축소됐다. 이 상한을 전제로 설계한다.
+- **OCI Always Free ARM VM: 2 OCPU / 12GB.** 2026-06-15부로 4 OCPU/24GB에서 절반으로 축소됐다.
 - OCI Object Storage 무료 10GB — 이미지 저장용.
-- **프론트는 Cloudflare Workers 무료 플랜** — 10만 요청/일, 호출당 CPU 10ms, 정적 자산 요청은 무료·무제한. 요청 수는 여유가 크지만 **CPU 10ms는 SSR에서 실제로 닿을 수 있는 상한**이다.
-
----
+- **프론트는 Cloudflare Workers 무료 플랜.** 호출당 CPU 10ms가 SSR에서 실제로 닿을 수 있는
+  상한이다.
 
 ## 명령어 요약
 
-각 워크스페이스의 CLAUDE.md에 상세 내용이 있다. 자주 쓰는 것만:
-
 ```bash
-# 로컬 DB 기동 (백엔드 작업 전 필수)
-docker compose up -d
-docker compose down
+docker compose up -d && docker compose down     # 로컬 DB (백엔드 작업 전 필수)
 
-# 백엔드
-cd backend && ./gradlew test          # 테스트
-cd backend && ./gradlew bootRun       # 실행 (localhost:8080)
+cd backend && ./gradlew test                     # 백엔드 테스트
+cd backend && ./gradlew bootRun                  # localhost:8080
 
-# 프론트
-cd frontend && pnpm test              # 테스트
-cd frontend && pnpm dev               # 실행 (localhost:3000)
+cd frontend && pnpm test                         # 프론트 테스트
+cd frontend && pnpm dev                          # localhost:3000
 ```
 
 ---
 
 ## 에이전트에게
 
-- **스펙 없이 계획을 쓰지 않고, 계획 없이 코드를 쓰지 않는다.** 사용자가 "이 기능 만들어줘"라고만 해도 스펙부터 쓰고 승인을 받는다.
-- **인수 조건은 리터럴 값으로 쓴다.** 검증할 수 없는 조건을 쓰느니 "이 값을 정해달라"고 묻는다.
+- **스펙 없이 코드를 쓰지 않는다.** "이 기능 만들어줘"라고만 해도 스펙부터 쓰고 승인을 받는다.
+- **인수 조건은 리터럴 값으로 쓴다.** 검증할 수 없는 조건을 쓰느니 값을 정해달라고 묻는다.
 - **테스트에 AC ID를 남긴다.** 빠뜨리면 `check-spec-coverage.sh`가 CI에서 잡는다.
-- **계획 문서의 태스크를 순서대로 실행한다.** 태스크는 각각 테스트가 초록인 상태로 끝나야 한다.
 - **TDD를 지킨다.** 실패하는 테스트 → 실행해서 실패 확인 → 최소 구현 → 통과 확인 → 커밋.
-- **검증 없이 "완료"라고 말하지 않는다.** 테스트를 실제로 실행하고 출력을 확인한 뒤 보고한다.
-- **출력을 찍는 것과 기대값에 대조하는 것은 다른 일이다.** 숫자를 셀 거면 기대값을 먼저 말하고 대조한다. 에러를 `2>/dev/null`로 숨기지 않는다. 상세는 `docs/conventions/workflow.md`「검증은 출력을 찍는 것이 아니라」.
-- **테스트 픽스처는 실제 응답에서 뜬다.** 지어낸 픽스처는 코드가 아니라 내 가정을 검증한다 — 테스트 54개가 초록인데 화면이 안 열린 적이 있다. `docs/conventions/frontend.md`「픽스처는 실제 응답에서 뜬다」.
-- 계획에 없는 리팩터링·기능 추가를 임의로 하지 않는다. 필요해 보이면 제안하고 확인받는다.
+- **검증 없이 "완료"라고 말하지 않는다.** 실제로 명령을 실행하고 출력을 기대값과 대조한다
+  (`docs/conventions/workflow.md`「검증은 출력을 찍는 것이 아니라」).
+- **테스트 픽스처는 실제 응답에서 뜬다.** 지어낸 픽스처는 코드가 아니라 내 가정을 검증한다
+  (`docs/conventions/frontend.md`).
+- 스펙에 없는 리팩터링·기능 추가를 임의로 하지 않는다. 필요해 보이면 제안하고 확인받는다.
+- **메모리에는 사실을 저장하지 않는다.** 자동 메모리는 사용자 선호 1개 파일만 둔다 — 테스트
+  수·AC 수·진행률·설계 결정 같은 사실은 저장소가 정본이고 금방 낡는다.
 - 사람과의 대화는 한국어로 한다. 코드 식별자는 영어, 주석과 커밋 메시지는 한국어다.

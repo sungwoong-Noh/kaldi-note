@@ -1740,4 +1740,30 @@ class RecipeControllerTest extends AbstractIntegrationTest {
 
     mockMvc.perform(get("/api/v1/recipes/{id}", id)).andExpect(status().isUnauthorized());
   }
+
+  // ===== 레시피 검색·필터 + 잔 통계 + 담기 API 개편 (AC-RECIPESBREWS) =====
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-20 · 목록 응답에 temperatureType·recommendedRoastLevel·savedCount가 있다")
+  void 목록_응답에_새_필드가_있다() throws Exception {
+    String owner = token();
+    Long id =
+        createdId(
+            createRecipe(
+                owner,
+                """
+                {"title":"목록 필드 확인","doseG":15.0,"waterG":250.0,
+                 "temperatureType":"ICE","recommendedRoastLevel":"DARK","visibility":"PUBLIC"}
+                """));
+    String a = tokenOf(newUser("recipesbrews-20a"));
+    mockMvc
+        .perform(post("/api/v1/recipes/" + id + "/fork").header(HttpHeaders.AUTHORIZATION, a))
+        .andExpect(status().isCreated());
+
+    listRecipes(owner, "?scope=PUBLIC")
+        .andExpect(jsonPath("$.content[?(@.id == %d)].temperatureType".formatted(id)).value("ICE"))
+        .andExpect(
+            jsonPath("$.content[?(@.id == %d)].recommendedRoastLevel".formatted(id)).value("DARK"))
+        .andExpect(jsonPath("$.content[?(@.id == %d)].savedCount".formatted(id)).value(1));
+  }
 }

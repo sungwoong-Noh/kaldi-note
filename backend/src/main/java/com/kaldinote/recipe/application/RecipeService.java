@@ -30,7 +30,9 @@ import com.kaldinote.user.application.UserService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -115,9 +117,23 @@ public class RecipeService {
    */
   public PageResponse<RecipeSummaryResponse> list(
       Long viewerId, Long ownerUserId, PageParams params) {
+    var page = recipeRepository.findVisible(viewerId, ownerUserId, params.toPageable(LIST_SORT));
+    Map<Long, Long> savedCounts = savedCountsFor(page.getContent());
     return PageResponse.from(
-        recipeRepository.findVisible(viewerId, ownerUserId, params.toPageable(LIST_SORT)),
-        RecipeSummaryResponse::from);
+        page, r -> RecipeSummaryResponse.from(r, savedCounts.getOrDefault(r.getId(), 0L)));
+  }
+
+  /** 페이지 안 레시피들의 savedCount를 한 번에 조회한다. 빈 목록이면 쿼리를 아예 안 부른다. */
+  private Map<Long, Long> savedCountsFor(List<Recipe> recipes) {
+    if (recipes.isEmpty()) {
+      return Map.of();
+    }
+    List<Long> ids = recipes.stream().map(Recipe::getId).toList();
+    Map<Long, Long> counts = new HashMap<>();
+    for (RecipeRepository.SavedCountRow row : recipeRepository.countSavedForIds(ids)) {
+      counts.put(row.getParentRecipeId(), row.getCnt());
+    }
+    return counts;
   }
 
   /**

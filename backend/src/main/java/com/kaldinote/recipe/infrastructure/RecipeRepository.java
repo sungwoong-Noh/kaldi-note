@@ -1,6 +1,7 @@
 package com.kaldinote.recipe.infrastructure;
 
 import com.kaldinote.recipe.domain.Recipe;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,21 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
   Optional<Recipe> findByIdAndDeletedAtIsNull(Long id);
 
   long countByParentRecipeIdAndDeletedAtIsNull(Long parentRecipeId);
+
+  /** 목록 한 페이지 안 레시피들의 savedCount(담아간 수)를 한 번에 조회한다 — 건마다 따로 세면 N+1이 된다. */
+  @Query(
+      value =
+          "select r.parent_recipe_id as parentRecipeId, count(*) as cnt "
+              + "from recipes r where r.parent_recipe_id in (:recipeIds) and r.deleted_at is null "
+              + "group by r.parent_recipe_id",
+      nativeQuery = true)
+  List<SavedCountRow> countSavedForIds(@Param("recipeIds") List<Long> recipeIds);
+
+  interface SavedCountRow {
+    Long getParentRecipeId();
+
+    long getCnt();
+  }
 
   /**
    * 목록용 공개범위 판정.

@@ -14,35 +14,128 @@ import { renderWithQuery } from "@/test/render";
 import { server } from "@/test/msw-server";
 
 const replace = vi.fn();
+let currentSearch = "";
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace, push: vi.fn(), refresh: vi.fn() }),
   usePathname: () => "/recipes",
+  useSearchParams: () => new URLSearchParams(currentSearch),
 }));
 
 const LIST_URL = "http://localhost:8080/api/v1/recipes";
 
 beforeEach(() => {
   replace.mockClear();
+  currentSearch = "";
   clearSession();
   setAccessToken("a.b.c");
 });
 
 describe("RecipesPage", () => {
-  it("AC-WEB-09 · 카드에 추출 파라미터가 표시된다", async () => {
+  it("AC-RECIPESBREWS-58 · 쿼리 없이 진입하면 내 서랍이 기본이고 scope=DRAWER로 조회한다", async () => {
+    const searches: string[] = [];
     server.use(
-      http.get(LIST_URL, () => HttpResponse.json(pageOf([hoffmannSummary]))),
+      http.get(LIST_URL, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json(pageOf([hoffmannSummary]));
+      }),
     );
 
     renderWithQuery(<RecipesPage />);
 
     expect(
-      await screen.findByText("James Hoffmann Ultimate V60"),
+      await screen.findByRole("tab", { name: "내 서랍", selected: true }),
     ).toBeInTheDocument();
-    expect(screen.getByText("30.0g")).toBeInTheDocument();
-    expect(screen.getByText("500.0g")).toBeInTheDocument();
-    expect(screen.getByText("1:16.7")).toBeInTheDocument();
-    expect(screen.getByText("100°C")).toBeInTheDocument();
-    expect(screen.getByText("3:30")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(searches.at(-1)).toContain("scope=DRAWER"),
+    );
+  });
+
+  it("AC-RECIPESBREWS-65 · 검색어·온도·정렬이 URL 쿼리로 동기화된다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([hoffmannSummary]))),
+    );
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipesPage />);
+
+    await user.click(await screen.findByRole("tab", { name: "둘러보기" }));
+    await user.type(await screen.findByLabelText("레시피 검색"), "워시드");
+    await user.click(screen.getByRole("button", { name: "Hot" }));
+    await user.click(screen.getByRole("button", { name: "최신순" }));
+
+    await waitFor(() => {
+      const last = replace.mock.calls.at(-1)?.[0] as string;
+      expect(decodeURIComponent(last)).toBe(
+        "/recipes?scope=PUBLIC&q=워시드&temp=HOT&sort=RECENT",
+      );
+    });
+  });
+
+  it("AC-RECIPESBREWS-67 · '더 보기'로 불러온 페이지 depth는 URL에 반영되지 않는다", async () => {
+    server.use(
+      http.get(LIST_URL, ({ request }) => {
+        const page = Number(
+          new URL(request.url).searchParams.get("page") ?? "0",
+        );
+        return HttpResponse.json(
+          page === 0
+            ? pageOf(summaries(20, 100), { page: 0, hasNext: true })
+            : pageOf(summaries(20, 200), { page: 1, hasNext: false }),
+        );
+      }),
+    );
+
+    renderWithQuery(<RecipesPage />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: "더 보기" }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getAllByRole("link", { name: /^레시피 \d+/ })).toHaveLength(
+        40,
+      ),
+    );
+    // "더 보기"를 눌러도 router.replace는 한 번도 호출되지 않는다 — page는 URL에 없다.
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("AC-RECIPESBREWS-68 · 필터가 바뀌면 누적된 페이지가 사라지고 처음부터 다시 불러온다", async () => {
+    let calls = 0;
+    server.use(
+      http.get(LIST_URL, ({ request }) => {
+        calls += 1;
+        const url = new URL(request.url);
+        const page = Number(url.searchParams.get("page") ?? "0");
+        if (url.searchParams.get("scope") === "PUBLIC") {
+          return HttpResponse.json(pageOf([kasuyaSummary]));
+        }
+        return HttpResponse.json(
+          page === 0
+            ? pageOf(summaries(20, 100), { page: 0, hasNext: true })
+            : pageOf(summaries(20, 200), { page: 1, hasNext: false }),
+        );
+      }),
+    );
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipesPage />);
+    await userEvent.click(
+      await screen.findByRole("button", { name: "더 보기" }),
+    );
+    await waitFor(() =>
+      expect(screen.getAllByRole("link", { name: /^레시피 \d+/ })).toHaveLength(
+        40,
+      ),
+    );
+    const callsBeforeSwitch = calls;
+
+    await user.click(await screen.findByRole("tab", { name: "둘러보기" }));
+
+    await screen.findByText("Tetsu Kasuya 4:6 Method");
+    expect(
+      screen.queryAllByRole("link", { name: /^레시피 \d+/ }),
+    ).toHaveLength(0);
+    expect(calls).toBeGreaterThan(callsBeforeSwitch);
   });
 
   it("AC-WEB-10 · hasNext가 true면 더 보기 버튼이 있다", async () => {
@@ -206,33 +299,5 @@ describe("RecipesPage — 쓰기 슬라이스", () => {
     expect(
       await screen.findByRole("link", { name: "새 레시피" }),
     ).toHaveAttribute("href", "/recipes/new");
-  });
-
-  it("AC-WEBEDIT-05 · '내 레시피만'을 켜면 ownerUserId를 붙여 다시 부른다", async () => {
-    const user = userEvent.setup();
-    const searches: string[] = [];
-    server.use(
-      http.get("http://localhost:8080/api/v1/users/me", () =>
-        HttpResponse.json({
-          id: 7,
-          nickname: "테스터",
-          role: "USER",
-          createdAt: "2026-08-21T00:00:00Z",
-        }),
-      ),
-      http.get(LIST_URL, ({ request }) => {
-        searches.push(new URL(request.url).search);
-        return HttpResponse.json(pageOf([hoffmannSummary]));
-      }),
-    );
-
-    renderWithQuery(<RecipesPage />);
-    await user.click(
-      await screen.findByRole("checkbox", { name: "내 레시피만" }),
-    );
-
-    await waitFor(() =>
-      expect(searches.at(-1)).toBe("?page=0&size=20&ownerUserId=7"),
-    );
   });
 });

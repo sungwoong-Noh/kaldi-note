@@ -3,7 +3,7 @@ id: RECIPESBREWS
 title: 레시피 서랍 화면 — 웹·모바일 둘러보기/내 서랍/상세/내 잔
 status: 승인
 milestone: M1
-supersedes:
+supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-69, AC-WEBEDIT-05(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-63, AC-TOUCH-06(docs/specs/2026-09-09-touch-targets.md) → AC-RECIPESBREWS-63, AC-STRUCT-04(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-63
 ---
 
 # 레시피 서랍 화면 스펙
@@ -433,7 +433,7 @@ supersedes:
   3. ./gradlew test --tests '*ContractComplianceTest' 초록 확인
   ```
 
-- [ ] **Task 1: 세그먼트·라우팅·URL 동기화 뼈대** — Covers: AC-RECIPESBREWS-58, 65, 66, 67, 68
+- [x] **Task 1: 세그먼트·라우팅·URL 동기화 뼈대** — Covers: AC-RECIPESBREWS-58, 65, 66, 67, 68
 
   ```tsx
   // frontend/src/app/recipes/page.tsx

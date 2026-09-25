@@ -209,12 +209,9 @@ POST /api/v1/gear/grind-conversions
 - **Then** 이름이 `새 레시피`인 링크의 `href`가 `/recipes/new`다
 - **검증** 페이지 테스트 `RecipesPage.test.tsx`
 
-#### AC-WEBEDIT-05 · "내 레시피만"을 켜면 ownerUserId를 붙여 다시 부른다
-
-- **Given** 로그인한 사용자의 id가 `7`이고 `/recipes`가 열려 있다
-- **When** 이름이 `내 레시피만`인 토글을 켠다
-- **Then** `GET /api/v1/recipes`가 `ownerUserId=7`·`page=0`·`size=20`을 쿼리로 갖고 다시 호출된다
-- **검증** 페이지 테스트 `RecipesPage.test.tsx`
+**AC-WEBEDIT-05 (대체됨)** · "내 레시피만" 체크박스 + `ownerUserId` 쿼리였던 원래 AC는
+`docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-63(내 서랍 소유 필터
+pill · `scope=DRAWER&owner=MINE`)이 대체한다.
 
 #### AC-WEBEDIT-06 · 포크에 성공하면 새 레시피의 편집 화면으로 간다
 

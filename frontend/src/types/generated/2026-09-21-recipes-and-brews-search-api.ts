@@ -26,6 +26,9 @@ export interface RecipeSummary {
   temperatureType: "HOT" | "ICE";
   recommendedRoastLevel: "LIGHT" | "MEDIUM" | "DARK";
   savedCount: number;
+  authorDisplayName: string;
+  sourceAuthorName?: string | null;
+  brewCount: number;
   createdAt?: string;
   updatedAt?: string;
 }

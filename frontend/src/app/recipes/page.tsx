@@ -1,21 +1,31 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { Suspense } from "react";
 import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
-import { fetchRecipePage } from "@/features/recipe/api";
+import { searchRecipes } from "@/features/recipe/api";
 import { RecipeCard } from "@/features/recipe/components/RecipeCard";
-import { useMe } from "@/features/user/queries";
-import { Button, ButtonLink, Shell } from "@/components/ui";
+import {
+  toSearchFilter,
+  useRecipeSearchState,
+  type RecipeSearchState,
+} from "@/features/recipe/useRecipeSearchState";
+import { Button, ButtonLink, Input, Shell } from "@/components/ui";
 
+/** `useSearchParams()`가 CSR bailout을 일으키므로 Next가 요구하는 Suspense 경계를 둔다. */
 export default function RecipesPage() {
-  const { ready, onSessionLost } = useRequireSession();
-  const [mineOnly, setMineOnly] = useState(false);
-  const me = useMe(onSessionLost);
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <RecipesPageContent />
+    </Suspense>
+  );
+}
 
-  // 내 id를 알기 전에는 필터를 걸 수 없다. 그 전까지는 전체 목록을 보여준다.
-  const ownerUserId = mineOnly ? (me.data?.id ?? null) : null;
+function RecipesPageContent() {
+  const { ready, onSessionLost } = useRequireSession();
+  const { state, setState } = useRecipeSearchState();
 
   const {
     data,
@@ -26,28 +36,29 @@ export default function RecipesPage() {
     fetchNextPage,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ["recipes", { ownerUserId }],
+    // page는 넣지 않는다 — "더 보기"로 쌓은 페이지 깊이는 URL에도, 쿼리 키에도 반영하지 않는다
+    // (AC-RECIPESBREWS-67). 나머지 필터가 바뀌면 키가 바뀌어 0페이지부터 다시 받는다
+    // (AC-RECIPESBREWS-68).
+    queryKey: ["recipes", state],
     initialPageParam: 0,
     queryFn: ({ pageParam }) =>
-      fetchRecipePage(pageParam, onSessionLost, { ownerUserId }),
-    // 봉투의 hasNext가 다음 페이지 존재 여부의 유일한 근거다.
+      searchRecipes(pageParam, onSessionLost, toSearchFilter(state)),
     getNextPageParam: (lastPage) =>
       lastPage.hasNext ? lastPage.page + 1 : undefined,
-    // 필터를 켰는데 내 id를 아직 모르면 기다린다 — 그대로 부르면 전체 목록을 한 번 더 받는다.
-    enabled: ready && !(mineOnly && me.data === undefined),
+    enabled: ready,
   });
 
   if (!ready || isPending) {
     return (
-      <Screen mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
-        {null}
+      <Screen state={state} setState={setState}>
+        <LoadingState />
       </Screen>
     );
   }
 
   if (error) {
     return (
-      <Screen mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
+      <Screen state={state} setState={setState}>
         <ErrorState error={error} onRetry={() => void refetch()} />
       </Screen>
     );
@@ -57,7 +68,7 @@ export default function RecipesPage() {
 
   if (recipes.length === 0) {
     return (
-      <Screen mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
+      <Screen state={state} setState={setState}>
         {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
         <div data-empty className="flex flex-col gap-3">
           <p className="py-6 text-center text-body text-ink-3">
@@ -72,7 +83,7 @@ export default function RecipesPage() {
   }
 
   return (
-    <Screen mineOnly={mineOnly} onMineOnlyChange={setMineOnly}>
+    <Screen state={state} setState={setState}>
       <ul className="flex flex-col gap-3">
         {recipes.map((recipe) => (
           <RecipeCard key={recipe.id} recipe={recipe} />
@@ -94,12 +105,12 @@ export default function RecipesPage() {
 
 function Screen({
   children,
-  mineOnly,
-  onMineOnlyChange,
+  state,
+  setState,
 }: {
   children: React.ReactNode;
-  mineOnly?: boolean;
-  onMineOnlyChange?: (value: boolean) => void;
+  state: RecipeSearchState;
+  setState: (patch: Partial<RecipeSearchState>) => void;
 }) {
   return (
     <Shell>
@@ -110,21 +121,111 @@ function Screen({
         </ButtonLink>
       </div>
 
-      {/* 체크박스 모양은 20×20이고 탭 영역은 라벨 전체가 받는다. 네이티브 사각형 자체를
-          44px로 키우면 거대한 빈 상자가 된다(docs/specs/2026-09-15-structure.md). */}
-      {onMineOnlyChange && (
-        <label className="mb-4 flex min-h-11 w-fit items-center gap-2 py-2 text-body">
-          <input
-            type="checkbox"
-            className="size-5 shrink-0 appearance-none rounded-control border border-border checked:border-accent checked:bg-accent"
-            checked={mineOnly ?? false}
-            onChange={(e) => onMineOnlyChange(e.target.checked)}
-          />
-          내 레시피만
-        </label>
+      <SegmentTabs state={state} setState={setState} />
+
+      {state.scope === "PUBLIC" && (
+        <ExploreFilters state={state} setState={setState} />
       )}
 
       {children}
     </Shell>
+  );
+}
+
+/** 내 서랍 / 둘러보기. 기본은 내 서랍이다(AC-RECIPESBREWS-58). */
+function SegmentTabs({
+  state,
+  setState,
+}: {
+  state: RecipeSearchState;
+  setState: (patch: Partial<RecipeSearchState>) => void;
+}) {
+  return (
+    <div className="mb-4 flex gap-2" role="tablist">
+      <button
+        type="button"
+        role="tab"
+        aria-selected={state.scope === "DRAWER"}
+        onClick={() => setState({ scope: "DRAWER" })}
+        className="min-h-11 flex-1 rounded-tag border border-border px-3 py-2 text-body font-medium aria-selected:border-ink aria-selected:bg-ink aria-selected:text-on-ink"
+      >
+        내 서랍
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={state.scope === "PUBLIC"}
+        onClick={() => setState({ scope: "PUBLIC" })}
+        className="min-h-11 flex-1 rounded-tag border border-border px-3 py-2 text-body font-medium aria-selected:border-ink aria-selected:bg-ink aria-selected:text-on-ink"
+      >
+        둘러보기
+      </button>
+    </div>
+  );
+}
+
+/**
+ * 둘러보기 전용 검색·필터 뼈대. 검색 입력의 디바운스·IME(AC-59·60), 필터 pill 전체(AC-61·62),
+ * owner pill(AC-63)은 이후 Task가 채운다 — 지금은 즉시 반영되는 검색어·온도·정렬만 둔다.
+ */
+function ExploreFilters({
+  state,
+  setState,
+}: {
+  state: RecipeSearchState;
+  setState: (patch: Partial<RecipeSearchState>) => void;
+}) {
+  return (
+    <div className="mb-4 flex flex-col gap-3">
+      <Input
+        type="search"
+        label="레시피 검색"
+        placeholder="레시피 · 기구 검색"
+        value={state.q}
+        onChange={(e) => setState({ q: e.target.value })}
+      />
+
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          aria-pressed={state.temp === "HOT"}
+          onClick={() =>
+            setState({ temp: state.temp === "HOT" ? undefined : "HOT" })
+          }
+          className="min-h-11 rounded-tag border border-border px-3 py-2 text-body-sm aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-on-ink"
+        >
+          Hot
+        </button>
+        <button
+          type="button"
+          aria-pressed={state.temp === "ICE"}
+          onClick={() =>
+            setState({ temp: state.temp === "ICE" ? undefined : "ICE" })
+          }
+          className="min-h-11 rounded-tag border border-border px-3 py-2 text-body-sm aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-on-ink"
+        >
+          Ice
+        </button>
+      </div>
+
+      <div className="flex gap-2 text-body-sm" role="group" aria-label="정렬">
+        <button
+          type="button"
+          aria-pressed={state.sort === undefined}
+          onClick={() => setState({ sort: undefined })}
+          className="min-h-11 rounded-tag border border-border px-3 py-2 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-on-ink"
+        >
+          인기순
+        </button>
+        <button
+          type="button"
+          aria-pressed={state.sort === "RECENT"}
+          onClick={() => setState({ sort: "RECENT" })}
+          className="min-h-11 rounded-tag border border-border px-3 py-2 aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-on-ink"
+        >
+          최신순
+        </button>
+      </div>
+    </div>
   );
 }

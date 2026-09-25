@@ -18,6 +18,12 @@ export const hoffmannSummary: RecipeSummary = {
   totalTimeSeconds: 210,
   brewerId: 2,
   filterId: 2,
+  // V13 마이그레이션 기본값(HOT/MEDIUM)과 V11 시드(포크·브루 실적 없음)를 그대로 옮겼다.
+  temperatureType: "HOT",
+  recommendedRoastLevel: "MEDIUM",
+  savedCount: 0,
+  brewCount: 0,
+  authorDisplayName: "James Hoffmann",
   createdAt: "2026-08-21T05:35:20.440335Z",
   updatedAt: "2026-08-21T05:35:20.440335Z",
 };
@@ -36,6 +42,11 @@ export const kasuyaSummary: RecipeSummary = {
   totalTimeSeconds: 210,
   brewerId: 2,
   filterId: 2,
+  temperatureType: "HOT",
+  recommendedRoastLevel: "MEDIUM",
+  savedCount: 0,
+  brewCount: 0,
+  authorDisplayName: "Tetsu Kasuya",
   createdAt: "2026-08-21T05:35:20.440335Z",
   updatedAt: "2026-08-21T05:35:20.440335Z",
 };
@@ -271,6 +282,10 @@ export const kasuyaRecipe: Recipe = {
   totalTimeSeconds: 210,
   brewerId: 2,
   filterId: 2,
+  temperatureType: "HOT",
+  recommendedRoastLevel: "MEDIUM",
+  savedCount: 0,
+  brewCount: 0,
   steps: [
     {
       stepOrder: 1,
@@ -487,6 +502,10 @@ export const grindedRecipe: Recipe = {
   grindSettingValue: 22.0,
   grindSettingUnit: "CLICK",
   grindMicronEstimated: 660,
+  temperatureType: "HOT",
+  recommendedRoastLevel: "MEDIUM",
+  savedCount: 0,
+  brewCount: 0,
   steps: [
     {
       stepOrder: 1,

@@ -98,21 +98,6 @@ test.describe("터치 타깃 — 아이콘 버튼", () => {
     }
   });
 
-  test("AC-TOUCH-06 · 「내 레시피만」의 탭 영역이 44×44다", async ({
-    page,
-  }) => {
-    await installStubs(page);
-    await page.goto("/recipes");
-
-    // 갱신(2026-09-15): 입력 자체는 20×20 모양이 됐고 탭은 감싼 label이 받는다.
-    // 라벨 글자까지 누를 수 있어 오히려 넓어졌다(docs/specs/2026-09-15-structure.md).
-    const box = await page
-      .locator('label:has(input[type="checkbox"])')
-      .boundingBox();
-
-    expect(meetsTouchTarget(box!), `${box!.width}x${box!.height}`).toBe(true);
-  });
-
   test("AC-TOUCH-07 · disabled인 ↑ ↓도 44×44다", async ({ page }) => {
     await installStubs(page);
     await page.goto("/recipes/12/edit");

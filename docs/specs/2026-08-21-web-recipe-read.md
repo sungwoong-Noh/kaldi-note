@@ -229,12 +229,10 @@ plan: docs/archive/plans/2026-08-21-plan-web-recipe-read.md
 
 ### 프론트 — 목록
 
-#### AC-WEB-09 · 카드에 추출 파라미터가 표시된다
-
-- **Given** 목록 응답에 `title: "James Hoffmann Ultimate V60"`, `doseG: 30.0`, `waterG: 500.0`, `ratio: 16.7`, `waterTempC: 100.0`, `totalTimeSeconds: 210`인 항목이 있다
-- **When** `/recipes`를 연다
-- **Then** `James Hoffmann Ultimate V60`, `30.0g`, `500.0g`, `1:16.7`, `100°C`, `3:30`이 모두 화면에 있다
-- **검증** 페이지 테스트 `RecipesPage.test.tsx`
+**AC-WEB-09 (대체됨)** · 카드 대표 수치가 `ratio`였던 원래 AC는
+`docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-69(대표 수치가 `doseG`로 바뀜)가
+대체한다. `RecipeCard`가 그 스펙 기준으로 재설계돼 이 문서 버전의 검증 시나리오는 더 이상 유효하지
+않다.
 
 #### AC-WEB-10 · hasNext가 true면 더 보기 버튼이 있다
 

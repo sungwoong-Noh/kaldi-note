@@ -152,12 +152,10 @@ plan: docs/archive/plans/2026-09-09-plan-touch-targets.md
 - **Then** 셋 다 `width ≥ 44`이고 `height ≥ 44`다
 - **검증** e2e `e2e/touch-targets.spec.ts`
 
-#### AC-TOUCH-06 · 「내 레시피만」의 탭 영역이 44×44px이다
-
-- **Given** `/recipes`
-- **When** 체크박스를 감싼 `label`을 잰다
-- **Then** `width ≥ 44`이고 `height ≥ 44`다
-- **검증** e2e `e2e/touch-targets.spec.ts`
+**AC-TOUCH-06 (대체됨)** · 「내 레시피만」 체크박스의 탭 영역을 쟀던 원래 AC는, 그 체크박스 자체가
+`docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-63(owner pill)으로 대체되며
+함께 없어졌다. pill의 터치 타깃은 `docs/specs/2026-09-09-touch-targets.md`의 스윕형 AC(예:
+AC-TOUCH-01)가 계속 검사한다.
 
 > **갱신 (2026-09-15).** 처음에는 **입력 자체**를 쟀다(브라우저 기본이 13×13px이라 44px로 키웠다).
 > `2026-09-15-structure.md`가 입력을 **20×20px 모양**으로 되돌리고 탭은 **감싼 `label`**이 받게

@@ -47,6 +47,6 @@ cd frontend && pnpm dev            # → localhost:3000
 작업 전에 [`CLAUDE.md`](CLAUDE.md)를 먼저 읽는다. 전체 구조와 **뒤집으면 안 되는 설계 결정**이 정리돼 있다.
 
 - [설계 문서](docs/design/2026-08-14-architecture.md)
-- [구현 계획 — Plan 1](docs/plans/2026-08-14-plan1-foundation.md)
-- [작업 일지](docs/JOURNAL.md) — 지금 어디까지 왔는지
+- [로드맵](docs/ROADMAP.md) — 지금 무엇을 하는지
+- [결정 기록(ADR)](docs/decisions/) · [스펙](docs/specs/)
 - 컨벤션: [작업 흐름](docs/conventions/workflow.md) · [핸드오버](docs/conventions/handover.md) · [git](docs/conventions/git.md) · [backend](docs/conventions/backend.md) · [frontend](docs/conventions/frontend.md)

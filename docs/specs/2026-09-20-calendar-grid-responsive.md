@@ -2,7 +2,7 @@
 id: HOMECAL
 title: 웹 달력 그리드 반응형 재설계
 status: 구현완료
-plan: docs/plans/2026-09-20-plan-calendar-grid-responsive.md
+plan: docs/archive/plans/2026-09-20-plan-calendar-grid-responsive.md
 ---
 
 # 웹 달력 그리드 반응형 재설계 스펙

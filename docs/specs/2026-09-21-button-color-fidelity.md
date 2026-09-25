@@ -2,7 +2,7 @@
 id: BTN
 title: 버튼 색 정합 — primary를 ink로 되돌린다
 status: 구현완료
-plan: docs/plans/2026-09-21-plan-button-color-fidelity.md
+plan: docs/archive/plans/2026-09-21-plan-button-color-fidelity.md
 ---
 
 # 버튼 색 정합 스펙

@@ -2,7 +2,7 @@
 id: SKIN
 title: 기존 16화면 리스킨 — Clean Ledger 적용
 status: 구현완료
-plan: docs/plans/2026-09-17-plan-screen-reskin.md
+plan: docs/archive/plans/2026-09-17-plan-screen-reskin.md
 ---
 
 # 기존 16화면 리스킨 스펙

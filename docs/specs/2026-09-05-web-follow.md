@@ -2,7 +2,7 @@
 id: WEBFOLLOW
 title: 초대 링크로 서로 팔로우하기
 status: 구현완료
-plan: docs/plans/2026-09-05-plan-web-follow.md
+plan: docs/archive/plans/2026-09-05-plan-web-follow.md
 ---
 
 # 초대 링크로 서로 팔로우하기 스펙
@@ -36,7 +36,7 @@ plan: docs/plans/2026-09-05-plan-web-follow.md
 그 숫자를 알아낼 방법이 없다.
 
 지금까지 `FRIENDS`를 확인한 방법은 전부 `follows` 테이블에 직접 `INSERT`하는 것이었다
-(`docs/JOURNAL.md` 2026-09-05). 운영에서는 그 수단이 없다 — SSH 키가 GitHub Secrets에만 있다.
+(`docs/archive/JOURNAL.md` 2026-09-05). 운영에서는 그 수단이 없다 — SSH 키가 GitHub Secrets에만 있다.
 
 **이 서비스의 성공 기준은 「우리 둘이 실제로 매일 쓴다」**(`docs/design/2026-08-14-architecture.md:11`)
 인데, **둘이 서로의 기록을 볼 수 없다.** 레시피를 나누는 것이 포크 기능의 전제인데 그 앞단이 막혀 있다.

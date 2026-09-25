@@ -2,7 +2,7 @@
 id: VIS
 title: 공개범위 인가 + 팔로우
 status: 구현완료
-plan: docs/plans/2026-08-17-plan-visibility.md
+plan: docs/archive/plans/2026-08-17-plan-visibility.md
 ---
 
 # 공개범위 인가 + 팔로우 스펙
@@ -510,7 +510,7 @@ Authorization: Bearer <내 토큰. 내 id는 3>
 >
 > 해제는 `DELETE /api/v1/users/11/follow`(204)로 했고 **다음 요청에서 곧바로** 403이 됐다 — 캐시로 남지 않는다. 확인 후 `POST`로 복구해 `follows`가 두 행인 것을 psql로 확인했다.
 >
-> **레시피의 공개범위 변경은 `PUT`이다. `PATCH`는 없다** — 그런데 `PATCH /recipes/{id}`를 보내면 405가 아니라 **500**이 온다. 이 확인 중에 드러난 별개 결함이라 `docs/JOURNAL.md` 2026-09-03에 적었다.
+> **레시피의 공개범위 변경은 `PUT`이다. `PATCH`는 없다** — 그런데 `PATCH /recipes/{id}`를 보내면 405가 아니라 **500**이 온다. 이 확인 중에 드러난 별개 결함이라 `docs/archive/JOURNAL.md` 2026-09-03에 적었다.
 
 ## 열어둔 결정
 
@@ -518,4 +518,4 @@ Authorization: Bearer <내 토큰. 내 id는 3>
 - **브루잉 로그의 `visibility` 사후 변경** — `PATCH /brew-logs/{id}`가 필요해지는 시점에 수정 범위(전체 필드인지 `visibility`만인지)와 함께 정한다.
 - **팔로워/팔로잉 목록** — 사용자가 3명 이상이 되어 "누구를 팔로우했더라"가 실제 문제가 될 때 다룬다.
 - **CURATED 시드 레시피의 투입** — 이 스펙은 `owner_user_id IS NULL` + `PUBLIC` 조합이 조회되는 것까지만 정의한다. 시드 데이터를 실제로 넣는 것은 포크 스펙의 몫이다.
-- **계정 연동(account linking)** — 같은 사람이 카카오·구글로 각각 로그인하면 별개 계정이 되어 서로 팔로우해야 하는 상황이 생긴다. 공개 서비스 전환 검토 시 함께 정한다 (`docs/JOURNAL.md` 2026-08-17).
+- **계정 연동(account linking)** — 같은 사람이 카카오·구글로 각각 로그인하면 별개 계정이 되어 서로 팔로우해야 하는 상황이 생긴다. 공개 서비스 전환 검토 시 함께 정한다 (`docs/archive/JOURNAL.md` 2026-08-17).

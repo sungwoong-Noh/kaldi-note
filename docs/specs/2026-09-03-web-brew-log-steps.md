@@ -2,7 +2,7 @@
 id: WEBLOGSTEP
 title: 브루잉 로그 상세에서 레시피의 푸어 스텝을 본다
 status: 구현완료
-plan: docs/plans/2026-09-03-plan-web-brew-log-steps.md
+plan: docs/archive/plans/2026-09-03-plan-web-brew-log-steps.md
 ---
 
 # 브루잉 로그 상세에서 레시피의 푸어 스텝을 본다 스펙

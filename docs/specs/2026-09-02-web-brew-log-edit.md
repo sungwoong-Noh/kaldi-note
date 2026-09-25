@@ -2,7 +2,7 @@
 id: WEBLOGEDIT
 title: 브루잉 로그 편집 화면
 status: 구현완료
-plan: docs/plans/2026-09-02-plan-web-brew-log-edit.md
+plan: docs/archive/plans/2026-09-02-plan-web-brew-log-edit.md
 ---
 
 # 브루잉 로그 편집 화면 스펙

@@ -2,7 +2,7 @@
 id: WEBBREW
 title: 브루잉 로그 화면 — 기록하고 다시 보기 (선행 데이터 등록 포함)
 status: 구현완료
-plan: docs/plans/2026-08-31-plan-web-brew-log.md
+plan: docs/archive/plans/2026-08-31-plan-web-brew-log.md
 ---
 
 # 브루잉 로그 화면 스펙

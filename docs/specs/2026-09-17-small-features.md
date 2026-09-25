@@ -2,7 +2,7 @@
 id: SMALL
 title: 작은 기능 3개 — 비교표 문구 · 이 값으로 기록 · 다시 내리기
 status: 승인
-plan: docs/plans/2026-09-17-plan-small-features.md
+plan: docs/archive/plans/2026-09-17-plan-small-features.md
 ---
 
 # 작은 기능 3개 스펙

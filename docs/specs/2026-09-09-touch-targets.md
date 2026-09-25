@@ -2,7 +2,7 @@
 id: TOUCH
 title: 터치 타깃 44×44px
 status: 구현완료
-plan: docs/plans/2026-09-09-plan-touch-targets.md
+plan: docs/archive/plans/2026-09-09-plan-touch-targets.md
 ---
 
 # 터치 타깃 44×44px 스펙

@@ -2,7 +2,7 @@
 id: DS2
 title: 디자인 시스템 교체 — Clean Ledger
 status: 구현완료
-plan: docs/plans/2026-09-17-plan-design-system-v2.md
+plan: docs/archive/plans/2026-09-17-plan-design-system-v2.md
 ---
 
 # 디자인 시스템 교체 — Clean Ledger 스펙

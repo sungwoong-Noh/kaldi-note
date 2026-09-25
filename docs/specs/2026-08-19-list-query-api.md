@@ -2,7 +2,7 @@
 id: LIST
 title: 목록 조회 API + 브루잉 로그 수정·삭제
 status: 구현완료
-plan: docs/plans/2026-08-19-plan-list-query.md
+plan: docs/archive/plans/2026-08-19-plan-list-query.md
 ---
 
 # 목록 조회 API + 브루잉 로그 수정·삭제 스펙

@@ -2,7 +2,7 @@
 id: VISUAL
 title: 시각 위계 정비 — 색 토큰과 글자 크기 단계
 status: 구현완료
-plan: docs/plans/2026-09-07-plan-visual-hierarchy.md
+plan: docs/archive/plans/2026-09-07-plan-visual-hierarchy.md
 ---
 
 # 시각 위계 정비 스펙

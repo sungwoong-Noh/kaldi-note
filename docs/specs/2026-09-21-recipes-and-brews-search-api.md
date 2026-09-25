@@ -2,7 +2,7 @@
 id: RECIPESBREWS
 title: 레시피 검색·필터 + 잔 통계 + 담기(포크) API 개편
 status: 승인
-plan: docs/plans/2026-09-21-plan-recipes-and-brews-search-api.md
+plan: docs/archive/plans/2026-09-21-plan-recipes-and-brews-search-api.md
 ---
 
 # 레시피 검색·필터 + 잔 통계 + 담기(포크) API 개편 스펙

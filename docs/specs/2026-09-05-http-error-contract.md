@@ -2,7 +2,7 @@
 id: HTTPERR
 title: 라우팅 오류의 HTTP 응답 규약
 status: 구현완료
-plan: docs/plans/2026-09-05-plan-http-error-contract.md
+plan: docs/archive/plans/2026-09-05-plan-http-error-contract.md
 ---
 
 # 라우팅 오류의 HTTP 응답 규약 스펙
@@ -27,7 +27,7 @@ plan: docs/plans/2026-09-05-plan-http-error-contract.md
 
 ## 왜
 
-2026-09-03 수동 확인 세션이 실제 응답을 찍어보고 발견했다(`docs/JOURNAL.md`). 이 스펙을 쓰기 전 다시 측정한 결과다 —
+2026-09-03 수동 확인 세션이 실제 응답을 찍어보고 발견했다(`docs/archive/JOURNAL.md`). 이 스펙을 쓰기 전 다시 측정한 결과다 —
 **로컬 백엔드에 유효한 토큰으로 보낸 실제 응답**이다.
 
 | 요청 | 지금 | 있어야 할 것 |

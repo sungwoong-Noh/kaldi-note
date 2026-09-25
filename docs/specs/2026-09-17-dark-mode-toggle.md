@@ -2,7 +2,7 @@
 id: THEME
 title: 다크 모드 토글
 status: 구현완료
-plan: docs/plans/2026-09-17-plan-dark-mode-toggle.md
+plan: docs/archive/plans/2026-09-17-plan-dark-mode-toggle.md
 ---
 
 # 다크 모드 토글 스펙

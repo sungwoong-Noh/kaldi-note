@@ -2,7 +2,7 @@
 id: WEBEDIT
 title: 레시피 쓰기 슬라이스 — 생성·편집·삭제와 푸어 스텝 에디터
 status: 구현완료
-plan: docs/plans/2026-08-30-plan-web-recipe-write.md
+plan: docs/archive/plans/2026-08-30-plan-web-recipe-write.md
 ---
 
 # 레시피 쓰기 슬라이스 — 생성·편집·삭제와 푸어 스텝 에디터 스펙

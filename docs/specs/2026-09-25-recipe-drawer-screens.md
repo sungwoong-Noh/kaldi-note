@@ -1,7 +1,7 @@
 ---
 id: RECIPESBREWS
 title: 레시피 서랍 화면 — 웹·모바일 둘러보기/내 서랍/상세/내 잔
-status: 초안
+status: 승인
 milestone: M1
 supersedes:
 ---
@@ -289,6 +289,13 @@ supersedes:
 - **Then** "더 보기" 버튼이 DOM에 없다
 - **검증** 컴포넌트 테스트 `RecipesPage`·`BrewsPage`
 
+#### AC-RECIPESBREWS-101 · 조회 중에는 로딩 상태가 표시된다
+
+- **Given** `GET /recipes`·`GET /brew-logs/stats`·레시피 단건 조회 중 하나가 아직 응답하지 않았다
+- **When** `/recipes`·`/brews`·`/recipes/{id}`를 렌더한다
+- **Then** 기존 `LoadingState` 컴포넌트가 표시되고, 목록·통계·상세 콘텐츠는 아직 렌더되지 않는다
+- **검증** 컴포넌트 테스트 `RecipesPage`·`BrewsPage`·`RecipeDetail`
+
 ### 엣지 (경계값)
 
 #### AC-RECIPESBREWS-84 · 둘러보기 결과 0건이면 안내 카드가 뜬다
@@ -309,7 +316,7 @@ supersedes:
 
 - **Given** `BrewLogStatsResponse { monthCount: 0, averageRating: null, favoriteDoseG: null, favoriteRecipeTitle: null }`
 - **When** `/brews`를 렌더한다
-- **Then** `이번 달` 칸만 `"0잔"`이고 나머지 칸은 전부 `"—"`이며, `"기록하기"` CTA가 표시된다
+- **Then** `이번 달` 칸만 `"0잔"`이고 나머지 칸은 전부 `"—"`이며, `"기록하기"` CTA가 표시된다. 그 CTA는 `/brews/new`가 아니라 **`/recipes`**로 이동한다(기록은 레시피를 고른 뒤 시작하므로 `recipeId` 없이 작성 화면을 열 수 없다)
 - **검증** 컴포넌트 테스트 `BrewsPage`
 
 #### AC-RECIPESBREWS-87 · TDS 없는 잔은 수율 칸이 빈다
@@ -406,10 +413,10 @@ supersedes:
 
 #### AC-RECIPESBREWS-100 · /recipes·/brews는 서버 렌더링 없이 클라이언트에서 데이터를 가져온다
 
-- **Given** `/recipes`·`/brews` 라우트
-- **When** 빌드 산출물을 확인한다
-- **Then** 두 라우트 모두 `"use client"` 컴포넌트이고 서버 컴포넌트에서 API를 호출하지 않는다 — Cloudflare Workers의 요청당 CPU 10ms 예산은 이 화면들과 무관하다(정적 셸만 SSR)
-- **검증** 코드 리뷰 + `pnpm build` 산출물 확인
+- **Given** `frontend/src/app/recipes/page.tsx`·`frontend/src/app/brews/page.tsx`
+- **When** `pnpm test -- clientOnlyRoutes`를 실행한다
+- **Then** 두 파일 모두 첫 줄이 정확히 `"use client";`다 — 서버 컴포넌트로 fetch하지 않는다는 뜻이고, Cloudflare Workers의 요청당 CPU 10ms 예산은 이 화면들과 무관하다(정적 셸만 SSR)
+- **검증** 유닛 테스트 `clientOnlyRoutes.test.ts`
 
 ---
 
@@ -458,7 +465,7 @@ supersedes:
   BottomNav.test.tsx 등 기존 "기록" 문자열 단정을 함께 갱신.
   ```
 
-- [ ] **Task 10: 에러·빈 상태 전반** — Covers: AC-RECIPESBREWS-84, 85, 86, 87, 94, 95, 96, 97
+- [ ] **Task 10: 로딩·에러·빈 상태 전반** — Covers: AC-RECIPESBREWS-84, 85, 86, 87, 94, 95, 96, 97, 101
 
 - [ ] **Task 11: 비기능 검증** — Covers: AC-RECIPESBREWS-98, 99, 100
 

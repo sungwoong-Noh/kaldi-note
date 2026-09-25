@@ -1506,6 +1506,12 @@ class RecipeControllerTest extends AbstractIntegrationTest {
     mockMvc.perform(get("/api/v1/recipes")).andExpect(status().isUnauthorized());
   }
 
+  @Test
+  @DisplayName("AC-RECIPESBREWS-54 · 인증 없이 GET /recipes?scope=PUBLIC 호출 시 401이다(기존 유지)")
+  void 인증_없이_둘러보기를_부르면_401이다() throws Exception {
+    mockMvc.perform(get("/api/v1/recipes?scope=PUBLIC")).andExpect(status().isUnauthorized());
+  }
+
   /** owner_user_id를 null로 만든다. 탈퇴자 유기물·CURATED 시드와 같은 상태를 재현한다. */
   private void orphan(Long recipeId) {
     entityManager

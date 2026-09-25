@@ -421,6 +421,10 @@ plan: docs/archive/plans/2026-09-21-plan-recipes-and-brews-search-api.md
 
 #### AC-RECIPESBREWS-54 · 인증 없이 GET /recipes 호출 시 401이다(기존 유지)
 
+> **2부 P2에서 교체 예정.** 공개 서비스 전환(로드맵 P2 · `docs/decisions/0009-public-service-deferred.md`)이
+> 재개되면 비로그인 `GET /recipes?scope=PUBLIC`은 401이 아니라 PUBLIC 목록을 반환하도록
+> 바뀐다. **지금은 R1 보류 중이라 이 AC를 그대로 유지한다** — 구현을 먼저 바꾸지 않는다.
+
 - **Given** 토큰 없음
 - **When** `GET /recipes?scope=PUBLIC`
 - **Then** HTTP `401`

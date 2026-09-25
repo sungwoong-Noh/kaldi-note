@@ -13,13 +13,13 @@
 
 ## frontmatter
 
-```yaml
-id: <대문자 약어. AC ID의 접두어가 된다. 예: GRIND, RECIPE>
-title: <기능 이름>
-status: 초안
-milestone: <docs/ROADMAP.md의 마일스톤. 예: M1. 상시 트랙(버그·시각 보정)이면 비워둔다>
-supersedes: <이 스펙이 대체하는 이전 스펙 경로. 없으면 비워둔다>
-```
+| 필드 | 값 |
+|---|---|
+| `id` | 대문자 약어. AC ID의 접두어가 된다. 예: `GRIND`, `RECIPE` |
+| `title` | 기능 이름 |
+| `status` | 아래 표 참조 |
+| `milestone` | `docs/ROADMAP.md`의 마일스톤. 예: `M1`. 상시 트랙(버그·시각 보정)이면 비워둔다 |
+| `supersedes` | 이 스펙이 대체하는 이전 스펙 경로. 없으면 비워둔다 |
 
 `status`는 넷 중 하나다.
 
@@ -77,7 +77,7 @@ supersedes: <이 스펙이 대체하는 이전 스펙 경로. 없으면 비워�
 ### 형식
 
 ```markdown
-#### AC-GRIND-01 · C40 22클릭은 660마이크론이다
+#### AC-<기능>-01 · C40 22클릭은 660마이크론이다
 
 - **Given** 클릭당 30µm, 영점 보정 0인 그라인더
 - **When** 설정값 22로 마이크론을 계산하면

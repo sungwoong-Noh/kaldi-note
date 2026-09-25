@@ -26,6 +26,7 @@ import com.kaldinote.recipe.domain.StepType;
 import com.kaldinote.recipe.infrastructure.RecipeRepository;
 import com.kaldinote.recipe.infrastructure.RecipeStepRepository;
 import com.kaldinote.recipe.presentation.dto.CreateRecipeRequest;
+import com.kaldinote.recipe.presentation.dto.ForkRequest;
 import com.kaldinote.recipe.presentation.dto.RecipeResponse;
 import com.kaldinote.recipe.presentation.dto.RecipeSummaryResponse;
 import com.kaldinote.recipe.presentation.dto.StepRequest;
@@ -228,16 +229,51 @@ public class RecipeService {
   }
 
   /**
-   * 포크. 인가는 조회 인가와 동일하다(findViewable 재사용) — 스펙이 "볼 수 있으면 포크 가능"으로 정의했다. 원본과 스텝을 깊은 복사하므로 이후 원본이
+   * 포크(담기). 인가는 조회 인가와 동일하다(findViewable 재사용) — 스펙이 "볼 수 있으면 포크 가능"으로 정의했다. 원본과 스텝을 깊은 복사하므로 이후 원본이
    * 수정·삭제돼도 포크본은 변하지 않는다.
+   *
+   * <p>바디로 넘긴 필드는 그 값으로, 생략한 필드는 원본 값으로 덮어쓴다(AC-RECIPESBREWS-30~32). request가 null(바디 없음)이면 원본
+   * 그대로다. parentRecipeId·sourceAuthorName은 바디와 무관하게 forkFrom이 이미 정한 값을 유지한다(AC-RECIPESBREWS-33).
    */
   @Transactional
-  public RecipeResponse fork(Long userId, Long recipeId) {
+  public RecipeResponse fork(Long userId, Long recipeId, ForkRequest request) {
     Recipe original = findViewable(userId, recipeId);
     Recipe fork = Recipe.forkFrom(original, userId, sourceAuthorNameOf(original));
     List<RecipeStep> copiedSteps = original.getSteps().stream().map(RecipeStep::copyOf).toList();
     fork.replaceSteps(copiedSteps);
+
+    if (request != null) {
+      requireExists(request.brewerId(), brewerRepository::existsById, "브루어");
+      Long grinderModelId = firstNonNull(request.grinderModelId(), original.getGrinderModelId());
+      GrindSettingUnit grindSettingUnit =
+          firstNonNull(request.grindSettingUnit(), original.getGrindSettingUnit());
+      BigDecimal grindSettingValue =
+          firstNonNull(request.grindSettingValue(), original.getGrindSettingValue());
+      BigDecimal micron =
+          computeGrindMicronEstimated(grindSettingUnit, grindSettingValue, grinderModelId);
+
+      fork.applyForkOverrides(
+          firstNonNull(request.title(), original.getTitle()),
+          firstNonNull(request.description(), original.getDescription()),
+          firstNonNull(request.doseG(), original.getDoseG()),
+          firstNonNull(request.waterG(), original.getWaterG()),
+          firstNonNull(request.waterTempC(), original.getWaterTempC()),
+          firstNonNull(request.totalTimeSeconds(), original.getTotalTimeSeconds()),
+          firstNonNull(request.brewerId(), original.getBrewerId()),
+          firstNonNull(request.filterId(), original.getFilterId()),
+          grinderModelId,
+          grindSettingValue,
+          grindSettingUnit,
+          micron,
+          firstNonNull(request.temperatureType(), original.getTemperatureType()),
+          firstNonNull(request.recommendedRoastLevel(), original.getRecommendedRoastLevel()));
+    }
+
     return RecipeResponse.from(recipeRepository.save(fork), 0L, 0L);
+  }
+
+  private <T> T firstNonNull(T override, T original) {
+    return override != null ? override : original;
   }
 
   /**

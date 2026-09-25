@@ -11,6 +11,7 @@ import com.kaldinote.recipe.domain.RecipeSearchScope;
 import com.kaldinote.recipe.domain.RecipeSearchSort;
 import com.kaldinote.recipe.domain.RecipeTemperatureType;
 import com.kaldinote.recipe.presentation.dto.CreateRecipeRequest;
+import com.kaldinote.recipe.presentation.dto.ForkRequest;
 import com.kaldinote.recipe.presentation.dto.RecipeResponse;
 import com.kaldinote.recipe.presentation.dto.RecipeSummaryResponse;
 import com.kaldinote.recipe.presentation.dto.UpdateRecipeRequest;
@@ -113,8 +114,11 @@ public class RecipeController {
 
   @PostMapping("/{id}/fork")
   @ResponseStatus(HttpStatus.CREATED)
-  public RecipeResponse fork(@PathVariable Long id, AuthenticatedUser user) {
-    return recipeService.fork(user.id(), id);
+  public RecipeResponse fork(
+      @PathVariable Long id,
+      @Valid @RequestBody(required = false) ForkRequest request,
+      AuthenticatedUser user) {
+    return recipeService.fork(user.id(), id, request);
   }
 
   @PutMapping("/{id}")

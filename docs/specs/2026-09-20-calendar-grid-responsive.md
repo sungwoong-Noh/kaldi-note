@@ -15,7 +15,7 @@ plan: docs/archive/plans/2026-09-20-plan-calendar-grid-responsive.md
 
 ## 무엇을
 
-**웹(`≥1100px`) 달력 그리드를 목업(`docs/design/design_handoff_kaldi_note/Kaldi Note Home -
+**웹(`≥1100px`) 달력 그리드를 목업(`docs/archive/design/design_handoff_kaldi_note/Kaldi Note Home -
 Calendar Web.dc.html`)에 맞춰 반응형으로 다시 만든다.** 지금은 그리드 전체 높이가 `420px`
 고정이라 화면 크기와 무관하게 같은 비율로 눌려 있다 — `flex:1`로 남는 세로 공간을 채우게 바꾼다.
 동시에 목업에 있는 그리드선·선택/오늘 숫자 표시를 추가한다.

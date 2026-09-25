@@ -56,13 +56,18 @@
 | 모바일 전체 (RM1~RM5·BM1) | 미작성 |
 
 - 흡수: ⑥~⑧ (Track B)
-- 디자인: `design_handoff_kaldi_note/RECIPES-AND-BREWS.md` + `DECISIONS.md`
+- 디자인: `docs/design/kaldi-note-design/`(정본, 2026-09-25) — `docs/RECIPES-AND-BREWS.md` +
+  `docs/DECISIONS.md`, 화면은 `screens/02 Recipes and Cups - Mobile.dc.html`(RM1~RM4·BM1) /
+  `- Web.dc.html`(RW1~RW3·BW1). 옛 `design_handoff_kaldi_note/`는 `docs/archive/design/`로
+  옮겨졌다
 
 ### M2 · 기록 흐름
 
 **완료 정의:** 기록 작성 → 상세에서 레시피와 비교(차이를 문장으로) → 「다시 내리기」로 새 기록이 한 흐름으로 이어진다. 웹 기록 상세는 2컬럼이다.
 
-- 기록 작성 화면 리디자인 (`/brews/new` + 원두 다이얼로그, `screens-v2/BrewNew`)
+- 기록 작성 화면 리디자인 (`/brews/new` + 원두 다이얼로그) — `kaldi-note-design/INDEX.md`
+  「아직 없는 것」에 있다. 전용 목업이 없고 `03 Recipe Edit`의 폼 패턴 + 잔 상세의 평가 5축을
+  조합해서 만든다(옛 `screens-v2/BrewNew.dc.html`는 폐기, `docs/archive/design/`에 남아 있다)
 - 기록 상세 웹 2컬럼 (③, 디자인 W3 — 비교표 「차이」 열 별도)
 - 비교표 자연어 문구 · 「다시 내리기」 — 이미 구현돼 있다. `feat/small-features`(2026-09-19,
   AC-SMALL-01~06·10~11)를 main 위로 리베이스해 랜딩한다(`docs/specs/2026-09-17-small-features.md`

@@ -10,7 +10,7 @@ plan: docs/archive/plans/2026-09-21-plan-recipes-and-brews-search-api.md
 > 작성 규칙은 [`docs/conventions/workflow.md`](../conventions/workflow.md) 참조.
 > **모든 인수 조건은 자동화된 테스트로 옮길 수 있어야 한다.**
 >
-> `docs/design/design_handoff_kaldi_note/RECIPES-AND-BREWS.md`·`DECISIONS.md`가 정한
+> `docs/archive/design/design_handoff_kaldi_note/RECIPES-AND-BREWS.md`·`DECISIONS.md`가 정한
 > 레시피/잔 재설계를 4개 스펙으로 나눈 것 중 **1번째(백엔드)**다. 나머지 3개(웹 둘러보기/내
 > 서랍, 웹 상세/담기/내 잔, 모바일 전체)는 이 스펙의 API를 소비하며, 같은 `RECIPESBREWS` AC
 > 접두어를 이어 쓴다.

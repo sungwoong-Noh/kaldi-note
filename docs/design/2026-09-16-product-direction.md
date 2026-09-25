@@ -113,8 +113,11 @@ API는 **「최종승인」된 파트너에게만** 열리고, 최종승인 조�
 
 ## 채택한 디자인 — Clean Ledger (2026-09-17)
 
-핸드오프는 `docs/design/design_handoff_kaldi_note/`에 있다. **`README.md`가 값의 원천이고,
-`*.dc.html`은 프로덕션 코드가 아니라 레퍼런스다.**
+핸드오프는 `docs/archive/design/design_handoff_kaldi_note/`에 있다(2026-09-17 채택 당시
+`docs/design/`에 있었으나, 2026-09-25 `docs/design/kaldi-note-design/`가 새 정본이 되면서
+archive로 옮겨졌다). **`README.md`가 그 시점 값의 원천이었고, `*.dc.html`은 프로덕션 코드가
+아니라 레퍼런스였다.** 지금 구현 기준은 `kaldi-note-design/`을 따른다 — 아래 표는 2026-09-17
+채택 당시의 기록으로 남긴다.
 
 **이 디자인은 방향 문서보다 먼저 만들어졌다.** 그래서 위 결정이 만든 신규 화면을 모른다.
 아래 「디자인이 아직 없던 화면」을 참조한다.
@@ -149,21 +152,31 @@ API는 **「최종승인」된 파트너에게만** 열리고, 최종승인 조�
 **새 팔레트에 `danger`를 추가하고 대비 기준을 유지한다.** 디자인의 warm 뉴트럴과 어울리는
 oklch 값을 새로 정하되, **없애지 않는다.** 폼 검증 에러 스타일도 핸드오프에 없으므로 함께 정한다.
 
-### 디자인이 아직 없던 화면 — `screens-v2`로 해소됨 (2026-09-25)
+### 디자인이 아직 없던 화면
 
-결정 1~14가 만든 신규 화면이다. 작성 당시(2026-09-16)에는 디자인이 없었지만, 지금은
-`docs/design/screens-v2/`에 캔버스가 있다. **다만 R1 보류(ADR 0009)로 이 화면들의 구현은
-2부 재개 전까지 진행하지 않는다** — 목업은 있고 스펙·구현은 아직이라는 뜻이다.
+결정 1~14가 만든 신규 화면이다. 작성 당시(2026-09-16)에는 디자인이 없었고, 2026-09-25 초에
+`screens-v2/`가 7개 전부의 캔버스를 채웠다. **같은 날 안에 디자인 정본이
+`docs/design/kaldi-note-design/`로 다시 바뀌었는데, 그 정본은 1부(둘이 쓰는 도구) 화면만
+다룬다.** 그래서 지금은 둘로 갈린다.
 
-| 화면 | 왜 필요한가 | `screens-v2` 파일 |
+**2부(공개 서비스, R1 보류) 전용 5개 — `kaldi-note-design/`에 대응 화면이 없다.**
+`screens-v2/`가 유일한 디자인이고, `docs/archive/design/screens-v2/`로 옮겨졌지만 **폐기는
+아니다** — 2부가 재개되면 이 캔버스가 여전히 유일한 출발점이다.
+
+| 화면 | 왜 필요한가 | `screens-v2` 파일(현재 위치: `docs/archive/design/screens-v2/`) |
 |---|---|---|
 | 랜딩 (비로그인 `/`) | 결정 14 | `Main.dc.html` |
 | 오늘의 레시피 | 결정 9 | `DailyRecipe.dc.html` |
 | 장비 카탈로그 `/gear` | 결정 4·6 | `GearCatalog.dc.html` |
 | 장비 상세 + **제휴 링크 + 공정위 고지** | 결정 4 + 제약 3 | `GearDetail.dc.html` |
 | 관리자 레시피 가져오기 | 결정 7 | `AdminImport.dc.html` |
-| **레시피 상세 — 웹 버전** | 웹 디자인은 홈·레시피 목록·기록 상세 3개뿐인데, **유입의 주 착지점이 빠졌다** | `RecipeWeb.dc.html` |
-| 기록 작성 `/brews/new` + 원두 다이얼로그 | 핸드오프가 "미구현"으로 명시 | `BrewNew.dc.html` |
+
+**1부 소관 2개 — `kaldi-note-design/`이 정본으로 갱신됐다.**
+
+| 화면 | 지금 상태 |
+|---|---|
+| **레시피 상세 — 웹 버전** | 해소됨. `kaldi-note-design/screens/02 Recipes and Cups - Web.dc.html`(RW3)가 다룬다(M1) |
+| 기록 작성 `/brews/new` + 원두 다이얼로그 | 여전히 전용 디자인 없음. `kaldi-note-design/INDEX.md`「아직 없는 것」— `03 Recipe Edit`의 폼 패턴 + 잔 상세의 평가 5축을 조합해서 만든다(M2) |
 
 ---
 
@@ -283,7 +296,7 @@ self-host. 그리고 **수치는 Mono, 서술은 Sans**라는 규칙상 두 벌�
 | M10 | 더보기 | `/more` | 리스킨 + ☆기구 관리 · ☆다크 토글 |
 | M11 | 로그인 | `/login` | 리스킨 |
 | M12 | 오프라인 | `/offline` | 리스킨 + ☆쓰기 큐 |
-| — | **기록 작성** | `/brews/new`, `/[id]/edit` | `screens-v2/BrewNew.dc.html`로 해소(2026-09-25) |
+| — | **기록 작성** | `/brews/new`, `/[id]/edit` | 여전히 전용 디자인 없음 — `kaldi-note-design/INDEX.md`「아직 없는 것」 참조(2026-09-25) |
 | — | **친구 피드** | — | ☆ 기능 없음 (단계 11). Mockups v2에만 디자인 있음 |
 
 ### 웹
@@ -293,12 +306,14 @@ self-host. 그리고 **수치는 Mono, 서술은 Sans**라는 규칙상 두 벌�
 | W1 | 홈 (좌 원장 + 우 420px 사이드) | 1100px 이하 1컬럼 |
 | W2 | 레시피 목록 (3열 그리드) | |
 | W3 | 기록 상세 (비교표 4열 — **「차이」 열 별도**) | |
-| — | **레시피 상세 웹** | `screens-v2/RecipeWeb.dc.html`로 해소(2026-09-25) |
+| — | **레시피 상세 웹** | 해소됨 — `kaldi-note-design/screens/02 Recipes and Cups - Web.dc.html`(RW3, 2026-09-25) |
 
-### 방향 문서가 만든 신규 화면 — `screens-v2`로 해소됨 (2026-09-25)
+### 방향 문서가 만든 신규 화면 — 2부(R1 보류) 5개만 남았다 (2026-09-25)
 
-랜딩(`Main.dc.html`) · 오늘의 레시피(`DailyRecipe.dc.html`) · 장비 카탈로그 `/gear`
-(`GearCatalog.dc.html`) · 장비 상세(제휴 링크 + 고지, `GearDetail.dc.html`) · 관리자 레시피
+레시피 상세 웹·기록 작성 2개는 위 표에서 `kaldi-note-design/`으로 해소됐다. 남은 2부 전용
+5개는 여전히 `docs/archive/design/screens-v2/`에만 있다: 랜딩(`Main.dc.html`) · 오늘의 레시피
+(`DailyRecipe.dc.html`) · 장비 카탈로그 `/gear`(`GearCatalog.dc.html`) · 장비 상세(제휴 링크
++ 고지, `GearDetail.dc.html`) · 관리자 레시피
 가져오기(`AdminImport.dc.html`). 목업만 있고 구현은 R1 보류로 미착수다 — 위 「디자인이 아직
 없던 화면」 절 참조.
 

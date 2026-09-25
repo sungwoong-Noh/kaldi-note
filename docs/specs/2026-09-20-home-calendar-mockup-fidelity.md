@@ -16,7 +16,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ## 무엇을
 
-배포된 홈 달력 화면이 `docs/design/design_handoff_kaldi_note/HOME-CALENDAR.md` 목업과
+배포된 홈 달력 화면이 `docs/archive/design/design_handoff_kaldi_note/HOME-CALENDAR.md` 목업과
 세부 수치(색·간격·타이포·레이아웃)에서 여러 곳 어긋난다는 것이 확인됐다. 이 스펙은 그 격차를
 항목별로 못박아 목업과 일치시킨다. 새 기능이 아니라 **기존 화면의 시각·데이터 정합성 보정**이다.
 

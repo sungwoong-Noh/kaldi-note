@@ -10,7 +10,7 @@ plan: docs/archive/plans/2026-09-19-plan-home-calendar.md
 > 2026-09-19 `/interview`로 확정. 작성 규칙은 [`docs/conventions/workflow.md`](../conventions/workflow.md).
 > **모든 인수 조건은 자동화된 테스트로 옮길 수 있어야 한다.**
 >
-> 디자인 근거: [`docs/design/design_handoff_kaldi_note/HOME-CALENDAR.md`](../design/design_handoff_kaldi_note/HOME-CALENDAR.md)
+> 디자인 근거: [`docs/archive/design/design_handoff_kaldi_note/HOME-CALENDAR.md`](../archive/design/design_handoff_kaldi_note/HOME-CALENDAR.md)
 > (모바일 = `Kaldi Note Home - Calendar.dc.html`, 웹 = `Kaldi Note Home - Calendar Web.dc.html`)
 
 ## 무엇을
@@ -291,7 +291,7 @@ CTA            기록하기
 | 우측 하단 (선택 날짜 종속) | primary `이 날짜로 기록 추가` → `/recipes` | secondary `지연 님 프로필 보기` → `/u/12` |
 
 - 상단 바의 아바타를 누르면 `/more`로 간다.
-- 로고는 `docs/design/design_handoff_kaldi_note/assets/logo-symbol.svg`(`currentColor` 상속판)
+- 로고는 `docs/archive/design/design_handoff_kaldi_note/assets/logo-symbol.svg`(`currentColor` 상속판)
   **심볼 + HTML 텍스트 워드마크** 조합이다. 락업 SVG를 쓰지 않는다 — 워드마크가 `<text>`로
   조판돼 있어 폰트 의존이 생긴다.
 
@@ -313,7 +313,7 @@ CTA            기록하기
 | `--signal-record` | `oklch(0.55 0.16 30)` | `oklch(0.65 0.17 30)` | 달력의 기록 점 — **이 용도 외에는 쓰지 않는다** |
 
 치수·색의 나머지 값은 전부
-[`HOME-CALENDAR.md`](../design/design_handoff_kaldi_note/HOME-CALENDAR.md)를 따른다. 스펙에
+[`HOME-CALENDAR.md`](../archive/design/design_handoff_kaldi_note/HOME-CALENDAR.md)를 따른다. 스펙에
 중복해 적지 않는다 — 두 곳에 적으면 언젠가 어긋난다.
 
 ### 접근성

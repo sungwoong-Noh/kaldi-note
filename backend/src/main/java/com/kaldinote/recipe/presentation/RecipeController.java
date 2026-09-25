@@ -6,6 +6,7 @@ import com.kaldinote.common.security.AuthenticatedUser;
 import com.kaldinote.recipe.application.RecipeService;
 import com.kaldinote.recipe.domain.DripperFilter;
 import com.kaldinote.recipe.domain.RecipeRoastLevel;
+import com.kaldinote.recipe.domain.RecipeSearchOwner;
 import com.kaldinote.recipe.domain.RecipeSearchScope;
 import com.kaldinote.recipe.domain.RecipeSearchSort;
 import com.kaldinote.recipe.domain.RecipeTemperatureType;
@@ -68,6 +69,9 @@ public class RecipeController {
       @Parameter(description = "DRAWER(내 서랍) | PUBLIC(둘러보기). 생략하면 DRAWER.")
           @RequestParam(required = false)
           RecipeSearchScope scope,
+      @Parameter(description = "ALL(기본) | MINE(내가 만든 것) | SAVED(담아온 것). scope=DRAWER 전용.")
+          @RequestParam(required = false)
+          RecipeSearchOwner owner,
       @Parameter(description = "검색어 — 제목·기구명 부분 일치. scope=PUBLIC 전용.")
           @RequestParam(required = false)
           String q,
@@ -97,6 +101,7 @@ public class RecipeController {
         doseMin,
         doseMax,
         dripper,
+        owner,
         sort,
         PageParams.of(page, size));
   }

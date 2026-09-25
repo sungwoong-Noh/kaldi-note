@@ -15,6 +15,7 @@ import com.kaldinote.recipe.domain.DripperFilter;
 import com.kaldinote.recipe.domain.GrindSettingUnit;
 import com.kaldinote.recipe.domain.Recipe;
 import com.kaldinote.recipe.domain.RecipeRoastLevel;
+import com.kaldinote.recipe.domain.RecipeSearchOwner;
 import com.kaldinote.recipe.domain.RecipeSearchScope;
 import com.kaldinote.recipe.domain.RecipeSearchSort;
 import com.kaldinote.recipe.domain.RecipeSourceType;
@@ -142,9 +143,13 @@ public class RecipeService {
   }
 
   /**
-   * 검색·필터·정렬·범위(내 서랍/둘러보기). scope=PUBLIC(둘러보기)만 이 메서드가 다룬다 — scope=DRAWER(내 서랍)는 이후 태스크에서 채운다.
+   * 검색·필터·정렬·범위(내 서랍/둘러보기).
    *
    * <p>doseMin이 doseMax보다 크면(둘 다 있을 때) 400이다(AC-RECIPESBREWS-41).
+   *
+   * <p>scope=DRAWER에서는 ownerUserId·sort를 무시하고 항상 호출자 본인 기준·createdAt desc, id desc로
+   * 고정한다(AC-RECIPESBREWS-13·17). scope·ownerUserId가 둘 다 생략되면 이것도 DRAWER로 취급한다(AC-RECIPESBREWS-19) —
+   * 다만 scope는 생략하고 ownerUserId만 준 옛 방식 호출(AC-LIST-16·33)은 하위 호환을 위해 기존 list()로 그대로 처리한다.
    */
   public PageResponse<RecipeSummaryResponse> search(
       Long userId,
@@ -156,6 +161,7 @@ public class RecipeService {
       BigDecimal doseMin,
       BigDecimal doseMax,
       List<DripperFilter> dripper,
+      RecipeSearchOwner owner,
       RecipeSearchSort sort,
       PageParams params) {
     if (doseMin != null && doseMax != null && doseMin.compareTo(doseMax) > 0) {
@@ -179,8 +185,18 @@ public class RecipeService {
           page, r -> RecipeSummaryResponse.from(r, savedCounts.getOrDefault(r.getId(), 0L)));
     }
 
-    // scope == DRAWER — 다음 태스크에서 전용 쿼리로 바꾼다. 지금은 기존 list()로 대체한다.
-    return list(userId, ownerUserId, params);
+    if (scope == null && ownerUserId != null) {
+      return list(userId, ownerUserId, params);
+    }
+
+    Page<Recipe> page =
+        recipeRepository.searchDrawer(
+            userId,
+            owner == null || owner == RecipeSearchOwner.ALL ? null : owner.name(),
+            params.toPageable(Sort.unsorted())); // 정렬은 네이티브 쿼리의 ORDER BY가 이미 정한다
+    Map<Long, Long> savedCounts = savedCountsFor(page.getContent());
+    return PageResponse.from(
+        page, r -> RecipeSummaryResponse.from(r, savedCounts.getOrDefault(r.getId(), 0L)));
   }
 
   private String[] toArray(List<RecipeRoastLevel> roast) {

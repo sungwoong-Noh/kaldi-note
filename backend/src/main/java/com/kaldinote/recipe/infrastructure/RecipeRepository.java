@@ -137,4 +137,35 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
       @Param("brewerIds") Long[] brewerIds,
       @Param("sort") String sort,
       Pageable pageable);
+
+  /**
+   * 내 서랍(scope=DRAWER) 조회 — 호출자 본인이 소유한 레시피만(만든 것 + 담아온 것). 정렬은 항상 createdAt desc, id desc로
+   * 고정한다(AC-RECIPESBREWS-13, sort 파라미터는 이 경로에서 아예 받지 않는다).
+   *
+   * <p>owner: null/ALL은 전부, MINE은 parent_recipe_id가 null(포크가 아닌 것), SAVED는 그
+   * 반대(AC-RECIPESBREWS-14~16).
+   */
+  @Query(
+      value =
+          """
+          select r.* from recipes r
+          where r.deleted_at is null
+            and r.owner_user_id = :ownerId
+            and (cast(:owner as text) is null
+                 or (cast(:owner as text) = 'MINE' and r.parent_recipe_id is null)
+                 or (cast(:owner as text) = 'SAVED' and r.parent_recipe_id is not null))
+          order by r.created_at desc, r.id desc
+          """,
+      countQuery =
+          """
+          select count(*) from recipes r
+          where r.deleted_at is null
+            and r.owner_user_id = :ownerId
+            and (cast(:owner as text) is null
+                 or (cast(:owner as text) = 'MINE' and r.parent_recipe_id is null)
+                 or (cast(:owner as text) = 'SAVED' and r.parent_recipe_id is not null))
+          """,
+      nativeQuery = true)
+  Page<Recipe> searchDrawer(
+      @Param("ownerId") Long ownerId, @Param("owner") String owner, Pageable pageable);
 }

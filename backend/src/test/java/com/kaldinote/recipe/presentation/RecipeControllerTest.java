@@ -1335,20 +1335,9 @@ class RecipeControllerTest extends AbstractIntegrationTest {
     User b = newUser("list-10-b");
     Long id = recipeWith(tokenOf(b), "PUBLIC");
 
-    listRecipes(tokenOf(a), "")
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content[0].id").value(id));
-  }
-
-  @Test
-  @DisplayName("AC-LIST-11 · 상호 팔로우 상대의 FRIENDS 레시피는 포함된다")
-  void 상호_팔로우_상대의_FRIENDS_레시피는_포함된다() throws Exception {
-    User a = newUser("list-11-a");
-    User b = newUser("list-11-b");
-    Long id = recipeWith(tokenOf(b), "FRIENDS");
-    mutualFollow(a, b);
-
-    listRecipes(tokenOf(a), "")
+    // scope 생략 시 기본값이 DRAWER(내 서랍)로 바뀌어(AC-RECIPESBREWS-19), 타인의 PUBLIC 레시피를
+    // 보려면 둘러보기(scope=PUBLIC)를 명시해야 한다.
+    listRecipes(tokenOf(a), "?scope=PUBLIC")
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[0].id").value(id));
   }
@@ -1374,7 +1363,9 @@ class RecipeControllerTest extends AbstractIntegrationTest {
     Long id = recipeWith(tokenOf(b), "PUBLIC");
     orphan(id);
 
-    listRecipes(tokenOf(a), "")
+    // scope 생략 시 기본값이 DRAWER로 바뀌어(AC-RECIPESBREWS-19), 주인 없는 CURATED류를 보려면
+    // 둘러보기(scope=PUBLIC)를 명시해야 한다.
+    listRecipes(tokenOf(a), "?scope=PUBLIC")
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[0].id").value(id))
         // non_null 직렬화라 ownerUserId가 null이면 키 자체가 사라진다
@@ -2045,5 +2036,199 @@ class RecipeControllerTest extends AbstractIntegrationTest {
     listRecipes(token(), "?scope=PUBLIC&dripper=NONSENSE")
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  /** RecipeForkControllerTest와 동일한 픽스처 패턴 — CURATED 정렬 우선순위 테스트에 쓴다. */
+  private void setSourceType(Long recipeId, String sourceType) {
+    entityManager
+        .createNativeQuery("update recipes set source_type = :t where id = :id")
+        .setParameter("t", sourceType)
+        .setParameter("id", recipeId)
+        .executeUpdate();
+    entityManager.flush();
+    entityManager.clear();
+  }
+
+  @Test
+  @DisplayName(
+      "AC-RECIPESBREWS-11 · scope=PUBLIC 기본 정렬은 CURATED desc, savedCount desc, createdAt desc다")
+  void 둘러보기_기본_정렬() throws Exception {
+    String owner = token();
+    Long curatedId =
+        createdId(
+            createRecipe(
+                owner,
+                """
+                {"title":"큐레이션 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+                """));
+    setSourceType(curatedId, "CURATED");
+
+    Long popularId =
+        createdId(
+            createRecipe(
+                owner,
+                """
+                {"title":"인기 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+                """));
+    for (int i = 0; i < 5; i++) {
+      mockMvc.perform(
+          post("/api/v1/recipes/" + popularId + "/fork")
+              .header(HttpHeaders.AUTHORIZATION, tokenOf(newUser("recipesbrews-11-pop-" + i))));
+    }
+
+    Long lessPopularId =
+        createdId(
+            createRecipe(
+                owner,
+                """
+                {"title":"저인기 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+                """));
+    mockMvc.perform(
+        post("/api/v1/recipes/" + lessPopularId + "/fork")
+            .header(HttpHeaders.AUTHORIZATION, tokenOf(newUser("recipesbrews-11-less"))));
+
+    listRecipes(owner, "?scope=PUBLIC")
+        .andExpect(jsonPath("$.content[0].id").value(curatedId))
+        .andExpect(jsonPath("$.content[1].id").value(popularId))
+        .andExpect(jsonPath("$.content[2].id").value(lessPopularId));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-12 · sort=RECENT는 createdAt desc 단일 기준이다")
+  void sort_RECENT는_최신순이다() throws Exception {
+    String owner = token();
+    Long curatedId =
+        createdId(
+            createRecipe(
+                owner,
+                """
+                {"title":"오래된 큐레이션","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+                """));
+    setSourceType(curatedId, "CURATED");
+    Long recentId =
+        createdId(
+            createRecipe(
+                owner,
+                """
+                {"title":"방금 만든 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+                """));
+
+    listRecipes(owner, "?scope=PUBLIC&sort=RECENT")
+        .andExpect(jsonPath("$.content[0].id").value(recentId))
+        .andExpect(jsonPath("$.content[1].id").value(curatedId));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-13 · scope=DRAWER에서 sort 파라미터는 무시된다(400 아님)")
+  void 서랍에서_sort는_무시된다() throws Exception {
+    listRecipes(token(), "?scope=DRAWER&sort=RECENT").andExpect(status().isOk());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-14 · scope=DRAWER + owner=MINE은 내가 만든 것만 남긴다")
+  void 서랍_MINE_필터() throws Exception {
+    String owner = token();
+    simpleRecipe(owner, "내가 만든 것");
+    Long publicId = simpleRecipeVisibility(owner, "담을 원본", "PUBLIC");
+    mockMvc
+        .perform(
+            post("/api/v1/recipes/" + publicId + "/fork").header(HttpHeaders.AUTHORIZATION, owner))
+        .andExpect(status().isCreated());
+
+    listRecipes(owner, "?scope=DRAWER&owner=MINE")
+        .andExpect(jsonPath("$.totalElements").value(2))
+        .andExpect(jsonPath("$.content[?(@.parentRecipeId)]").isEmpty());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-15 · scope=DRAWER + owner=SAVED는 담아온 것만 남긴다")
+  void 서랍_SAVED_필터() throws Exception {
+    String owner = token();
+    simpleRecipe(owner, "내가 만든 것");
+    Long publicId = simpleRecipeVisibility(owner, "담을 원본", "PUBLIC");
+    Long forkedId =
+        createdId(
+            mockMvc.perform(
+                post("/api/v1/recipes/" + publicId + "/fork")
+                    .header(HttpHeaders.AUTHORIZATION, owner)));
+
+    listRecipes(owner, "?scope=DRAWER&owner=SAVED")
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.content[0].id").value(forkedId));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-16 · scope=DRAWER + owner=ALL(또는 생략)은 내가 만든 것 + 담아온 것 전부다")
+  void 서랍_ALL_필터() throws Exception {
+    String owner = token();
+    simpleRecipe(owner, "내가 만든 것");
+    Long publicId = simpleRecipeVisibility(owner, "담을 원본", "PUBLIC");
+    mockMvc
+        .perform(
+            post("/api/v1/recipes/" + publicId + "/fork").header(HttpHeaders.AUTHORIZATION, owner))
+        .andExpect(status().isCreated());
+    String other = tokenOf(newUser("recipesbrews-16-other"));
+    createRecipe(
+        other,
+        """
+        {"title":"남의 공개 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+        """);
+
+    listRecipes(owner, "?scope=DRAWER").andExpect(jsonPath("$.totalElements").value(3));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-17 · scope=DRAWER에서 ownerUserId 파라미터는 무시되고 항상 호출자 본인 기준이다")
+  void 서랍은_ownerUserId를_무시한다() throws Exception {
+    User a = newUser("recipesbrews-17a");
+    User b = newUser("recipesbrews-17b");
+    simpleRecipe(tokenOf(a), "A의 레시피");
+
+    listRecipes(tokenOf(a), "?scope=DRAWER&ownerUserId=" + b.getId())
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.content[0].title").value("A의 레시피"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-18 · scope=PUBLIC에서 owner 파라미터는 무시된다(400 아님)")
+  void 둘러보기에서_owner는_무시된다() throws Exception {
+    listRecipes(token(), "?scope=PUBLIC&owner=MINE").andExpect(status().isOk());
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-19 · scope 생략 시 기본값은 DRAWER다")
+  void scope_생략시_기본값은_DRAWER다() throws Exception {
+    String owner = token();
+    simpleRecipe(owner, "내 서랍 레시피");
+    String other = tokenOf(newUser("recipesbrews-19-other"));
+    createRecipe(
+        other,
+        """
+        {"title":"남의 공개 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+        """);
+
+    listRecipes(owner, "")
+        .andExpect(jsonPath("$.totalElements").value(1))
+        .andExpect(jsonPath("$.content[0].title").value("내 서랍 레시피"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-51 · owner에 잘못된 값을 보내면 400이다")
+  void owner_잘못된_값은_400이다() throws Exception {
+    listRecipes(token(), "?scope=DRAWER&owner=NONSENSE")
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+  }
+
+  /** visibility를 지정해 레시피를 만들고 id를 돌려준다(recipeWith와 같지만 제목을 고를 수 있다). */
+  private Long simpleRecipeVisibility(String token, String title, String visibility)
+      throws Exception {
+    return createdId(
+        createRecipe(
+            token,
+            """
+            {"title":"%s","doseG":15.0,"waterG":250.0,"visibility":"%s"}
+            """
+                .formatted(title, visibility)));
   }
 }

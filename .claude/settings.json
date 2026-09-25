@@ -1,5 +1,19 @@
 {
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./scripts/status.sh 2>/dev/null || true",
+            "timeout": 30,
+            "statusMessage": "지금 상태 계산 중 (scripts/status.sh)..."
+          }
+        ]
+      }
+    ]
   }
 }

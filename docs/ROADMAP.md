@@ -64,7 +64,9 @@
 
 - 기록 작성 화면 리디자인 (`/brews/new` + 원두 다이얼로그, `screens-v2/BrewNew`)
 - 기록 상세 웹 2컬럼 (③, 디자인 W3 — 비교표 「차이」 열 별도)
-- 비교표 자연어 문구 · 「다시 내리기」 (small-features에서 흡수)
+- 비교표 자연어 문구 · 「다시 내리기」 — 이미 구현돼 있다. `feat/small-features`(2026-09-19,
+  AC-SMALL-01~06·10~11)를 main 위로 리베이스해 랜딩한다(`docs/specs/2026-09-17-small-features.md`
+  참조, 새 스펙 아님)
 - 흡수: ③, ⑤의 일부
 
 ### M3 · 추출 도구
@@ -73,8 +75,10 @@
 
 - 푸어 타이머 (⑨, `product-direction` 10단계, 디자인 M7)
 - 분쇄도 환산기 재구성 (④) + 마이크론 → 클릭수 역환산 (12단계, 역환산 가능 그라인더 3개 제약 포함)
-- 「이 값으로 기록하기」 (small-features에서 흡수)
-- 내 기구 관리 — `user-grinders` 수정·삭제 API가 선행돼야 한다 (small-features 범위 밖이었던 것)
+- 「이 값으로 기록하기」 — 이미 구현돼 있다. `feat/small-features`(AC-SMALL-07~09)를 M2와
+  같은 브랜치 랜딩으로 함께 가져온다
+- 내 기구 관리 — `user-grinders` 수정·삭제 API가 선행돼야 한다 (`2026-09-17-small-features.md`
+  「범위 밖」)
 
 ### M4 · 친구 피드
 

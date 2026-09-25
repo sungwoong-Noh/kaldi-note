@@ -179,7 +179,7 @@ oklch 값을 새로 정하되, **없애지 않는다.** 폼 검증 에러 스타
 |---|---|---|---|
 | 1 | **디자인 시스템 교체** — 토큰·서체·시각 AC 갱신 | [`2026-09-17-design-system-v2.md`](../specs/2026-09-17-design-system-v2.md) **작성됨** | `AC-DS2` |
 | 2 | **기존 16화면 리스킨** | `screen-reskin` | `AC-SKIN` |
-| 3 | 작은 기능 — 다크 토글 · 기구 관리 · 「이 값으로 기록」 · 「다시 내리기」 · 비교표 자연어 문구 | [`2026-09-17-small-features.md`](../specs/2026-09-17-small-features.md) **분할됨 → M2·M3** | `AC-SMALL` |
+| 3 | 작은 기능 — 다크 토글 · 기구 관리 · 「이 값으로 기록」 · 「다시 내리기」 · 비교표 자연어 문구 | [`2026-09-17-small-features.md`](../specs/2026-09-17-small-features.md) **승인 · `feat/small-features`에 구현 완료, 리베이스 필요** | `AC-SMALL` |
 | 4 | 콘텐츠 채우기 (레시피 10건) | `admin-recipe-import` | `AC-IMPORT` |
 | 5 | 공개 열기 — 백엔드 인가 | `public-read` | `AC-PUBLIC` |
 | 6 | **검색에 잡히게** — 5와 한 몸 | `web-seo` | `AC-SEO` |

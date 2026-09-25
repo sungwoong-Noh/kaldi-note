@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: oklch(0.93 0.008 80); font-family: 'IBM Plex Sans KR', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: oklch(0.42 0.06 45); text-decoration: none; border-bottom: 1px solid currentColor; }
+  a:hover { color: oklch(0.28 0.04 45); }
+</style>
+</helmet>
+
+<section style="padding:56px 48px 96px; display:flex; flex-direction:column; gap:36px">
+
+  <div style="max-width:740px; display:flex; flex-direction:column; gap:14px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.5 0.02 70)">Home v3 · Web 1440 × 900</div>
+    <h1 style="margin:0; font-size:36px; line-height:1.15; font-weight:600; letter-spacing:-0.025em; color:oklch(0.22 0.015 60)">웹 홈 — 달력</h1>
+    <p style="margin:0; font-size:16px; line-height:1.7; color:oklch(0.4 0.015 60); text-wrap:pretty">모바일과 같은 규칙에 공간만 더 씁니다. 셀이 커진 만큼 <strong style="font-weight:600">점 대신 그날의 레시피명 한 줄</strong>이 들어가고, 선택한 날짜의 목록은 우측 420px 컬럼으로 빠집니다. 팔로우 레일은 상단 바 아래 가로로.</p>
+  </div>
+
+  <!-- CW1 -->
+  <div style="display:flex; flex-direction:column; gap:12px">
+    <div style="display:flex; align-items:baseline; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; padding:4px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">CW1</div><div style="font-size:14px; font-weight:600; color:oklch(0.25 0.015 60)">홈 / — 내 기록 · 09.19 선택</div></div>
+    <div style="width:1440px; height:900px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.85 0.008 75); border-radius:12px; overflow:hidden; display:flex; flex-direction:column">
+
+      <div style="padding:20px 48px; border-bottom:1px solid oklch(0.9 0.008 78); display:flex; align-items:center; justify-content:space-between; flex:none">
+        <div style="display:flex; align-items:center; gap:40px">
+          <div style="display:flex; align-items:center; gap:10px">
+            <div style="width:22px; height:22px; border:2px solid oklch(0.3 0.04 50); border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none"><div style="width:7px; height:7px; background:oklch(0.3 0.04 50); border-radius:50%"></div></div>
+            <div style="font-size:20px; font-weight:600; letter-spacing:-0.03em; color:oklch(0.22 0.015 60)">kaldi<span style="color:oklch(0.62 0.05 50)">·</span>note</div>
+          </div>
+          <div style="display:flex; gap:26px; font-size:14.5px">
+            <div style="color:oklch(0.22 0.015 60); font-weight:500">홈</div>
+            <div style="color:oklch(0.5 0.015 60)">레시피</div>
+            <div style="color:oklch(0.5 0.015 60)">기록</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px">
+          <div style="padding:11px 18px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:7px; font-size:14px; font-weight:500">이 레시피로 내렸다</div>
+          <div style="width:34px; height:34px; border-radius:999px; background:oklch(0.88 0.02 60); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:oklch(0.35 0.04 50)">현</div>
+        </div>
+      </div>
+
+      <div style="padding:16px 48px; border-bottom:1px solid oklch(0.91 0.008 78); display:flex; gap:18px; align-items:center; flex:none; overflow:hidden">
+        <div style="display:flex; align-items:center; gap:10px; flex:none; padding:6px 14px 6px 6px; border-radius:999px; background:oklch(0.22 0.015 60)">
+          <div style="width:32px; height:32px; border-radius:999px; background:oklch(0.88 0.02 60); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:oklch(0.35 0.04 50); flex:none">현</div>
+          <div style="font-size:13.5px; font-weight:600; color:oklch(0.97 0.004 85)">나</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex:none; padding:6px 14px 6px 6px; border-radius:999px">
+          <div style="width:32px; height:32px; border-radius:999px; background:oklch(0.88 0.015 70); display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:oklch(0.35 0.02 60); flex:none">JY</div>
+          <div style="font-size:13.5px; color:oklch(0.45 0.015 60)">지연</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex:none; padding:6px 14px 6px 6px; border-radius:999px">
+          <div style="width:32px; height:32px; border-radius:999px; background:oklch(0.88 0.008 80); display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:oklch(0.35 0.015 60); flex:none">민</div>
+          <div style="font-size:13.5px; color:oklch(0.45 0.015 60)">민재</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex:none; padding:6px 14px 6px 6px; border-radius:999px">
+          <div style="width:32px; height:32px; border-radius:999px; background:oklch(0.88 0.02 50); display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:oklch(0.35 0.03 50); flex:none">SH</div>
+          <div style="font-size:13.5px; color:oklch(0.45 0.015 60)">수현</div>
+        </div>
+        <div style="width:1px; height:24px; background:oklch(0.9 0.008 78); flex:none"></div>
+        <div style="display:flex; align-items:center; gap:10px; flex:none; padding:6px 14px 6px 6px">
+          <div style="width:32px; height:32px; border-radius:999px; border:1px dashed oklch(0.82 0.01 75); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:15px; color:oklch(0.6 0.02 70); box-sizing:border-box; flex:none">+</div>
+          <div style="font-size:13.5px; color:oklch(0.55 0.02 70)">찾기</div>
+        </div>
+      </div>
+
+      <div style="flex:1; display:flex; overflow:hidden">
+
+        <div style="flex:1; padding:32px 40px 32px 48px; display:flex; flex-direction:column; gap:20px; border-right:1px solid oklch(0.91 0.008 78); min-width:0">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex:none">
+            <div style="display:flex; align-items:baseline; gap:12px">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:28px; font-weight:500; letter-spacing:-0.03em; color:oklch(0.22 0.015 60)">2026.09</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.55 0.02 70)">9 brews</div>
+            </div>
+            <div style="display:flex; gap:8px">
+              <div style="width:34px; height:34px; border:1px solid oklch(0.87 0.008 75); border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:14px; color:oklch(0.35 0.015 60)">‹</div>
+              <div style="width:34px; height:34px; border:1px solid oklch(0.87 0.008 75); border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:14px; color:oklch(0.78 0.012 70)">›</div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); flex:none">
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.58 0.02 70)">월</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.58 0.02 70)">화</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.58 0.02 70)">수</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.58 0.02 70)">목</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.58 0.02 70)">금</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.62 0.02 70)">토</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.62 0.02 70)">일</div>
+          </div>
+
+          <div style="flex:1; display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); grid-template-rows:repeat(5,minmax(0,1fr)); border-top:1px solid oklch(0.89 0.008 78); border-left:1px solid oklch(0.93 0.008 80)">
+
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); background:oklch(0.975 0.006 82)"></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">1</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">2</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">케냐 고온 3푸어</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">3</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">4</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.5 0.015 60)">5</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">밝은 워시드</div><div style="font-size:11px; color:oklch(0.6 0.02 70)">외 1건</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.5 0.015 60)">6</div></div>
+
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">7</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">8</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">디카프 저온</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">9</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">밝은 워시드</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">10</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">11</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.5 0.015 60)">12</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">클레버 침출</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.5 0.015 60)">13</div></div>
+
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">14</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">밝은 워시드</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">15</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">16</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">케냐 고온 3푸어</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">17</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">18</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">밝은 워시드</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0; background:oklch(0.96 0.006 82); box-shadow:inset 0 0 0 2px oklch(0.22 0.015 60)"><div style="display:flex; align-items:center; gap:7px"><div style="width:24px; height:24px; border-radius:999px; background:oklch(0.22 0.015 60); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:500; color:oklch(0.97 0.004 85); flex:none">19</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; font-weight:500; color:oklch(0.3 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">밝은 워시드</div><div style="font-size:11px; color:oklch(0.5 0.015 60)">외 1건</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">20</div></div>
+
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">21</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">22</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">23</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">24</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">25</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.78 0.012 70)">26</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.78 0.012 70)">27</div></div>
+
+            <div style="border-right:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">28</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">29</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">30</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); background:oklch(0.975 0.006 82)"></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); background:oklch(0.975 0.006 82)"></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); background:oklch(0.975 0.006 82)"></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); background:oklch(0.975 0.006 82)"></div>
+          </div>
+        </div>
+
+        <div style="width:420px; flex:none; background:oklch(0.97 0.006 85); display:flex; flex-direction:column; overflow:hidden">
+          <div style="padding:32px 40px 18px; display:flex; flex-direction:column; gap:7px; flex:none">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.55 0.02 70)">Saturday</div>
+            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px">
+              <div style="font-size:26px; font-weight:600; letter-spacing:-0.025em; color:oklch(0.22 0.015 60)">9월 19일</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:oklch(0.55 0.02 70)">2 brews</div>
+            </div>
+          </div>
+
+          <div style="flex:1; padding:0 40px; overflow:hidden; display:flex; flex-direction:column; gap:14px">
+            <div style="padding:20px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.9 0.008 78); border-radius:10px; display:flex; flex-direction:column; gap:13px">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px">
+                <div style="display:flex; gap:11px; align-items:flex-start; min-width:0">
+                  <div style="width:10px; height:10px; border-radius:999px; background:oklch(0.55 0.07 55); margin-top:5px; flex:none"></div>
+                  <div style="min-width:0"><div style="font-size:15.5px; font-weight:600; color:oklch(0.22 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">아침에 마시는 밝은 워시드</div><div style="font-size:12px; color:oklch(0.55 0.02 70); margin-top:4px">모모스 구지 · V60 · 08:20</div></div>
+                </div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:17px; font-weight:500; color:oklch(0.22 0.015 60); white-space:nowrap">20.4 %</div>
+              </div>
+              <div style="display:flex; gap:7px; flex-wrap:wrap; border-top:1px solid oklch(0.93 0.008 80); padding-top:13px">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:5px 9px; background:oklch(0.95 0.02 50); color:oklch(0.4 0.06 45); border-radius:3px">1:15.6</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:5px 9px; background:oklch(0.93 0.008 80); color:oklch(0.35 0.015 60); border-radius:3px">92°C</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:5px 9px; background:oklch(0.93 0.008 80); color:oklch(0.35 0.015 60); border-radius:3px">2:45</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:5px 9px; background:oklch(0.93 0.008 80); color:oklch(0.35 0.015 60); border-radius:3px">★ 4</div>
+              </div>
+              <div style="font-size:13px; line-height:1.65; color:oklch(0.4 0.015 60); font-style:italic">“자두 같은 산미. 다음엔 2도 낮춰볼게요.”</div>
+            </div>
+
+            <div style="padding:20px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.9 0.008 78); border-radius:10px; display:flex; flex-direction:column; gap:13px">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px">
+                <div style="display:flex; gap:11px; align-items:flex-start; min-width:0">
+                  <div style="width:10px; height:10px; border-radius:999px; background:oklch(0.5 0.07 50); margin-top:5px; flex:none"></div>
+                  <div style="min-width:0"><div style="font-size:15.5px; font-weight:600; color:oklch(0.22 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">디카프 저온 천천히</div><div style="font-size:12px; color:oklch(0.55 0.02 70); margin-top:4px">프릳츠 우일라 · 오리가미 · 21:05</div></div>
+                </div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:17px; font-weight:500; color:oklch(0.22 0.015 60); white-space:nowrap">19.1 %</div>
+              </div>
+              <div style="display:flex; gap:7px; flex-wrap:wrap; border-top:1px solid oklch(0.93 0.008 80); padding-top:13px">
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:5px 9px; background:oklch(0.95 0.02 50); color:oklch(0.4 0.06 45); border-radius:3px">1:16.0</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:5px 9px; background:oklch(0.93 0.008 80); color:oklch(0.35 0.015 60); border-radius:3px">88°C</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:5px 9px; background:oklch(0.93 0.008 80); color:oklch(0.35 0.015 60); border-radius:3px">3:05</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; padding:5px 9px; background:oklch(0.93 0.008 80); color:oklch(0.35 0.015 60); border-radius:3px">★ 4</div>
+              </div>
+            </div>
+
+            <div style="padding:16px 18px; background:oklch(0.99 0.004 85); border-left:2px solid oklch(0.42 0.06 45); border-radius:0 10px 10px 0">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:oklch(0.45 0.05 48); margin-bottom:6px">Observation</div>
+              <div style="font-size:13.5px; line-height:1.65; color:oklch(0.35 0.015 60)">이번 달 9번 중 7번이 92°C였습니다.</div>
+            </div>
+          </div>
+
+          <div style="padding:20px 40px 28px; flex:none">
+            <div style="width:100%; padding:14px; text-align:center; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:8px; font-size:14.5px; font-weight:500; box-sizing:border-box">이 날짜로 기록 추가</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CW2 -->
+  <div style="display:flex; flex-direction:column; gap:12px">
+    <div style="display:flex; align-items:baseline; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; padding:4px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">CW2</div><div style="font-size:14px; font-weight:600; color:oklch(0.25 0.015 60)">지연 선택 — 남의 달력 · 기록 없는 날 선택</div></div>
+    <div style="width:1440px; height:900px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.85 0.008 75); border-radius:12px; overflow:hidden; display:flex; flex-direction:column">
+
+      <div style="padding:20px 48px; border-bottom:1px solid oklch(0.9 0.008 78); display:flex; align-items:center; justify-content:space-between; flex:none">
+        <div style="display:flex; align-items:center; gap:40px">
+          <div style="display:flex; align-items:center; gap:10px">
+            <div style="width:22px; height:22px; border:2px solid oklch(0.3 0.04 50); border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none"><div style="width:7px; height:7px; background:oklch(0.3 0.04 50); border-radius:50%"></div></div>
+            <div style="font-size:20px; font-weight:600; letter-spacing:-0.03em; color:oklch(0.22 0.015 60)">kaldi<span style="color:oklch(0.62 0.05 50)">·</span>note</div>
+          </div>
+          <div style="display:flex; gap:26px; font-size:14.5px">
+            <div style="color:oklch(0.22 0.015 60); font-weight:500">홈</div>
+            <div style="color:oklch(0.5 0.015 60)">레시피</div>
+            <div style="color:oklch(0.5 0.015 60)">기록</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px">
+          <div style="padding:11px 18px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:7px; font-size:14px; font-weight:500">이 레시피로 내렸다</div>
+          <div style="width:34px; height:34px; border-radius:999px; background:oklch(0.88 0.02 60); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:oklch(0.35 0.04 50)">현</div>
+        </div>
+      </div>
+
+      <div style="padding:16px 48px; border-bottom:1px solid oklch(0.91 0.008 78); display:flex; gap:18px; align-items:center; flex:none; overflow:hidden">
+        <div style="display:flex; align-items:center; gap:10px; flex:none; padding:6px 14px 6px 6px; border-radius:999px">
+          <div style="width:32px; height:32px; border-radius:999px; background:oklch(0.88 0.02 60); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:oklch(0.35 0.04 50); flex:none">현</div>
+          <div style="font-size:13.5px; color:oklch(0.45 0.015 60)">나</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex:none; padding:6px 14px 6px 6px; border-radius:999px; background:oklch(0.22 0.015 60)">
+          <div style="width:32px; height:32px; border-radius:999px; background:oklch(0.88 0.015 70); display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:oklch(0.35 0.02 60); flex:none">JY</div>
+          <div style="font-size:13.5px; font-weight:600; color:oklch(0.97 0.004 85)">지연</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex:none; padding:6px 14px 6px 6px; border-radius:999px">
+          <div style="width:32px; height:32px; border-radius:999px; background:oklch(0.88 0.008 80); display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:oklch(0.35 0.015 60); flex:none">민</div>
+          <div style="font-size:13.5px; color:oklch(0.45 0.015 60)">민재</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex:none; padding:6px 14px 6px 6px; border-radius:999px">
+          <div style="width:32px; height:32px; border-radius:999px; background:oklch(0.88 0.02 50); display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:oklch(0.35 0.03 50); flex:none">SH</div>
+          <div style="font-size:13.5px; color:oklch(0.45 0.015 60)">수현</div>
+        </div>
+        <div style="width:1px; height:24px; background:oklch(0.9 0.008 78); flex:none"></div>
+        <div style="display:flex; align-items:center; gap:10px; flex:none; padding:6px 14px 6px 6px">
+          <div style="width:32px; height:32px; border-radius:999px; border:1px dashed oklch(0.82 0.01 75); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:15px; color:oklch(0.6 0.02 70); box-sizing:border-box; flex:none">+</div>
+          <div style="font-size:13.5px; color:oklch(0.55 0.02 70)">찾기</div>
+        </div>
+      </div>
+
+      <div style="flex:1; display:flex; overflow:hidden">
+
+        <div style="flex:1; padding:32px 40px 32px 48px; display:flex; flex-direction:column; gap:20px; border-right:1px solid oklch(0.91 0.008 78); min-width:0">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex:none">
+            <div style="display:flex; align-items:baseline; gap:12px">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:28px; font-weight:500; letter-spacing:-0.03em; color:oklch(0.22 0.015 60)">2026.09</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.55 0.02 70)">지연 · 6 brews</div>
+            </div>
+            <div style="display:flex; gap:8px">
+              <div style="width:34px; height:34px; border:1px solid oklch(0.87 0.008 75); border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:14px; color:oklch(0.35 0.015 60)">‹</div>
+              <div style="width:34px; height:34px; border:1px solid oklch(0.87 0.008 75); border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:14px; color:oklch(0.78 0.012 70)">›</div>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); flex:none">
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.58 0.02 70)">월</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.58 0.02 70)">화</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.58 0.02 70)">수</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.58 0.02 70)">목</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.58 0.02 70)">금</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.62 0.02 70)">토</div>
+            <div style="padding-bottom:9px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.62 0.02 70)">일</div>
+          </div>
+
+          <div style="flex:1; display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); grid-template-rows:repeat(5,minmax(0,1fr)); border-top:1px solid oklch(0.89 0.008 78); border-left:1px solid oklch(0.93 0.008 80)">
+
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); background:oklch(0.975 0.006 82)"></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">1</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">오리가미 4푸어</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">2</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">3</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">4</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">디카프 저온</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.5 0.015 60)">5</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.5 0.015 60)">6</div></div>
+
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">7</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">8</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">9</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">밝은 워시드</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">10</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">11</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.5 0.015 60)">12</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.5 0.015 60)">13</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">케냐 고온 3푸어</div></div>
+
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">14</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">15</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">16</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">디카프 저온</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60)">17</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0; background:oklch(0.96 0.006 82); box-shadow:inset 0 0 0 2px oklch(0.22 0.015 60); display:flex; align-items:flex-start"><div style="width:24px; height:24px; border-radius:999px; background:oklch(0.22 0.015 60); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:12.5px; font-weight:500; color:oklch(0.97 0.004 85); flex:none">18</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; display:flex; flex-direction:column; gap:6px; min-width:0"><div style="display:flex; align-items:center; gap:6px"><div style="width:24px; height:24px; border-radius:999px; border:1px solid oklch(0.88 0.008 75); display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:oklch(0.5 0.015 60); box-sizing:border-box; flex:none">19</div><div style="width:5px; height:5px; border-radius:999px; background:oklch(0.55 0.16 30)"></div></div><div style="font-size:11.5px; color:oklch(0.45 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">디카프 저온</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">20</div></div>
+
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">21</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">22</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">23</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">24</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">25</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.78 0.012 70)">26</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); border-bottom:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.78 0.012 70)">27</div></div>
+
+            <div style="border-right:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">28</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">29</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); padding:9px 10px; min-width:0"><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.72 0.012 70)">30</div></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); background:oklch(0.975 0.006 82)"></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); background:oklch(0.975 0.006 82)"></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); background:oklch(0.975 0.006 82)"></div>
+            <div style="border-right:1px solid oklch(0.93 0.008 80); background:oklch(0.975 0.006 82)"></div>
+          </div>
+        </div>
+
+        <div style="width:420px; flex:none; background:oklch(0.97 0.006 85); display:flex; flex-direction:column; overflow:hidden">
+          <div style="padding:32px 40px 18px; display:flex; flex-direction:column; gap:7px; flex:none">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.55 0.02 70)">Friday · 지연</div>
+            <div style="font-size:26px; font-weight:600; letter-spacing:-0.025em; color:oklch(0.22 0.015 60)">9월 18일</div>
+          </div>
+
+          <div style="flex:1; padding:0 40px; display:flex; flex-direction:column; gap:14px; overflow:hidden">
+            <div style="padding:16px 18px; background:oklch(0.99 0.004 85); border-left:2px solid oklch(0.85 0.01 75); border-radius:0 10px 10px 0; font-size:14px; line-height:1.65; color:oklch(0.35 0.015 60)">이 날에는 기록이 없습니다.</div>
+            <div style="padding:16px 18px; background:oklch(0.99 0.004 85); border-left:2px solid oklch(0.42 0.06 45); border-radius:0 10px 10px 0">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:oklch(0.45 0.05 48); margin-bottom:6px">Relation</div>
+              <div style="font-size:13.5px; line-height:1.65; color:oklch(0.35 0.015 60)">맞팔로우 상태여서 지연 님의 기록이 보입니다.</div>
+            </div>
+          </div>
+
+          <div style="padding:20px 40px 28px; flex:none">
+            <div style="width:100%; padding:14px; text-align:center; border:1px solid oklch(0.85 0.008 75); color:oklch(0.3 0.015 60); border-radius:8px; font-size:14.5px; font-weight:500; box-sizing:border-box">지연 님 프로필 보기</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 규격 -->
+  <div style="max-width:900px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:28px 32px; display:flex; flex-direction:column; gap:22px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.55 0.02 70)">웹에서 달라지는 점</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:22px">
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.015 60)">셀 = 박스, 점 + 한 줄</div>
+        <div style="font-size:13.5px; line-height:1.7; color:oklch(0.4 0.015 60)">셀이 커진 만큼 날짜 옆에 점을 두고 아래 레시피명 11.5px 한 줄. 2건 이상이면 "외 N건". 2줄 이상 쌓지 않습니다.</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.015 60)">그리드 선</div>
+        <div style="font-size:13.5px; line-height:1.7; color:oklch(0.4 0.015 60)">1px <span style="font-family:'IBM Plex Mono',monospace; font-size:12px">oklch(0.93 0.008 80)</span> 격자, 상단만 <span style="font-family:'IBM Plex Mono',monospace; font-size:12px">divider-strong</span>. 다른 달 칸은 <span style="font-family:'IBM Plex Mono',monospace; font-size:12px">oklch(0.975 0.006 82)</span>로 비웁니다.</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.015 60)">선택 표시</div>
+        <div style="font-size:13.5px; line-height:1.7; color:oklch(0.4 0.015 60)">셀 전체에 <span style="font-family:'IBM Plex Mono',monospace; font-size:12px">inset 0 0 0 2px ink</span> + 배경 한 단. 숫자는 24px 원. 오늘이지만 선택 안 됨 = 1px 링만.</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.015 60)">우측 컬럼</div>
+        <div style="font-size:13.5px; line-height:1.7; color:oklch(0.4 0.015 60)">420px 고정, <span style="font-family:'IBM Plex Mono',monospace; font-size:12px">surface</span> 배경. 모바일의 원장 행 대신 <strong style="font-weight:600">카드</strong>로 — 공간이 있으니 태그와 메모까지 함께 보여줍니다. 이 영역만 스크롤.</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.015 60)">팔로우 레일</div>
+        <div style="font-size:13.5px; line-height:1.7; color:oklch(0.4 0.015 60)">아바타 32px + 이름을 가로 pill로. 선택은 <span style="font-family:'IBM Plex Mono',monospace; font-size:12px">ink</span> 배경 pill(모바일의 링 대신 — 가로 배치라 링이 약합니다).</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.015 60)">CTA</div>
+        <div style="font-size:13.5px; line-height:1.7; color:oklch(0.4 0.015 60)">상단 바 CTA는 전역, 우측 컬럼 하단 CTA는 <strong style="font-weight:600">선택된 날짜 맥락</strong>(「이 날짜로 기록 추가」). 남의 달력에서는 「프로필 보기」로 바뀝니다.</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.015 60)">반응형</div>
+        <div style="font-size:13.5px; line-height:1.7; color:oklch(0.4 0.015 60)">1100px 미만에서 우측 컬럼이 달력 아래로 내려가 한 컬럼이 됩니다. 760px 미만은 모바일 레이아웃(점만, 셀 44px).</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="font-size:15px; font-weight:600; color:oklch(0.22 0.015 60)">행 수 고정</div>
+        <div style="font-size:13.5px; line-height:1.7; color:oklch(0.4 0.015 60)">달이 6주에 걸치면 <span style="font-family:'IBM Plex Mono',monospace; font-size:12px">repeat(6,1fr)</span>로 늘리고 셀 높이를 줄입니다. 그리드 영역 높이는 항상 동일 — 월 전환 시 레이아웃이 튀지 않아야 합니다.</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+</x-dc>
+</body>
+</html>

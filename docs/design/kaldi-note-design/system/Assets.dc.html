@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: oklch(0.96 0.006 82); font-family: 'IBM Plex Sans KR', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: oklch(0.42 0.06 45); text-decoration: none; border-bottom: 1px solid currentColor; }
+  a:hover { color: oklch(0.28 0.04 45); }
+</style>
+</helmet>
+
+<div style="max-width:1000px; margin:0 auto; padding:56px 32px 110px; display:flex; flex-direction:column; gap:44px">
+
+  <header style="display:flex; flex-direction:column; gap:14px; padding-bottom:32px; border-bottom:1px solid oklch(0.87 0.008 75)">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.55 0.02 70)">Assets</div>
+    <h1 style="margin:0; font-size:36px; line-height:1.15; font-weight:600; letter-spacing:-0.025em; color:oklch(0.22 0.015 60)">로고와 아이콘 파일</h1>
+    <p style="margin:0; max-width:62ch; font-size:16px; line-height:1.7; color:oklch(0.42 0.015 60); text-wrap:pretty">모두 `assets/` 폴더의 SVG입니다. 심볼은 순수 도형(원 + 점)이라 어떤 크기에서도 깨지지 않습니다. 워드마크는 IBM Plex Sans KR로 조판돼 있어 <strong style="font-weight:600">배포 전에 아웃라인 처리</strong>가 필요합니다.</p>
+  </header>
+
+  <section style="display:flex; flex-direction:column; gap:18px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.55 0.02 70)">01 — Symbol</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px">
+      <div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.88 0.008 75); border-radius:4px; overflow:hidden">
+        <div style="padding:44px; display:flex; align-items:center; justify-content:center; gap:26px">
+          <img src="assets/logo-symbol-ink.svg" alt="" style="width:26px; height:26px">
+          <img src="assets/logo-symbol-ink.svg" alt="" style="width:44px; height:44px">
+          <img src="assets/logo-symbol-ink.svg" alt="" style="width:64px; height:64px">
+        </div>
+        <div style="padding:13px 18px; border-top:1px solid oklch(0.92 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.45 0.015 60)">logo-symbol-ink.svg</div>
+      </div>
+      <div style="background:oklch(0.22 0.015 60); border:1px solid oklch(0.3 0.015 60); border-radius:4px; overflow:hidden">
+        <div style="padding:44px; display:flex; align-items:center; justify-content:center; gap:26px">
+          <img src="assets/logo-symbol-paper.svg" alt="" style="width:26px; height:26px">
+          <img src="assets/logo-symbol-paper.svg" alt="" style="width:44px; height:44px">
+          <img src="assets/logo-symbol-paper.svg" alt="" style="width:64px; height:64px">
+        </div>
+        <div style="padding:13px 18px; border-top:1px solid oklch(0.32 0.015 60); font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.75 0.01 75)">logo-symbol-paper.svg</div>
+      </div>
+      <div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.88 0.008 75); border-radius:4px; overflow:hidden">
+        <div style="padding:44px; display:flex; align-items:center; justify-content:center; gap:26px; color:oklch(0.42 0.06 45)">
+          <img src="assets/logo-symbol.svg" alt="" style="width:44px; height:44px">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; line-height:1.6; color:oklch(0.45 0.015 60)">currentColor<br>상속 버전</div>
+        </div>
+        <div style="padding:13px 18px; border-top:1px solid oklch(0.92 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.45 0.015 60)">logo-symbol.svg</div>
+      </div>
+    </div>
+    <p style="margin:0; max-width:62ch; font-size:14.5px; line-height:1.7; color:oklch(0.42 0.015 60)">드리퍼를 위에서 내려다본 물의 중심입니다. viewBox 26 기준 링 <span style="font-family:'IBM Plex Mono',monospace; font-size:13px">r=12 / stroke 2</span>, 안쪽 점 <span style="font-family:'IBM Plex Mono',monospace; font-size:13px">r=4</span>. 최소 크기 20px, 주변 여백은 심볼 지름의 50%.</p>
+  </section>
+
+  <section style="display:flex; flex-direction:column; gap:18px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.55 0.02 70)">02 — Lockup</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px">
+      <div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.88 0.008 75); border-radius:4px; overflow:hidden">
+        <div style="padding:46px 30px; display:flex; align-items:center; justify-content:center">
+          <img src="assets/logo-lockup-ink.svg" alt="kaldi·note" style="width:230px">
+        </div>
+        <div style="padding:13px 18px; border-top:1px solid oklch(0.92 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.45 0.015 60)">logo-lockup-ink.svg</div>
+      </div>
+      <div style="background:oklch(0.22 0.015 60); border:1px solid oklch(0.3 0.015 60); border-radius:4px; overflow:hidden">
+        <div style="padding:46px 30px; display:flex; align-items:center; justify-content:center">
+          <img src="assets/logo-lockup-paper.svg" alt="kaldi·note" style="width:230px">
+        </div>
+        <div style="padding:13px 18px; border-top:1px solid oklch(0.32 0.015 60); font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.75 0.01 75)">logo-lockup-paper.svg</div>
+      </div>
+    </div>
+    <div style="padding:18px 20px; background:oklch(0.99 0.004 85); border-left:2px solid oklch(0.42 0.06 45); border-radius:0 4px 4px 0; max-width:62ch; font-size:14.5px; line-height:1.7; color:oklch(0.35 0.015 60)">워드마크는 <span style="font-family:'IBM Plex Mono',monospace; font-size:13px">&lt;text&gt;</span>로 조판돼 있습니다. 폰트가 없는 환경에서는 대체 글꼴로 렌더되므로, 배포용 파일은 벡터 편집기에서 <strong style="font-weight:600">아웃라인(패스 변환)</strong> 후 쓰세요. 앱 내부에서는 SVG 대신 심볼 + HTML 텍스트 조합을 권합니다.</div>
+  </section>
+
+  <section style="display:flex; flex-direction:column; gap:18px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.55 0.02 70)">03 — App icon &amp; favicon</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px">
+      <div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.88 0.008 75); border-radius:4px; overflow:hidden">
+        <div style="padding:36px; display:flex; align-items:center; justify-content:center"><img src="assets/app-icon.svg" alt="" style="width:120px; height:120px; border-radius:26px"></div>
+        <div style="padding:13px 18px; border-top:1px solid oklch(0.92 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.45 0.015 60)">app-icon.svg · 1024</div>
+      </div>
+      <div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.88 0.008 75); border-radius:4px; overflow:hidden">
+        <div style="padding:36px; display:flex; align-items:center; justify-content:center"><img src="assets/app-icon-accent.svg" alt="" style="width:120px; height:120px; border-radius:26px"></div>
+        <div style="padding:13px 18px; border-top:1px solid oklch(0.92 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.45 0.015 60)">app-icon-accent.svg</div>
+      </div>
+      <div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.88 0.008 75); border-radius:4px; overflow:hidden">
+        <div style="padding:36px; display:flex; align-items:center; justify-content:center; gap:20px">
+          <img src="assets/favicon.svg" alt="" style="width:64px; height:64px">
+          <img src="assets/favicon.svg" alt="" style="width:32px; height:32px">
+          <img src="assets/favicon.svg" alt="" style="width:16px; height:16px">
+        </div>
+        <div style="padding:13px 18px; border-top:1px solid oklch(0.92 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.45 0.015 60)">favicon.svg · 64 / 32 / 16</div>
+      </div>
+    </div>
+    <p style="margin:0; max-width:62ch; font-size:14.5px; line-height:1.7; color:oklch(0.42 0.015 60)">파비콘은 작은 크기에서 링이 사라지지 않도록 스트로크를 <span style="font-family:'IBM Plex Mono',monospace; font-size:13px">2.6</span>으로 두껍게 조정한 별도 버전입니다. 앱 아이콘을 그대로 축소해 쓰지 마세요.</p>
+  </section>
+
+  <section style="display:flex; flex-direction:column; gap:18px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.55 0.02 70)">04 — Roast dots</div>
+    <div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.88 0.008 75); border-radius:4px; overflow:hidden">
+      <div style="padding:30px 26px"><img src="assets/roast-dots.svg" alt="" style="width:320px; max-width:100%"></div>
+      <div style="padding:13px 18px; border-top:1px solid oklch(0.92 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.45 0.015 60)">roast-dots.svg · 참고 시트</div>
+    </div>
+    <p style="margin:0; max-width:62ch; font-size:14.5px; line-height:1.7; color:oklch(0.42 0.015 60)">실제 구현에서는 SVG를 쓰지 말고 <span style="font-family:'IBM Plex Mono',monospace; font-size:13px">border-radius:999px</span> div에 배경색만 넣으세요. 색상·채도는 고정하고 명도만 바꿉니다.</p>
+  </section>
+
+  <section style="display:flex; flex-direction:column; gap:18px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.55 0.02 70)">05 — Hex 대응표</div>
+    <div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.88 0.008 75); border-radius:4px; overflow:hidden">
+      <div style="display:flex; padding:12px 20px; background:oklch(0.96 0.006 82); border-bottom:1px solid oklch(0.91 0.008 78)">
+        <div style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.55 0.02 70)">Token</div>
+        <div style="width:200px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.55 0.02 70)">oklch</div>
+        <div style="width:90px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.55 0.02 70)">hex</div>
+      </div>
+      <div style="display:flex; padding:13px 20px; border-bottom:1px solid oklch(0.93 0.008 80); align-items:center"><div style="flex:1; font-size:14px; color:oklch(0.25 0.015 60)">ink</div><div style="width:200px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:oklch(0.5 0.015 60)">0.22 0.015 60</div><div style="width:90px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:oklch(0.25 0.015 60)">#302c28</div></div>
+      <div style="display:flex; padding:13px 20px; border-bottom:1px solid oklch(0.93 0.008 80); align-items:center"><div style="flex:1; font-size:14px; color:oklch(0.25 0.015 60)">paper</div><div style="width:200px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:oklch(0.5 0.015 60)">0.97 0.004 85</div><div style="width:90px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:oklch(0.25 0.015 60)">#f7f4f0</div></div>
+      <div style="display:flex; padding:13px 20px; align-items:center"><div style="flex:1; font-size:14px; color:oklch(0.25 0.015 60)">accent</div><div style="width:200px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:oklch(0.5 0.015 60)">0.62 0.05 50</div><div style="width:90px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:oklch(0.25 0.015 60)">#a06a4f</div></div>
+    </div>
+    <p style="margin:0; max-width:62ch; font-size:14.5px; line-height:1.7; color:oklch(0.42 0.015 60)">SVG 파일은 oklch를 지원하지 않는 툴(스토어 업로드·이메일 등)을 고려해 hex로 하드코딩했습니다. UI 코드에서는 항상 oklch 토큰을 쓰세요.</p>
+  </section>
+
+</div>
+
+</x-dc>
+</body>
+</html>

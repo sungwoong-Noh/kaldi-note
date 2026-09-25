@@ -2,18 +2,15 @@
 
 Spring Boot API 서버. 커피 레시피·추출 기록의 저장과 계산을 담당한다.
 
-**작업 전 필독:** 루트 `../CLAUDE.md` → **`../docs/conventions/workflow.md`**(스펙 → 계획 → 코드) → 이 문서 → `../docs/conventions/backend.md`
+**작업 전 필독:** 루트 `../CLAUDE.md` → **`../docs/conventions/workflow.md`**(스펙 → 코드) → 이 문서 → `../docs/conventions/backend.md`
 
 > **세션은 `/resume`으로 시작하고 `/handover`로 끝낸다.** 상세는 `../docs/conventions/handover.md`.
 >
-> **스펙 없이 코드를 쓰지 않는다.** 기능 개발은 `docs/specs/`의 스펙과 `docs/plans/`의 계획이 승인된 뒤에 시작한다. 테스트에는 인수 조건 ID를 `@DisplayName("AC-GRIND-01 · ...")` 형태로 반드시 남긴다.
+> **스펙 없이 코드를 쓰지 않는다.** 기능 개발은 `docs/specs/`의 스펙(구현 순서 포함)이 승인된 뒤에 시작한다. 테스트에는 인수 조건 ID를 `@DisplayName("AC-GRIND-01 · ...")` 형태로 반드시 남긴다.
 
-> **현재 상태: 운영 중.** `https://api.kaldi-note.today`에 떠 있다. 도메인 패키지 10개
-> (`auth`·`brewlog`·`catalog`·`extraction`·`gear`·`grind`·`inventory`·`media`·`recipe`·`user`),
-> Flyway 마이그레이션 11개, **테스트 503개**가 초록이다.
->
-> 실행 중인 버전은 밖에서 확인할 수 있다 — `curl -s https://api.kaldi-note.today/actuator/info`가
-> `build.commit`(40자 git sha)을 돌려준다(`../docs/specs/2026-09-05-build-info.md`).
+> **운영 중이다** — `https://api.kaldi-note.today`. 실행 중인 버전은 밖에서 확인할 수 있다 —
+> `curl -s https://api.kaldi-note.today/actuator/info`가 `build.commit`(40자 git sha)을
+> 돌려준다(`../docs/specs/2026-09-05-build-info.md`).
 
 ---
 

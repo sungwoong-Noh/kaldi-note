@@ -2,7 +2,7 @@
 id: DS2
 title: 디자인 시스템 교체 — Clean Ledger
 status: 구현완료
-plan: docs/plans/2026-09-17-plan-design-system-v2.md
+plan: docs/archive/plans/2026-09-17-plan-design-system-v2.md
 ---
 
 # 디자인 시스템 교체 — Clean Ledger 스펙
@@ -15,7 +15,7 @@ plan: docs/plans/2026-09-17-plan-design-system-v2.md
 **`globals.css`의 토큰 체계를 hex 8개에서 oklch 15개로 갈아끼우고, 웹폰트 두 벌을 들인다.**
 그리고 지금 문자열로 복붙돼 있는 버튼·입력·카드 스타일을 `src/components/ui`의 컴포넌트로 모은다.
 
-채택한 디자인은 `docs/design/design_handoff_kaldi_note/README.md`다. **그 파일이 값의 원천이고
+채택한 디자인은 `docs/archive/design/design_handoff_kaldi_note/README.md`다. **그 파일이 값의 원천이고
 이 스펙은 그것을 검증 가능한 형태로 옮긴 것이다.** 값이 어긋나면 핸드오프가 옳다.
 
 화면을 새로 그리는 일은 하지 않는다. **이 스펙이 끝나면 화면은 거의 그대로 보이되,
@@ -54,7 +54,7 @@ plan: docs/plans/2026-09-17-plan-design-system-v2.md
 
 | 용어 | 정의 |
 |---|---|
-| 핸드오프 | `docs/design/design_handoff_kaldi_note/`. `README.md`가 값의 원천 |
+| 핸드오프 | `docs/archive/design/design_handoff_kaldi_note/`. `README.md`가 값의 원천 |
 | 프리미티브 | `src/components/ui`의 컴포넌트. 스타일을 소유하는 유일한 곳 |
 | 수치(metric) | 계측된 값 — 비율·수율·중량·온도·시간·별점. **Mono로 쓴다** |
 | 서술 | 제목·본문·라벨 등 계측되지 않는 글자. **Sans로 쓴다** |

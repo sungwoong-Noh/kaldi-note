@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: oklch(0.93 0.008 80); font-family: 'IBM Plex Sans KR', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: oklch(0.42 0.06 45); text-decoration: none; border-bottom: 1px solid currentColor; }
+  a:hover { color: oklch(0.28 0.04 45); }
+</style>
+</helmet>
+
+<section style="padding:56px 48px 96px; display:flex; flex-direction:column; gap:44px">
+
+  <div style="max-width:800px; display:flex; flex-direction:column; gap:14px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.5 0.02 70)">screens-v3 · 02 · /u/[id]</div>
+    <h1 style="margin:0; font-size:36px; line-height:1.15; font-weight:600; letter-spacing:-0.025em; color:oklch(0.22 0.015 60)">프로필</h1>
+    <p style="margin:0; font-size:16px; line-height:1.7; color:oklch(0.4 0.015 60); text-wrap:pretty">초대 링크로 들어오는 첫 화면입니다. 이 화면의 일은 하나 — <strong style="font-weight:600">팔로우하게 만들기.</strong> 대표 수치는 없습니다(수치 API가 없음). 기존 P 화면을 대체하고, 관계 문구는 달력 홈 C2와 같은 문자열을 씁니다. <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; padding:3px 7px; border:1px dashed oklch(0.7 0.02 70); border-radius:3px; color:oklch(0.45 0.015 60)">API 없음</span> 라벨이 붙은 영역은 제안입니다.</p>
+  </div>
+
+  <!-- 웹 -->
+  <div style="display:flex; flex-direction:column; gap:12px">
+    <div style="display:flex; align-items:baseline; gap:9px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; padding:4px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">W · Light</div><div style="font-size:14px; font-weight:600; color:oklch(0.25 0.015 60)">웹 1440 — 좌측 프로필 · 우측 내용 (맞팔로우)</div></div>
+    <div style="width:1440px; height:900px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.85 0.008 75); border-radius:12px; overflow:hidden; display:flex; flex-direction:column">
+      <div style="padding:18px 48px; border-bottom:1px solid oklch(0.9 0.008 78); display:flex; align-items:center; justify-content:space-between">
+        <div style="display:flex; align-items:center; gap:40px">
+          <div style="display:flex; align-items:center; gap:10px"><div style="width:22px; height:22px; border:2px solid oklch(0.3 0.04 50); border-radius:50%; display:flex; align-items:center; justify-content:center; box-sizing:border-box"><div style="width:7px; height:7px; background:oklch(0.3 0.04 50); border-radius:50%"></div></div><div style="font-size:20px; font-weight:600; letter-spacing:-0.03em; color:oklch(0.22 0.015 60)">kaldi<span style="color:oklch(0.62 0.05 50)">·</span>note</div></div>
+          <div style="display:flex; gap:26px; font-size:14.5px"><div style="color:oklch(0.5 0.015 60)">홈</div><div style="color:oklch(0.5 0.015 60)">레시피</div><div style="color:oklch(0.5 0.015 60)">내 잔</div></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px"><div style="padding:11px 18px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:7px; font-size:14px; font-weight:500">기록하기</div><div style="width:34px; height:34px; border-radius:999px; background:oklch(0.88 0.02 60); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:oklch(0.35 0.04 50)">현</div></div>
+      </div>
+      <div style="flex:1; display:flex; overflow:hidden">
+        <div style="width:400px; flex:none; padding:48px; border-right:1px solid oklch(0.91 0.008 78); display:flex; flex-direction:column; gap:22px">
+          <div style="width:96px; height:96px; flex:none; border-radius:999px; background:oklch(0.88 0.015 70); display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:600; color:oklch(0.35 0.02 60)">JY</div>
+          <div style="display:flex; flex-direction:column; gap:6px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.55 0.02 70)">Profile</div><div style="font-size:30px; font-weight:600; letter-spacing:-0.025em; color:oklch(0.22 0.015 60)">지연</div></div>
+          <div style="padding:14px 16px; background:oklch(0.97 0.006 85); border-left:2px solid oklch(0.42 0.06 45); border-radius:0 8px 8px 0; font-size:13.5px; line-height:1.65; color:oklch(0.3 0.015 60)">맞팔로우 상태여서 지연 님의 기록이 보입니다.</div>
+          <div style="padding:13px; text-align:center; border:1px solid oklch(0.85 0.008 75); color:oklch(0.3 0.015 60); border-radius:8px; font-size:14.5px; font-weight:500">팔로우 취소</div>
+        </div>
+        <div style="flex:1; min-width:0; padding:48px; display:flex; flex-direction:column; gap:26px; background:oklch(0.97 0.006 85)">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div style="display:flex; padding:3px; background:oklch(0.93 0.008 80); border-radius:8px; gap:3px; width:280px"><div style="flex:1; text-align:center; padding:9px 0; background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:6px; font-size:13.5px; font-weight:500; color:oklch(0.22 0.015 60)">레시피</div><div style="flex:1; text-align:center; padding:9px 0; font-size:13.5px; color:oklch(0.5 0.015 60)">최근 잔</div></div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.1em; padding:3px 7px; border:1px dashed oklch(0.7 0.02 70); border-radius:3px; color:oklch(0.45 0.015 60)">API 없음 · 맞팔로우일 때만</div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px">
+            <div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:22px; display:flex; flex-direction:column; gap:14px"><div style="font-size:17px; font-weight:600; color:oklch(0.22 0.015 60)">아침에 마시는 밝은 워시드</div><div style="font-family:'IBM Plex Mono',monospace; font-size:36px; font-weight:500; letter-spacing:-0.04em; line-height:1; color:oklch(0.22 0.015 60)">15 g</div><div style="display:flex; align-items:center; gap:9px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; padding:5px 9px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">HOT</div><div style="width:9px; height:9px; border-radius:999px; background:oklch(0.72 0.05 60)"></div><div style="font-size:12.5px; color:oklch(0.4 0.015 60)">약배전</div></div><div style="border-top:1px solid oklch(0.93 0.008 80); padding-top:12px; font-size:12.5px; color:oklch(0.5 0.015 60)">맞팔로우 친구 공개</div></div>
+            <div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.89 0.008 78); border-radius:12px; padding:22px; display:flex; flex-direction:column; gap:14px"><div style="font-size:17px; font-weight:600; color:oklch(0.22 0.015 60)">디카프 저온 천천히</div><div style="font-family:'IBM Plex Mono',monospace; font-size:36px; font-weight:500; letter-spacing:-0.04em; line-height:1; color:oklch(0.22 0.015 60)">15 g</div><div style="display:flex; align-items:center; gap:9px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; padding:5px 9px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">HOT</div><div style="width:9px; height:9px; border-radius:999px; background:oklch(0.62 0.06 55)"></div><div style="font-size:12.5px; color:oklch(0.4 0.015 60)">중배전</div></div><div style="border-top:1px solid oklch(0.93 0.008 80); padding-top:12px; font-size:12.5px; color:oklch(0.5 0.015 60)">맞팔로우 친구 공개</div></div>
+            <div style="border:1px dashed oklch(0.86 0.01 75); border-radius:12px; padding:22px; display:flex; flex-direction:column; gap:8px; justify-content:center"><div style="font-size:14px; color:oklch(0.45 0.015 60); line-height:1.6">나만 보기 레시피는 여기 나타나지 않습니다.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모바일 -->
+  <div style="display:flex; flex-wrap:wrap; gap:36px; align-items:flex-start">
+
+    <div style="display:flex; flex-direction:column; gap:12px">
+      <div style="display:flex; align-items:baseline; gap:9px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; padding:4px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">M1 · Light</div><div style="font-size:14px; font-weight:600; color:oklch(0.25 0.015 60)">초대 링크 첫 진입 — 관계 없음</div></div>
+      <div style="width:390px; height:844px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.85 0.008 75); border-radius:32px; overflow:hidden; display:flex; flex-direction:column">
+        <div style="padding:14px 24px 6px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:oklch(0.3 0.015 60)"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="padding:12px 24px 28px; font-size:14.5px; color:oklch(0.5 0.015 60)">뒤로</div>
+        <div style="padding:0 24px; display:flex; flex-direction:column; gap:18px">
+          <div style="width:80px; height:80px; border-radius:999px; background:oklch(0.88 0.015 70); display:flex; align-items:center; justify-content:center; font-size:27px; font-weight:600; color:oklch(0.35 0.02 60)">JY</div>
+          <div style="display:flex; flex-direction:column; gap:5px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.55 0.02 70)">Profile</div><div style="font-size:27px; font-weight:600; letter-spacing:-0.03em; color:oklch(0.22 0.015 60)">지연</div></div>
+          <div style="font-size:14.5px; line-height:1.7; color:oklch(0.42 0.015 60)">서로 팔로우하면 레시피와 기록을 함께 볼 수 있습니다.</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.1em; padding:3px 7px; border:1px dashed oklch(0.7 0.02 70); border-radius:3px; color:oklch(0.45 0.015 60); align-self:flex-start">제안 문구 · 서버 문자열 없음</div>
+        </div>
+        <div style="flex:1"></div>
+        <div style="margin:0 24px 16px; padding:20px; border:1px dashed oklch(0.86 0.01 75); border-radius:12px; font-size:13.5px; line-height:1.6; color:oklch(0.5 0.015 60)">맞팔로우가 되면 지연 님의 레시피와 최근 잔이 여기에 보입니다.</div>
+        <div style="padding:0 24px 14px"><div style="padding:15px; text-align:center; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:8px; font-size:15px; font-weight:500">팔로우</div></div>
+        <div style="padding:0 24px 10px; display:flex; justify-content:center"><div style="width:120px; height:4px; background:oklch(0.85 0.008 75); border-radius:999px"></div></div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px">
+      <div style="display:flex; align-items:baseline; gap:9px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; padding:4px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">M2 · Dark</div><div style="font-size:14px; font-weight:600; color:oklch(0.25 0.015 60)">맞팔로우 — 내용 열림</div></div>
+      <div style="width:390px; height:844px; background:oklch(0.17 0.008 60); border:1px solid oklch(0.3 0.01 60); border-radius:32px; overflow:hidden; display:flex; flex-direction:column">
+        <div style="padding:14px 24px 6px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:oklch(0.9 0.005 85)"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="padding:12px 24px 20px; font-size:14.5px; color:oklch(0.68 0.01 70)">뒤로</div>
+        <div style="padding:0 24px 18px; display:flex; align-items:center; gap:16px">
+          <div style="width:64px; height:64px; border-radius:999px; background:oklch(0.36 0.03 50); display:flex; align-items:center; justify-content:center; font-size:21px; font-weight:600; color:oklch(0.93 0.01 80); flex:none">JY</div>
+          <div style="font-size:24px; font-weight:600; letter-spacing:-0.02em; color:oklch(0.95 0.005 85)">지연</div>
+        </div>
+        <div style="margin:0 24px 14px; padding:13px 15px; background:oklch(0.21 0.009 60); border-left:2px solid oklch(0.72 0.07 55); border-radius:0 8px 8px 0; font-size:13.5px; line-height:1.6; color:oklch(0.88 0.008 80)">맞팔로우 상태여서 지연 님의 기록이 보입니다.</div>
+        <div style="padding:0 24px 18px"><div style="padding:13px; text-align:center; border:1px solid oklch(0.34 0.012 60); color:oklch(0.88 0.008 80); border-radius:8px; font-size:14.5px">팔로우 취소</div></div>
+        <div style="padding:0 24px 12px; display:flex; justify-content:space-between; align-items:center"><div style="display:flex; padding:3px; background:oklch(0.23 0.009 60); border-radius:8px; gap:3px; width:200px"><div style="flex:1; text-align:center; padding:8px 0; background:oklch(0.3 0.011 60); border-radius:6px; font-size:13px; font-weight:500; color:oklch(0.95 0.005 85)">레시피</div><div style="flex:1; text-align:center; padding:8px 0; font-size:13px; color:oklch(0.68 0.01 70)">최근 잔</div></div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; padding:3px 6px; border:1px dashed oklch(0.45 0.01 60); border-radius:3px; color:oklch(0.7 0.01 70)">API 없음</div></div>
+        <div style="flex:1; overflow:hidden; padding:0 24px; display:flex; flex-direction:column; gap:10px">
+          <div style="border:1px solid oklch(0.29 0.01 60); background:oklch(0.21 0.009 60); border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; gap:12px"><div style="font-size:16px; font-weight:600; color:oklch(0.95 0.005 85)">아침에 마시는 밝은 워시드</div><div style="display:flex; align-items:flex-end; justify-content:space-between"><div style="font-family:'IBM Plex Mono',monospace; font-size:36px; font-weight:500; letter-spacing:-0.04em; line-height:1; color:oklch(0.95 0.005 85)">15 g</div><div style="display:flex; align-items:center; gap:8px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; padding:4px 8px; background:oklch(0.93 0.01 80); color:oklch(0.2 0.015 60); border-radius:3px">HOT</div><div style="width:8px; height:8px; border-radius:999px; background:oklch(0.78 0.05 60)"></div><div style="font-size:12px; color:oklch(0.82 0.008 78)">약배전</div></div></div></div>
+          <div style="border:1px solid oklch(0.29 0.01 60); background:oklch(0.21 0.009 60); border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; gap:12px"><div style="font-size:16px; font-weight:600; color:oklch(0.95 0.005 85)">디카프 저온 천천히</div><div style="display:flex; align-items:flex-end; justify-content:space-between"><div style="font-family:'IBM Plex Mono',monospace; font-size:36px; font-weight:500; letter-spacing:-0.04em; line-height:1; color:oklch(0.95 0.005 85)">15 g</div><div style="display:flex; align-items:center; gap:8px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; padding:4px 8px; background:oklch(0.93 0.01 80); color:oklch(0.2 0.015 60); border-radius:3px">HOT</div><div style="width:8px; height:8px; border-radius:999px; background:oklch(0.66 0.06 55)"></div><div style="font-size:12px; color:oklch(0.82 0.008 78)">중배전</div></div></div></div>
+        </div>
+        <div style="padding:0 24px 10px; display:flex; justify-content:center"><div style="width:120px; height:4px; background:oklch(0.35 0.011 60); border-radius:999px"></div></div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px">
+      <div style="display:flex; align-items:baseline; gap:9px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; padding:4px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">M3 · Light</div><div style="font-size:14px; font-weight:600; color:oklch(0.25 0.015 60)">내 프로필 — 초대 링크 복사</div></div>
+      <div style="width:390px; height:844px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.85 0.008 75); border-radius:32px; overflow:hidden; display:flex; flex-direction:column">
+        <div style="padding:14px 24px 6px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:oklch(0.3 0.015 60)"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="padding:12px 24px 28px; font-size:14.5px; color:oklch(0.5 0.015 60)">뒤로</div>
+        <div style="padding:0 24px; display:flex; flex-direction:column; gap:18px">
+          <div style="width:80px; height:80px; border-radius:999px; background:oklch(0.88 0.02 60); display:flex; align-items:center; justify-content:center; font-size:27px; font-weight:600; color:oklch(0.35 0.04 50)">현</div>
+          <div style="display:flex; flex-direction:column; gap:5px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.55 0.02 70)">내 프로필</div><div style="font-size:27px; font-weight:600; letter-spacing:-0.03em; color:oklch(0.22 0.015 60)">현우</div></div>
+          <div style="font-size:14.5px; line-height:1.7; color:oklch(0.42 0.015 60)">친구에게 이 링크를 보내면 이 화면으로 들어옵니다.</div>
+          <div style="padding:13px 15px; border:1px solid oklch(0.87 0.008 75); border-radius:8px; display:flex; align-items:center; gap:12px"><div style="flex:1; min-width:0; font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60); overflow:hidden; text-overflow:ellipsis; white-space:nowrap">kaldi-note.today/u/42</div><div style="padding:8px 12px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:6px; font-size:13px; flex:none">복사</div></div>
+        </div>
+        <div style="flex:1"></div>
+        <div style="margin:0 24px 16px; padding:13px 15px; background:oklch(0.22 0.015 60); border-radius:9px; font-size:13.5px; color:oklch(0.96 0.005 85)">복사했습니다.</div>
+        <div style="padding:0 24px 10px; display:flex; justify-content:center"><div style="width:120px; height:4px; background:oklch(0.85 0.008 75); border-radius:999px"></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 상태 -->
+  <div style="display:flex; flex-direction:column; gap:18px">
+    <div style="display:flex; align-items:baseline; gap:12px; padding-bottom:12px; border-bottom:1px solid oklch(0.86 0.008 75)"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.5 0.02 70)">States</div><div style="font-size:20px; font-weight:600; color:oklch(0.22 0.015 60)">관계 4가지 · 처리 중 · 404 · 경계값</div></div>
+    <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start">
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">R1 · 맞팔로우 (mutual)</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:12px"><div style="padding:12px 14px; background:oklch(0.97 0.006 85); border-left:2px solid oklch(0.42 0.06 45); border-radius:0 8px 8px 0; font-size:13.5px; line-height:1.6; color:oklch(0.3 0.015 60)">맞팔로우 상태여서 지연 님의 기록이 보입니다.</div><div style="padding:12px; text-align:center; border:1px solid oklch(0.85 0.008 75); border-radius:8px; font-size:14px; color:oklch(0.3 0.015 60)">팔로우 취소</div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">R2 · 내가만 팔로우 (following)</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:12px"><div style="padding:12px 14px; background:oklch(0.97 0.006 85); border-left:2px solid oklch(0.78 0.02 70); border-radius:0 8px 8px 0; font-size:13.5px; line-height:1.6; color:oklch(0.38 0.015 60)">상대도 나를 팔로우하면 서로의 기록이 보입니다</div><div style="padding:12px; text-align:center; border:1px solid oklch(0.85 0.008 75); border-radius:8px; font-size:14px; color:oklch(0.3 0.015 60)">팔로우 취소</div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">R3 · 상대만 팔로우 (followedBy)</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:12px"><div style="padding:12px 14px; background:oklch(0.97 0.006 85); border-left:2px solid oklch(0.42 0.06 45); border-radius:0 8px 8px 0; font-size:13.5px; line-height:1.6; color:oklch(0.3 0.015 60)">나를 팔로우하고 있습니다</div><div style="padding:12px; text-align:center; background:oklch(0.22 0.015 60); border-radius:8px; font-size:14px; color:oklch(0.97 0.004 85)">맞팔로우하기</div><div style="font-size:12px; color:oklch(0.55 0.02 70)">버튼 라벨만 「맞팔로우하기」 — 동작은 팔로우와 같음</div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">R4 · 둘 다 아님</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:12px"><div style="font-size:13.5px; line-height:1.6; color:oklch(0.42 0.015 60)">서로 팔로우하면 레시피와 기록을 함께 볼 수 있습니다. <span style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; padding:2px 6px; border:1px dashed oklch(0.7 0.02 70); border-radius:3px; color:oklch(0.45 0.015 60)">제안</span></div><div style="padding:12px; text-align:center; background:oklch(0.22 0.015 60); border-radius:8px; font-size:14px; color:oklch(0.97 0.004 85)">팔로우</div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">S1 · 팔로우 처리 중 / 실패</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:12px"><div style="padding:12px; text-align:center; background:oklch(0.35 0.015 60); border-radius:8px; font-size:14px; color:oklch(0.9 0.005 85)">팔로우하는 중…</div><div style="padding:13px 15px; border:1px solid oklch(0.88 0.008 75); background:oklch(0.97 0.006 85); border-radius:9px; display:flex; justify-content:space-between; gap:12px; align-items:center"><div style="font-size:13px; color:oklch(0.3 0.015 60)">팔로우하지 못했습니다.</div><div style="font-size:13px; font-weight:500; color:oklch(0.42 0.06 45); white-space:nowrap">다시 시도</div></div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">S2 · 존재하지 않는 사용자 (404)</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:22px 18px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.55 0.02 70)">404</div><div style="font-size:18px; font-weight:600; color:oklch(0.22 0.015 60)">사용자를 찾을 수 없습니다.</div><div style="font-size:13.5px; line-height:1.6; color:oklch(0.45 0.015 60)">링크가 잘못되었거나 탈퇴한 사용자입니다.</div><div style="align-self:flex-start; margin-top:4px; padding:10px 15px; border:1px solid oklch(0.85 0.008 75); border-radius:7px; font-size:13.5px; color:oklch(0.3 0.015 60)">홈으로</div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">S3 · 로딩 / 불러오기 실패</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:12px"><div style="display:flex; gap:14px; align-items:center"><div style="width:64px; height:64px; border-radius:999px; background:oklch(0.93 0.008 80)"></div><div style="flex:1; display:flex; flex-direction:column; gap:8px"><div style="height:18px; width:60%; background:oklch(0.93 0.008 80); border-radius:3px"></div><div style="height:12px; width:85%; background:oklch(0.95 0.008 80); border-radius:3px"></div></div></div><div style="height:1px; background:oklch(0.92 0.008 78)"></div><div style="font-size:14px; font-weight:500; color:oklch(0.3 0.015 60)">프로필을 불러오지 못했습니다.</div><div style="align-self:flex-start; padding:10px 15px; border:1px solid oklch(0.85 0.008 75); border-radius:7px; font-size:13.5px; color:oklch(0.3 0.015 60)">다시 시도</div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">S4 · 긴 닉네임 · 프로필 이미지 있음</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px; display:flex; gap:14px; align-items:center"><div style="width:64px; height:64px; border-radius:999px; background:repeating-linear-gradient(135deg, oklch(0.9 0.01 75) 0 6px, oklch(0.87 0.012 72) 6px 12px); flex:none; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:9px; color:oklch(0.45 0.015 60)">img</div><div style="flex:1; min-width:0"><div style="font-size:20px; font-weight:600; line-height:1.3; color:oklch(0.22 0.015 60); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden">아침마다드립하는사람_에티오피아덕후_2026</div><div style="font-size:12px; color:oklch(0.55 0.02 70); margin-top:5px">2줄 말줄임 · 이미지는 원형 크롭</div></div></div></div>
+
+    </div>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start">
+    <div style="flex:1; min-width:520px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; overflow:hidden">
+      <div style="padding:14px 20px; border-bottom:1px solid oklch(0.91 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.5 0.02 70)">반응형</div>
+      <div style="display:grid; grid-template-columns:120px 1fr; font-size:13.5px; line-height:1.6; color:oklch(0.35 0.015 60)">
+        <div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80); font-family:'IBM Plex Mono',monospace; font-size:12.5px">≥ 1280</div><div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80)">좌측 400 프로필 고정 + 우측 레시피 3열</div>
+        <div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80); font-family:'IBM Plex Mono',monospace; font-size:12.5px">1024–1279</div><div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80)">좌측 340 + 우측 2열</div>
+        <div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80); font-family:'IBM Plex Mono',monospace; font-size:12.5px">760–1023</div><div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80)">1컬럼 — 프로필 헤더가 가로(아바타 + 이름 + 버튼 한 줄), 아래 2열</div>
+        <div style="padding:12px 20px; font-family:'IBM Plex Mono',monospace; font-size:12.5px">&lt; 760</div><div style="padding:12px 20px">모바일 M1–M3. 팔로우 버튼은 비맞팔 시 하단 고정, 맞팔 시 헤더 아래로 이동</div>
+      </div>
+    </div>
+    <div style="flex:1; min-width:520px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; overflow:hidden">
+      <div style="padding:14px 20px; border-bottom:1px solid oklch(0.91 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.5 0.02 70)">결정할 것 · 추천값</div>
+      <div style="display:flex; flex-direction:column; font-size:13.5px; line-height:1.65; color:oklch(0.35 0.015 60)">
+        <div style="padding:13px 20px; border-bottom:1px solid oklch(0.93 0.008 80)"><strong style="font-weight:600; color:oklch(0.22 0.015 60)">Q1. 맞팔로우일 때 보여줄 것</strong><br>추천: <strong style="font-weight:600">FRIENDS 레시피 목록 먼저, 최근 잔은 두 번째 탭.</strong> 초대받은 사람이 가장 먼저 원하는 건 “이 사람은 뭘 내려 먹지?”입니다. API 2개 필요(레시피 by user, 잔 by user).</div>
+        <div style="padding:13px 20px; border-bottom:1px solid oklch(0.93 0.008 80)"><strong style="font-weight:600; color:oklch(0.22 0.015 60)">Q2. 둘 다 아님 문구</strong><br>추천: 「서로 팔로우하면 레시피와 기록을 함께 볼 수 있습니다.」를 서버 문자열로 추가. 초대 링크 첫 화면이 비어 보이지 않게.</div>
+        <div style="padding:13px 20px; border-bottom:1px solid oklch(0.93 0.008 80)"><strong style="font-weight:600; color:oklch(0.22 0.015 60)">Q3. 상대만 팔로우일 때 버튼 라벨</strong><br>추천: 「맞팔로우하기」. 동작은 팔로우와 같지만 결과(서로 보임)가 바로 드러납니다.</div>
+        <div style="padding:13px 20px; border-bottom:1px solid oklch(0.93 0.008 80)"><strong style="font-weight:600; color:oklch(0.22 0.015 60)">Q4. 팔로워·팔로잉 수</strong><br><strong style="font-weight:600">반영됨 — 화면에서 뺐습니다.</strong> <strong style="font-weight:600">1차에는 빼기.</strong> 친구끼리 쓰는 앱이라 숫자 경쟁 신호가 됩니다. 웹 좌측의 빈 공간은 레시피 수(API 없음)로 대체 가능.</div>
+        <div style="padding:13px 20px"><strong style="font-weight:600; color:oklch(0.22 0.015 60)">Q5. 팔로우 취소 확인</strong><br>추천: 맞팔로우 상태에서만 확인 다이얼로그(「취소하면 서로의 기록이 보이지 않습니다.」). 나머지는 즉시.</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+</x-dc>
+</body>
+</html>

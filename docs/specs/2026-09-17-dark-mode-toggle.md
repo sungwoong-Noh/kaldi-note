@@ -2,7 +2,7 @@
 id: THEME
 title: 다크 모드 토글
 status: 구현완료
-plan: docs/plans/2026-09-17-plan-dark-mode-toggle.md
+plan: docs/archive/plans/2026-09-17-plan-dark-mode-toggle.md
 ---
 
 # 다크 모드 토글 스펙
@@ -16,7 +16,7 @@ plan: docs/plans/2026-09-17-plan-dark-mode-toggle.md
 누르면 즉시 반대 모드로 바뀌며 그 선택을 기억한다.
 
 지금은 `@media (prefers-color-scheme: dark)`만 있어 **OS 설정을 따라갈 뿐 앱 안에서 바꿀 방법이
-없다.** 디자인 핸드오프(`docs/design/design_handoff_kaldi_note/README.md`)의 더보기 화면(M10)에
+없다.** 디자인 핸드오프(`docs/archive/design/design_handoff_kaldi_note/README.md`)의 더보기 화면(M10)에
 이미 "다크 모드 토글" 메뉴 행이 있고, 방향 문서(`2026-09-16-product-direction.md`)의 3단계
 "작은 기능"으로 예고돼 있었다.
 

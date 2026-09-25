@@ -2,7 +2,7 @@
 id: WEB
 title: 프론트 첫 슬라이스 — 로그인 + 레시피 읽기 + 포크
 status: 구현완료
-plan: docs/plans/2026-08-21-plan-web-recipe-read.md
+plan: docs/archive/plans/2026-08-21-plan-web-recipe-read.md
 ---
 
 # 프론트 첫 슬라이스 — 로그인 + 레시피 읽기 + 포크 스펙

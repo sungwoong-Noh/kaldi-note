@@ -2,7 +2,7 @@
 id: MEDIA
 title: 사진 첨부
 status: 구현완료
-plan: docs/plans/2026-08-18-plan-media.md
+plan: docs/archive/plans/2026-08-18-plan-media.md
 ---
 
 # 사진 첨부 스펙

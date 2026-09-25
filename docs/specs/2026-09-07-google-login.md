@@ -2,7 +2,7 @@
 id: GOOGLE
 title: 구글 로그인 버튼
 status: 구현완료
-plan: docs/plans/2026-09-07-plan-google-login.md
+plan: docs/archive/plans/2026-09-07-plan-google-login.md
 ---
 
 # 구글 로그인 버튼 스펙

@@ -2,7 +2,7 @@
 id: RECIPESBREWS
 title: 레시피 검색·필터 + 잔 통계 + 담기(포크) API 개편
 status: 승인
-plan: docs/plans/2026-09-21-plan-recipes-and-brews-search-api.md
+plan: docs/archive/plans/2026-09-21-plan-recipes-and-brews-search-api.md
 ---
 
 # 레시피 검색·필터 + 잔 통계 + 담기(포크) API 개편 스펙
@@ -10,7 +10,7 @@ plan: docs/plans/2026-09-21-plan-recipes-and-brews-search-api.md
 > 작성 규칙은 [`docs/conventions/workflow.md`](../conventions/workflow.md) 참조.
 > **모든 인수 조건은 자동화된 테스트로 옮길 수 있어야 한다.**
 >
-> `docs/design/design_handoff_kaldi_note/RECIPES-AND-BREWS.md`·`DECISIONS.md`가 정한
+> `docs/archive/design/design_handoff_kaldi_note/RECIPES-AND-BREWS.md`·`DECISIONS.md`가 정한
 > 레시피/잔 재설계를 4개 스펙으로 나눈 것 중 **1번째(백엔드)**다. 나머지 3개(웹 둘러보기/내
 > 서랍, 웹 상세/담기/내 잔, 모바일 전체)는 이 스펙의 API를 소비하며, 같은 `RECIPESBREWS` AC
 > 접두어를 이어 쓴다.
@@ -420,6 +420,10 @@ plan: docs/plans/2026-09-21-plan-recipes-and-brews-search-api.md
 - **검증** API 테스트 `RecipeForkControllerTest`(기존 회귀)
 
 #### AC-RECIPESBREWS-54 · 인증 없이 GET /recipes 호출 시 401이다(기존 유지)
+
+> **2부 P2에서 교체 예정.** 공개 서비스 전환(로드맵 P2 · `docs/decisions/0009-public-service-deferred.md`)이
+> 재개되면 비로그인 `GET /recipes?scope=PUBLIC`은 401이 아니라 PUBLIC 목록을 반환하도록
+> 바뀐다. **지금은 R1 보류 중이라 이 AC를 그대로 유지한다** — 구현을 먼저 바꾸지 않는다.
 
 - **Given** 토큰 없음
 - **When** `GET /recipes?scope=PUBLIC`

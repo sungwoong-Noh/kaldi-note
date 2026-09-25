@@ -2,7 +2,7 @@
 id: WEBLAYOUT
 title: 실제 브라우저로 레이아웃 불변식 고정 (E2E)
 status: 구현완료
-plan: docs/plans/2026-09-02-plan-web-e2e-layout.md
+plan: docs/archive/plans/2026-09-02-plan-web-e2e-layout.md
 ---
 
 # 실제 브라우저로 레이아웃 불변식 고정 (E2E) 스펙

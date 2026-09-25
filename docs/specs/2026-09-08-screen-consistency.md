@@ -2,7 +2,7 @@
 id: CONSIST
 title: 화면 간 일관성 정비 — 라벨·구분자·대표 수치
 status: 구현완료
-plan: docs/plans/2026-09-08-plan-screen-consistency.md
+plan: docs/archive/plans/2026-09-08-plan-screen-consistency.md
 ---
 
 # 화면 간 일관성 정비 스펙
@@ -125,7 +125,7 @@ plan: docs/plans/2026-09-08-plan-screen-consistency.md
 > **다른 스펙의 AC ID를 `AC-` 접두어까지 붙여 쓰지 않는다.** `check-spec-coverage.sh`가
 > `AC-[A-Z]+-[0-9]+`를 파일 전체에서 뽑아 **이 스펙의 것으로 집계**하므로, 인용만으로 개수가
 > 부풀고 남의 AC가 이 스펙에 딸려 붙는다. 앞 세션이 두 번 걸린 함정이다
-> (`docs/JOURNAL.md` 2026-09-07).
+> (`docs/archive/JOURNAL.md` 2026-09-07).
 
 ---
 

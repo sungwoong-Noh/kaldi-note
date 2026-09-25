@@ -2,7 +2,7 @@
 id: HOMECAL
 title: 홈 달력 목업 정합성 보정
 status: 구현완료
-plan: docs/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
+plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 ---
 
 # 홈 달력 목업 정합성 보정 스펙
@@ -16,7 +16,7 @@ plan: docs/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ## 무엇을
 
-배포된 홈 달력 화면이 `docs/design/design_handoff_kaldi_note/HOME-CALENDAR.md` 목업과
+배포된 홈 달력 화면이 `docs/archive/design/design_handoff_kaldi_note/HOME-CALENDAR.md` 목업과
 세부 수치(색·간격·타이포·레이아웃)에서 여러 곳 어긋난다는 것이 확인됐다. 이 스펙은 그 격차를
 항목별로 못박아 목업과 일치시킨다. 새 기능이 아니라 **기존 화면의 시각·데이터 정합성 보정**이다.
 
@@ -313,7 +313,7 @@ plan: docs/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 > **2026-09-21 정정:** 목업 원값은 6px이지만 간격 스케일(4·8·12·16·24·32·48, `docs/conventions/frontend.md`)에
 > 6px가 없다. `|6-4|=2`와 `|6-8|=2`로 동점이라 계획 단계에서 "동점은 올림"으로 8px를 확정했다
-> (`docs/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md` Task 2).
+> (`docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md` Task 2).
 
 - **Given** 웹(≥760px) 달력 셀에 기록이 있는 날짜
 - **When** 렌더한다

@@ -2,7 +2,7 @@
 id: FORK
 title: 레시피 포크
 status: 구현완료
-plan: docs/plans/2026-08-18-plan-fork.md
+plan: docs/archive/plans/2026-08-18-plan-fork.md
 ---
 
 # 레시피 포크 스펙

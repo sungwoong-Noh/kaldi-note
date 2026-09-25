@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: oklch(0.93 0.008 80); font-family: 'IBM Plex Sans KR', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: oklch(0.42 0.06 45); text-decoration: none; border-bottom: 1px solid currentColor; }
+  a:hover { color: oklch(0.28 0.04 45); }
+</style>
+</helmet>
+
+<section style="padding:56px 48px 96px; display:flex; flex-direction:column; gap:44px">
+
+  <div style="max-width:800px; display:flex; flex-direction:column; gap:14px">
+    <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.5 0.02 70)">screens-v3 · 04 · /more/gear (신규)</div>
+    <h1 style="margin:0; font-size:36px; line-height:1.15; font-weight:600; letter-spacing:-0.025em; color:oklch(0.22 0.015 60)">내 기구 관리 — 그라인더</h1>
+    <p style="margin:0; font-size:16px; line-height:1.7; color:oklch(0.4 0.015 60); text-wrap:pretty">분쇄도 환산기(M8)와 기록 작성이 「내 그라인더」를 고를 때 쓰는 목록입니다. 대표 수치는 기본 그라인더의 <strong style="font-weight:600">클릭당 마이크론</strong>. 수정·삭제는 <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; padding:3px 7px; border:1px dashed oklch(0.7 0.02 70); border-radius:3px; color:oklch(0.45 0.015 60)">다음 마일스톤</span> 라벨로 구분했습니다.</p>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:12px">
+    <div style="display:flex; align-items:baseline; gap:9px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; padding:4px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">W · Light</div><div style="font-size:14px; font-weight:600; color:oklch(0.25 0.015 60)">웹 1440 — /settings 「내 기구」 섹션 · 목록 + 우측 상세</div></div>
+    <div style="width:1440px; height:900px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.85 0.008 75); border-radius:12px; overflow:hidden; display:flex; flex-direction:column">
+      <div style="padding:18px 48px; border-bottom:1px solid oklch(0.9 0.008 78); display:flex; align-items:center; justify-content:space-between">
+        <div style="display:flex; align-items:center; gap:40px">
+          <div style="display:flex; align-items:center; gap:10px"><div style="width:22px; height:22px; border:2px solid oklch(0.3 0.04 50); border-radius:50%; display:flex; align-items:center; justify-content:center; box-sizing:border-box"><div style="width:7px; height:7px; background:oklch(0.3 0.04 50); border-radius:50%"></div></div><div style="font-size:20px; font-weight:600; letter-spacing:-0.03em; color:oklch(0.22 0.015 60)">kaldi<span style="color:oklch(0.62 0.05 50)">·</span>note</div></div>
+          <div style="display:flex; gap:26px; font-size:14.5px"><div style="color:oklch(0.5 0.015 60)">홈</div><div style="color:oklch(0.5 0.015 60)">레시피</div><div style="color:oklch(0.5 0.015 60)">내 잔</div></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px"><div style="padding:11px 18px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:7px; font-size:14px; font-weight:500">기록하기</div><div style="width:34px; height:34px; border-radius:999px; background:oklch(0.88 0.02 60); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:oklch(0.35 0.04 50)">현</div></div>
+      </div>
+      <div style="flex:1; display:flex; overflow:hidden">
+        <div style="width:260px; flex:none; padding:40px 24px 40px 48px; border-right:1px solid oklch(0.91 0.008 78); display:flex; flex-direction:column; gap:4px">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.55 0.02 70); margin-bottom:12px">Settings</div>
+          <div style="padding:10px 12px; font-size:14px; color:oklch(0.45 0.015 60)">계정</div>
+          <div style="padding:10px 12px; background:oklch(0.97 0.006 85); border-radius:7px; font-size:14px; font-weight:600; color:oklch(0.22 0.015 60)">내 기구</div>
+          <div style="padding:10px 12px; font-size:14px; color:oklch(0.45 0.015 60)">도구</div>
+          <div style="padding:10px 12px; font-size:14px; color:oklch(0.45 0.015 60)">화면</div>
+        </div>
+        <div style="flex:1; min-width:0; padding:40px 40px; display:flex; flex-direction:column; gap:22px">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end"><div style="display:flex; flex-direction:column; gap:5px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.55 0.02 70)">Grinders · 3</div><div style="font-size:28px; font-weight:600; letter-spacing:-0.025em; color:oklch(0.22 0.015 60)">내 그라인더</div></div><div style="padding:10px 16px; border:1px solid oklch(0.85 0.008 75); color:oklch(0.3 0.015 60); border-radius:7px; font-size:14px; font-weight:500">그라인더 추가</div></div>
+          <div style="border:1px solid oklch(0.89 0.008 78); border-radius:10px; overflow:hidden">
+            <div style="display:flex; padding:11px 18px; background:oklch(0.96 0.006 82); border-bottom:1px solid oklch(0.91 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.58 0.02 70)"><div style="flex:1">별칭 · 모델</div><div style="width:120px; text-align:right"><span style="text-transform:none">µm</span> / 클릭</div><div style="width:110px; text-align:right">영점</div><div style="width:100px; text-align:right">환산</div></div>
+            <div style="display:flex; padding:15px 18px; border-bottom:1px solid oklch(0.93 0.008 80); align-items:center; background:oklch(0.97 0.006 85); box-shadow:inset 2px 0 0 oklch(0.22 0.015 60)"><div style="flex:1; min-width:0"><div style="display:flex; align-items:center; gap:8px"><div style="font-size:15px; font-weight:600; color:oklch(0.22 0.015 60)">집 C40</div><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.1em; padding:3px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">기본</div></div><div style="font-size:12px; color:oklch(0.55 0.02 70); margin-top:3px">Comandante · C40 MK4</div></div><div style="width:120px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:14px; font-weight:500; color:oklch(0.22 0.015 60)">30</div><div style="width:110px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.4 0.015 60)">+0.5</div><div style="width:100px; text-align:right; font-size:12.5px; color:oklch(0.4 0.015 60)">가능</div></div>
+            <div style="display:flex; padding:15px 18px; border-bottom:1px solid oklch(0.93 0.008 80); align-items:center"><div style="flex:1; min-width:0"><div style="font-size:15px; font-weight:500; color:oklch(0.22 0.015 60)">회사 C2</div><div style="font-size:12px; color:oklch(0.55 0.02 70); margin-top:3px">Timemore · C2</div></div><div style="width:120px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:14px; color:oklch(0.22 0.015 60)">82</div><div style="width:110px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.4 0.015 60)">0</div><div style="width:100px; text-align:right; font-size:12.5px; color:oklch(0.4 0.015 60)">가능</div></div>
+            <div style="display:flex; padding:15px 18px; align-items:center"><div style="flex:1; min-width:0"><div style="font-size:15px; font-weight:500; color:oklch(0.22 0.015 60)">Baratza Encore</div><div style="font-size:12px; color:oklch(0.55 0.02 70); margin-top:3px">별칭 없음</div></div><div style="width:120px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:14px; color:oklch(0.6 0.02 70)">—</div><div style="width:110px; text-align:right; font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.4 0.015 60)">0</div><div style="width:100px; text-align:right"><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; padding:3px 7px; background:oklch(0.93 0.008 80); color:oklch(0.4 0.015 60); border-radius:3px">환산 불가</span></div></div>
+          </div>
+        </div>
+        <div style="width:420px; flex:none; padding:40px; background:oklch(0.97 0.006 85); display:flex; flex-direction:column; gap:20px">
+          <div style="padding:24px; background:oklch(0.22 0.015 60); border-radius:14px; display:flex; flex-direction:column; gap:14px">
+            <div style="display:flex; justify-content:space-between"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.72 0.05 55)">기본 그라인더</div><div style="font-size:13px; color:oklch(0.85 0.01 80)">집 C40</div></div>
+            <div style="display:flex; align-items:baseline; gap:8px"><div style="font-family:'IBM Plex Mono',monospace; font-size:44px; font-weight:500; letter-spacing:-0.04em; line-height:1; color:oklch(0.97 0.004 85)">30</div><div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:oklch(0.72 0.015 70)"><span style="text-transform:none">µm</span> / 클릭</div></div>
+            <div style="display:flex; border-top:1px solid oklch(0.34 0.015 60); padding-top:14px">
+              <div style="flex:1"><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.65 0.015 70)">범위</div><div style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:oklch(0.96 0.005 85); margin-top:4px">0–40 클릭</div></div>
+              <div style="flex:1"><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(0.65 0.015 70)">버</div><div style="font-size:14px; color:oklch(0.96 0.005 85); margin-top:4px">코니컬</div></div>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.55 0.02 70)">편집</div><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; padding:3px 7px; border:1px dashed oklch(0.7 0.02 70); border-radius:3px; color:oklch(0.45 0.015 60)">다음 마일스톤</div></div>
+          <div style="border-top:1px solid oklch(0.89 0.008 78)">
+            <div style="padding:13px 0; border-bottom:1px solid oklch(0.92 0.008 78); display:flex; gap:12px; align-items:center"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:oklch(0.58 0.02 70); width:66px">별칭</div><div style="flex:1; padding:9px 12px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:7px; font-size:14px; color:oklch(0.22 0.015 60)">집 C40</div></div>
+            <div style="padding:13px 0; border-bottom:1px solid oklch(0.92 0.008 78); display:flex; gap:12px; align-items:center"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:oklch(0.58 0.02 70); width:66px">영점 보정</div><div style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:15px; color:oklch(0.22 0.015 60)">+0.5 클릭</div><div style="display:flex; gap:6px"><div style="width:34px; height:34px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:15px; color:oklch(0.35 0.015 60)">−</div><div style="width:34px; height:34px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:15px; color:oklch(0.35 0.015 60)">+</div></div></div>
+            <div style="padding:13px 0; border-bottom:1px solid oklch(0.89 0.008 78); display:flex; gap:12px; align-items:center"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:oklch(0.58 0.02 70); width:66px">기본</div><div style="flex:1; font-size:13.5px; color:oklch(0.4 0.015 60)">환산기·기록 작성에서 먼저 선택됩니다</div><div style="width:40px; height:24px; background:oklch(0.22 0.015 60); border-radius:999px; padding:3px; box-sizing:border-box; display:flex; justify-content:flex-end"><div style="width:18px; height:18px; background:oklch(0.98 0.004 85); border-radius:999px"></div></div></div>
+          </div>
+          <div style="font-size:12.5px; line-height:1.6; color:oklch(0.55 0.02 70)">영점 보정은 이 그라인더에서 「0클릭」이 실제로 몇 클릭 어긋나 있는지입니다. 환산 결과에만 더해지고 기록된 분쇄도는 바뀌지 않습니다.</div>
+          <div style="flex:1"></div>
+          <div style="font-size:14px; color:oklch(0.5 0.015 60); border-bottom:1px solid oklch(0.85 0.008 75); align-self:flex-start; padding-bottom:2px">이 그라인더 삭제</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:36px; align-items:flex-start">
+
+    <div style="display:flex; flex-direction:column; gap:12px">
+      <div style="display:flex; align-items:baseline; gap:9px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; padding:4px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">M1 · Light</div><div style="font-size:14px; font-weight:600; color:oklch(0.25 0.015 60)">목록</div></div>
+      <div style="width:390px; height:844px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.85 0.008 75); border-radius:32px; overflow:hidden; display:flex; flex-direction:column">
+        <div style="padding:14px 24px 6px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:oklch(0.3 0.015 60)"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="padding:12px 24px 14px; font-size:14.5px; color:oklch(0.5 0.015 60)">뒤로</div>
+        <div style="padding:0 24px 16px; display:flex; flex-direction:column; gap:3px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.55 0.02 70)">Grinders · 3</div><div style="font-size:27px; font-weight:600; letter-spacing:-0.03em; color:oklch(0.22 0.015 60)">내 그라인더</div></div>
+        <div style="margin:0 24px 18px; padding:20px 22px; background:oklch(0.22 0.015 60); border-radius:14px; display:flex; flex-direction:column; gap:12px">
+          <div style="display:flex; justify-content:space-between; align-items:baseline"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.72 0.05 55)">기본</div><div style="font-size:12.5px; color:oklch(0.8 0.01 78)">Comandante · C40 MK4</div></div>
+          <div style="font-size:19px; font-weight:600; color:oklch(0.97 0.004 85)">집 C40</div>
+          <div style="display:flex; align-items:baseline; gap:8px"><div style="font-family:'IBM Plex Mono',monospace; font-size:36px; font-weight:500; letter-spacing:-0.04em; line-height:1; color:oklch(0.97 0.004 85)">30</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.72 0.015 70)"><span style="text-transform:none">µm</span> / 클릭 · 영점 +0.5</div></div>
+        </div>
+        <div style="flex:1; overflow:hidden; padding:0 24px">
+          <div style="padding:15px 0; border-top:1px solid oklch(0.89 0.008 78); display:flex; align-items:center; gap:12px"><div style="flex:1; min-width:0"><div style="font-size:15px; font-weight:500; color:oklch(0.22 0.015 60)">회사 C2</div><div style="font-size:12px; color:oklch(0.55 0.02 70); margin-top:3px">Timemore · C2</div></div><div style="font-family:'IBM Plex Mono',monospace; font-size:13.5px; color:oklch(0.25 0.015 60)">82 µm</div><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.62 0.02 70)">›</div></div>
+          <div style="padding:15px 0; border-top:1px solid oklch(0.92 0.008 80); border-bottom:1px solid oklch(0.89 0.008 78); display:flex; align-items:center; gap:12px"><div style="flex:1; min-width:0"><div style="font-size:15px; font-weight:500; color:oklch(0.22 0.015 60)">Baratza Encore</div><div style="font-size:12px; color:oklch(0.55 0.02 70); margin-top:3px">별칭 없음</div></div><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; padding:3px 7px; background:oklch(0.93 0.008 80); color:oklch(0.4 0.015 60); border-radius:3px">환산 불가</div><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.62 0.02 70)">›</div></div>
+          <div style="padding:14px 0 0; font-size:12.5px; line-height:1.6; color:oklch(0.55 0.02 70)">환산 불가 모델은 기록 작성에서는 선택할 수 있고, 환산기에는 나타나지 않습니다.</div>
+        </div>
+        <div style="padding:12px 24px 14px"><div style="padding:15px; text-align:center; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:8px; font-size:15px; font-weight:500">그라인더 추가</div></div>
+        <div style="padding:0 24px 10px; display:flex; justify-content:center"><div style="width:120px; height:4px; background:oklch(0.85 0.008 75); border-radius:999px"></div></div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px">
+      <div style="display:flex; align-items:baseline; gap:9px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; padding:4px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">M2 · Light</div><div style="font-size:14px; font-weight:600; color:oklch(0.25 0.015 60)">추가 — 모델 검색 + 별칭</div></div>
+      <div style="width:390px; height:844px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.85 0.008 75); border-radius:32px; overflow:hidden; display:flex; flex-direction:column">
+        <div style="padding:14px 24px 6px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:oklch(0.3 0.015 60)"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="padding:12px 24px 16px; display:flex; justify-content:space-between; align-items:center"><div style="font-size:14.5px; color:oklch(0.5 0.015 60)">취소</div><div style="font-size:15px; font-weight:600; color:oklch(0.22 0.015 60)">그라인더 추가</div><div style="width:28px"></div></div>
+        <div style="padding:0 24px 12px"><div style="padding:13px 15px; border:1px solid oklch(0.42 0.06 45); box-shadow:0 0 0 3px oklch(0.42 0.06 45 / 0.12); border-radius:8px; font-size:14.5px; color:oklch(0.22 0.015 60)">time</div></div>
+        <div style="padding:0 24px 8px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.55 0.02 70)">모델 · 3</div>
+        <div style="padding:0 24px">
+          <div style="padding:14px 14px; margin:0 -14px; border-radius:9px; background:oklch(0.97 0.006 85); box-shadow:inset 0 0 0 1px oklch(0.22 0.015 60); display:flex; gap:12px; align-items:flex-start"><div style="flex:1"><div style="font-size:15px; font-weight:600; color:oklch(0.22 0.015 60)">Timemore · C2</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.55 0.02 70); margin-top:4px">클릭 · 0–36 · 코니컬</div></div><div style="font-size:12.5px; font-weight:500; color:oklch(0.22 0.015 60)">선택됨</div></div>
+          <div style="padding:14px 0; border-top:1px solid oklch(0.92 0.008 78); margin-top:4px; display:flex; gap:12px"><div style="flex:1"><div style="font-size:15px; color:oklch(0.22 0.015 60)">Timemore · C3 ESP</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.55 0.02 70); margin-top:4px">클릭 · 0–90 · 코니컬</div></div></div>
+          <div style="padding:14px 0; border-top:1px solid oklch(0.92 0.008 78); border-bottom:1px solid oklch(0.89 0.008 78); display:flex; gap:12px; align-items:flex-start"><div style="flex:1"><div style="font-size:15px; color:oklch(0.22 0.015 60)">Timemore · Sculptor 064</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.55 0.02 70); margin-top:4px">무단 · 0–10 · 플랫</div></div><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; padding:3px 7px; background:oklch(0.93 0.008 80); color:oklch(0.4 0.015 60); border-radius:3px">환산 불가</div></div>
+        </div>
+        <div style="padding:22px 24px 8px; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.55 0.02 70)">별칭 · 선택</div>
+        <div style="padding:0 24px"><div style="padding:13px 15px; border:1px solid oklch(0.87 0.008 75); border-radius:8px; font-size:14.5px; color:oklch(0.22 0.015 60); display:flex; justify-content:space-between"><span>회사 C2</span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:oklch(0.6 0.02 70)">5/50</span></div></div>
+        <div style="flex:1"></div>
+        <div style="padding:12px 24px 14px"><div style="padding:15px; text-align:center; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:8px; font-size:15px; font-weight:500">등록</div></div>
+        <div style="padding:0 24px 10px; display:flex; justify-content:center"><div style="width:120px; height:4px; background:oklch(0.85 0.008 75); border-radius:999px"></div></div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px">
+      <div style="display:flex; align-items:baseline; gap:9px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; padding:4px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">M3 · Dark</div><div style="font-size:14px; font-weight:600; color:oklch(0.25 0.015 60)">상세 · 편집 (다음 마일스톤)</div></div>
+      <div style="width:390px; height:844px; background:oklch(0.17 0.008 60); border:1px solid oklch(0.3 0.01 60); border-radius:32px; overflow:hidden; display:flex; flex-direction:column">
+        <div style="padding:14px 24px 6px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500; color:oklch(0.9 0.005 85)"><span>9:41</span><span>▮▮▮</span></div>
+        <div style="padding:12px 24px 16px; display:flex; justify-content:space-between; align-items:center"><div style="font-size:14.5px; color:oklch(0.68 0.01 70)">뒤로</div><div style="font-size:14.5px; font-weight:500; color:oklch(0.72 0.07 55)">저장</div></div>
+        <div style="padding:0 24px 16px; display:flex; flex-direction:column; gap:4px"><div style="font-size:24px; font-weight:600; color:oklch(0.95 0.005 85)">집 C40</div><div style="font-size:13px; color:oklch(0.68 0.01 70)">Comandante · C40 MK4 · 코니컬</div></div>
+        <div style="margin:0 24px 18px; padding:18px 20px; background:oklch(0.23 0.014 60); border:1px solid oklch(0.29 0.01 60); border-radius:14px; display:flex; flex-direction:column; gap:8px"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.72 0.07 55)"><span style="text-transform:none">µm</span> / 클릭</div><div style="font-family:'IBM Plex Mono',monospace; font-size:36px; font-weight:500; letter-spacing:-0.04em; line-height:1; color:oklch(0.95 0.005 85)">30</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:oklch(0.68 0.01 70)">범위 0–40 클릭 · 환산 가능</div></div>
+        <div style="padding:0 24px">
+          <div style="padding:13px 0; border-top:1px solid oklch(0.29 0.01 60); display:flex; gap:12px; align-items:center"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:oklch(0.68 0.01 70); width:66px">별칭</div><div style="flex:1; padding:10px 12px; background:oklch(0.21 0.009 60); border:1px solid oklch(0.29 0.01 60); border-radius:7px; font-size:14px; color:oklch(0.95 0.005 85)">집 C40</div></div>
+          <div style="padding:13px 0; border-top:1px solid oklch(0.26 0.012 60); display:flex; gap:12px; align-items:center"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:oklch(0.68 0.01 70); width:66px">영점</div><div style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:15px; color:oklch(0.95 0.005 85)">+0.5 클릭</div><div style="display:flex; gap:6px"><div style="width:36px; height:36px; border:1px solid oklch(0.34 0.012 60); border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; color:oklch(0.88 0.008 80)">−</div><div style="width:36px; height:36px; border:1px solid oklch(0.34 0.012 60); border-radius:7px; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; color:oklch(0.88 0.008 80)">+</div></div></div>
+          <div style="padding:13px 0; border-top:1px solid oklch(0.26 0.012 60); border-bottom:1px solid oklch(0.29 0.01 60); display:flex; gap:12px; align-items:center"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:oklch(0.68 0.01 70); width:66px">기본</div><div style="flex:1; font-size:13.5px; color:oklch(0.82 0.008 78)">기본 그라인더</div><div style="width:46px; height:27px; background:oklch(0.93 0.01 80); border-radius:999px; padding:3px; box-sizing:border-box; display:flex; justify-content:flex-end"><div style="width:21px; height:21px; background:oklch(0.22 0.015 60); border-radius:999px"></div></div></div>
+        </div>
+        <div style="padding:16px 24px 0; font-size:12.5px; line-height:1.6; color:oklch(0.68 0.01 70)">영점 보정은 환산 결과에만 더해집니다.</div>
+        <div style="flex:1"></div>
+        <div style="padding:0 24px 20px"><div style="font-size:14px; color:oklch(0.68 0.01 70); border-bottom:1px solid oklch(0.4 0.01 60); display:inline-block; padding-bottom:2px">이 그라인더 삭제</div></div>
+        <div style="padding:0 24px 10px; display:flex; justify-content:center"><div style="width:120px; height:4px; background:oklch(0.35 0.011 60); border-radius:999px"></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:18px">
+    <div style="display:flex; align-items:baseline; gap:12px; padding-bottom:12px; border-bottom:1px solid oklch(0.86 0.008 75)"><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:oklch(0.5 0.02 70)">States</div><div style="font-size:20px; font-weight:600; color:oklch(0.22 0.015 60)">상태</div></div>
+    <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start">
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">S1 · 0개</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px"><div style="border:1px dashed oklch(0.84 0.01 75); border-radius:10px; padding:22px; display:flex; flex-direction:column; gap:10px"><div style="font-size:15px; font-weight:500; color:oklch(0.3 0.015 60)">등록된 그라인더가 없습니다.</div><div style="font-size:13px; line-height:1.6; color:oklch(0.5 0.015 60)">그라인더를 등록하면 분쇄도 환산기와 기록 작성에서 바로 고를 수 있습니다.</div><div style="align-self:flex-start; margin-top:4px; padding:11px 16px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:7px; font-size:13.5px">첫 그라인더 등록</div></div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">S2 · 1개 (자동 기본)</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:10px"><div style="padding:13px 0; border-top:1px solid oklch(0.89 0.008 78); border-bottom:1px solid oklch(0.89 0.008 78); display:flex; align-items:center; gap:10px"><div style="flex:1; font-size:15px; font-weight:500; color:oklch(0.22 0.015 60)">집 C40</div><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; padding:3px 7px; background:oklch(0.22 0.015 60); color:oklch(0.97 0.004 85); border-radius:3px">기본</div></div><div style="font-size:12px; color:oklch(0.55 0.02 70)">첫 그라인더는 자동으로 기본이 됩니다. 기본 토글은 비활성.</div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">S3 · 10개 이상</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.55 0.02 70)">Grinders · 12</div><div style="padding:11px 13px; border:1px solid oklch(0.87 0.008 75); border-radius:7px; font-size:13.5px; color:oklch(0.62 0.02 70)">내 그라인더에서 찾기</div><div style="font-size:12px; line-height:1.55; color:oklch(0.55 0.02 70)">10개 초과부터 목록 위에 필터 입력 노출. 기본 그라인더는 항상 첫 줄 고정.</div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">S4 · 모델 검색 결과 없음</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:10px"><div style="padding:12px 14px; border:1px solid oklch(0.87 0.008 75); border-radius:8px; font-size:14px; color:oklch(0.22 0.015 60)">1zpresso zp9</div><div style="font-size:14px; font-weight:500; color:oklch(0.3 0.015 60)">「1zpresso zp9」와 일치하는 모델이 없습니다.</div><div style="font-size:12.5px; line-height:1.6; color:oklch(0.5 0.015 60)">브랜드 이름만 입력해 보세요. 목록에 없는 모델은 아직 등록할 수 없습니다.</div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">S5 · 삭제 확인</div><div style="background:oklch(0.35 0.015 60 / 0.35); border-radius:12px; padding:24px 20px; display:flex; justify-content:center"><div style="width:300px; background:oklch(0.99 0.004 85); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:12px"><div style="font-size:17px; font-weight:600; color:oklch(0.22 0.015 60)">「회사 C2」를 삭제할까요?</div><div style="font-size:13.5px; line-height:1.6; color:oklch(0.45 0.015 60)">이 그라인더로 남긴 잔의 분쇄도 기록은 그대로 남습니다.</div><div style="display:flex; gap:9px; margin-top:6px"><div style="flex:1; padding:12px; text-align:center; border:1px solid oklch(0.85 0.008 75); border-radius:7px; font-size:14px; color:oklch(0.3 0.015 60)">취소</div><div style="flex:1; padding:12px; text-align:center; background:oklch(0.22 0.015 60); border-radius:7px; font-size:14px; color:oklch(0.97 0.004 85)">삭제</div></div></div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">S6 · 기본 그라인더 삭제 시도</div><div style="background:oklch(0.35 0.015 60 / 0.35); border-radius:12px; padding:24px 20px; display:flex; justify-content:center"><div style="width:300px; background:oklch(0.99 0.004 85); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:12px"><div style="font-size:17px; font-weight:600; color:oklch(0.22 0.015 60)">기본 그라인더입니다.</div><div style="font-size:13.5px; line-height:1.6; color:oklch(0.45 0.015 60)">삭제하면 다음 그라인더가 기본이 됩니다.</div><div style="padding:11px 13px; border:1px solid oklch(0.87 0.008 75); border-radius:7px; font-size:13.5px; color:oklch(0.22 0.015 60); display:flex; justify-content:space-between"><span>회사 C2</span><span style="color:oklch(0.55 0.02 70)">▾</span></div><div style="display:flex; gap:9px; margin-top:4px"><div style="flex:1; padding:12px; text-align:center; border:1px solid oklch(0.85 0.008 75); border-radius:7px; font-size:14px; color:oklch(0.3 0.015 60)">취소</div><div style="flex:1; padding:12px; text-align:center; background:oklch(0.22 0.015 60); border-radius:7px; font-size:14px; color:oklch(0.97 0.004 85)">삭제</div></div></div></div></div>
+
+      <div style="width:360px; display:flex; flex-direction:column; gap:10px"><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:oklch(0.45 0.015 60)">S7 · 긴 별칭 · 로딩 · 에러</div><div style="background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:12px"><div style="padding:12px 0; border-top:1px solid oklch(0.89 0.008 78); border-bottom:1px solid oklch(0.89 0.008 78); display:flex; gap:10px; align-items:center"><div style="flex:1; min-width:0"><div style="font-size:15px; font-weight:500; color:oklch(0.22 0.015 60); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">주말 캠핑용으로 들고 다니는 두 번째 코만단테 (빨간색)</div><div style="font-size:12px; color:oklch(0.55 0.02 70); margin-top:3px">Comandante · C40 MK4</div></div><div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:oklch(0.3 0.015 60); flex:none">30 µm</div></div><div style="display:flex; flex-direction:column; gap:7px"><div style="height:14px; width:55%; background:oklch(0.93 0.008 80); border-radius:3px"></div><div style="height:12px; width:35%; background:oklch(0.95 0.008 80); border-radius:3px"></div></div><div style="font-size:13px; color:oklch(0.35 0.015 60)">그라인더 목록을 불러오지 못했습니다. <span style="color:oklch(0.42 0.06 45); font-weight:500">다시 시도</span></div></div></div>
+
+    </div>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:20px; align-items:flex-start">
+    <div style="flex:1; min-width:520px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; overflow:hidden">
+      <div style="padding:14px 20px; border-bottom:1px solid oklch(0.91 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.5 0.02 70)">반응형</div>
+      <div style="display:grid; grid-template-columns:120px 1fr; font-size:13.5px; line-height:1.6; color:oklch(0.35 0.015 60)">
+        <div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80); font-family:'IBM Plex Mono',monospace; font-size:12.5px">≥ 1280</div><div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80)">설정 내비 260 + 테이블 + 우측 420 상세. 추가는 우측 컬럼이 모델 검색으로 바뀜</div>
+        <div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80); font-family:'IBM Plex Mono',monospace; font-size:12.5px">1024–1279</div><div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80)">우측 상세가 오버레이 패널(420, 우측에서 슬라이드)로. 테이블 「영점」 열 숨김</div>
+        <div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80); font-family:'IBM Plex Mono',monospace; font-size:12.5px">760–1023</div><div style="padding:12px 20px; border-bottom:1px solid oklch(0.93 0.008 80)">설정 내비가 상단 세그먼티드. 목록은 원장 행, 상세는 별도 페이지</div>
+        <div style="padding:12px 20px; font-family:'IBM Plex Mono',monospace; font-size:12.5px">&lt; 760</div><div style="padding:12px 20px">모바일 M1–M3. 더보기 → 내 기구 관리로 진입, 탭 바 없음</div>
+      </div>
+    </div>
+    <div style="flex:1; min-width:520px; background:oklch(0.99 0.004 85); border:1px solid oklch(0.87 0.008 75); border-radius:12px; overflow:hidden">
+      <div style="padding:14px 20px; border-bottom:1px solid oklch(0.91 0.008 78); font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; color:oklch(0.5 0.02 70)">결정할 것 · 추천값</div>
+      <div style="display:flex; flex-direction:column; font-size:13.5px; line-height:1.65; color:oklch(0.35 0.015 60)">
+        <div style="padding:13px 20px; border-bottom:1px solid oklch(0.93 0.008 80)"><strong style="font-weight:600; color:oklch(0.22 0.015 60)">Q1. 영점 보정 입력 위치</strong><br>추천: <strong style="font-weight:600">이 화면에서 직접 입력(±0.5 스테퍼) + 환산기에 역보정 도우미를 나중에.</strong> 직접 입력은 구현이 단순하고 값의 의미가 명확합니다. 역보정(「내 값이 이 정도였다」)은 입문자에게 좋지만 환산 공식에 의존하므로 2차로.</div>
+        <div style="padding:13px 20px; border-bottom:1px solid oklch(0.93 0.008 80)"><strong style="font-weight:600; color:oklch(0.22 0.015 60)">Q2. 등록 시 기본 지정</strong><br>추천: 첫 그라인더는 자동 기본. 두 번째부터는 등록 후 상세에서 토글.</div>
+        <div style="padding:13px 20px; border-bottom:1px solid oklch(0.93 0.008 80)"><strong style="font-weight:600; color:oklch(0.22 0.015 60)">Q3. 같은 모델 중복 등록</strong><br>추천: 허용(집/회사 같은 모델 2대). 별칭 없이 중복이면 저장 시 「별칭을 붙이면 구분하기 쉽습니다」 안내만.</div>
+        <div style="padding:13px 20px; border-bottom:1px solid oklch(0.93 0.008 80)"><strong style="font-weight:600; color:oklch(0.22 0.015 60)">Q4. µm/클릭이 없는 모델</strong><br>추천: 「—」로 두고 환산 불가 배지. 대표 수치 자리에는 범위(0–10)를 대신 표시.</div>
+        <div style="padding:13px 20px"><strong style="font-weight:600; color:oklch(0.22 0.015 60)">Q5. 목록에 없는 모델 요청</strong><br>추천: 1차는 안내 문구만. 요청 폼은 운영 부담이 생기므로 사용자 수 확인 후.</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+</x-dc>
+</body>
+</html>

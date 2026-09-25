@@ -2,8 +2,18 @@
 id: SMALL
 title: 작은 기능 3개 — 비교표 문구 · 이 값으로 기록 · 다시 내리기
 status: 승인
-plan: docs/plans/2026-09-17-plan-small-features.md
+plan: docs/archive/plans/2026-09-17-plan-small-features.md
 ---
+
+> **2026-09-25 확인 — 분할하지 않는다.** 승인만 되고 미구현인 채로 로드맵 정리
+> (`docs/ROADMAP.md` M0)에서 발견돼, 처음에는 M2·M3로 쪼개 새 스펙으로 다시 쓰려 했다.
+> 그런데 조사해보니 `feat/small-features` 브랜치(2026-09-19 마지막 커밋, main 대비 13커밋
+> 뒤처짐)에 **AC-SMALL 11개가 전부 이미 구현돼 있었다.** `git merge-tree`로 확인한 결과 실제
+> 구현 코드(`BrewDetail`·`BrewLogForm`·`RecipeComparison`·`RecipeListScreen`·`diffPhrase` 등
+> 18파일)는 지금 main에 깨끗이 합쳐지고, 충돌은 문서 3개(이 스펙, 옛 계획 문서, 옛 JOURNAL —
+> 양쪽이 독립적으로 같은 파일을 썼기 때문)뿐이다. **이 스펙은 분할하지 않고 그대로 둔다** —
+> 다음 구현 세션이 `feat/small-features`를 최신 main 위로 리베이스해 랜딩하고 `status`를
+> `구현완료`로 올린다. 「범위 밖」의 **내 기구 관리**만 선행 API가 없어 별도다(M3 이슈 참조).
 
 # 작은 기능 3개 스펙
 

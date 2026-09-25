@@ -2,7 +2,7 @@
 id: WEBDEPLOY
 title: 프론트엔드 배포 — Cloudflare Workers
 status: 구현완료
-plan: docs/plans/2026-08-21-plan-web-deploy.md
+plan: docs/archive/plans/2026-08-21-plan-web-deploy.md
 ---
 
 # 프론트엔드 배포 — Cloudflare Workers 스펙
@@ -174,7 +174,7 @@ VM `.env`의 두 값을 바꾸고 백엔드를 재기동해야 한다. **둘 다
 
 ## 열어둔 결정
 
-인터뷰 시점에 열려 있던 항목은 구현 계획(`docs/plans/2026-08-21-plan-web-deploy.md`)에서 전부 정해졌다. 결과만 남긴다.
+인터뷰 시점에 열려 있던 항목은 구현 계획(`docs/archive/plans/2026-08-21-plan-web-deploy.md`)에서 전부 정해졌다. 결과만 남긴다.
 
 - **Worker 이름은 `kaldi-note-web`, 설정은 `frontend/wrangler.jsonc`** — 사람이 Cloudflare에서 Worker를 만들 때 이 이름을 그대로 써야 한다. `services` 자기참조 바인딩이 같은 이름을 가리키기 때문이다
 - **`compatibility_flags`는 `nodejs_compat`·`global_fetch_strictly_public`, `compatibility_date`는 `2024-12-30`** — OpenNext 문서가 요구하는 최소 조건

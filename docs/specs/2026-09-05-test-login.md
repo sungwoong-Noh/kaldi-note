@@ -2,7 +2,7 @@
 id: TESTLOGIN
 title: 테스트 로그인 (OAuth 없이 세션 발급)
 status: 구현완료
-plan: docs/plans/2026-09-05-plan-test-login.md
+plan: docs/archive/plans/2026-09-05-plan-test-login.md
 ---
 
 # 테스트 로그인 스펙

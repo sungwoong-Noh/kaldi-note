@@ -2,7 +2,7 @@
 id: RECIPEV2
 title: 레시피/잔 재설계 — 데이터 모델과 마이그레이션
 status: 구현완료
-plan: docs/plans/2026-09-20-plan-recipe-v2-data-model.md
+plan: docs/archive/plans/2026-09-20-plan-recipe-v2-data-model.md
 ---
 
 # 레시피/잔 재설계 — 데이터 모델과 마이그레이션 스펙
@@ -12,7 +12,7 @@ plan: docs/plans/2026-09-20-plan-recipe-v2-data-model.md
 
 ## 무엇을
 
-`docs/design/design_handoff_kaldi_note/RECIPES-AND-BREWS.md`(이하 설계 문서)와 그 `DECISIONS.md`가
+`docs/archive/design/design_handoff_kaldi_note/RECIPES-AND-BREWS.md`(이하 설계 문서)와 그 `DECISIONS.md`가
 확정한 레시피/잔 재설계 중 **백엔드 데이터 모델·마이그레이션·API DTO만** 먼저 구현한다.
 
 - `recipes`에 `temperatureType`(HOT/ICE)·`recommendedRoastLevel`(LIGHT/MEDIUM/DARK)·`sourceAuthorName`을

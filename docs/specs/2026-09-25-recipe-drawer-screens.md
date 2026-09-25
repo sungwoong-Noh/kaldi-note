@@ -443,7 +443,7 @@ supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBR
   // page는 queryKey에 넣지 않는다(AC-67) — useInfiniteQuery가 알아서 누적
   ```
 
-- [ ] **Task 2: 검색 입력 — 디바운스·IME** — Covers: AC-RECIPESBREWS-59, 60, 80
+- [x] **Task 2: 검색 입력 — 디바운스·IME** — Covers: AC-RECIPESBREWS-59, 60, 80
 
 - [ ] **Task 3: 필터 — 웹 pill 줄 · 모바일 스테이징 시트** — Covers: AC-RECIPESBREWS-61, 62, 82
 

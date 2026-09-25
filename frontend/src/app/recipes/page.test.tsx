@@ -1,7 +1,7 @@
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RecipesPage from "./page";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
@@ -28,6 +28,12 @@ beforeEach(() => {
   currentSearch = "";
   clearSession();
   setAccessToken("a.b.c");
+});
+
+// 개별 테스트가 vi.useFakeTimers()를 걸고 도중에 실패하면 vi.useRealTimers()가 실행되지
+// 못해 뒤따르는 모든 테스트가 5초 타임아웃으로 줄줄이 실패한다. 여기서 무조건 되돌린다.
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("RecipesPage", () => {
@@ -69,6 +75,88 @@ describe("RecipesPage", () => {
         "/recipes?scope=PUBLIC&q=워시드&temp=HOT&sort=RECENT",
       );
     });
+  });
+
+  it("AC-RECIPESBREWS-59 · 둘러보기 검색어는 300ms 디바운스로 조회된다", async () => {
+    const searches: string[] = [];
+    server.use(
+      http.get(LIST_URL, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json(pageOf([hoffmannSummary]));
+      }),
+    );
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipesPage />);
+    await user.click(await screen.findByRole("tab", { name: "둘러보기" }));
+    const input = await screen.findByLabelText("레시피 검색");
+    const callsBeforeType = searches.length;
+
+    // 렌더·탐색까지는 실제 타이머로 끝내고, 디바운스를 만드는 change부터 가짜 타이머로 바꾼다.
+    // 먼저 켜 두면 jsdom + RTL의 비동기 유틸(findBy*) 폴링이 멈춰 화면이 절대 안정되지 않고,
+    // change 뒤에 켜면 그 change가 만든 setTimeout은 이미 실제 타이머라 가짜 시간이 건드리지 못한다.
+    vi.useFakeTimers();
+    fireEvent.change(input, { target: { value: "워시드" } });
+
+    await vi.advanceTimersByTimeAsync(299);
+    expect(searches.length).toBe(callsBeforeType);
+
+    // 디바운스 타이머 자체는 가짜 시간으로 정확히 300ms에 터뜨린다. 그 콜백 이후의 실제
+    // fetch 왕복은 MSW가 내부적으로 쓰는 타이머가 vitest의 가짜 시간과 얽혀 결코 안 풀리므로,
+    // 타이머를 터뜨린 뒤 곧장 실제 타이머로 돌아가 fetch가 도착하는 것을 관찰한다.
+    await vi.advanceTimersByTimeAsync(1);
+    vi.useRealTimers();
+    await waitFor(() => expect(searches.length).toBe(callsBeforeType + 1));
+    expect(searches.at(-1)).toContain("q=%EC%9B%8C%EC%8B%9C%EB%93%9C");
+  });
+
+  it("AC-RECIPESBREWS-60 · IME 조합 중에는 검색 요청이 나가지 않는다", async () => {
+    const searches: string[] = [];
+    server.use(
+      http.get(LIST_URL, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json(pageOf([hoffmannSummary]));
+      }),
+    );
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipesPage />);
+    await user.click(await screen.findByRole("tab", { name: "둘러보기" }));
+    const input = await screen.findByLabelText("레시피 검색");
+    const callsBeforeType = searches.length;
+
+    vi.useFakeTimers();
+    fireEvent.compositionStart(input);
+    fireEvent.change(input, { target: { value: "ㅇ" } });
+    fireEvent.change(input, { target: { value: "워" } });
+    fireEvent.change(input, { target: { value: "워시" } });
+    expect(searches.length).toBe(callsBeforeType);
+
+    fireEvent.compositionEnd(input, { target: { value: "워시드" } });
+
+    await vi.advanceTimersByTimeAsync(299);
+    expect(searches.length).toBe(callsBeforeType);
+
+    await vi.advanceTimersByTimeAsync(1);
+    vi.useRealTimers();
+    await waitFor(() => expect(searches.length).toBe(callsBeforeType + 1));
+    expect(searches.at(-1)).toContain("q=%EC%9B%8C%EC%8B%9C%EB%93%9C");
+  });
+
+  it("AC-RECIPESBREWS-80 · ⌘K/Ctrl+K가 검색 입력에 포커스한다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([hoffmannSummary]))),
+    );
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipesPage />);
+    await user.click(await screen.findByRole("tab", { name: "둘러보기" }));
+    const input = await screen.findByLabelText("레시피 검색");
+    expect(input).not.toHaveFocus();
+
+    await user.keyboard("{Control>}k{/Control}");
+
+    expect(input).toHaveFocus();
   });
 
   it("AC-RECIPESBREWS-67 · '더 보기'로 불러온 페이지 depth는 URL에 반영되지 않는다", async () => {

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -136,5 +136,42 @@ describe("FilterSheet", () => {
       "false",
     );
     expect(onApply).not.toHaveBeenCalled();
+  });
+
+  it("원두량 슬라이더도 스테이징 영역이다 — 목업 RM3 대조로 추가", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(pageOf([hoffmannSummary], { totalElements: 4 })),
+      ),
+    );
+    const onApply = vi.fn();
+
+    render(
+      <FilterSheet
+        q=""
+        applied={{ roast: [], dripper: [] }}
+        onApply={onApply}
+      />,
+    );
+
+    const minHandle = screen.getByLabelText("원두량 최소");
+    fireEvent.pointerDown(minHandle);
+    fireEvent.change(minHandle, { target: { value: "15" } });
+    fireEvent.pointerUp(minHandle);
+
+    expect(onApply).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "4개 결과 보기" }),
+      ).toBeInTheDocument(),
+    );
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "4개 결과 보기" }),
+    );
+
+    expect(onApply).toHaveBeenCalledWith(
+      expect.objectContaining({ doseMin: 15 }),
+    );
   });
 });

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { searchRecipes } from "../api";
+import { DoseRangeFilter } from "./DoseRangeFilter";
 import { DRIPPER_OPTIONS, ROAST_OPTIONS, toggleValue } from "../filterOptions";
 import type {
   RecipeDripper,
@@ -16,6 +17,8 @@ export interface FilterSheetApplied {
   temp?: RecipeTemp;
   roast: RecipeRoast[];
   dripper: RecipeDripper[];
+  doseMin?: number;
+  doseMax?: number;
 }
 
 /**
@@ -47,12 +50,22 @@ export function FilterSheet({
         temp: staged.temp,
         roast: staged.roast.length > 0 ? staged.roast : undefined,
         dripper: staged.dripper.length > 0 ? staged.dripper : undefined,
+        doseMin: staged.doseMin,
+        doseMax: staged.doseMax,
       }).then((page) => setResultCount(page.totalElements));
     }, COUNT_DEBOUNCE_MS);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [staged.temp, staged.roast, staged.dripper, q, onSessionLost]);
+  }, [
+    staged.temp,
+    staged.roast,
+    staged.dripper,
+    staged.doseMin,
+    staged.doseMax,
+    q,
+    onSessionLost,
+  ]);
 
   function reset() {
     setStaged({ temp: undefined, roast: [], dripper: [] });
@@ -126,6 +139,12 @@ export function FilterSheet({
           </button>
         ))}
       </div>
+
+      <DoseRangeFilter
+        doseMin={staged.doseMin}
+        doseMax={staged.doseMax}
+        onCommit={(patch) => setStaged((s) => ({ ...s, ...patch }))}
+      />
 
       <div className="flex gap-2">
         <Button type="button" variant="secondary" onClick={reset}>

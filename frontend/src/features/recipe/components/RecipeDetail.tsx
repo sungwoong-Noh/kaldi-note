@@ -210,13 +210,9 @@ export function RecipeDetail({ id }: { id: number }) {
         `POST /brew-logs`는 볼 수 있는 레시피면 받는다(RecipeService.requireViewable) — 담지
         않고도 「바로 내리기」로 곧장 기록할 수 있다(AC-RECIPESBREWS-81).
       */}
-      {isMine ? (
+      {isMine && (
         <ButtonLink href={`/brews/new?recipeId=${id}`} variant="primary">
           이 레시피로 내렸다
-        </ButtonLink>
-      ) : (
-        <ButtonLink href={`/brews/new?recipeId=${id}`} variant="primary">
-          이 레시피로 바로 내리기
         </ButtonLink>
       )}
 
@@ -242,21 +238,27 @@ export function RecipeDetail({ id }: { id: number }) {
         />
       )}
 
+      {/* 담기가 주 행동(primary)이다 — 바로 내리기는 보조로 아래에 둔다. */}
       {!isMine && (
-        <div className="mt-3">
+        <div className="flex flex-col gap-2">
           <Button
             onClick={() => fork.mutate()}
             disabled={fork.isPending}
+            variant="primary"
             block
           >
             내 서랍에 담기
           </Button>
 
           {fork.error && (
-            <p className="mt-2 text-center text-body text-danger">
+            <p className="text-center text-body text-danger">
               {errorMessageOf(fork.error)}
             </p>
           )}
+
+          <ButtonLink href={`/brews/new?recipeId=${id}`}>
+            이 레시피로 바로 내리기
+          </ButtonLink>
         </div>
       )}
     </Screen>

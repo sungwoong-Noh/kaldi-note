@@ -164,7 +164,10 @@ describe("BrewsPage", () => {
 
   // AC-WEBSHELL-21·22를 대체한다 — 카드가 테이블/원장 행으로 바뀌면서 비율 열이
   // 빠지고 7열(AC-RECIPESBREWS-77)로 재구성됐다.
-  it("AC-RECIPESBREWS-77 · 웹은 날짜·레시피/원두·원두량·온도·시간·수율·평가 7열 테이블이다", async () => {
+  // "새 API 호출이 추가되지 않는다"(AC-78)는 아래 AC-WEBNAME-42(조회는 1회다)가 이미
+  // useRecipeLabels 캐싱으로 증명한다 — 여기서는 그 훅이 채운 값이 테이블 셀에 그대로
+  // 나오는지만 본다.
+  it("AC-RECIPESBREWS-77 · AC-RECIPESBREWS-78 · 웹은 7열 테이블이고 레시피 열은 기존 useRecipeLabels로 채운다", async () => {
     server.use(
       http.get(LIST_URL, () =>
         HttpResponse.json(

@@ -1,7 +1,7 @@
 ---
 id: RECIPESBREWS
 title: 레시피 서랍 화면 — 웹·모바일 둘러보기/내 서랍/상세/내 잔
-status: 승인
+status: 구현완료
 milestone: M1
 supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-69, AC-WEBEDIT-05(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-63, AC-TOUCH-06(docs/specs/2026-09-09-touch-targets.md) → AC-RECIPESBREWS-63, AC-STRUCT-04(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-63, AC-VISUAL-08(docs/specs/2026-09-07-visual-hierarchy.md) → AC-RECIPESBREWS-69, AC-STRUCT-17(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-69·73, AC-CONSIST-08(docs/specs/2026-09-08-screen-consistency.md) → AC-RECIPESBREWS-73, AC-WEB-22·23·25(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-74·75·96, AC-WEBEDIT-06(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-74, AC-WEBSHELL-17(docs/specs/2026-09-01-web-shell.md) → AC-RECIPESBREWS-81, AC-WEBSHELL-21·22(docs/specs/2026-09-01-web-shell.md) → AC-RECIPESBREWS-77, AC-STRUCT-18의 "/brews" 부분(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-77, AC-CONSIST-04·14의 "/brews" 부분(docs/specs/2026-09-08-screen-consistency.md) → AC-RECIPESBREWS-77
 ---
@@ -473,10 +473,29 @@ supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBR
 
 ## 수동 확인
 
-- [ ] ★ mockup-checker 서브에이전트로 RW1~RW3·BW1·RM1~RM4·BM1을 `390px`/`1280px`에서
+- [x] ★ mockup-checker 서브에이전트로 RW1~RW3·BW1·RM1~RM4·BM1을 `390px`/`1280px`에서
       실제 배포와 목업을 나란히 대조하고, 결과를 PR 본문에 첨부한다(완료 조건).
 
 ## 열어둔 결정
 
 - 타이포그래피 근사값이 실제 렌더에서 목업과 시각적으로 얼마나 벌어지는지는 위 수동 확인의
   mockup-checker 결과를 보고 그 자리에서 미세 조정한다(새 named 토큰이 필요하면 추가).
+
+### mockup-checker가 찾은 것 중 이번에 고친 것 / 남긴 것
+
+**고쳤다** (기능·정보 위계에 실질적 영향이 있어 AC 범위 안으로 판단):
+- RW3/RM4 상세: "내 서랍에 담기"가 주 행동(primary)이어야 하는데 "바로 내리기"가
+  primary였다 — 순서·색을 목업대로 뒤집었다.
+- RM3 필터 시트: 원두량 슬라이더가 통째로 빠져 있었다 — `FilterSheet`에 추가했다.
+
+**남겼다** (Non-goals의 "픽셀 단위 완전 정합은 다루지 않는다"에 해당하거나, 별도 시각 보정
+트랙(갈래 B)의 몫으로 판단):
+- RW1/RW2 세그먼트 탭이 목업은 컴팩트 pill인데 실제는 `flex-1` 전체 폭이다.
+- RW1/RW2 필터 줄이 목업은 구분선과 함께 한 줄에 압축돼 있는데 실제는 필터군마다 세로로
+  분리된 줄이다. 원두량 듀얼 `<input type=range>`가 겹쳐 보이는 문제도 같은 갈래.
+- 둘러보기에 결과 개수("128개") 표시가 없다 — 어느 AC도 요구하지 않는다.
+- RW3 상세가 목업은 2단(좌 스텝·우 스티키 히어로)인데 실제는 1단이다.
+- RM3 필터 시트가 실제 바텀시트(오버레이+백드롭)가 아니라 페이지 안 인라인 블록이다 —
+  AC-82는 스테이징 동작만 요구하고 프레젠테이션(모달 여부)은 명시하지 않는다.
+- `/brews` 문서 `&lt;title&gt;`이 남긴 감사 대상은 아니었으나, 페이지 `h1`이 "브루잉
+  로그"였던 것은 이번에 "내 잔"으로 맞췄다(탭 라벨과의 일관성).

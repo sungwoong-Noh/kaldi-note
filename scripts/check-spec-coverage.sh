@@ -86,7 +86,9 @@ for spec in "$SPEC_DIR"/*.md; do
   missing=""
 
   for id in $ids; do
-    total_ac=$((total_ac + 1))
+    # 합계는 구현완료 스펙의 AC만 센다(AC-READ-20). 구현중 스펙은 검사·경고는 하지만
+    # 「확인」한 것이 아니다 — 세면 구현중 스펙이 main에 있을 때 합계가 헤딩 총합과 어긋난다.
+    [ "$status" = "구현완료" ] && total_ac=$((total_ac + 1))
     found=0
     if [ ${#SEARCH_PATHS[@]} -gt 0 ]; then
       if grep -rqF "$id" "${SEARCH_PATHS[@]}" 2>/dev/null; then

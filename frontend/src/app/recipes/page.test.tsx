@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RecipesPage from "./page";
 import { clearSession, setAccessToken } from "@/lib/session";
@@ -438,12 +438,32 @@ describe("RecipesPage", () => {
     expect(screen.getByText("레시피 200")).toBeInTheDocument();
   });
 
-  it("AC-WEB-13 · 볼 레시피가 없으면 안내를 보여준다", async () => {
+  it("AC-WEB-13 · AC-RECIPESBREWS-85 · 내 서랍이 비어 있으면 새 레시피 CTA를 보여준다", async () => {
     server.use(http.get(LIST_URL, () => HttpResponse.json(pageOf([]))));
 
     renderWithQuery(<RecipesPage />);
 
     expect(await screen.findByText("레시피가 없습니다")).toBeInTheDocument();
+    const cta = screen
+      .getByText("레시피가 없습니다")
+      .closest("[data-empty]")
+      ?.querySelector("a");
+    expect(cta).toHaveAttribute("href", "/recipes/new");
+  });
+
+  it("AC-RECIPESBREWS-84 · 둘러보기 결과 0건이면 안내 카드가 뜬다", async () => {
+    server.use(http.get(LIST_URL, () => HttpResponse.json(pageOf([]))));
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipesPage />);
+    await user.click(await screen.findByRole("tab", { name: "둘러보기" }));
+
+    expect(
+      await screen.findByText("찾는 레시피가 없나요?"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("검색어를 줄이거나 필터를 해제해 보세요."),
+    ).toBeInTheDocument();
   });
 
   it("AC-WEB-07 · 401을 받으면 refresh 후 목록을 보여준다", async () => {
@@ -526,5 +546,25 @@ describe("RecipesPage — 쓰기 슬라이스", () => {
     expect(
       await screen.findByRole("link", { name: "새 레시피" }),
     ).toHaveAttribute("href", "/recipes/new");
+  });
+});
+
+describe("RecipesPage — 로딩", () => {
+  it("AC-RECIPESBREWS-101 · 조회 중에는 로딩 상태가 표시된다", async () => {
+    server.use(
+      http.get(LIST_URL, async () => {
+        await delay(300);
+        return HttpResponse.json(pageOf([hoffmannSummary]));
+      }),
+    );
+
+    renderWithQuery(<RecipesPage />);
+
+    expect(
+      await screen.findByRole("status", { name: "불러오는 중" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("James Hoffmann Ultimate V60"),
+    ).not.toBeInTheDocument();
   });
 });

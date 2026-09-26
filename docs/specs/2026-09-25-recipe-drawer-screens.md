@@ -465,7 +465,7 @@ supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBR
   BottomNav.test.tsx 등 기존 "기록" 문자열 단정을 함께 갱신.
   ```
 
-- [ ] **Task 10: 로딩·에러·빈 상태 전반** — Covers: AC-RECIPESBREWS-84, 85, 86, 87, 94, 95, 96, 97, 101
+- [x] **Task 10: 로딩·에러·빈 상태 전반** — Covers: AC-RECIPESBREWS-84, 85, 86, 87, 94, 95, 96, 97, 101
 
 - [ ] **Task 11: 비기능 검증** — Covers: AC-RECIPESBREWS-98, 99, 100
 

@@ -1,5 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
-import { HttpResponse, http } from "msw";
+import { HttpResponse, delay, http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
@@ -12,8 +12,9 @@ import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
 import BrewsPage from "./page";
 
+const replace = vi.fn();
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace, refresh: vi.fn() }),
   usePathname: () => "/brews",
 }));
 
@@ -35,6 +36,7 @@ function pageOf(
 }
 
 beforeEach(() => {
+  replace.mockClear();
   clearSession();
   setAccessToken("a.b.c");
   server.use(
@@ -96,12 +98,23 @@ describe("BrewsPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("AC-WEBBREW-34 · 기록이 없으면 안내가 보인다", async () => {
-    server.use(http.get(LIST_URL, () => HttpResponse.json(pageOf([]))));
+  it("AC-WEBBREW-34 · AC-RECIPESBREWS-86 · 기록이 없으면 통계는 0잔·—고 기록하기가 /recipes로 간다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([]))),
+      http.get(`${BASE}/brew-logs/stats`, () =>
+        HttpResponse.json({ monthCount: 0 }),
+      ),
+    );
 
     renderWithQuery(<BrewsPage />);
 
     expect(await screen.findByText("아직 기록이 없습니다")).toBeInTheDocument();
+    expect(screen.getByText("0잔")).toBeInTheDocument();
+    expect(screen.getAllByText("—")).toHaveLength(3);
+    expect(screen.getByRole("link", { name: "기록하기" })).toHaveAttribute(
+      "href",
+      "/recipes",
+    );
   });
 
   it("AC-WEBBREW-35 · 항목에 날짜·레시피 제목·별점이 있다", async () => {
@@ -127,7 +140,7 @@ describe("BrewsPage", () => {
     expect(screen.getByText("4.5")).toBeInTheDocument();
   });
 
-  it("AC-WEBBREW-36 · EY가 없는 항목은 그 자리가 비어 있다", async () => {
+  it("AC-WEBBREW-36 · AC-RECIPESBREWS-87 · TDS 없는 잔은 수율 칸이 비되 열은 유지된다", async () => {
     // TDS 없이 내린 기록이 이 모양이다 — `non_null` 정책이라 키 자체가 없다.
     const withoutEy: Record<string, unknown> = {
       ...brewLogWithTds,
@@ -142,6 +155,11 @@ describe("BrewsPage", () => {
 
     await screen.findByText("Kasuya 4:6");
     expect(screen.queryByText(/%/)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("columnheader", { name: "수율" }),
+    ).toBeInTheDocument();
+    const row = screen.getByText("Kasuya 4:6").closest("tr");
+    expect(row?.textContent).toContain("—");
   });
 
   // AC-WEBSHELL-21·22를 대체한다 — 카드가 테이블/원장 행으로 바뀌면서 비율 열이
@@ -276,5 +294,87 @@ describe("BrewsPage — 레시피 이름", () => {
 
     await screen.findAllByText("Tetsu Kasuya 4:6 Method");
     expect(calls).toBe(1);
+  });
+});
+
+describe("BrewsPage — 로그인·에러", () => {
+  it("AC-RECIPESBREWS-94 · refresh가 무효면 로그인으로 보낸다", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(
+          { code: "UNAUTHORIZED", message: "인증이 필요합니다." },
+          { status: 401 },
+        ),
+      ),
+      http.post("/api/auth/refresh", () =>
+        HttpResponse.json(
+          { code: "REFRESH_TOKEN_INVALID", message: "다시 로그인해 주세요." },
+          { status: 401 },
+        ),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith("/login?next=%2Fbrews"),
+    );
+  });
+
+  it("AC-RECIPESBREWS-97 · 목록 조회가 실패하면 메시지와 다시 시도를 보여준다", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(
+          { code: "INTERNAL_ERROR", message: "서버 오류가 발생했습니다." },
+          { status: 500 },
+        ),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(
+      await screen.findByText("서버 오류가 발생했습니다."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "다시 시도" }),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-RECIPESBREWS-97 · 통계 조회가 실패하면 메시지와 다시 시도를 보여준다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+      http.get(`${BASE}/brew-logs/stats`, () =>
+        HttpResponse.json(
+          { code: "INTERNAL_ERROR", message: "서버 오류가 발생했습니다." },
+          { status: 500 },
+        ),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(
+      await screen.findByText("서버 오류가 발생했습니다."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "다시 시도" }),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-RECIPESBREWS-101 · 조회 중에는 로딩 상태가 표시된다", async () => {
+    server.use(
+      http.get(LIST_URL, async () => {
+        await delay(300);
+        return HttpResponse.json(pageOf([brewLogWithTds]));
+      }),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(
+      await screen.findByRole("status", { name: "불러오는 중" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Kasuya 4:6")).not.toBeInTheDocument();
   });
 });

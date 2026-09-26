@@ -26,7 +26,7 @@ import {
   type RecipeSearchState,
 } from "@/features/recipe/useRecipeSearchState";
 import { useViewportWidth } from "@/lib/useViewportWidth";
-import { Button, ButtonLink, Input, Shell } from "@/components/ui";
+import { Button, ButtonLink, Card, Input, Shell } from "@/components/ui";
 
 /** ≥760px는 웹 pill 줄, 그 아래는 모바일 필터 시트다(AC-RECIPESBREWS-61·82). */
 const WEB_BREAKPOINT_PX = 760;
@@ -86,15 +86,25 @@ function RecipesPageContent() {
   if (recipes.length === 0) {
     return (
       <Screen state={state} setState={setState} onSessionLost={onSessionLost}>
-        {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
-        <div data-empty className="flex flex-col gap-3">
-          <p className="py-6 text-center text-body text-ink-3">
-            레시피가 없습니다
-          </p>
-          <ButtonLink href="/recipes/new" variant="primary">
-            새 레시피
-          </ButtonLink>
-        </div>
+        {state.scope === "PUBLIC" ? (
+          // 검색·필터가 너무 좁았을 뿐 서랍이 빈 것과는 다르다(AC-RECIPESBREWS-84).
+          <Card data-empty className="border-dashed text-center">
+            <p className="text-body font-medium">찾는 레시피가 없나요?</p>
+            <p className="mt-1 text-body-sm text-ink-3">
+              검색어를 줄이거나 필터를 해제해 보세요.
+            </p>
+          </Card>
+        ) : (
+          // 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md
+          <div data-empty className="flex flex-col gap-3">
+            <p className="py-6 text-center text-body text-ink-3">
+              레시피가 없습니다
+            </p>
+            <ButtonLink href="/recipes/new" variant="primary">
+              새 레시피
+            </ButtonLink>
+          </div>
+        )}
       </Screen>
     );
   }

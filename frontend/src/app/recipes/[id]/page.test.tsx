@@ -1,6 +1,6 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { http, HttpResponse } from "msw";
+import { http, HttpResponse, delay } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import RecipeDetailPage from "./page";
 import { clearSession, setAccessToken } from "@/lib/session";
@@ -192,6 +192,23 @@ describe("RecipeDetailPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("AC-RECIPESBREWS-95 · 가시성 없는 레시피 상세는 403 화면이다", async () => {
+    server.use(
+      http.get(`${BASE}/recipes/2`, () =>
+        HttpResponse.json(
+          { code: "FORBIDDEN", message: "이 레시피를 볼 권한이 없습니다." },
+          { status: 403 },
+        ),
+      ),
+    );
+
+    await renderDetail();
+
+    expect(
+      await screen.findByText("이 레시피를 볼 권한이 없습니다."),
+    ).toBeInTheDocument();
+  });
+
   // AC-WEB-22를 대체한다 — 버튼 이름이 "내 서랍에 담기"로 바뀌었다.
   it("AC-RECIPESBREWS-74 · 남의 레시피 상세에는 담기 버튼이 보인다", async () => {
     await renderDetail();
@@ -251,7 +268,7 @@ describe("RecipeDetailPage", () => {
 
   // AC-WEB-25를 대체한다 — 같은 시나리오, 새 버튼 이름. 정식 AC ID는 이후 Task 10이
   // AC-RECIPESBREWS-96으로 붙인다(레시피 서랍 화면 스펙, 아직 승인 단계라 지금은 없어도 된다).
-  it("담기가 실패하면 페이지가 유지되고 메시지가 보인다", async () => {
+  it("AC-RECIPESBREWS-96 · 담기가 실패하면 페이지가 유지되고 메시지가 보인다", async () => {
     server.use(
       http.post(`${BASE}/recipes/2/fork`, () =>
         HttpResponse.json(
@@ -273,6 +290,22 @@ describe("RecipeDetailPage", () => {
     expect(
       screen.getByRole("button", { name: "내 서랍에 담기" }),
     ).toBeEnabled();
+  });
+
+  it("AC-RECIPESBREWS-96 · 네트워크가 끊기면 고정 문구가 보인다", async () => {
+    server.use(
+      http.post(`${BASE}/recipes/2/fork`, () => HttpResponse.error()),
+    );
+
+    await renderDetail();
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "내 서랍에 담기" }),
+    );
+
+    expect(
+      await screen.findByText("일시적인 오류가 발생했습니다."),
+    ).toBeInTheDocument();
   });
 });
 
@@ -393,6 +426,24 @@ describe("RecipeDetailPage — 편집과 삭제", () => {
     ).toHaveAttribute("href", "/brews/new?recipeId=2");
     expect(
       screen.queryByRole("link", { name: "이 레시피로 내렸다" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("AC-RECIPESBREWS-101 · 조회 중에는 로딩 상태가 표시된다", async () => {
+    server.use(
+      http.get(`${BASE}/recipes/2`, async () => {
+        await delay(300);
+        return HttpResponse.json(hoffmann);
+      }),
+    );
+
+    await renderDetail();
+
+    expect(
+      await screen.findByRole("status", { name: "불러오는 중" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("James Hoffmann Ultimate V60"),
     ).not.toBeInTheDocument();
   });
 });

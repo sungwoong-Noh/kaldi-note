@@ -83,13 +83,18 @@ export default function BrewsPage() {
   if (logs.length === 0) {
     return (
       <Screen>
-        {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
+        {/* 0건이어도 통계는 보여준다 — 이번 달만 0잔, 나머지는 —(AC-RECIPESBREWS-86). */}
+        <StatsCards stats={stats.data} isMobile={isMobile} />
+
+        {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md.
+            기록은 레시피를 고른 뒤 시작하므로 recipeId 없이 작성 화면을 열 수 없다
+            (AC-RECIPESBREWS-86) — /brews/new가 아니라 /recipes로 보낸다. */}
         <div data-empty className="flex flex-col gap-3">
           <p className="py-6 text-center text-body text-ink-3">
             아직 기록이 없습니다
           </p>
           <ButtonLink href="/recipes" variant="primary">
-            레시피 보러 가기
+            기록하기
           </ButtonLink>
         </div>
       </Screen>

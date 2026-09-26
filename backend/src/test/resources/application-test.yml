@@ -8,6 +8,9 @@ spring:
     properties:
       hibernate:
         format_sql: false
+        # 레시피 서랍 화면 스펙 AC-RECIPESBREWS-99 — 목록 API의 배치 조회가 N+1이 아님을
+        # 실제 쿼리 수로 잰다(RecipeControllerTest).
+        generate_statistics: true
 logging:
   level:
     org.hibernate.SQL: warn

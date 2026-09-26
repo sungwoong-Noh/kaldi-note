@@ -35,6 +35,16 @@
 - **문구를 바꿀 때 다른 요소 문구의 부분 문자열이 되면 Playwright strict-mode 충돌이 난다.**
   예: "레시피"가 들어간 CTA 문구를 새로 넣었더니 기존 "레시피" 네비게이션 링크와 겹쳐 여러
   e2e가 한꺼번에 깨졌다. `getByText`/`getByRole`에 `exact: true`를 쓴다.
+- **같은 화면에 이름이 같은 CTA가 동시에 두 개 뜰 수 있다.** `/recipes`의 상단 "새 레시피"
+  링크와 내 서랍 빈 상태의 "새 레시피" 링크가 내 서랍이 비어 있을 때 함께 렌더된다 —
+  지금은 컴포넌트 테스트가 `[data-empty]`로 스코프를 좁혀 우회하지만, e2e에 스코프 없는
+  `getByRole("link", { name: "새 레시피" })`를 추가하면 strict-mode 충돌이 난다.
+
+- **`playwright.config.ts`의 `reuseExistingServer: !process.env.CI`는 로컬에 켜둔 `pnpm dev`를
+  그대로 재사용한다.** mockup-checker 등을 위해 3000번 포트에 dev 서버를 띄워둔 채 e2e를
+  돌리면, PWA/서비스워커 관련 테스트(오프라인 캐시 등)가 Playwright의 깨끗한 프로덕션
+  빌드가 아니라 그 dev 서버를 타면서 이유 없이 깨진다. e2e 전에는 `lsof -ti:3000 | xargs -r
+  kill`로 3000번 포트를 비운다.
 
 ## 셸 스크립트
 

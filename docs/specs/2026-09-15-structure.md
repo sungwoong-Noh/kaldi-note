@@ -222,12 +222,10 @@ plan: docs/archive/plans/2026-09-15-plan-structure.md
 
 > 모양을 바꾸면서 터치 타깃을 잃지 않는지 본다. `AC-TOUCH-09`와 같은 값을 다시 잰다.
 
-#### AC-STRUCT-04 · 체크박스가 20×20px 모양에 44×44px 탭 영역을 갖는다
-
-- **Given** `/recipes`의 「내 레시피만」
-- **When** `input[type=checkbox]`의 렌더 크기와, 그것을 감싼 `label`의 렌더 크기를 읽는다
-- **Then** 입력은 **20×20px**, 감싼 영역은 **가로·세로 모두 44 이상**이다
-- **검증** e2e `structure.spec.ts`
+**AC-STRUCT-04 (대체됨)** · `/recipes`의 「내 레시피만」 체크박스(20×20px 모양·44×44px 탭 영역)를
+쟀던 원래 AC는, 그 체크박스 자체가 `docs/specs/2026-09-25-recipe-drawer-screens.md`의
+AC-RECIPESBREWS-63(owner pill)으로 대체되며 함께 없어졌다. 체크박스 모양·탭 영역 패턴 자체는
+다른 화면(예: 브루잉 로그 폼)에서 계속 쓰인다 — 이 AC는 `/recipes`의 그 인스턴스만 가리켰다.
 
 #### AC-STRUCT-05 · 스텝 행의 열 위치가 행마다 같다
 
@@ -332,19 +330,20 @@ plan: docs/archive/plans/2026-09-15-plan-structure.md
 
 ### 대표 수치와 빈 화면
 
-#### AC-STRUCT-17 · 레시피 상세·카드의 대표 수치가 `1:비율`이다
+**AC-STRUCT-17 (대체됨)** · 레시피 목록·상세의 대표 수치가 비율이라던 원래 AC는
+`docs/specs/2026-09-25-recipe-drawer-screens.md`가 완전히 대체한다 — 목록 카드는
+AC-RECIPESBREWS-69, 상세 히어로는 AC-RECIPESBREWS-73(Task 6)이 원두량으로 바꿨다.
 
-- **Given** `/recipes`와 `/recipes/12`
-- **When** 대표 수치(36px 요소)의 텍스트를 읽는다
-- **Then** **`1:16.7`** 형태다 — `→`를 포함하지 않는다
-- **검증** e2e `structure.spec.ts`
+#### AC-STRUCT-18 · 기록 상세의 대표 수치가 `1:비율`이다
 
-#### AC-STRUCT-18 · 기록 상세·카드의 대표 수치가 `1:비율`이다
-
-- **Given** `/brews`와 `/brews/2`
+- **Given** `/brews/2`
 - **When** 대표 수치의 텍스트를 읽는다
 - **Then** **`1:15.0`** 형태다
 - **검증** e2e `structure.spec.ts`
+
+> **갱신 (2026-09-25).** 원래 `/brews`(목록 카드)도 함께 검사했으나,
+> `docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-77이 목록을 통계 4칸 +
+> 테이블/원장 행으로 바꾸며 대표 수치(히어로) 자체를 없앴다. 상세(`/brews/2`)는 그대로다.
 
 #### AC-STRUCT-19 · 빈 기록 화면이 레시피로 보낸다
 

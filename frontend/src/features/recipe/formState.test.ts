@@ -17,6 +17,10 @@ const kasuya: Recipe = {
   totalTimeSeconds: 210,
   brewerId: 2,
   filterId: 2,
+  temperatureType: "HOT",
+  recommendedRoastLevel: "MEDIUM",
+  savedCount: 0,
+  brewCount: 0,
   createdAt: "2026-08-21T05:35:20.440335Z",
   updatedAt: "2026-08-21T05:35:20.440335Z",
   steps: [

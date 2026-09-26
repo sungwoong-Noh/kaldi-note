@@ -65,7 +65,7 @@ test.describe("웹 헤더 롤아웃", () => {
     await expect(header.getByRole("link", { name: "홈" })).toBeVisible();
     await expect(header.getByRole("link", { name: "레시피", exact: true })).toBeVisible();
     await expect(
-      header.getByRole("link", { name: "기록", exact: true }),
+      header.getByRole("link", { name: "내 잔", exact: true }),
     ).toBeVisible();
     const cta = header.getByRole("link", { name: "이 레시피로 내렸다" });
     await expect(cta).toBeVisible();
@@ -90,14 +90,16 @@ test.describe("웹 헤더 롤아웃", () => {
     );
   });
 
-  test("AC-WEBHDR-05 · /brews에서는 「기록」이 감전다", async ({ page }) => {
+  test("AC-WEBHDR-05 · AC-RECIPESBREWS-79 · /brews에서는 「내 잔」이 감전다", async ({
+    page,
+  }) => {
     await installStubs(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/brews");
 
     const header = page.locator("header");
     await expect(
-      header.getByRole("link", { name: "기록", exact: true }),
+      header.getByRole("link", { name: "내 잔", exact: true }),
     ).toHaveAttribute("aria-current", "page");
   });
 

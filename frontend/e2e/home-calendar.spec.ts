@@ -235,7 +235,7 @@ test.describe("홈 달력 — 모바일 헤더", () => {
     await expect(header.getByRole("link", { name: "홈" })).toBeHidden();
     await expect(header.getByRole("link", { name: "레시피" })).toBeHidden();
     await expect(
-      header.getByRole("link", { name: "기록", exact: true }),
+      header.getByRole("link", { name: "내 잔", exact: true }),
     ).toBeHidden();
   });
 

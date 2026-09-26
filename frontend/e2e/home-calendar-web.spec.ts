@@ -95,7 +95,7 @@ test.describe("홈 달력 — 웹", () => {
     await expect(header.getByRole("link", { name: "홈" })).toBeVisible();
     await expect(header.getByRole("link", { name: "레시피", exact: true })).toBeVisible();
     await expect(
-      header.getByRole("link", { name: "기록", exact: true }),
+      header.getByRole("link", { name: "내 잔", exact: true }),
     ).toBeVisible();
     await expect(header.getByRole("link", { name: "이 레시피로 내렸다" })).toBeVisible();
     await expect(header.getByRole("link", { name: "더보기" })).toBeVisible();

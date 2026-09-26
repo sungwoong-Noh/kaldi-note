@@ -13,11 +13,11 @@ beforeEach(() => {
 });
 
 describe("BottomNav", () => {
-  it("AC-WEBSHELL-01 · 탭 네 개가 순서대로 보인다", () => {
+  it("AC-WEBSHELL-01 · AC-RECIPESBREWS-79 · 탭 네 개가 순서대로 보이고 3번째가 내 잔이다", () => {
     render(<BottomNav />);
 
     const labels = screen.getAllByRole("link").map((link) => link.textContent);
-    expect(labels).toEqual(["홈", "레시피", "기록", "더보기"]);
+    expect(labels).toEqual(["홈", "레시피", "내 잔", "더보기"]);
   });
 
   it("AC-WEBSHELL-02 · 각 탭이 제 경로를 가리킨다", () => {
@@ -31,7 +31,7 @@ describe("BottomNav", () => {
       "href",
       "/recipes",
     );
-    expect(screen.getByRole("link", { name: "기록" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "내 잔" })).toHaveAttribute(
       "href",
       "/brews",
     );
@@ -41,12 +41,12 @@ describe("BottomNav", () => {
     );
   });
 
-  it("AC-WEBSHELL-03 · 로그 상세에서도 기록 탭이 켜진다", () => {
+  it("AC-WEBSHELL-03 · 로그 상세에서도 내 잔 탭이 켜진다", () => {
     pathname = "/brews/42";
 
     render(<BottomNav />);
 
-    expect(screen.getByRole("link", { name: "기록" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "내 잔" })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -78,7 +78,7 @@ describe("BottomNav", () => {
     render(<BottomNav />);
 
     expect(
-      screen.queryByRole("link", { name: "기록" }),
+      screen.queryByRole("link", { name: "내 잔" }),
     ).not.toBeInTheDocument();
   });
 
@@ -108,7 +108,7 @@ describe("BottomNav", () => {
     render(<BottomNav />);
 
     expect(
-      screen.queryByRole("link", { name: "기록" }),
+      screen.queryByRole("link", { name: "내 잔" }),
     ).not.toBeInTheDocument();
   });
 
@@ -118,7 +118,7 @@ describe("BottomNav", () => {
     render(<BottomNav />);
 
     expect(
-      screen.queryByRole("link", { name: "기록" }),
+      screen.queryByRole("link", { name: "내 잔" }),
     ).not.toBeInTheDocument();
   });
 

@@ -2,6 +2,7 @@ import type { BrowserContext, Page, Route } from "@playwright/test";
 // 픽스처는 실제 응답에서 뜬 것이다. 여기서 새로 지어내지 않는다.
 import {
   brewLogPage,
+  brewLogStats,
   brewLogWithTds,
   brewers,
   comandanteC40,
@@ -37,9 +38,10 @@ const HANDLERS: ReadonlyArray<readonly [RegExp, unknown]> = [
   [/^\/api\/v1\/recipes\/3$/, { ...kasuyaRecipe, id: 3 }],
   [/^\/api\/v1\/recipes\/\d+$/, hoffmann],
   [/^\/api\/v1\/recipes$/, pageOf([hoffmannSummary, kasuyaSummary])],
-  // calendar가 brew-logs/\d+보다 위에 와야 한다 — \d+ 패턴은 "calendar"에 매칭되지 않지만
-  // 순서를 분명히 해 둔다.
+  // calendar·stats가 brew-logs/\d+보다 위에 와야 한다 — \d+ 패턴은 이 문자열들에
+  // 매칭되지 않지만 순서를 분명히 해 둔다.
   [/^\/api\/v1\/brew-logs\/calendar$/, homeCalendar],
+  [/^\/api\/v1\/brew-logs\/stats$/, brewLogStats],
   [/^\/api\/v1\/brew-logs\/\d+$/, brewLogWithTds],
   [/^\/api\/v1\/brew-logs$/, brewLogPage],
   [/^\/api\/v1\/gear\/brewers$/, brewers],

@@ -48,32 +48,15 @@ test.describe("구조 — 상태값", () => {
 });
 
 test.describe("구조 — 대표 수치", () => {
-  // 36px 클래스로 찾지 않는다. 스타일이 바뀔 때마다 셀렉터가 깨진다.
-  for (const path of ["/recipes", "/recipes/12"]) {
-    test(`AC-STRUCT-17 · ${path}의 대표 수치가 1:비율이다`, async ({
-      page,
-    }) => {
-      await installStubs(page);
-      await page.goto(path);
-      await page.waitForLoadState("networkidle");
+  // AC-STRUCT-17은 "/recipes"(목록 카드, AC-RECIPESBREWS-69)와 "/recipes/12"(상세,
+  // AC-RECIPESBREWS-73)가 둘 다 레시피 서랍 화면 스펙으로 대체하며 완전히 없어졌다
+  // (docs/specs/2026-09-25-recipe-drawer-screens.md). 레시피 쪽 대표 수치는 이제 원두량이라
+  // "1:비율" 패턴 자체를 검사하지 않는다 — 값 검증은 컴포넌트 테스트가 맡는다.
 
-      /*
-       * 갱신(2026-09-17): 히어로 도입으로 대표 수치가 `dl > dd`에서 판 위의 값 하나가 됐다.
-       * 라벨은 아이브로우가 판 밖에서 맡으므로 `data-lead`의 텍스트가 곧 값이다.
-       * 목록 카드는 아직 `dd` 구조라 둘 다 받는다.
-       */
-      const lead = page.locator("[data-lead]").first();
-      const dd = lead.locator("dd");
-      const text = (await dd.count()) > 0
-        ? await dd.first().innerText()
-        : await lead.innerText();
-
-      expect(text, path).toMatch(/^1:\d+\.\d$/);
-      expect(text, path).not.toContain("→");
-    });
-  }
-
-  for (const path of ["/brews", "/brews/2"]) {
+  // "/brews"(목록)는 빠졌다 — AC-RECIPESBREWS-77이 목록을 카드에서 통계 4칸 +
+  // 테이블/원장 행으로 바꾸며 대표 수치(히어로) 자체가 없어졌다
+  // (docs/specs/2026-09-25-recipe-drawer-screens.md).
+  for (const path of ["/brews/2"]) {
     test(`AC-STRUCT-18 · ${path}의 대표 수치가 1:비율이다`, async ({
       page,
     }) => {
@@ -157,22 +140,6 @@ test.describe("구조 — 컨트롤", () => {
     expect(box!.height).toBe(44);
   });
 
-  test("AC-STRUCT-04 · 체크박스가 20×20에 탭 영역 44×44다", async ({
-    page,
-  }) => {
-    await installStubs(page);
-    await page.goto("/recipes");
-    await page.waitForLoadState("networkidle");
-
-    const input = await page.locator('input[type="checkbox"]').boundingBox();
-    const tap = await page
-      .locator('label:has(input[type="checkbox"])')
-      .boundingBox();
-
-    expect({ w: input!.width, h: input!.height }).toEqual({ w: 20, h: 20 });
-    expect(tap!.width).toBeGreaterThanOrEqual(44);
-    expect(tap!.height).toBeGreaterThanOrEqual(44);
-  });
 });
 
 test("AC-STRUCT-05 · 스텝 행의 열 위치가 행마다 같다", async ({ page }) => {

@@ -23,7 +23,8 @@ import { tokenColor } from "./tokenColor";
 // 대표 자리로 올라갔다. 메타줄 앵커를 거기 남은 값으로 바꾼다.
 const META_ROWS = [
   { path: "/recipes", text: "100°C", what: "카드 보조줄" },
-  { path: "/brews", text: "2026-08-31", what: "카드 보조줄" },
+  // "/brews"(목록)는 빠졌다 — AC-RECIPESBREWS-77이 카드를 테이블/원장 행으로 바꾸며
+  // "카드 보조줄"(gap-x-3 flex 행) 자체가 없어졌다(테이블 <td>·원장 행은 다른 레이아웃이다).
   /*
    * 갱신(2026-09-17): `/recipes/12`의 상세 메타줄은 히어로 판 안으로 들어가면서
    * 한 줄 나열이 아니라 **2열 그리드**가 됐다(`gap-x-4`). 판 안의 격자는 이 조건이
@@ -34,8 +35,11 @@ const META_ROWS = [
   { path: "/brews/2", text: "22", what: "상세 실측값" },
 ] as const;
 
-/** 대표 수치는 `data-lead`로 찾는다 — 텍스트로 찾으면 표현이 바뀔 때마다 깨진다. */
-const LEAD_PATHS = ["/recipes", "/brews", "/recipes/12", "/brews/2"] as const;
+/**
+ * 대표 수치는 `data-lead`로 찾는다 — 텍스트로 찾으면 표현이 바뀔 때마다 깨진다.
+ * "/brews"(목록)는 빠졌다 — AC-RECIPESBREWS-77이 대표 수치(히어로) 자체를 없앴다.
+ */
+const LEAD_PATHS = ["/recipes", "/recipes/12", "/brews/2"] as const;
 
 /** `text`를 담은 요소에서 위로 올라가 `className`에 `token`을 가진 첫 조상. */
 function ancestorWith(

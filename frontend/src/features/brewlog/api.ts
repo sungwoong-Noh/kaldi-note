@@ -5,8 +5,10 @@ import type { BrewLogPatchBody, BrewLogRequestBody } from "./formState";
 import {
   brewLogPageSchema,
   brewLogSchema,
+  brewLogStatsSchema,
   type BrewLog,
   type BrewLogPage,
+  type BrewLogStats,
 } from "./schema";
 
 export const BREW_LOG_PAGE_SIZE = 20;
@@ -45,6 +47,15 @@ export function fetchBrewLogPage(
   });
   return authedRequest(backendUrl(`/api/v1/brew-logs?${query.toString()}`), {
     schema: brewLogPageSchema,
+    onSessionLost,
+  });
+}
+
+export function fetchBrewLogStats(
+  onSessionLost?: () => void,
+): Promise<BrewLogStats> {
+  return authedRequest(backendUrl("/api/v1/brew-logs/stats"), {
+    schema: brewLogStatsSchema,
     onSessionLost,
   });
 }

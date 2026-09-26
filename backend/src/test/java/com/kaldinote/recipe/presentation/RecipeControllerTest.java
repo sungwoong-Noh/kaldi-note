@@ -1774,6 +1774,113 @@ class RecipeControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.content[?(@.id == %d)].savedCount".formatted(id)).value(1));
   }
 
+  // ===== 레시피 서랍 화면 — 목록 응답 필드 3개 (AC-RECIPESBREWS-55~57) =====
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-55 · 목록 응답에 authorDisplayName이 포함된다")
+  void 목록_응답에_authorDisplayName이_포함된다() throws Exception {
+    String owner = token();
+    Long curatedId =
+        createdId(
+            createRecipe(
+                owner,
+                """
+                {"title":"큐레이션 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+                """));
+    setSourceType(curatedId, "CURATED");
+    setAuthorName(curatedId, "James Hoffmann");
+
+    User jiyeon = newUser("지연");
+    Long userId =
+        createdId(
+            createRecipe(
+                tokenOf(jiyeon),
+                """
+                {"title":"지연의 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+                """));
+
+    listRecipes(owner, "?scope=PUBLIC")
+        .andExpect(
+            jsonPath("$.content[?(@.id == %d)].authorDisplayName".formatted(curatedId))
+                .value("James Hoffmann"))
+        .andExpect(
+            jsonPath("$.content[?(@.id == %d)].authorDisplayName".formatted(userId)).value("지연"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-56 · 목록 응답에 sourceAuthorName이 포함된다")
+  void 목록_응답에_sourceAuthorName이_포함된다() throws Exception {
+    User a = newUser("a-작성자");
+    Long originalId =
+        createdId(
+            createRecipe(
+                tokenOf(a),
+                """
+                {"title":"원본 레시피","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+                """));
+
+    String b = tokenOf(newUser("b-담은사람"));
+    Long forkId =
+        createdId(
+            mockMvc.perform(
+                post("/api/v1/recipes/" + originalId + "/fork")
+                    .header(HttpHeaders.AUTHORIZATION, b)));
+
+    listRecipes(b, "?scope=DRAWER")
+        .andExpect(
+            jsonPath("$.content[?(@.id == %d)].sourceAuthorName".formatted(forkId)).value("a-작성자"));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-57 · 목록 응답에 brewCount가 포함된다")
+  void 목록_응답에_brewCount가_포함된다() throws Exception {
+    String token = token();
+    Long recipeId = simpleRecipe(token, "brewCount 목록 테스트");
+    Long grinderModelId = grinderId("Comandante", "C40 MK4");
+    Long userGrinderId = userGrinderId(token, grinderModelId);
+    Long beanBatchIdA = beanBatchId(token, BREWED_AT, 6);
+    Long beanBatchIdB = beanBatchId(token, BREWED_AT, 6);
+    Long beanBatchIdC = beanBatchId(token, BREWED_AT, 6);
+
+    createBrewLog(token, recipeId, beanBatchIdA, userGrinderId).andExpect(status().isCreated());
+    createBrewLog(token, recipeId, beanBatchIdB, userGrinderId).andExpect(status().isCreated());
+    createBrewLog(token, recipeId, beanBatchIdC, userGrinderId).andExpect(status().isCreated());
+
+    listRecipes(token, "?scope=DRAWER")
+        .andExpect(jsonPath("$.content[?(@.id == %d)].brewCount".formatted(recipeId)).value(3));
+  }
+
+  @Test
+  @DisplayName("AC-RECIPESBREWS-99 · 목록 API는 작성자·잔 수 조회로 추가 쿼리가 늘지 않는다(N+1 없음)")
+  void 목록_API는_배치_조회로_N1이_없다() throws Exception {
+    String owner = token();
+    for (int i = 0; i < 5; i++) {
+      createRecipe(
+          owner,
+          """
+          {"title":"쿼리카운트 %d","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+          """
+              .formatted(i));
+    }
+
+    org.hibernate.stat.Statistics stats =
+        entityManager
+            .getEntityManagerFactory()
+            .unwrap(org.hibernate.SessionFactory.class)
+            .getStatistics();
+
+    stats.clear();
+    listRecipes(owner, "?scope=PUBLIC&size=1").andExpect(status().isOk());
+    long queriesForOne = stats.getQueryExecutionCount();
+
+    stats.clear();
+    listRecipes(owner, "?scope=PUBLIC&size=5").andExpect(status().isOk());
+    long queriesForFive = stats.getQueryExecutionCount();
+
+    // 페이지 크기가 늘어도 쿼리 수는 그대로다 — 배치 조회라 항목 수에 비례하지 않는다.
+    assertThat(queriesForFive).isEqualTo(queriesForOne);
+  }
+
   @Test
   @DisplayName("AC-RECIPESBREWS-01 · q로 레시피 제목이 부분 일치 검색된다")
   void q로_제목이_검색된다() throws Exception {
@@ -2053,6 +2160,17 @@ class RecipeControllerTest extends AbstractIntegrationTest {
     entityManager
         .createNativeQuery("update recipes set source_type = :t where id = :id")
         .setParameter("t", sourceType)
+        .setParameter("id", recipeId)
+        .executeUpdate();
+    entityManager.flush();
+    entityManager.clear();
+  }
+
+  /** CURATED 픽스처의 authorName을 지정한다 — 일반 API로는 CURATED 레시피를 만들 수 없어 직접 갱신한다. */
+  private void setAuthorName(Long recipeId, String authorName) {
+    entityManager
+        .createNativeQuery("update recipes set author_name = :a where id = :id")
+        .setParameter("a", authorName)
         .setParameter("id", recipeId)
         .executeUpdate();
     entityManager.flush();

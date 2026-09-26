@@ -1,7 +1,7 @@
 ---
 id: RECIPESBREWS
 title: 레시피 서랍 화면 — 웹·모바일 둘러보기/내 서랍/상세/내 잔
-status: 승인
+status: 구현완료
 milestone: M1
 supersedes:
 ---
@@ -420,63 +420,49 @@ supersedes:
 
 ---
 
-## 구현 순서
+## 대체하는 이전 AC
 
-- [ ] **Task 0: 계약·백엔드 필드 3개** — Covers: AC-RECIPESBREWS-55, 56, 57
+이전 스펙의 일부 AC만 대체한다(스펙 전체 대체가 아니라 frontmatter `supersedes`는 비워둔다).
 
-  ```
-  1. docs/contracts/2026-09-21-recipes-and-brews-search-api.json의 RecipeSummary에
-     authorDisplayName · sourceAuthorName · brewCount 추가
-  2. RecipeSummaryResponse 레코드에 필드 3개 추가, RecipeService.list()/search()에서
-     savedCount와 같은 배치 조회로 채운다(authorDisplayName은 ownerUserId 목록을
-     UserRepository에서 배치 조회, CURATED는 entity의 authorName)
-  3. ./gradlew test --tests '*ContractComplianceTest' 초록 확인
-  ```
-
-- [ ] **Task 1: 세그먼트·라우팅·URL 동기화 뼈대** — Covers: AC-RECIPESBREWS-58, 65, 66, 67, 68
-
-  ```tsx
-  // frontend/src/app/recipes/page.tsx
-  const searchParams = useSearchParams();
-  const scope = searchParams.get("scope") ?? "DRAWER";
-  // useInfiniteQuery queryKey에 scope·q·temp·roast·doseMin·doseMax·dripper·sort·owner 포함
-  // page는 queryKey에 넣지 않는다(AC-67) — useInfiniteQuery가 알아서 누적
-  ```
-
-- [ ] **Task 2: 검색 입력 — 디바운스·IME** — Covers: AC-RECIPESBREWS-59, 60, 80
-
-- [ ] **Task 3: 필터 — 웹 pill 줄 · 모바일 스테이징 시트** — Covers: AC-RECIPESBREWS-61, 62, 82
-
-- [ ] **Task 4: RecipeCard 재설계** — Covers: AC-RECIPESBREWS-69, 70, 71, 72
-
-- [ ] **Task 5: 내 서랍 owner pill + 정렬 토글** — Covers: AC-RECIPESBREWS-63, 64
-
-- [ ] **Task 6: 레시피 상세 재설계 — 담기·바로 내리기** — Covers: AC-RECIPESBREWS-73, 74, 75, 81
-
-- [ ] **Task 7: 내 잔(BW1/BM1) — 통계 + 목록** — Covers: AC-RECIPESBREWS-76, 77, 78
-
-- [ ] **Task 8: 반응형 4구간** — Covers: AC-RECIPESBREWS-83, 88, 89, 90, 91, 92, 93
-
-- [ ] **Task 9: 탭 개칭 "내 잔"** — Covers: AC-RECIPESBREWS-79
-
-  ```
-  BottomNav·WebTopBar 라벨 "기록" → "내 잔" 변경 전, docs/GOTCHAS.md
-  "문구가 다른 요소의 부분 문자열이 되면 Playwright strict-mode 충돌" 확인.
-  BottomNav.test.tsx 등 기존 "기록" 문자열 단정을 함께 갱신.
-  ```
-
-- [ ] **Task 10: 로딩·에러·빈 상태 전반** — Covers: AC-RECIPESBREWS-84, 85, 86, 87, 94, 95, 96, 97, 101
-
-- [ ] **Task 11: 비기능 검증** — Covers: AC-RECIPESBREWS-98, 99, 100
-
----
+- AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-69
+- AC-WEBEDIT-05(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-63
+- AC-TOUCH-06(docs/specs/2026-09-09-touch-targets.md) → AC-RECIPESBREWS-63
+- AC-STRUCT-04(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-63
+- AC-VISUAL-08(docs/specs/2026-09-07-visual-hierarchy.md) → AC-RECIPESBREWS-69
+- AC-STRUCT-17(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-69·73
+- AC-CONSIST-08(docs/specs/2026-09-08-screen-consistency.md) → AC-RECIPESBREWS-73
+- AC-WEB-22·23·25(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-74·75·96
+- AC-WEBEDIT-06(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-74
+- AC-WEBSHELL-17(docs/specs/2026-09-01-web-shell.md) → AC-RECIPESBREWS-81
+- AC-WEBSHELL-21·22(docs/specs/2026-09-01-web-shell.md) → AC-RECIPESBREWS-77
+- AC-STRUCT-18의 "/brews" 부분(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-77
+- AC-CONSIST-04·14의 "/brews" 부분(docs/specs/2026-09-08-screen-consistency.md) → AC-RECIPESBREWS-77
 
 ## 수동 확인
 
-- [ ] ★ mockup-checker 서브에이전트로 RW1~RW3·BW1·RM1~RM4·BM1을 `390px`/`1280px`에서
+- [x] ★ mockup-checker 서브에이전트로 RW1~RW3·BW1·RM1~RM4·BM1을 `390px`/`1280px`에서
       실제 배포와 목업을 나란히 대조하고, 결과를 PR 본문에 첨부한다(완료 조건).
 
 ## 열어둔 결정
 
 - 타이포그래피 근사값이 실제 렌더에서 목업과 시각적으로 얼마나 벌어지는지는 위 수동 확인의
   mockup-checker 결과를 보고 그 자리에서 미세 조정한다(새 named 토큰이 필요하면 추가).
+
+### mockup-checker가 찾은 것 중 이번에 고친 것 / 남긴 것
+
+**고쳤다** (기능·정보 위계에 실질적 영향이 있어 AC 범위 안으로 판단):
+- RW3/RM4 상세: "내 서랍에 담기"가 주 행동(primary)이어야 하는데 "바로 내리기"가
+  primary였다 — 순서·색을 목업대로 뒤집었다.
+- RM3 필터 시트: 원두량 슬라이더가 통째로 빠져 있었다 — `FilterSheet`에 추가했다.
+
+**남겼다** (Non-goals의 "픽셀 단위 완전 정합은 다루지 않는다"에 해당하거나, 별도 시각 보정
+트랙(갈래 B)의 몫으로 판단):
+- RW1/RW2 세그먼트 탭이 목업은 컴팩트 pill인데 실제는 `flex-1` 전체 폭이다.
+- RW1/RW2 필터 줄이 목업은 구분선과 함께 한 줄에 압축돼 있는데 실제는 필터군마다 세로로
+  분리된 줄이다. 원두량 듀얼 `<input type=range>`가 겹쳐 보이는 문제도 같은 갈래.
+- 둘러보기에 결과 개수("128개") 표시가 없다 — 어느 AC도 요구하지 않는다.
+- RW3 상세가 목업은 2단(좌 스텝·우 스티키 히어로)인데 실제는 1단이다.
+- RM3 필터 시트가 실제 바텀시트(오버레이+백드롭)가 아니라 페이지 안 인라인 블록이다 —
+  AC-82는 스테이징 동작만 요구하고 프레젠테이션(모달 여부)은 명시하지 않는다.
+- `/brews` 문서 `&lt;title&gt;`이 남긴 감사 대상은 아니었으나, 페이지 `h1`이 "브루잉
+  로그"였던 것은 이번에 "내 잔"으로 맞췄다(탭 라벨과의 일관성).

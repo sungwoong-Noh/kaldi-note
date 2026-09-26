@@ -39,12 +39,22 @@ const recipeCommonShape = {
   grindSettingValue: z.number().optional(),
   grindSettingUnit: z.enum(["CLICK", "NUMBER", "MICRON"]).optional(),
   grindMicronEstimated: z.number().optional(),
+  temperatureType: z.enum(["HOT", "ICE"]),
+  recommendedRoastLevel: z.enum(["LIGHT", "MEDIUM", "DARK"]),
+  savedCount: z.number(),
+  // 포크본만 값이 있다(RECIPESBREWS 스펙 데이터 절).
+  sourceAuthorName: z.string().optional(),
+  brewCount: z.number(),
   createdAt: z.string(),
   updatedAt: z.string(),
 };
 
-/** 목록 항목. 단건 응답에서 `steps`와 출처 3필드를 덜어낸 것. */
-export const recipeSummarySchema = z.object(recipeCommonShape);
+/** 목록 항목. 단건 응답에서 `steps`와 출처 2필드(authorName·sourceUrl 등)를 덜어낸 것.
+ * authorDisplayName은 목록 전용 — CURATED는 authorName, USER는 소유자 닉네임(레시피 서랍 스펙). */
+export const recipeSummarySchema = z.object({
+  ...recipeCommonShape,
+  authorDisplayName: z.string(),
+});
 
 /** 단건 조회. 출처 표기와 푸어 스텝이 붙는다. */
 export const recipeSchema = z.object({

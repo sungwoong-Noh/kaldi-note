@@ -209,12 +209,9 @@ POST /api/v1/gear/grind-conversions
 - **Then** 이름이 `새 레시피`인 링크의 `href`가 `/recipes/new`다
 - **검증** 페이지 테스트 `RecipesPage.test.tsx`
 
-#### AC-WEBEDIT-05 · "내 레시피만"을 켜면 ownerUserId를 붙여 다시 부른다
-
-- **Given** 로그인한 사용자의 id가 `7`이고 `/recipes`가 열려 있다
-- **When** 이름이 `내 레시피만`인 토글을 켠다
-- **Then** `GET /api/v1/recipes`가 `ownerUserId=7`·`page=0`·`size=20`을 쿼리로 갖고 다시 호출된다
-- **검증** 페이지 테스트 `RecipesPage.test.tsx`
+**AC-WEBEDIT-05 (대체됨)** · "내 레시피만" 체크박스 + `ownerUserId` 쿼리였던 원래 AC는
+`docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-63(내 서랍 소유 필터
+pill · `scope=DRAWER&owner=MINE`)이 대체한다.
 
 #### AC-WEBEDIT-06 · 포크에 성공하면 새 레시피의 편집 화면으로 간다
 
@@ -222,6 +219,12 @@ POST /api/v1/gear/grind-conversions
 - **When** `내 레시피로 가져오기`를 누른다
 - **Then** `/recipes/42/edit`로 이동한다 (첫 슬라이스 스펙의 `WEB-24`를 대체한다)
 - **검증** 페이지 테스트 `RecipeDetailPage.test.tsx`
+
+> **정정 (2026-09-25):** 버튼 이름이 "내 서랍에 담기"로 바뀌고, 이동 대상도
+> **`/recipes/42/edit`(편집)에서 `/recipes/42`(상세)로 되돌아갔다**
+> (`docs/specs/2026-09-25-recipe-drawer-screens.md`의 `AC-RECIPESBREWS-74`) — 담기는 바로
+> 고치라는 뜻이 아니라 "서랍에 넣어 둔다"는 뜻이라는 쪽으로 판단이 바뀌었다. 위 본문은 당시
+> 결정의 기록으로 남기고, 테스트는 `AC-RECIPESBREWS-74`라는 이름으로 새 동작을 검증한다.
 
 ### 생성과 저장
 

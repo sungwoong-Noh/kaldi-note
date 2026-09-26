@@ -18,6 +18,21 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
 
   long countByRecipeIdAndDeletedAtIsNull(Long recipeId);
 
+  /** 목록 한 페이지 안 레시피들의 brewCount(잔 수)를 한 번에 조회한다 — RecipeRepository.countSavedForIds와 같은 배치 패턴. */
+  @Query(
+      value =
+          "select b.recipe_id as recipeId, count(*) as cnt "
+              + "from brew_logs b where b.recipe_id in (:recipeIds) and b.deleted_at is null "
+              + "group by b.recipe_id",
+      nativeQuery = true)
+  List<BrewCountRow> countBrewsForIds(@Param("recipeIds") List<Long> recipeIds);
+
+  interface BrewCountRow {
+    Long getRecipeId();
+
+    long getCnt();
+  }
+
   /** 잔 통계 — 이번 달(KST) 건수(AC-RECIPESBREWS-21). */
   @Query(
       value =

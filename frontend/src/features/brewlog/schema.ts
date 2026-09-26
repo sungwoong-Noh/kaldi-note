@@ -50,6 +50,16 @@ export const brewLogSummarySchema = z.object(brewLogShape);
 
 export const brewLogPageSchema = pageResponseSchema(brewLogSummarySchema);
 
+/** 내 잔 통계 4칸(레시피 서랍 화면 스펙 AC-RECIPESBREWS-76). 0건이면 monthCount만 있다. */
+export const brewLogStatsSchema = z.object({
+  monthCount: z.number(),
+  averageRating: z.number().optional(),
+  favoriteDoseG: z.number().optional(),
+  favoriteRecipeId: z.number().optional(),
+  favoriteRecipeTitle: z.string().optional(),
+});
+
 export type BrewLog = z.infer<typeof brewLogSchema>;
+export type BrewLogStats = z.infer<typeof brewLogStatsSchema>;
 export type BrewLogSummary = z.infer<typeof brewLogSummarySchema>;
 export type BrewLogPage = z.infer<typeof brewLogPageSchema>;

@@ -11,19 +11,37 @@ import {
 
 export const RECIPE_PAGE_SIZE = 20;
 
-export function fetchRecipePage(
+/** GET /recipes의 검색·필터 파라미터. 레시피 서랍 화면 스펙(RECIPESBREWS)의 URL 쿼리와 1:1이다. */
+export interface RecipeSearchFilter {
+  scope: "DRAWER" | "PUBLIC";
+  q?: string;
+  temp?: "HOT" | "ICE";
+  roast?: Array<"LIGHT" | "MEDIUM" | "DARK">;
+  doseMin?: number;
+  doseMax?: number;
+  dripper?: Array<"V60" | "KALITA" | "ORIGAMI" | "CLEVER">;
+  owner?: "MINE" | "SAVED";
+  sort?: "RECENT";
+}
+
+export function searchRecipes(
   page: number,
-  onSessionLost?: () => void,
-  filter: { ownerUserId?: number | null } = {},
+  onSessionLost: (() => void) | undefined,
+  filter: RecipeSearchFilter,
 ): Promise<RecipePage> {
   const query = new URLSearchParams({
     page: String(page),
     size: String(RECIPE_PAGE_SIZE),
+    scope: filter.scope,
   });
-  // 값이 있을 때만 붙인다. 빈 ownerUserId를 보내면 서버가 그 사용자를 찾다가 빈 목록을 준다.
-  if (filter.ownerUserId != null) {
-    query.set("ownerUserId", String(filter.ownerUserId));
-  }
+  if (filter.owner) query.set("owner", filter.owner);
+  if (filter.q) query.set("q", filter.q);
+  if (filter.temp) query.set("temp", filter.temp);
+  for (const r of filter.roast ?? []) query.append("roast", r);
+  if (filter.doseMin != null) query.set("doseMin", String(filter.doseMin));
+  if (filter.doseMax != null) query.set("doseMax", String(filter.doseMax));
+  for (const d of filter.dripper ?? []) query.append("dripper", d);
+  if (filter.sort) query.set("sort", filter.sort);
   return authedRequest(backendUrl(`/api/v1/recipes?${query.toString()}`), {
     schema: recipePageSchema,
     onSessionLost,

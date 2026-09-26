@@ -229,12 +229,10 @@ plan: docs/archive/plans/2026-08-21-plan-web-recipe-read.md
 
 ### 프론트 — 목록
 
-#### AC-WEB-09 · 카드에 추출 파라미터가 표시된다
-
-- **Given** 목록 응답에 `title: "James Hoffmann Ultimate V60"`, `doseG: 30.0`, `waterG: 500.0`, `ratio: 16.7`, `waterTempC: 100.0`, `totalTimeSeconds: 210`인 항목이 있다
-- **When** `/recipes`를 연다
-- **Then** `James Hoffmann Ultimate V60`, `30.0g`, `500.0g`, `1:16.7`, `100°C`, `3:30`이 모두 화면에 있다
-- **검증** 페이지 테스트 `RecipesPage.test.tsx`
+**AC-WEB-09 (대체됨)** · 카드 대표 수치가 `ratio`였던 원래 AC는
+`docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-69(대표 수치가 `doseG`로 바뀜)가
+대체한다. `RecipeCard`가 그 스펙 기준으로 재설계돼 이 문서 버전의 검증 시나리오는 더 이상 유효하지
+않다.
 
 #### AC-WEB-10 · hasNext가 true면 더 보기 버튼이 있다
 
@@ -335,12 +333,19 @@ plan: docs/archive/plans/2026-08-21-plan-web-recipe-read.md
 - **Then** 이름이 "내 레시피로 가져오기"인 버튼이 있다
 - **검증** 페이지 테스트 `RecipeDetailPage.test.tsx`
 
+> **정정 (2026-09-25):** 버튼 이름이 **"내 서랍에 담기"**로 바뀌었다
+> (`docs/specs/2026-09-25-recipe-drawer-screens.md`의 `AC-RECIPESBREWS-74`). 위 본문은 당시
+> 이름의 기록으로 남기고, 테스트는 `AC-RECIPESBREWS-74`라는 이름으로 새 동작을 검증한다.
+
 #### AC-WEB-23 · 내 레시피에는 포크 버튼이 없다
 
 - **Given** 로그인한 사용자의 id가 `7`이고 상세 응답의 `ownerUserId`가 `7`이다
 - **When** `/recipes/1`을 연다
 - **Then** 이름이 "내 레시피로 가져오기"인 버튼이 없다
 - **검증** 페이지 테스트 `RecipeDetailPage.test.tsx`
+
+> **정정 (2026-09-25):** `docs/specs/2026-09-25-recipe-drawer-screens.md`의
+> `AC-RECIPESBREWS-75`가 같은 시나리오를 새 버튼 이름으로 이어받는다.
 
 #### AC-WEB-24 · 포크에 성공하면 새 레시피로 이동한다
 
@@ -357,6 +362,11 @@ plan: docs/archive/plans/2026-08-21-plan-web-recipe-read.md
 - **When** "내 레시피로 가져오기"를 누른다
 - **Then** 경로가 `/recipes/1` 그대로이고, `권한이 없습니다.`가 화면에 있으며, 그 버튼이 다시 활성화된다(`disabled`가 아니다)
 - **검증** 페이지 테스트 `RecipeDetailPage.test.tsx`
+
+> **정정 (2026-09-25):** 버튼 이름이 "내 서랍에 담기"로 바뀌었다. 같은 시나리오를
+> `RecipeDetailPage.test.tsx`가 이름 없이 회귀 테스트로 계속 검증하고,
+> `docs/specs/2026-09-25-recipe-drawer-screens.md`의 `AC-RECIPESBREWS-96`(Task 10)이 정식
+> AC로 이어받을 예정이다.
 
 ---
 

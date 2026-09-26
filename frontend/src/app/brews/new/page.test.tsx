@@ -93,7 +93,7 @@ describe("BrewNewPage", () => {
   it("AC-WEBBREW-12 · 추출 시간은 빈칸으로 시작한다", async () => {
     await renderNewPage();
 
-    expect(await screen.findByLabelText("추출 시간")).toHaveValue(null);
+    expect(await screen.findByLabelText("추출 시간")).toHaveValue("");
   });
 
   it("AC-WEBBREW-13 · 내린 시각의 기본값은 화면이 열린 시각이다", async () => {
@@ -512,7 +512,7 @@ describe("BrewNewPage — 드로다운·음료 중량·TDS", () => {
   it("AC-WEBSHELL-18 · 세 입력칸이 빈 채로 있다", async () => {
     await renderNewPage();
 
-    expect(await screen.findByLabelText("드로다운 시간")).toHaveValue(null);
+    expect(await screen.findByLabelText("드로다운 시간")).toHaveValue("");
     expect(screen.getByLabelText("음료 중량")).toHaveValue(null);
     expect(screen.getByLabelText("TDS")).toHaveValue(null);
   });
@@ -522,7 +522,7 @@ describe("BrewNewPage — 드로다운·음료 중량·TDS", () => {
     const captured = captureCreate();
 
     await renderNewPage();
-    await user.type(await screen.findByLabelText("드로다운 시간"), "35");
+    await user.type(await screen.findByLabelText("드로다운 시간"), "0:35");
     await user.type(screen.getByLabelText("음료 중량"), "260");
     await user.type(screen.getByLabelText("TDS"), "1.35");
     await user.click(screen.getByRole("button", { name: "기록하기" }));
@@ -641,5 +641,56 @@ describe("BrewNewPage — 에러 필드로 포커스 이동", () => {
     await waitFor(() =>
       expect(document.activeElement).toBe(screen.getByLabelText("물량")),
     );
+  });
+});
+
+describe("BrewNewPage — 시간 m:ss", () => {
+  it("AC-BREWFORM-05 · 시간은 m:ss로 넣고 초로 보낸다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    await user.type(await screen.findByLabelText("추출 시간"), "3:30");
+    await user.type(screen.getByLabelText("드로다운 시간"), "0:45");
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    expect(captured.body?.actualTotalTimeSeconds).toBe(210);
+    expect(captured.body?.actualDrawdownSeconds).toBe(45);
+  });
+
+  it.each(["3:5", "60:00", "abc", "3:60"])(
+    "AC-BREWFORM-13 · %s는 요청을 보내지 않고 형식 안내를 붙인다",
+    async (bad) => {
+      const user = userEvent.setup();
+      const captured = captureCreate();
+
+      await renderNewPage();
+      const input = await screen.findByLabelText("추출 시간");
+      await user.type(input, bad);
+      await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+      const describedBy = input.getAttribute("aria-describedby") ?? "";
+      await waitFor(() =>
+        expect(document.getElementById(describedBy)).toHaveTextContent(
+          "0:00 형식으로 입력해 주세요.",
+        ),
+      );
+      expect(captured.calls).toBe(0);
+    },
+  );
+
+  it("AC-BREWFORM-13 · 경계값 0:00과 59:59는 그대로 보낸다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    await user.type(await screen.findByLabelText("추출 시간"), "59:59");
+    await user.type(screen.getByLabelText("드로다운 시간"), "0:00");
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    expect(captured.body?.actualTotalTimeSeconds).toBe(3599);
+    expect(captured.body?.actualDrawdownSeconds).toBe(0);
   });
 });

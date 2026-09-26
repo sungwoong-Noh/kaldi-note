@@ -127,13 +127,13 @@ export function BrewLogFields({
           onChange={(v) => set("actualWaterTempC", v)}
           error={fieldErrors?.byField.actualWaterTempC}
         />
-        <NumberField
+        <MinSecField
           label="추출 시간"
           value={state.actualTotalTimeSeconds}
           onChange={(v) => set("actualTotalTimeSeconds", v)}
           error={fieldErrors?.byField.actualTotalTimeSeconds}
         />
-        <NumberField
+        <MinSecField
           label="드로다운 시간"
           value={state.actualDrawdownSeconds}
           onChange={(v) => set("actualDrawdownSeconds", v)}
@@ -246,6 +246,42 @@ function NumberField({
         onChange={(e) =>
           onChange(e.target.value === "" ? null : Number(e.target.value))
         }
+        aria-describedby={error ? errorId : undefined}
+        aria-invalid={error ? true : undefined}
+        className={controlClass("", Boolean(error))}
+      />
+      {error && (
+        <span id={errorId} className="text-body-sm text-danger">
+          {error}
+        </span>
+      )}
+    </label>
+  );
+}
+
+/** `3:30` 같은 `m:ss` 텍스트. 숫자 키패드에는 `:`가 없어 `inputMode`를 지정하지 않는다. */
+function MinSecField({
+  label,
+  value,
+  onChange,
+  error,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+}) {
+  const errorId = `brew-${encodeURIComponent(label)}-error`;
+
+  return (
+    <label className="flex items-center gap-2 text-body">
+      <span className="w-20 shrink-0 text-ink-3">{label}</span>
+      <input
+        type="text"
+        aria-label={label}
+        placeholder="0:00"
+        value={value}
+        onChange={(e) => onChange(e.target.value.trim())}
         aria-describedby={error ? errorId : undefined}
         aria-invalid={error ? true : undefined}
         className={controlClass("", Boolean(error))}

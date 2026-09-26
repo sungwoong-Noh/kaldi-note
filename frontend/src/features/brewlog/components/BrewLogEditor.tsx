@@ -13,6 +13,8 @@ import type { UserGrinder } from "@/features/gear/schema";
 import { fetchBrewLog, patchBrewLog } from "../api";
 import {
   clearedFields,
+  invalidTimeFields,
+  MIN_SEC_MESSAGE,
   formStateFromLog,
   toPatchBody,
   type BrewLogEditState,
@@ -122,9 +124,12 @@ function Fields({
 
   // 서버 오류가 나중에 온 정보라 지우기 안내를 덮는다. 지우기 안내가 떠 있으면
   // 저장 자체가 막히므로 둘이 같은 칸에서 겹칠 일은 없다.
+  // 형식이 틀린 시간은 지우기와 같은 방식으로 저장을 막는다. 그대로 보내면 초로 바꿀 수 없어 조용히 빠진다.
+  const invalidTimes = invalidTimeFields(state);
   const fieldErrors = {
     byField: {
       ...Object.fromEntries(cleared.map((key) => [key, CLEAR_MESSAGE])),
+      ...Object.fromEntries(invalidTimes.map((key) => [key, MIN_SEC_MESSAGE])),
       ...(serverErrors?.byField ?? {}),
     },
     byStepIndex: {},
@@ -204,7 +209,9 @@ function Fields({
 
       <div className="flex items-center gap-2">
         <Button
-          disabled={save.isPending || cleared.length > 0}
+          disabled={
+            save.isPending || cleared.length > 0 || invalidTimes.length > 0
+          }
           onClick={submit}
           variant="primary"
         >

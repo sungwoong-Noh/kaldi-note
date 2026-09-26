@@ -31,7 +31,7 @@ describe("initialFormState", () => {
       actualWaterG: 300.0,
       actualWaterTempC: 92.0,
       // 레시피의 totalTimeSeconds(210)는 계획 시간이다. 실측인 양 저장하지 않는다.
-      actualTotalTimeSeconds: null,
+      actualTotalTimeSeconds: "",
       userGrinderId: 5,
       actualGrindSettingValue: 22.0,
     });

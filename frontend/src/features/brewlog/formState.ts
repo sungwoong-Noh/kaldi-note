@@ -4,6 +4,8 @@
  * <p>쓰기 슬라이스와 같은 방식이다 — `useState` 하나로 들고, 빈 값은 요청에서 키째 뺀다(`features/recipe/formState.ts`).
  */
 
+import type { MappedFieldErrors } from "@/lib/fieldErrors";
+import { formatDuration } from "@/lib/format";
 import type { Recipe } from "../recipe/schema";
 import type { UserGrinder } from "../gear/schema";
 import type { BrewLog } from "./schema";
@@ -22,8 +24,13 @@ export type BrewLogFormState = {
   actualDoseG: number | null;
   actualWaterG: number | null;
   actualWaterTempC: number | null;
-  actualTotalTimeSeconds: number | null;
-  actualDrawdownSeconds: number | null;
+  /**
+   * 입력칸의 `m:ss` 텍스트. 요청을 만들 때 초로 바꾼다.
+   *
+   * <p>키 이름을 서버 필드명과 같게 둔다 — 서버 필드 오류와 지우기 안내가 매핑 없이 이 칸에 붙는다.
+   */
+  actualTotalTimeSeconds: string;
+  actualDrawdownSeconds: string;
   beverageWeightG: number | null;
   tdsPercent: number | null;
   rating: number | null;
@@ -81,8 +88,8 @@ export function initialFormState(
     actualDoseG: recipe.doseG,
     actualWaterG: recipe.waterG,
     actualWaterTempC: recipe.waterTempC ?? null,
-    actualTotalTimeSeconds: null,
-    actualDrawdownSeconds: null,
+    actualTotalTimeSeconds: "",
+    actualDrawdownSeconds: "",
     beverageWeightG: null,
     tdsPercent: null,
     rating: null,
@@ -116,8 +123,8 @@ export function formStateFromLog(log: BrewLog): BrewLogEditState {
     actualDoseG: log.actualDoseG,
     actualWaterG: log.actualWaterG,
     actualWaterTempC: log.actualWaterTempC,
-    actualTotalTimeSeconds: log.actualTotalTimeSeconds ?? null,
-    actualDrawdownSeconds: log.actualDrawdownSeconds ?? null,
+    actualTotalTimeSeconds: minSecOf(log.actualTotalTimeSeconds),
+    actualDrawdownSeconds: minSecOf(log.actualDrawdownSeconds),
     beverageWeightG: log.beverageWeightG ?? null,
     tdsPercent: log.tdsPercent ?? null,
     rating: log.rating ?? null,
@@ -194,8 +201,8 @@ export function toRequestBody(state: BrewLogFormState): BrewLogRequestBody {
     ["actualDoseG", state.actualDoseG],
     ["actualWaterG", state.actualWaterG],
     ["actualWaterTempC", state.actualWaterTempC],
-    ["actualTotalTimeSeconds", state.actualTotalTimeSeconds],
-    ["actualDrawdownSeconds", state.actualDrawdownSeconds],
+    ["actualTotalTimeSeconds", secondsOf(state.actualTotalTimeSeconds)],
+    ["actualDrawdownSeconds", secondsOf(state.actualDrawdownSeconds)],
     ["beverageWeightG", state.beverageWeightG],
     ["tdsPercent", state.tdsPercent],
     ["rating", state.rating],
@@ -251,7 +258,12 @@ export function toPatchBody(
     if (before === after) continue;
     if (after === null || after === "") continue;
 
-    body[key] = key === "brewedAt" ? toInstant(String(after)) : after;
+    body[key] =
+      key === "brewedAt"
+        ? toInstant(String(after))
+        : TIME_FIELDS.includes(key as TimeField)
+          ? secondsOf(String(after))
+          : after;
   }
 
   return body;
@@ -334,4 +346,43 @@ export function previewYield(
   // TDS는 소수 2자리 → 100배, 중량은 10배. 수율 = T·B / (100·D) 이고 그 10배를 정수로 반올림한다.
   const t = Math.round(tdsPercent * 100);
   return roundHalfUp1(t * tenths(beverageWeightG), 100 * tenths(doseG));
+}
+
+const TIME_FIELDS = [
+  "actualTotalTimeSeconds",
+  "actualDrawdownSeconds",
+] as const;
+type TimeField = (typeof TIME_FIELDS)[number];
+
+export const MIN_SEC_MESSAGE = "0:00 형식으로 입력해 주세요.";
+
+/** `m:ss` 형식이 틀린 시간 칸. 하나라도 있으면 화면이 요청을 보내지 않는다. */
+export function invalidTimeFields(state: BrewLogFormState): TimeField[] {
+  return TIME_FIELDS.filter((key) => parseMinSec(state[key]) === "invalid");
+}
+
+/** 요청용 초. 형식이 틀린 값은 {@link invalidTimeFields}가 먼저 막으므로 여기서는 없는 값으로 본다. */
+function secondsOf(text: string): number | null {
+  const parsed = parseMinSec(text);
+  return parsed === "invalid" ? null : parsed;
+}
+
+function minSecOf(seconds: number | undefined): string {
+  return seconds === undefined ? "" : formatDuration(seconds);
+}
+
+/** 형식이 틀린 시간 칸의 안내를 필드 오류에 얹는다. 서버 오류가 같은 칸에 있으면 서버 쪽을 남긴다. */
+export function withTimeErrors(
+  errors: MappedFieldErrors | null,
+  invalid: readonly string[],
+): MappedFieldErrors | null {
+  if (invalid.length === 0) return errors;
+  return {
+    byField: {
+      ...Object.fromEntries(invalid.map((key) => [key, MIN_SEC_MESSAGE])),
+      ...(errors?.byField ?? {}),
+    },
+    byStepIndex: errors?.byStepIndex ?? {},
+    unmapped: errors?.unmapped ?? [],
+  };
 }

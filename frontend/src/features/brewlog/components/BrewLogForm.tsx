@@ -19,7 +19,9 @@ import { focusFirstInvalidField } from "@/lib/focusFirstError";
 import { createBrewLog } from "../api";
 import {
   initialFormState,
+  invalidTimeFields,
   toRequestBody,
+  withTimeErrors,
   type BrewLogFormState,
 } from "../formState";
 import { BeanBatchDialog } from "./BeanBatchDialog";
@@ -114,16 +116,32 @@ function Fields({
     },
   });
 
-  const fieldErrors =
+  // 저장을 한 번 눌러 본 뒤부터 시간 형식 안내를 띄운다. 입력하는 도중(`3:`)에는 띄우지 않는다.
+  const [timeChecked, setTimeChecked] = useState(false);
+  const [blockedAttempts, setBlockedAttempts] = useState(0);
+
+  const fieldErrors = withTimeErrors(
     save.error instanceof ApiError
       ? mapFieldErrors(save.error.fieldErrors)
-      : null;
+      : null,
+    timeChecked ? invalidTimeFields(state) : [],
+  );
 
   const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (save.error) focusFirstInvalidField(formRef.current);
-  }, [save.error]);
+    if (save.error || blockedAttempts > 0)
+      focusFirstInvalidField(formRef.current);
+  }, [save.error, blockedAttempts]);
+
+  function submit() {
+    setTimeChecked(true);
+    if (invalidTimeFields(state).length > 0) {
+      setBlockedAttempts((n) => n + 1);
+      return;
+    }
+    save.mutate();
+  }
 
   const set = <K extends keyof BrewLogFormState>(
     key: K,
@@ -183,11 +201,7 @@ function Fields({
       )}
 
       <div className="flex items-center gap-2">
-        <Button
-          disabled={save.isPending}
-          onClick={() => save.mutate()}
-          variant="primary"
-        >
+        <Button disabled={save.isPending} onClick={submit} variant="primary">
           기록하기
         </Button>
         <Button onClick={() => router.push(`/recipes/${recipe.id}`)}>

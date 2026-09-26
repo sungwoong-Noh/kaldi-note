@@ -93,8 +93,14 @@ describe("BrewEditPage", () => {
     expect(await screen.findByLabelText("원두량")).toHaveValue(20);
     expect(screen.getByLabelText("물량")).toHaveValue(300);
     expect(screen.getByLabelText("물 온도")).toHaveValue(92);
-    expect(screen.getByLabelText("추출 시간")).toHaveValue(210);
     expect(screen.getByLabelText("TDS")).toHaveValue(1.35);
+  });
+
+  it("AC-BREWFORM-06 · 편집 화면은 저장된 초를 m:ss로 채운다", async () => {
+    await renderEditPage();
+
+    expect(await screen.findByLabelText("추출 시간")).toHaveValue("3:30");
+    expect(screen.getByLabelText("드로다운 시간")).toHaveValue("");
   });
 
   it("AC-WEBLOGEDIT-05 · 공개범위 세 옵션이 있고 저장된 값이 골라져 있다", async () => {

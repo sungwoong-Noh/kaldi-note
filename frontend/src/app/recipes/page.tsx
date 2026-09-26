@@ -103,7 +103,7 @@ function RecipesPageContent() {
     <Screen state={state} setState={setState} onSessionLost={onSessionLost}>
       <ul className="flex flex-col gap-3">
         {recipes.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} />
+          <RecipeCard key={recipe.id} recipe={recipe} scope={state.scope} />
         ))}
       </ul>
 

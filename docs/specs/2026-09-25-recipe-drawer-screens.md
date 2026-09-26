@@ -3,7 +3,7 @@ id: RECIPESBREWS
 title: 레시피 서랍 화면 — 웹·모바일 둘러보기/내 서랍/상세/내 잔
 status: 승인
 milestone: M1
-supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-69, AC-WEBEDIT-05(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-63, AC-TOUCH-06(docs/specs/2026-09-09-touch-targets.md) → AC-RECIPESBREWS-63, AC-STRUCT-04(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-63
+supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-69, AC-WEBEDIT-05(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-63, AC-TOUCH-06(docs/specs/2026-09-09-touch-targets.md) → AC-RECIPESBREWS-63, AC-STRUCT-04(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-63, AC-VISUAL-08(docs/specs/2026-09-07-visual-hierarchy.md) → AC-RECIPESBREWS-69, AC-STRUCT-17의 "/recipes" 부분(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-69
 ---
 
 # 레시피 서랍 화면 스펙
@@ -447,7 +447,7 @@ supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBR
 
 - [x] **Task 3: 필터 — 웹 pill 줄 · 모바일 스테이징 시트** — Covers: AC-RECIPESBREWS-61, 62, 82
 
-- [ ] **Task 4: RecipeCard 재설계** — Covers: AC-RECIPESBREWS-69, 70, 71, 72
+- [x] **Task 4: RecipeCard 재설계** — Covers: AC-RECIPESBREWS-69, 70, 71, 72
 
 - [ ] **Task 5: 내 서랍 owner pill + 정렬 토글** — Covers: AC-RECIPESBREWS-63, 64
 

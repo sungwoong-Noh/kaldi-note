@@ -49,7 +49,10 @@ test.describe("구조 — 상태값", () => {
 
 test.describe("구조 — 대표 수치", () => {
   // 36px 클래스로 찾지 않는다. 스타일이 바뀔 때마다 셀렉터가 깨진다.
-  for (const path of ["/recipes", "/recipes/12"]) {
+  // "/recipes"(목록 카드)는 빠졌다 — AC-RECIPESBREWS-69가 카드 대표 수치를 원두량으로
+  // 바꿨다(docs/specs/2026-09-25-recipe-drawer-screens.md). "/recipes/12"(상세)는 아직
+  // 비율이다 — 상세 히어로 재설계는 그 스펙의 Task 6(AC-RECIPESBREWS-73)이 다룬다.
+  for (const path of ["/recipes/12"]) {
     test(`AC-STRUCT-17 · ${path}의 대표 수치가 1:비율이다`, async ({
       page,
     }) => {

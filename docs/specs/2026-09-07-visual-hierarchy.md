@@ -269,16 +269,14 @@ plan: docs/archive/plans/2026-09-07-plan-visual-hierarchy.md
 
 ### 정상 동작 — 컴포넌트
 
-#### AC-VISUAL-08 · 레시피 카드의 대표 수치는 비율이다
-
-- **Given** `doseG: 20`, `waterG: 300`, `ratio: 15`인 `RecipeSummary`
-- **When** `RecipeCard`를 렌더한다
-- **Then** **`1:15.0`**을 담은 요소가 대표 수치 단계와 `font-semibold`를 갖고 `data-lead`가 붙어 있다
-- **검증** 단위 테스트 `RecipeCard.test.tsx`
+**AC-VISUAL-08 (대체됨)** · 레시피 카드의 대표 수치가 비율이라던 원래 AC는
+`docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-69(대표 수치가
+원두량으로 바뀜)가 대체한다. `RecipeCard`가 그 스펙 기준으로 재설계돼 이 문서 버전의
+검증 시나리오는 더 이상 유효하지 않다.
 
 > **갱신 (2026-09-15).** `2026-09-15-structure.md`가 레시피와 기록의 대표 수치를 **`1:비율`로
 > 통일**했다. 절대량(`20.0g → 300.0g`)은 바로 아래 메타줄로 내려갔다. 비율은 배치 크기에
-> 독립적이라 다른 레시피와 바로 비교된다.
+> 독립적이라 다른 레시피와 바로 비교된다. **(2026-09-25에 다시 원두량으로 바뀌었다 — 위 참조.)**
 
 #### AC-VISUAL-09 · 로그 카드는 브루 비율을 대표 수치로 쓴다
 

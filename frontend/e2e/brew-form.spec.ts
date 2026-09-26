@@ -61,3 +61,49 @@ test("AC-BREWFORM-12 · 모바일에서 기록하기가 하단에 고정된다",
   expect(gap).toBeGreaterThanOrEqual(0);
   expect(gap).toBeLessThanOrEqual(24);
 });
+
+test.describe("AC-BREWFORM-24 · 가로 스크롤이 없다", () => {
+  for (const path of [NEW, "/brews/2/edit"]) {
+    for (const width of [390, 1024, 1280]) {
+      test(`${path} — ${width}px`, async ({ page }) => {
+        await installStubs(page);
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(path);
+        await page.getByLabel("원두량").waitFor();
+
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - window.innerWidth,
+        );
+        expect(overflow).toBeLessThanOrEqual(0);
+      });
+    }
+  }
+});
+
+test("AC-BREWFORM-25 · 별점·5축·공개 범위 버튼은 44×44 이상", async ({
+  page,
+}) => {
+  await open(page, 390);
+  await page.getByRole("button", { name: "맛 자세히" }).click();
+
+  const targets = [
+    page.getByRole("button", { name: /^별점 [1-5]$/ }),
+    page.getByRole("button", { name: /^(산미|단맛|바디|쓴맛|여운) [1-5]$/ }),
+    page.getByRole("radio"),
+  ];
+  const counts = await Promise.all(targets.map((t) => t.count()));
+  expect(counts).toEqual([5, 25, 3]);
+
+  const small: string[] = [];
+  for (const target of targets) {
+    for (const el of await target.all()) {
+      const box = await el.boundingBox();
+      if (box === null || box.width < 44 || box.height < 44) {
+        small.push(
+          `${(await el.getAttribute("aria-label")) ?? (await el.textContent())}: ${box?.width}×${box?.height}`,
+        );
+      }
+    }
+  }
+  expect(small).toEqual([]);
+});

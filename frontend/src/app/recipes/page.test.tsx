@@ -56,6 +56,59 @@ describe("RecipesPage", () => {
     );
   });
 
+  it("AC-RECIPESBREWS-63 · 내 서랍 소유 필터 pill로 owner가 바뀐다", async () => {
+    const searches: string[] = [];
+    server.use(
+      http.get(LIST_URL, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json(pageOf([hoffmannSummary]));
+      }),
+    );
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipesPage />);
+    await screen.findByRole("tab", { name: "내 서랍", selected: true });
+
+    await user.click(screen.getByRole("button", { name: "내가 만든" }));
+
+    await waitFor(() => {
+      const last = decodeURIComponent(searches.at(-1) ?? "");
+      expect(last).toContain("scope=DRAWER");
+      expect(last).toContain("owner=MINE");
+    });
+  });
+
+  it("AC-RECIPESBREWS-64 · 정렬 토글로 sort가 바뀐다", async () => {
+    const searches: string[] = [];
+    server.use(
+      http.get(LIST_URL, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json(pageOf([hoffmannSummary]));
+      }),
+    );
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipesPage />);
+    await user.click(await screen.findByRole("tab", { name: "둘러보기" }));
+
+    // 초기값 인기순은 sort 파라미터를 보내지 않는다.
+    await waitFor(() =>
+      expect(decodeURIComponent(searches.at(-1) ?? "")).not.toContain("sort="),
+    );
+
+    await user.click(screen.getByRole("button", { name: "최신순" }));
+    await waitFor(() =>
+      expect(decodeURIComponent(searches.at(-1) ?? "")).toContain(
+        "sort=RECENT",
+      ),
+    );
+
+    await user.click(screen.getByRole("button", { name: "인기순" }));
+    await waitFor(() =>
+      expect(decodeURIComponent(searches.at(-1) ?? "")).not.toContain("sort="),
+    );
+  });
+
   it("AC-RECIPESBREWS-65 · 검색어·온도·정렬이 URL 쿼리로 동기화된다", async () => {
     server.use(
       http.get(LIST_URL, () => HttpResponse.json(pageOf([hoffmannSummary]))),

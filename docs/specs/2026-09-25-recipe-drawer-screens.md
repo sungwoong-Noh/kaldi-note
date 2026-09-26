@@ -449,7 +449,7 @@ supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBR
 
 - [x] **Task 4: RecipeCard 재설계** — Covers: AC-RECIPESBREWS-69, 70, 71, 72
 
-- [ ] **Task 5: 내 서랍 owner pill + 정렬 토글** — Covers: AC-RECIPESBREWS-63, 64
+- [x] **Task 5: 내 서랍 owner pill + 정렬 토글** — Covers: AC-RECIPESBREWS-63, 64
 
 - [ ] **Task 6: 레시피 상세 재설계 — 담기·바로 내리기** — Covers: AC-RECIPESBREWS-73, 74, 75, 81
 

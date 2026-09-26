@@ -42,6 +42,8 @@ export type BrewLogFormState = {
   body: number | null;
   bitterness: number | null;
   aftertaste: number | null;
+  /** 작성 화면도 고른다 — 기본은 `PRIVATE`(docs/specs/2026-09-27-brew-form-redesign.md AC-BREWFORM-10) */
+  visibility: BrewLog["visibility"];
 };
 
 /**
@@ -100,13 +102,12 @@ export function initialFormState(
     body: null,
     bitterness: null,
     aftertaste: null,
+    visibility: "PRIVATE",
   };
 }
 
-/** 편집 화면의 상태. 작성 화면에 없는 `visibility`가 하나 더 있다. */
-export type BrewLogEditState = BrewLogFormState & {
-  visibility: BrewLog["visibility"];
-};
+/** 편집 화면의 상태. 작성 화면과 같다 — 공개 범위도 이제 두 화면 모두에 있다. */
+export type BrewLogEditState = BrewLogFormState;
 
 /**
  * 저장된 로그를 편집 폼 상태로 되돌린다.
@@ -165,6 +166,7 @@ export type BrewLogRequestBody = {
   body?: number;
   bitterness?: number;
   aftertaste?: number;
+  visibility?: BrewLog["visibility"];
 };
 
 /** 값이 있을 때만 키를 만든다. 백엔드가 `non_null`로 응답하는 것과 대칭이다. */
@@ -176,8 +178,6 @@ function omitEmpty<T extends object>(entries: [string, unknown][]): T {
 
 /**
  * 폼 상태를 요청 본문으로 만든다.
- *
- * <p><b>`visibility`는 담지 않는다.</b> 백엔드가 `PRIVATE`으로 고정한다.
  *
  * <p><b>5축은 펼쳤을 때만 담는다.</b> 접어둔 채 저장하면 사용자가 평가한 적이 없다는 뜻이다.
  */
@@ -207,6 +207,7 @@ export function toRequestBody(state: BrewLogFormState): BrewLogRequestBody {
     ["tdsPercent", state.tdsPercent],
     ["rating", state.rating],
     ["overallNote", state.overallNote],
+    ["visibility", state.visibility],
     ...sensory,
   ]);
 }

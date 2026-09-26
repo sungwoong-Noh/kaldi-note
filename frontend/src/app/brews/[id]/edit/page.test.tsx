@@ -103,16 +103,18 @@ describe("BrewEditPage", () => {
     expect(screen.getByLabelText("드로다운 시간")).toHaveValue("");
   });
 
-  it("AC-WEBLOGEDIT-05 · 공개범위 세 옵션이 있고 저장된 값이 골라져 있다", async () => {
+  it("AC-BREWFORM-10 · 편집 화면도 공개 범위 3분할에 저장된 값이 선택돼 있다", async () => {
     await renderEditPage();
 
-    const select = await screen.findByLabelText("공개 범위");
-    expect(select).toHaveValue("PRIVATE");
-    for (const label of ["나만 보기", "맞팔로우만", "전체 공개"]) {
-      expect(
-        within(select).getByRole("option", { name: label }),
-      ).toBeInTheDocument();
-    }
+    const group = await screen.findByRole("radiogroup", { name: "공개 범위" });
+    expect(
+      within(group)
+        .getAllByRole("radio")
+        .map((radio) => radio.textContent),
+    ).toEqual(["나만 보기", "맞팔로우 친구", "전체"]);
+    expect(
+      within(group).getByRole("radio", { name: "나만 보기" }),
+    ).toBeChecked();
   });
 
   it("AC-WEBLOGEDIT-06 · 레시피와 원두는 바꿀 수 없다", async () => {
@@ -174,9 +176,8 @@ describe("BrewEditPage — 저장", () => {
     const captured = capturePatch();
 
     await renderEditPage();
-    await user.selectOptions(
-      await screen.findByLabelText("공개 범위"),
-      "FRIENDS",
+    await user.click(
+      await screen.findByRole("radio", { name: "맞팔로우 친구" }),
     );
     await user.click(screen.getByRole("button", { name: "저장" }));
 
@@ -189,9 +190,8 @@ describe("BrewEditPage — 저장", () => {
     capturePatch();
 
     await renderEditPage();
-    await user.selectOptions(
-      await screen.findByLabelText("공개 범위"),
-      "FRIENDS",
+    await user.click(
+      await screen.findByRole("radio", { name: "맞팔로우 친구" }),
     );
     await user.click(screen.getByRole("button", { name: "저장" }));
 

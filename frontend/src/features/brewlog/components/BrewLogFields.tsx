@@ -222,6 +222,11 @@ export function BrewLogFields({
           )}
         </label>
       </fieldset>
+
+      <VisibilityField
+        value={state.visibility}
+        onChange={(v) => set("visibility", v)}
+      />
     </>
   );
 }
@@ -318,5 +323,47 @@ function MinSecField({
         </span>
       )}
     </label>
+  );
+}
+
+const VISIBILITY_OPTIONS: ReadonlyArray<{
+  value: BrewLogFormState["visibility"];
+  label: string;
+}> = [
+  { value: "PRIVATE", label: "나만 보기" },
+  { value: "FRIENDS", label: "맞팔로우 친구" },
+  { value: "PUBLIC", label: "전체" },
+];
+
+/** 3분할. `radio` 입력이 아니라 버튼이다 — 입력칸 오른쪽 끝 정렬(AC-STRUCT-01)에 섞이지 않는다. */
+function VisibilityField({
+  value,
+  onChange,
+}: {
+  value: BrewLogFormState["visibility"];
+  onChange: (value: BrewLogFormState["visibility"]) => void;
+}) {
+  return (
+    <div
+      role="radiogroup"
+      aria-label="공개 범위"
+      className="flex min-w-0 flex-col gap-2"
+    >
+      <span className="text-card-title font-semibold">공개 범위</span>
+      <div className="flex gap-2">
+        {VISIBILITY_OPTIONS.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={value === option.value}
+            onClick={() => onChange(option.value)}
+            className="min-h-11 flex-1 rounded-tag border border-border px-3 py-2 text-body font-medium aria-checked:border-ink aria-checked:bg-ink aria-checked:text-on-ink"
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

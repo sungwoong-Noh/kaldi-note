@@ -29,17 +29,10 @@ import {
 } from "./BrewFormLayout";
 import { BrewHero } from "./BrewHero";
 import { BrewLogFields } from "./BrewLogFields";
-import { Button, SELECT_EXTRA, Shell, controlClass } from "@/components/ui";
+import { Button, Shell } from "@/components/ui";
 
 /** 스펙이 정한 문구다. 값을 바꾸거나 기록을 지우는 것 말고는 길이 없다. */
 const CLEAR_MESSAGE = "값을 지울 수 없습니다. 고치거나 기록을 삭제하세요";
-
-/** 레시피 폼과 같은 문구를 쓴다 — 같은 값이 두 화면에서 다른 이름으로 보이면 안 된다. */
-const VISIBILITY_LABELS: Record<BrewLogEditState["visibility"], string> = {
-  PRIVATE: "나만 보기",
-  FRIENDS: "맞팔로우만",
-  PUBLIC: "전체 공개",
-};
 
 export function BrewLogEditor({ id }: { id: number }) {
   const { ready, onSessionLost } = useRequireSession();
@@ -194,27 +187,6 @@ function Fields({
         }
       />
 
-      <label className="flex items-center gap-2 text-body">
-        <span className="w-20 shrink-0 text-ink-3">공개 범위</span>
-        <select
-          aria-label="공개 범위"
-          value={state.visibility}
-          onChange={(e) =>
-            setState((prev) => ({
-              ...prev,
-              visibility: toVisibility(e.target.value),
-            }))
-          }
-          className={controlClass(SELECT_EXTRA)}
-        >
-          {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
-            <option key={code} value={code}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
-
       {save.error !== null && (
         <div role="alert" className="flex flex-col gap-1 text-body text-danger">
           <p>{errorMessageOf(save.error)}</p>
@@ -238,11 +210,6 @@ function Fields({
       </FormActions>
     </BrewFormLayout>
   );
-}
-
-/** `select`의 값은 `string`이다. 단언 대신 좁혀서 받는다. */
-function toVisibility(value: string): BrewLogEditState["visibility"] {
-  return value === "FRIENDS" || value === "PUBLIC" ? value : "PRIVATE";
 }
 
 function Screen({ children }: { children: React.ReactNode }) {

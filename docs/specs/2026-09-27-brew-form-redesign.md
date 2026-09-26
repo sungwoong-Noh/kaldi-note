@@ -254,6 +254,7 @@ supersedes:
 - AC-WEBLOGEDIT-04의 `추출 시간 210` 부분(docs/specs/2026-09-02-web-brew-log-edit.md) → AC-BREWFORM-06
 - AC-WEBLOGEDIT-05(docs/specs/2026-09-02-web-brew-log-edit.md) → AC-BREWFORM-10 — select·라벨 `맞팔로우만`/`전체 공개` → 3분할
 - AC-WEBLOGEDIT-10의 「바꾼 뒤 취소」 경우(docs/specs/2026-09-02-web-brew-log-edit.md) → AC-BREWFORM-17
+- AC-TOUCH-09(docs/specs/2026-09-09-touch-targets.md) → AC-BREWFORM-25 — 편집 화면 공개 범위 select 높이. select가 3분할 버튼이 되며 대상이 사라졌다(구현 중 발견해 추가)
 
 나머지 WEBBREW·WEBLOGEDIT·ERRFOCUS AC(그라인더 자동 선택, 5축 접힘, 바뀐 필드만 PATCH, 지우기 방지 등)는
 그대로 유효하다 — 레이아웃이 바뀌어도 테스트가 계속 통과해야 한다.
@@ -279,7 +280,7 @@ supersedes:
 - [x] **Task 4: 원두 다이얼로그 (선택 + 안에서 등록, 모바일 바텀시트)** — Covers: AC-BREWFORM-07, AC-BREWFORM-08, AC-BREWFORM-09, AC-BREWFORM-15
   - 등록 단계는 기존 `BeanBatchDialog`의 입력·중복 방지 로직을 재사용한다
 
-- [ ] **Task 5: 공개 범위 3분할 (작성 추가, 편집 교체)** — Covers: AC-BREWFORM-10
+- [x] **Task 5: 공개 범위 3분할 (작성 추가, 편집 교체)** — Covers: AC-BREWFORM-10
 
 - [ ] **Task 6: 평가 — 5축 1~5 버튼** — Covers: AC-BREWFORM-11, AC-BREWFORM-18
 
@@ -288,7 +289,7 @@ supersedes:
 - [ ] **Task 8: 비기능 — E2E 폭·터치 타깃, 토큰 검사** — Covers: AC-BREWFORM-24, AC-BREWFORM-25, AC-BREWFORM-26
   - `e2e/brew-form.spec.ts`는 `e2e/recipe-drawer-responsive.spec.ts`의 API 목킹 방식을 따른다
 
-- [ ] **Task 9: 이전 AC 대체 표시** — 위 「대체하는 이전 AC」의 각 AC에 이전 스펙 본문 「(대체됨)」 표시 + 옮겨진 테스트 ID 정리. (WEBBREW-09·10·23은 Task 4에서 테스트를 옮기며 함께 처리했다 — 구현완료 스펙이라 표시가 없으면 커버리지 검사가 바로 실패한다.) `./scripts/check-spec-coverage.sh`·`./scripts/check-docs.sh` 통과
+- [ ] **Task 9: 이전 AC 대체 표시** — 위 「대체하는 이전 AC」의 각 AC에 이전 스펙 본문 「(대체됨)」 표시 + 옮겨진 테스트 ID 정리. (WEBBREW-09·10·23은 Task 4에서, WEBLOGEDIT-05·TOUCH-09는 Task 5에서 테스트를 옮기며 함께 처리했다 — 구현완료 스펙이라 표시가 없으면 커버리지 검사가 바로 실패한다.) `./scripts/check-spec-coverage.sh`·`./scripts/check-docs.sh` 통과
 
 ---
 

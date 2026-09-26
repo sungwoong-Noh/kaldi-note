@@ -440,6 +440,7 @@ describe("BrewNewPage — 저장과 평가", () => {
     expect(captured.body).toEqual({
       recipeId: 1,
       beanBatchId: 9,
+      visibility: "PRIVATE",
       brewedAt: "2026-08-31T09:00:00.000Z",
       actualDoseG: 20,
       actualWaterG: 300,
@@ -845,5 +846,37 @@ describe("BrewNewPage — 히어로", () => {
     expect(
       (await hero()).getByText("TDS가 없으면 수율을 계산할 수 없습니다."),
     ).toBeInTheDocument();
+  });
+});
+
+describe("BrewNewPage — 공개 범위", () => {
+  it("AC-BREWFORM-10 · 공개 범위 3분할, 기본은 나만 보기", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    const group = await screen.findByRole("radiogroup", { name: "공개 범위" });
+    expect(
+      within(group)
+        .getAllByRole("radio")
+        .map((radio) => radio.textContent),
+    ).toEqual(["나만 보기", "맞팔로우 친구", "전체"]);
+    expect(
+      within(group).getByRole("radio", { name: "나만 보기" }),
+    ).toBeChecked();
+
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    await waitFor(() => expect(captured.body?.visibility).toBe("PRIVATE"));
+  });
+
+  it("AC-BREWFORM-10 · 전체를 고르면 PUBLIC으로 보낸다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("radio", { name: "전체" }));
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+    await waitFor(() => expect(captured.body?.visibility).toBe("PUBLIC"));
   });
 });

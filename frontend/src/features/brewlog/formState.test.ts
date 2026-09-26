@@ -94,16 +94,15 @@ describe("toRequestBody", () => {
       actualWaterTempC: 92.0,
       userGrinderId: 5,
       actualGrindSettingValue: 22.0,
+      visibility: "PRIVATE",
     });
   });
 
-  it("빈 값은 키째 빠지고 공개범위는 담지 않는다", () => {
+  it("빈 값은 키째 빠진다", () => {
     const body = toRequestBody({ ...filled, tdsPercent: null });
 
     expect(body).not.toHaveProperty("tdsPercent");
     expect(body).not.toHaveProperty("actualTotalTimeSeconds");
-    // 백엔드가 PRIVATE으로 고정한다. 보내면 의미 없는 값을 우리가 정하는 셈이 된다.
-    expect(body).not.toHaveProperty("visibility");
   });
 
   it("펼치지 않은 5축은 값이 있어도 빠진다", () => {

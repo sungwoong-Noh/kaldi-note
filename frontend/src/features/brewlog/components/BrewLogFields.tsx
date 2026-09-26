@@ -338,7 +338,14 @@ const VISIBILITY_OPTIONS: ReadonlyArray<{
   { value: "PUBLIC", label: "전체" },
 ];
 
-/** 3분할. `radio` 입력이 아니라 버튼이다 — 입력칸 오른쪽 끝 정렬(AC-STRUCT-01)에 섞이지 않는다. */
+/**
+ * 3분할 — 디자인 시스템 「Segmented control」(sunken 트랙 안에서 고른 탭만 paper + 1px 테두리).
+ * 목업의 트랙 8px·탭 6px 모서리는 잠긴 4종(AC-SPACE-04)에 없다. 트랙은 `rounded-control`(7px),
+ * 탭은 `rounded-tag`(3px)다 — 탭에 `rounded-control`을 쓰면 프리미티브 밖 컨트롤 스타일로 막힌다
+ * (AC-DS2-20, M1 `SegmentTabs`와 같은 선택).
+ *
+ * <p>`radio` 입력이 아니라 버튼이다 — 입력칸 오른쪽 끝 정렬(AC-STRUCT-01)에 섞이지 않는다.
+ */
 function VisibilityField({
   value,
   onChange,
@@ -353,7 +360,7 @@ function VisibilityField({
       className="flex min-w-0 flex-col gap-2"
     >
       <span className="text-card-title font-semibold">공개 범위</span>
-      <div className="flex gap-2">
+      <div className="flex gap-1 rounded-control bg-sunken p-1">
         {VISIBILITY_OPTIONS.map((option) => (
           <button
             key={option.value}
@@ -361,7 +368,8 @@ function VisibilityField({
             role="radio"
             aria-checked={value === option.value}
             onClick={() => onChange(option.value)}
-            className="min-h-11 flex-1 rounded-tag border border-border px-3 py-2 text-body font-medium aria-checked:border-ink aria-checked:bg-ink aria-checked:text-on-ink"
+            // 390px에서 「맞팔로우 친구」가 두 줄로 꺾이지 않게 body-sm이다.
+            className="min-h-11 flex-1 rounded-tag border border-transparent px-2 text-body-sm text-ink-3 aria-checked:border-border aria-checked:bg-paper aria-checked:font-medium aria-checked:text-ink"
           >
             {option.label}
           </button>

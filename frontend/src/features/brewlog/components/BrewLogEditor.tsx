@@ -204,6 +204,7 @@ function Fields({
           disabled={
             save.isPending || cleared.length > 0 || invalidTimes.length > 0
           }
+          className="max-[759px]:flex-1"
           onClick={submit}
           variant="primary"
         >

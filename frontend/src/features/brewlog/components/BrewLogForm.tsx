@@ -226,7 +226,12 @@ function Fields({
       />
 
       <FormActions>
-        <Button disabled={save.isPending} onClick={submit} variant="primary">
+        <Button
+          disabled={save.isPending}
+          className="max-[759px]:flex-1"
+          onClick={submit}
+          variant="primary"
+        >
           {save.isPending ? "저장 중…" : "기록하기"}
         </Button>
         <Button

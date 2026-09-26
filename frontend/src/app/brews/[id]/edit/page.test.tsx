@@ -364,3 +364,22 @@ describe("BrewEditPage — 레시피·원두 이름", () => {
     expect(captured.body).toEqual({ rating: 5 });
   });
 });
+
+describe("BrewEditPage — 나가기 확인", () => {
+  it("AC-BREWFORM-17 · 편집 화면도 바꾼 뒤 취소하면 확인하고, 나가기면 상세로 간다", async () => {
+    const user = userEvent.setup();
+    await renderEditPage();
+    const dose = await screen.findByLabelText("원두량");
+    await user.clear(dose);
+    await user.type(dose, "21");
+
+    await user.click(screen.getByRole("button", { name: "취소" }));
+    await user.click(
+      within(
+        await screen.findByRole("dialog", { name: "저장하지 않고 나갈까요?" }),
+      ).getByRole("button", { name: "나가기" }),
+    );
+
+    expect(push).toHaveBeenCalledWith("/brews/42");
+  });
+});

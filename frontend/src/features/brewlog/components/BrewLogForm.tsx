@@ -20,6 +20,8 @@ import { createBrewLog } from "../api";
 import {
   initialFormState,
   invalidTimeFields,
+  isDirty,
+  sectionWarningOf,
   toRequestBody,
   withTimeErrors,
   type BrewLogFormState,
@@ -30,11 +32,12 @@ import {
   BrewFormLayout,
   FORM_SHELL_CLASS,
   FormActions,
+  LeaveConfirmDialog,
 } from "./BrewFormLayout";
 import { BrewHero } from "./BrewHero";
 import { BrewLogFields } from "./BrewLogFields";
 import { UserGrinderDialog } from "./UserGrinderDialog";
-import { Button, Shell } from "@/components/ui";
+import { Button, ButtonLink, Shell } from "@/components/ui";
 
 /**
  * 로그 작성 화면.
@@ -42,7 +45,20 @@ import { Button, Shell } from "@/components/ui";
  * <p>레시피와 내 그라인더가 <b>둘 다 도착한 뒤에</b> 폼을 마운트한다. 그라인더 자동 선택이 두 응답을 함께 봐야 정해지는데,
  * 폼을 먼저 띄우면 나중에 도착한 값으로 사용자가 고친 입력을 덮어쓰게 된다.
  */
-export function BrewLogForm({ recipeId }: { recipeId: number }) {
+export function BrewLogForm({ recipeId }: { recipeId: number | null }) {
+  // 훅보다 먼저 가른다 — 세션 확인·그라인더 조회도 요청을 보낸다(AC-BREWFORM-16: 요청 0회).
+  if (recipeId === null) {
+    return (
+      <Screen>
+        <p className="text-body">레시피를 골라 내려 주세요.</p>
+        <ButtonLink href="/recipes">레시피 보러 가기</ButtonLink>
+      </Screen>
+    );
+  }
+  return <LoadedBrewLogForm recipeId={recipeId} />;
+}
+
+function LoadedBrewLogForm({ recipeId }: { recipeId: number }) {
   const { ready, onSessionLost } = useRequireSession();
 
   const recipe = useQuery({
@@ -104,9 +120,11 @@ function Fields({
   const roasters = useRoasters(onSessionLost);
   // 초기값은 마운트 시점에 한 번만 계산한다. 이후 그라인더 목록이 갱신돼도
   // 사용자가 고쳐둔 값을 덮어쓰지 않는다.
-  const [state, setState] = useState<BrewLogFormState>(() =>
+  const [initial] = useState<BrewLogFormState>(() =>
     initialFormState(recipe, grinders),
   );
+  const [state, setState] = useState(initial);
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
   const [addingGrinder, setAddingGrinder] = useState(false);
   // 원두는 고르기 → (없으면) 새로 등록의 두 단계다. 등록 단계는 기존 `BeanBatchDialog`가 맡는다.
   const [beanDialog, setBeanDialog] = useState<"pick" | "create" | null>(null);
@@ -127,6 +145,12 @@ function Fields({
   // 저장을 한 번 눌러 본 뒤부터 시간 형식 안내를 띄운다. 입력하는 도중(`3:`)에는 띄우지 않는다.
   const [timeChecked, setTimeChecked] = useState(false);
   const [blockedAttempts, setBlockedAttempts] = useState(0);
+
+  // 측정·분쇄도 오류는 필드 하나가 아니라 묶음의 문제다 — 그 묶음 위에 서버 문구 그대로(AC-BREWFORM-21).
+  const sectionWarning =
+    save.error instanceof ApiError
+      ? sectionWarningOf(save.error.code, save.error.message)
+      : null;
 
   const fieldErrors = withTimeErrors(
     save.error instanceof ApiError
@@ -177,6 +201,9 @@ function Fields({
   return (
     <BrewFormLayout
       formRef={formRef}
+      generalError={
+        save.error && sectionWarning === null ? save.error.message : null
+      }
       hero={
         <BrewHero
           title={recipe.title}
@@ -195,22 +222,30 @@ function Fields({
         onChange={set}
         onAddGrinder={() => setAddingGrinder(true)}
         beanSlot={beanSlot}
+        sectionWarning={sectionWarning}
       />
-
-      {save.error && (
-        <p data-general-error tabIndex={-1} className="text-body text-danger">
-          {save.error.message}
-        </p>
-      )}
 
       <FormActions>
         <Button disabled={save.isPending} onClick={submit} variant="primary">
-          기록하기
+          {save.isPending ? "저장 중…" : "기록하기"}
         </Button>
-        <Button onClick={() => router.push(`/recipes/${recipe.id}`)}>
+        <Button
+          onClick={() =>
+            isDirty(initial, state)
+              ? setConfirmingLeave(true)
+              : router.push(`/recipes/${recipe.id}`)
+          }
+        >
           취소
         </Button>
       </FormActions>
+
+      {confirmingLeave && (
+        <LeaveConfirmDialog
+          onLeave={() => router.push(`/recipes/${recipe.id}`)}
+          onStay={() => setConfirmingLeave(false)}
+        />
+      )}
 
       {addingGrinder && (
         <UserGrinderDialog

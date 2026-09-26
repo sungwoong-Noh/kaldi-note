@@ -2,7 +2,7 @@
 
 import type { UserGrinder } from "@/features/gear/schema";
 import type { mapFieldErrors } from "@/lib/fieldErrors";
-import type { BrewLogFormState } from "../formState";
+import type { BrewLogFormState, SectionWarning } from "../formState";
 import { RatingInput } from "./RatingInput";
 import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
 
@@ -27,6 +27,8 @@ interface BrewLogFieldsProps {
   onAddGrinder?: () => void;
   /** `내린 시각`과 `그라인더` 사이에 끼울 것. 작성 화면은 원두 선택란을, 편집 화면은 잠긴 원두 표시를 넣는다 */
   beanSlot: React.ReactNode;
+  /** 한 묶음(장비·결과)에 붙는 서버 문구. 그 묶음 제목 바로 아래에 둔다(AC-BREWFORM-21) */
+  sectionWarning?: SectionWarning | null;
 }
 
 /**
@@ -41,7 +43,21 @@ export function BrewLogFields({
   onChange: set,
   onAddGrinder,
   beanSlot,
+  sectionWarning = null,
 }: BrewLogFieldsProps) {
+  const warningFor = (section: SectionWarning["section"]) =>
+    sectionWarning?.section === section && (
+      // 필드에 붙지 않으니 포커스 대상이 되도록 `data-general-error`를 단다(AC-ERRFOCUS-04와 같은 규칙).
+      <p
+        data-warning
+        data-general-error
+        tabIndex={-1}
+        className="rounded-control border-l-2 border-accent bg-surface px-3 py-2 text-body-sm"
+      >
+        {sectionWarning.message}
+      </p>
+    );
+
   return (
     <>
       <label className="flex flex-col gap-1 text-body">
@@ -105,6 +121,7 @@ export function BrewLogFields({
 
       <fieldset className="flex min-w-0 flex-col gap-2">
         <legend className="text-card-title font-semibold">장비</legend>
+        {warningFor("equipment")}
         {grinders.length === 0 && (
           <p className="text-body text-ink-3">등록된 그라인더가 없습니다</p>
         )}
@@ -146,6 +163,7 @@ export function BrewLogFields({
 
       <fieldset className="flex min-w-0 flex-col gap-2">
         <legend className="text-card-title font-semibold">결과</legend>
+        {warningFor("result")}
         <NumberField
           label="음료 중량"
           unit="g"

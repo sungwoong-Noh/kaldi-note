@@ -284,7 +284,7 @@ supersedes:
 
 - [x] **Task 6: 평가 — 5축 1~5 버튼** — Covers: AC-BREWFORM-11, AC-BREWFORM-18
 
-- [ ] **Task 7: 상태 — recipeId 오류·나가기 확인·저장 중·에러 표시** — Covers: AC-BREWFORM-16, AC-BREWFORM-17, AC-BREWFORM-19, AC-BREWFORM-20, AC-BREWFORM-21, AC-BREWFORM-22, AC-BREWFORM-23
+- [x] **Task 7: 상태 — recipeId 오류·나가기 확인·저장 중·에러 표시** — Covers: AC-BREWFORM-16, AC-BREWFORM-17, AC-BREWFORM-19, AC-BREWFORM-20, AC-BREWFORM-21, AC-BREWFORM-22, AC-BREWFORM-23
 
 - [ ] **Task 8: 비기능 — E2E 폭·터치 타깃, 토큰 검사** — Covers: AC-BREWFORM-24, AC-BREWFORM-25, AC-BREWFORM-26
   - `e2e/brew-form.spec.ts`는 `e2e/recipe-drawer-responsive.spec.ts`의 API 목킹 방식을 따른다

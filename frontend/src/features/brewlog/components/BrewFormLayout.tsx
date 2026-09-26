@@ -1,3 +1,4 @@
+import { Button, cardClass } from "@/components/ui";
 import type { ReactNode, RefObject } from "react";
 
 /**
@@ -9,10 +10,13 @@ import type { ReactNode, RefObject } from "react";
 export function BrewFormLayout({
   hero,
   formRef,
+  generalError = null,
   children,
 }: {
   hero: ReactNode;
   formRef?: RefObject<HTMLDivElement | null>;
+  /** 필드에도 묶음에도 붙지 않는 서버 문구. 폼 맨 위에 둔다(AC-BREWFORM-22) */
+  generalError?: string | null;
   children: ReactNode;
 }) {
   return (
@@ -21,6 +25,11 @@ export function BrewFormLayout({
         {hero}
       </aside>
       <div ref={formRef} className="flex min-w-0 flex-1 flex-col gap-4">
+        {generalError !== null && (
+          <p data-general-error tabIndex={-1} className="text-body text-danger">
+            {generalError}
+          </p>
+        )}
         {children}
       </div>
     </div>
@@ -43,3 +52,36 @@ export function FormActions({ children }: { children: ReactNode }) {
 
 /** 폼 화면의 `Shell` 폭 — 2컬럼에서 히어로 자리까지 들어가야 한다. `wide`와 함께 쓴다(폭 상한은 Shell이 정한다 — AC-SKIN-01). */
 export const FORM_SHELL_CLASS = "max-w-6xl";
+
+/** 바꾼 게 있는 채로 `취소`를 누르면 뜬다 — docs/specs/2026-09-27-brew-form-redesign.md AC-BREWFORM-17. */
+export function LeaveConfirmDialog({
+  onLeave,
+  onStay,
+}: {
+  onLeave: () => void;
+  onStay: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="leave-confirm-title"
+        className={cardClass("flex w-full max-w-sm flex-col gap-4", {
+          tone: "raised",
+        })}
+      >
+        <h2 id="leave-confirm-title" className="text-card-title font-semibold">
+          저장하지 않고 나갈까요?
+        </h2>
+        <p className="text-body text-ink-3">입력한 내용이 사라집니다.</p>
+        <div className="flex justify-end gap-2">
+          <Button onClick={onLeave}>나가기</Button>
+          <Button onClick={onStay} variant="primary">
+            계속 편집
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

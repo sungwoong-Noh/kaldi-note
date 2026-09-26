@@ -387,3 +387,25 @@ export function withTimeErrors(
     unmapped: errors?.unmapped ?? [],
   };
 }
+
+/** 폼 값이 처음 연 때와 달라졌는가. `취소`가 확인을 띄울지 정한다(AC-BREWFORM-17). */
+export function isDirty(initial: BrewLogFormState, current: BrewLogFormState) {
+  return JSON.stringify(initial) !== JSON.stringify(current);
+}
+
+export type SectionWarning = {
+  section: "equipment" | "result";
+  message: string;
+};
+
+/** 서버 오류 코드 중 폼의 한 묶음에 붙는 것. 나머지는 폼 맨 위 일반 에러로 간다. */
+export function sectionWarningOf(
+  code: string,
+  message: string,
+): SectionWarning | null {
+  if (code === "GRIND_SETTING_OUT_OF_RANGE")
+    return { section: "equipment", message };
+  if (code === "INVALID_BREW_MEASUREMENT")
+    return { section: "result", message };
+  return null;
+}

@@ -916,3 +916,182 @@ describe("BrewNewPage — 공개 범위", () => {
     await waitFor(() => expect(captured.body?.visibility).toBe("PUBLIC"));
   });
 });
+
+function serverError(status: number, code: string, message: string) {
+  return () => HttpResponse.json({ code, message }, { status });
+}
+
+describe("BrewNewPage — 상태", () => {
+  it.each([undefined, "abc"])(
+    "AC-BREWFORM-16 · recipeId가 %s면 요청 없이 레시피를 고르라고 안내한다",
+    async (recipeId) => {
+      let requests = 0;
+      server.events.on("request:start", () => {
+        requests += 1;
+      });
+
+      renderWithQuery(
+        await BrewNewPage({ searchParams: Promise.resolve({ recipeId }) }),
+      );
+
+      expect(
+        await screen.findByText("레시피를 골라 내려 주세요."),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("link", { name: "레시피 보러 가기" }),
+      ).toHaveAttribute("href", "/recipes");
+      expect(requests).toBe(0);
+      server.events.removeAllListeners();
+    },
+  );
+
+  it("AC-BREWFORM-17 · 아무것도 안 바꿨으면 확인 없이 나간다", async () => {
+    const user = userEvent.setup();
+    await renderNewPage();
+
+    await user.click(await screen.findByRole("button", { name: "취소" }));
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(push).toHaveBeenCalledWith("/recipes/1");
+  });
+
+  it("AC-BREWFORM-17 · 바꾼 뒤 취소하면 확인하고, 계속 편집이면 값이 남는다", async () => {
+    const user = userEvent.setup();
+    await renderNewPage();
+    const dose = await screen.findByLabelText("원두량");
+    await user.clear(dose);
+    await user.type(dose, "21");
+
+    await user.click(screen.getByRole("button", { name: "취소" }));
+    const confirm = within(
+      await screen.findByRole("dialog", { name: "저장하지 않고 나갈까요?" }),
+    );
+    await user.click(confirm.getByRole("button", { name: "계속 편집" }));
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByLabelText("원두량")).toHaveValue(21);
+    expect(push).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "취소" }));
+    await user.click(
+      within(await screen.findByRole("dialog")).getByRole("button", {
+        name: "나가기",
+      }),
+    );
+    expect(push).toHaveBeenCalledWith("/recipes/1");
+  });
+
+  it("AC-BREWFORM-19 · 저장 중에는 버튼이 저장 중…이고 잠긴다", async () => {
+    const user = userEvent.setup();
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.post(`${BASE}/brew-logs`, async () => {
+        await held;
+        return HttpResponse.json(
+          { ...brewLogWithTds, id: 42 },
+          { status: 201 },
+        );
+      }),
+    );
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("button", { name: "기록하기" }));
+
+    expect(
+      await screen.findByRole("button", { name: "저장 중…" }),
+    ).toBeDisabled();
+    release();
+  });
+
+  it("AC-BREWFORM-20 · 필드 오류는 그 칸에 붙고 포커스가 간다", async () => {
+    const user = userEvent.setup();
+    captureCreate(badRequest("actualDoseG", "0보다 커야 합니다"));
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("button", { name: "기록하기" }));
+
+    const dose = screen.getByLabelText("원두량");
+    await waitFor(() => expect(document.activeElement).toBe(dose));
+    expect(
+      document.getElementById(dose.getAttribute("aria-describedby") ?? ""),
+    ).toHaveTextContent("0보다 커야 합니다");
+  });
+
+  it.each([
+    [
+      "GRIND_SETTING_OUT_OF_RANGE",
+      "이 그라인더에서 쓸 수 없는 설정값입니다.",
+      "장비",
+    ],
+    ["INVALID_BREW_MEASUREMENT", "추출 측정값이 올바르지 않습니다.", "결과"],
+  ])(
+    "AC-BREWFORM-21 · %s는 %s를 그 묶음 위 경고 블록에 보여준다",
+    async (code, message, section) => {
+      const user = userEvent.setup();
+      captureCreate(serverError(400, code, message));
+
+      await renderNewPage();
+      const dose = await screen.findByLabelText("원두량");
+      await user.clear(dose);
+      await user.type(dose, "21");
+      await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+      const group = screen.getByRole("group", { name: section });
+      const warning = await within(group).findByText(message);
+      expect(warning.closest("[data-warning]")).not.toBeNull();
+      expect(screen.getByLabelText("원두량")).toHaveValue(21);
+    },
+  );
+
+  it.each([
+    [404, "NOT_FOUND", "재고를 찾을 수 없습니다: 9"],
+    [403, "FORBIDDEN", "본인의 그라인더만 브루잉 로그에 연결할 수 있습니다."],
+  ])(
+    "AC-BREWFORM-22 · %s는 폼 맨 위 일반 에러에 서버 문구 그대로",
+    async (status, code, message) => {
+      const user = userEvent.setup();
+      captureCreate(serverError(status, code, message));
+
+      await renderNewPage();
+      await user.click(await screen.findByRole("button", { name: "기록하기" }));
+
+      const general = await waitFor(() => {
+        const el = document.querySelector("[data-general-error]");
+        if (el === null) throw new Error("일반 에러 없음");
+        return el;
+      });
+      expect(general).toHaveTextContent(message);
+      // 맨 위 — 첫 입력칸보다 앞에 있다
+      const firstInput = screen.getByLabelText("내린 시각");
+      expect(
+        general.compareDocumentPosition(firstInput) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(screen.getByLabelText("원두량")).toHaveValue(20);
+    },
+  );
+
+  it("AC-BREWFORM-23 · 레시피 조회 실패는 다시 시도할 수 있다", async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    server.use(
+      http.get(`${BASE}/recipes/1`, () => {
+        calls += 1;
+        return HttpResponse.json(
+          { code: "INTERNAL_ERROR", message: "서버 오류가 발생했습니다." },
+          { status: 500 },
+        );
+      }),
+    );
+
+    await renderNewPage();
+    const retry = await screen.findByRole("button", { name: "다시 시도" });
+    const before = calls;
+    await user.click(retry);
+
+    await waitFor(() => expect(calls).toBe(before + 1));
+  });
+});

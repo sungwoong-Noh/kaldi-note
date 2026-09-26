@@ -14,6 +14,7 @@ import { fetchBrewLog, patchBrewLog } from "../api";
 import {
   clearedFields,
   invalidTimeFields,
+  isDirty,
   MIN_SEC_MESSAGE,
   formStateFromLog,
   toPatchBody,
@@ -26,6 +27,7 @@ import {
   BrewFormLayout,
   FORM_SHELL_CLASS,
   FormActions,
+  LeaveConfirmDialog,
 } from "./BrewFormLayout";
 import { BrewHero } from "./BrewHero";
 import { BrewLogFields } from "./BrewLogFields";
@@ -94,6 +96,7 @@ function Fields({
   // 초기값은 마운트 시점에 한 번만 만든다. 캐시가 갱신돼도 입력 중인 값을 덮지 않는다.
   const [initial] = useState<BrewLogEditState>(() => formStateFromLog(log));
   const [state, setState] = useState<BrewLogEditState>(initial);
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
 
   // 이름은 로그가 가리키는 id로 따로 읽는다. 실패해도 저장을 막지 않는다 —
   // 레시피·원두는 PATCH 본문에 들어가지 않아 저장과 아무 관계가 없다.
@@ -206,8 +209,23 @@ function Fields({
         >
           저장
         </Button>
-        <Button onClick={() => router.push(`/brews/${log.id}`)}>취소</Button>
+        <Button
+          onClick={() =>
+            isDirty(initial, state)
+              ? setConfirmingLeave(true)
+              : router.push(`/brews/${log.id}`)
+          }
+        >
+          취소
+        </Button>
       </FormActions>
+
+      {confirmingLeave && (
+        <LeaveConfirmDialog
+          onLeave={() => router.push(`/brews/${log.id}`)}
+          onStay={() => setConfirmingLeave(false)}
+        />
+      )}
     </BrewFormLayout>
   );
 }

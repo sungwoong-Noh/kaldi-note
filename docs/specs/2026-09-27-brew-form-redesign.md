@@ -82,7 +82,7 @@ supersedes:
 #### AC-BREWFORM-05 · 시간은 m:ss로 넣고 초로 보낸다
 
 - **Given** 작성 화면, 필수값 채움
-- **When** `총 시간`에 `3:30`, `드로다운`에 `0:45`를 넣고 `기록하기`
+- **When** `추출 시간`에 `3:30`, `드로다운 시간`에 `0:45`를 넣고 `기록하기`
 - **Then** 요청 본문 `actualTotalTimeSeconds`가 `210`, `actualDrawdownSeconds`가 `45`
 - **검증** 페이지 테스트
 
@@ -90,7 +90,7 @@ supersedes:
 
 - **Given** `GET /brew-logs/42`가 `actualTotalTimeSeconds=210`, `actualDrawdownSeconds=null`
 - **When** `/brews/42/edit`를 연다
-- **Then** `총 시간`이 `3:30`, `드로다운`이 빈칸
+- **Then** `추출 시간`이 `3:30`, `드로다운 시간`이 빈칸
 - **검증** 편집 페이지 테스트
 
 #### AC-BREWFORM-07 · 원두 다이얼로그는 재고를 로스팅일 최신순으로 보여준다
@@ -140,7 +140,7 @@ supersedes:
 #### AC-BREWFORM-13 · 시간 형식의 경계
 
 - **Given** 작성 화면
-- **When** `총 시간`에 `0:00`·`59:59` / `3:5`·`60:00`·`abc`·`3:60` / 빈칸을 넣고 저장
+- **When** `추출 시간`에 `0:00`·`59:59` / `3:5`·`60:00`·`abc`·`3:60` / 빈칸을 넣고 저장
 - **Then** `0:00`→`0`, `59:59`→`3599`로 전송 / 나머지 넷은 요청이 **0회** 나가고 그 칸에 `0:00 형식으로 입력해 주세요.` / 빈칸이면 `actualTotalTimeSeconds` 키가 없다
 - **검증** `formState.test.ts` + 페이지 테스트
 

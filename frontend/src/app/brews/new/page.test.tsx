@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -692,5 +692,70 @@ describe("BrewNewPage — 시간 m:ss", () => {
     await waitFor(() => expect(captured.body).not.toBeNull());
     expect(captured.body?.actualTotalTimeSeconds).toBe(3599);
     expect(captured.body?.actualDrawdownSeconds).toBe(0);
+  });
+});
+
+/** 히어로 판. 넓은 폭에서는 오른쪽, 좁은 폭에서는 위에 오지만 DOM은 하나다. */
+async function hero() {
+  await screen.findByLabelText("원두량");
+  const el = document.querySelector<HTMLElement>("[data-hero]");
+  if (el === null) throw new Error("히어로가 없다");
+  return within(el);
+}
+
+describe("BrewNewPage — 히어로", () => {
+  it("AC-BREWFORM-02 · 히어로가 실측 비율을 실시간으로 보여준다", async () => {
+    const user = userEvent.setup();
+    await renderNewPage();
+    const dose = await screen.findByLabelText("원두량");
+    const water = screen.getByLabelText("물량");
+
+    await user.clear(dose);
+    await user.type(dose, "16");
+    await user.clear(water);
+    await user.type(water, "250");
+    expect((await hero()).getByText("1:15.6")).toBeInTheDocument();
+
+    await user.clear(dose);
+    expect((await hero()).getByText("1:—")).toBeInTheDocument();
+
+    await user.type(dose, "0");
+    expect((await hero()).getByText("1:—")).toBeInTheDocument();
+  });
+
+  it("AC-BREWFORM-03 · 히어로 아래 줄은 레시피 기준값이다", async () => {
+    await renderNewPage();
+    const h = await hero();
+
+    expect(h.getByText("분쇄도 있는 레시피")).toBeInTheDocument();
+    expect(h.getByText("20.0g → 300.0g · 92°C · 3:30")).toBeInTheDocument();
+  });
+
+  it("AC-BREWFORM-03 · 온도·시간이 없는 레시피는 그 조각이 빠진다", async () => {
+    const recipe: Record<string, unknown> = { ...grindedRecipe, id: 1 };
+    delete recipe.waterTempC;
+    delete recipe.totalTimeSeconds;
+    server.use(http.get(`${BASE}/recipes/1`, () => HttpResponse.json(recipe)));
+
+    await renderNewPage();
+
+    expect((await hero()).getByText("20.0g → 300.0g")).toBeInTheDocument();
+  });
+
+  it("AC-BREWFORM-04 · 값이 다 있으면 수율이 보인다", async () => {
+    const user = userEvent.setup();
+    await renderNewPage();
+    const dose = await screen.findByLabelText("원두량");
+
+    await user.clear(dose);
+    await user.type(dose, "15");
+    await user.type(screen.getByLabelText("음료 중량"), "225");
+    await user.type(screen.getByLabelText("TDS"), "1.38");
+    expect((await hero()).getByText("수율 20.7 %")).toBeInTheDocument();
+
+    await user.clear(screen.getByLabelText("TDS"));
+    expect(
+      (await hero()).getByText("TDS가 없으면 수율을 계산할 수 없습니다."),
+    ).toBeInTheDocument();
   });
 });

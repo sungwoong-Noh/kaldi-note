@@ -22,6 +22,12 @@ import {
 } from "../formState";
 import type { BrewLog } from "../schema";
 import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
+import {
+  BrewFormLayout,
+  FORM_SHELL_CLASS,
+  FormActions,
+} from "./BrewFormLayout";
+import { BrewHero } from "./BrewHero";
 import { BrewLogFields } from "./BrewLogFields";
 import { Button, SELECT_EXTRA, Shell, controlClass } from "@/components/ui";
 
@@ -153,7 +159,18 @@ function Fields({
   ) => setState((prev) => ({ ...prev, [key]: value }));
 
   return (
-    <div className="flex flex-col gap-4">
+    <BrewFormLayout
+      hero={
+        <BrewHero
+          title={recipe.label}
+          targets={recipe.targets}
+          doseG={state.actualDoseG}
+          waterG={state.actualWaterG}
+          beverageWeightG={state.beverageWeightG}
+          tdsPercent={state.tdsPercent}
+        />
+      }
+    >
       <BrewLogFields
         state={state}
         grinders={grinders}
@@ -207,7 +224,7 @@ function Fields({
         </div>
       )}
 
-      <div className="flex items-center gap-2">
+      <FormActions>
         <Button
           disabled={
             save.isPending || cleared.length > 0 || invalidTimes.length > 0
@@ -218,8 +235,8 @@ function Fields({
           저장
         </Button>
         <Button onClick={() => router.push(`/brews/${log.id}`)}>취소</Button>
-      </div>
-    </div>
+      </FormActions>
+    </BrewFormLayout>
   );
 }
 
@@ -230,7 +247,7 @@ function toVisibility(value: string): BrewLogEditState["visibility"] {
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <Shell stack>
+    <Shell stack wide className={FORM_SHELL_CLASS}>
       <h1 className="text-page-title font-semibold">기록 편집</h1>
       {children}
     </Shell>

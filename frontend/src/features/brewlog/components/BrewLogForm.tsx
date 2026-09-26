@@ -25,6 +25,12 @@ import {
   type BrewLogFormState,
 } from "../formState";
 import { BeanBatchDialog } from "./BeanBatchDialog";
+import {
+  BrewFormLayout,
+  FORM_SHELL_CLASS,
+  FormActions,
+} from "./BrewFormLayout";
+import { BrewHero } from "./BrewHero";
 import { BrewLogFields } from "./BrewLogFields";
 import { UserGrinderDialog } from "./UserGrinderDialog";
 import { Button, SELECT_EXTRA, Shell, controlClass } from "@/components/ui";
@@ -184,7 +190,19 @@ function Fields({
   );
 
   return (
-    <div ref={formRef} className="flex flex-col gap-4">
+    <BrewFormLayout
+      formRef={formRef}
+      hero={
+        <BrewHero
+          title={recipe.title}
+          targets={recipe}
+          doseG={state.actualDoseG}
+          waterG={state.actualWaterG}
+          beverageWeightG={state.beverageWeightG}
+          tdsPercent={state.tdsPercent}
+        />
+      }
+    >
       <BrewLogFields
         state={state}
         grinders={grinders}
@@ -200,14 +218,14 @@ function Fields({
         </p>
       )}
 
-      <div className="flex items-center gap-2">
+      <FormActions>
         <Button disabled={save.isPending} onClick={submit} variant="primary">
           기록하기
         </Button>
         <Button onClick={() => router.push(`/recipes/${recipe.id}`)}>
           취소
         </Button>
-      </div>
+      </FormActions>
 
       {addingGrinder && (
         <UserGrinderDialog
@@ -237,7 +255,7 @@ function Fields({
           onSessionLost={onSessionLost}
         />
       )}
-    </div>
+    </BrewFormLayout>
   );
 }
 
@@ -265,7 +283,7 @@ function batchLabel(
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <Shell stack>
+    <Shell stack wide className={FORM_SHELL_CLASS}>
       <h1 className="text-page-title font-semibold">이 레시피로 내렸다</h1>
       {children}
     </Shell>

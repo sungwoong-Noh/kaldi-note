@@ -273,7 +273,7 @@ supersedes:
 
 - [ ] **Task 2: 시간 입력을 m:ss로 교체 (작성·편집 공통 `BrewLogFields`)** — Covers: AC-BREWFORM-05, AC-BREWFORM-06, AC-BREWFORM-13
 
-- [ ] **Task 3: 레이아웃 — 원장 행 섹션 + 히어로 + 반응형 (작성·편집)** — Covers: AC-BREWFORM-01, AC-BREWFORM-02, AC-BREWFORM-03, AC-BREWFORM-04, AC-BREWFORM-12
+- [x] **Task 3: 레이아웃 — 원장 행 섹션 + 히어로 + 반응형 (작성·편집)** — Covers: AC-BREWFORM-01, AC-BREWFORM-02, AC-BREWFORM-03, AC-BREWFORM-04, AC-BREWFORM-12
   - 섹션 순서: 내린 시각 → 원두 → 수치 → 장비 → 결과 → 평가. 숫자 입력 단위는 입력칸 안 오른쪽 mono 11px `ink-3`
 
 - [ ] **Task 4: 원두 다이얼로그 (선택 + 안에서 등록, 모바일 바텀시트)** — Covers: AC-BREWFORM-07, AC-BREWFORM-08, AC-BREWFORM-09, AC-BREWFORM-15

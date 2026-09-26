@@ -67,7 +67,44 @@ export function BrewLogFields({
       {beanSlot}
 
       <fieldset className="flex min-w-0 flex-col gap-2">
-        <legend className="text-card-title font-semibold">그라인더</legend>
+        <legend className="text-card-title font-semibold">수치</legend>
+        <NumberField
+          label="원두량"
+          unit="g"
+          value={state.actualDoseG}
+          onChange={(v) => set("actualDoseG", v)}
+          error={fieldErrors?.byField.actualDoseG}
+        />
+        <NumberField
+          label="물량"
+          unit="g"
+          value={state.actualWaterG}
+          onChange={(v) => set("actualWaterG", v)}
+          error={fieldErrors?.byField.actualWaterG}
+        />
+        <NumberField
+          label="물 온도"
+          unit="°C"
+          value={state.actualWaterTempC}
+          onChange={(v) => set("actualWaterTempC", v)}
+          error={fieldErrors?.byField.actualWaterTempC}
+        />
+        <MinSecField
+          label="추출 시간"
+          value={state.actualTotalTimeSeconds}
+          onChange={(v) => set("actualTotalTimeSeconds", v)}
+          error={fieldErrors?.byField.actualTotalTimeSeconds}
+        />
+        <MinSecField
+          label="드로다운 시간"
+          value={state.actualDrawdownSeconds}
+          onChange={(v) => set("actualDrawdownSeconds", v)}
+          error={fieldErrors?.byField.actualDrawdownSeconds}
+        />
+      </fieldset>
+
+      <fieldset className="flex min-w-0 flex-col gap-2">
+        <legend className="text-card-title font-semibold">장비</legend>
         {grinders.length === 0 && (
           <p className="text-body text-ink-3">등록된 그라인더가 없습니다</p>
         )}
@@ -108,39 +145,10 @@ export function BrewLogFields({
       </fieldset>
 
       <fieldset className="flex min-w-0 flex-col gap-2">
-        <legend className="text-card-title font-semibold">실측값</legend>
-        <NumberField
-          label="원두량"
-          value={state.actualDoseG}
-          onChange={(v) => set("actualDoseG", v)}
-          error={fieldErrors?.byField.actualDoseG}
-        />
-        <NumberField
-          label="물량"
-          value={state.actualWaterG}
-          onChange={(v) => set("actualWaterG", v)}
-          error={fieldErrors?.byField.actualWaterG}
-        />
-        <NumberField
-          label="물 온도"
-          value={state.actualWaterTempC}
-          onChange={(v) => set("actualWaterTempC", v)}
-          error={fieldErrors?.byField.actualWaterTempC}
-        />
-        <MinSecField
-          label="추출 시간"
-          value={state.actualTotalTimeSeconds}
-          onChange={(v) => set("actualTotalTimeSeconds", v)}
-          error={fieldErrors?.byField.actualTotalTimeSeconds}
-        />
-        <MinSecField
-          label="드로다운 시간"
-          value={state.actualDrawdownSeconds}
-          onChange={(v) => set("actualDrawdownSeconds", v)}
-          error={fieldErrors?.byField.actualDrawdownSeconds}
-        />
+        <legend className="text-card-title font-semibold">결과</legend>
         <NumberField
           label="음료 중량"
+          unit="g"
           value={state.beverageWeightG}
           onChange={(v) => set("beverageWeightG", v)}
           error={fieldErrors?.byField.beverageWeightG}
@@ -148,6 +156,7 @@ export function BrewLogFields({
         {/* TDS는 리프랙토미터가 있을 때만 채운다. 없어도 나머지는 전부 저장된다. */}
         <NumberField
           label="TDS"
+          unit="%"
           value={state.tdsPercent}
           onChange={(v) => set("tdsPercent", v)}
           error={fieldErrors?.byField.tdsPercent}
@@ -225,11 +234,14 @@ function grinderLabel(grinder: UserGrinder): string {
 
 function NumberField({
   label,
+  unit,
   value,
   onChange,
   error,
 }: {
   label: string;
+  /** 입력칸 오른쪽 안에 붙는다 — 레시피 폼(`Input`)과 같은 자리다 */
+  unit?: string;
   value: number | null;
   onChange: (value: number | null) => void;
   error?: string;
@@ -239,17 +251,31 @@ function NumberField({
   return (
     <label className="flex items-center gap-2 text-body">
       <span className="w-20 shrink-0 text-ink-3">{label}</span>
-      <input
-        type="number"
-        aria-label={label}
-        value={value ?? ""}
-        onChange={(e) =>
-          onChange(e.target.value === "" ? null : Number(e.target.value))
-        }
-        aria-describedby={error ? errorId : undefined}
-        aria-invalid={error ? true : undefined}
-        className={controlClass("", Boolean(error))}
-      />
+      <span className="relative flex w-full min-w-0 items-center">
+        <input
+          type="number"
+          aria-label={label}
+          value={value ?? ""}
+          onChange={(e) =>
+            onChange(e.target.value === "" ? null : Number(e.target.value))
+          }
+          aria-describedby={error ? errorId : undefined}
+          aria-invalid={error ? true : undefined}
+          className={controlClass(
+            `text-metric ${unit !== undefined ? "pr-12" : ""}`,
+            Boolean(error),
+          )}
+        />
+        {unit !== undefined && (
+          <span
+            aria-hidden
+            data-unit
+            className="pointer-events-none absolute right-2 text-metric text-ink-3"
+          >
+            {unit}
+          </span>
+        )}
+      </span>
       {error && (
         <span id={errorId} className="text-body-sm text-danger">
           {error}

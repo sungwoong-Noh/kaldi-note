@@ -5,7 +5,7 @@ import { brewCountLabel } from "../brewCountLabel";
 import { kstTimeOf, representativeMetric } from "../dayListFormat";
 import { useRoastLevel } from "../useRoastLevel";
 import { DayCard } from "./DayCard";
-import { RoastDot } from "./RoastDot";
+import { RoastDot } from "@/components/ui";
 
 const WEEKDAY_EN = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
 

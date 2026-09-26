@@ -131,26 +131,28 @@ async function undersized(
     const exempt = new Set(
       document.querySelectorAll(":is(p, h1, h2, h3, h4, h5, h6) a"),
     );
-    return all
-      .filter((el) => !exempt.has(el))
-      // 미디어 쿼리로 숨긴 컨트롤(웹 상단 바 등)은 이 뷰포트에서 탭할 수 없다 —
-      // 2026-09-19 홈 달력의 WebTopBar가 처음으로 이 경우를 만들었다.
-      .filter((el) => (el as HTMLElement).checkVisibility())
-      .map((el) => {
-        // 라벨에 감싸인 컨트롤은 라벨 전체가 탭을 받는다. 사람이 실제로 누르는 것을 잰다
-        // (docs/specs/2026-09-15-structure.md AC-STRUCT-04).
-        const label = el.closest("label");
-        const target = label !== null && label.contains(el) ? label : el;
-        const r = target.getBoundingClientRect();
-        const name =
-          (el as HTMLElement).innerText?.trim().slice(0, 20) ||
-          el.getAttribute("aria-label") ||
-          (el as HTMLInputElement).type ||
-          el.tagName.toLowerCase();
-        return { name: name.replace(/\s+/g, " "), w: r.width, h: r.height };
-      })
-      .filter((b) => b.w < 44 || b.h < 44)
-      .map((b) => `${b.name} ${Math.round(b.w)}x${Math.round(b.h)}`);
+    return (
+      all
+        .filter((el) => !exempt.has(el))
+        // 미디어 쿼리로 숨긴 컨트롤(웹 상단 바 등)은 이 뷰포트에서 탭할 수 없다 —
+        // 2026-09-19 홈 달력의 WebTopBar가 처음으로 이 경우를 만들었다.
+        .filter((el) => (el as HTMLElement).checkVisibility())
+        .map((el) => {
+          // 라벨에 감싸인 컨트롤은 라벨 전체가 탭을 받는다. 사람이 실제로 누르는 것을 잰다
+          // (docs/specs/2026-09-15-structure.md AC-STRUCT-04).
+          const label = el.closest("label");
+          const target = label !== null && label.contains(el) ? label : el;
+          const r = target.getBoundingClientRect();
+          const name =
+            (el as HTMLElement).innerText?.trim().slice(0, 20) ||
+            el.getAttribute("aria-label") ||
+            (el as HTMLInputElement).type ||
+            el.tagName.toLowerCase();
+          return { name: name.replace(/\s+/g, " "), w: r.width, h: r.height };
+        })
+        .filter((b) => b.w < 44 || b.h < 44)
+        .map((b) => `${b.name} ${Math.round(b.w)}x${Math.round(b.h)}`)
+    );
   });
 }
 
@@ -199,26 +201,34 @@ test.describe("터치 타깃 — 스윕", () => {
 
 test.describe("터치 타깃 — 다이얼로그", () => {
   const CASES = [
+    // 원두 등록은 고르기 다이얼로그 안의 `+ 새 원두`로 들어간다(docs/specs/2026-09-27-brew-form-redesign.md).
     {
       path: "/brews/new?recipeId=12",
-      open: "+ 원두 등록",
+      open: ["원두 변경"],
+      what: "BeanPickerDialog",
+    },
+    {
+      path: "/brews/new?recipeId=12",
+      open: ["원두 변경", "+ 새 원두"],
       what: "BeanBatchDialog",
     },
     {
       path: "/brews/new?recipeId=12",
-      open: "+ 그라인더 등록",
+      open: ["+ 그라인더 등록"],
       what: "UserGrinderDialog",
     },
     // /recipes/12는 hoffmann이고 ownerUserId가 없어 삭제 버튼이 없다. /recipes/3이 내 것이다.
-    { path: "/recipes/3", open: "삭제", what: "DeleteRecipeDialog" },
-    { path: "/brews/2", open: "삭제", what: "DeleteBrewLogDialog" },
+    { path: "/recipes/3", open: ["삭제"], what: "DeleteRecipeDialog" },
+    { path: "/brews/2", open: ["삭제"], what: "DeleteBrewLogDialog" },
   ] as const;
 
   for (const { path, open, what } of CASES) {
     test(`AC-TOUCH-02 · ${what}의 타깃이 44×44 이상이다`, async ({ page }) => {
       await installStubs(page);
       await page.goto(path);
-      await page.getByRole("button", { name: open }).click();
+      for (const name of open) {
+        await page.getByRole("button", { name }).click();
+      }
 
       expect(await undersized(page)).toEqual([]);
     });

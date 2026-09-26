@@ -62,6 +62,19 @@ async function fillBeanDialog(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: "등록" }));
 }
 
+/** 원두 행의 `변경`으로 다이얼로그를 연다. */
+async function openBeanPicker(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(await screen.findByRole("button", { name: "원두 변경" }));
+  return within(await screen.findByRole("dialog", { name: "원두 고르기" }));
+}
+
+/** 다이얼로그를 열어 `+ 새 원두`로 3단 생성을 끝까지 채운다. */
+async function registerBeanViaPicker(user: ReturnType<typeof userEvent.setup>) {
+  const picker = await openBeanPicker(user);
+  await user.click(picker.getByRole("button", { name: "+ 새 원두" }));
+  await fillBeanDialog(user);
+}
+
 function renderNewPage() {
   return BrewNewPage({
     searchParams: Promise.resolve({ recipeId: "1" }),
@@ -189,30 +202,101 @@ describe("BrewNewPage", () => {
     expect(await screen.findByLabelText("그라인더")).toHaveValue("5");
   });
 
-  it("AC-WEBBREW-10 · 원두 선택란은 로스터·제품·경과일을 함께 보여준다", async () => {
-    await renderNewPage();
+  it("AC-BREWFORM-07 · 원두 다이얼로그는 재고를 로스팅일 최신순으로 보여준다", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(`${BASE}/bean-batches`, () =>
+        HttpResponse.json([
+          {
+            ...yirgacheffeBatch,
+            id: 9,
+            roastedAt: "2026-09-05",
+            daysOffRoast: 7,
+            remainingG: 180,
+          },
+          {
+            ...yirgacheffeBatch,
+            id: 8,
+            roastedAt: "2026-09-10",
+            daysOffRoast: 2,
+            remainingG: 200,
+          },
+          // 로스팅일이 같으면 id가 큰 것이 먼저다
+          {
+            ...yirgacheffeBatch,
+            id: 7,
+            roastedAt: "2026-09-05",
+            daysOffRoast: 7,
+            remainingG: 50,
+          },
+        ]),
+      ),
+    );
 
-    expect(
-      await screen.findByRole("option", { name: "프릿츠 예가체프 · 3일차" }),
-    ).toBeInTheDocument();
+    await renderNewPage();
+    const picker = await openBeanPicker(user);
+    const rows = picker.getAllByRole("button", { name: /프릿츠 예가체프/ });
+
+    expect(rows.map((row) => row.textContent)).toEqual([
+      "프릿츠 예가체프로스팅 09.10 · 2일차 · 남은 200 g",
+      "프릿츠 예가체프로스팅 09.05 · 7일차 · 남은 180 g",
+      "프릿츠 예가체프로스팅 09.05 · 7일차 · 남은 50 g",
+    ]);
   });
 
-  it("AC-WEBBREW-23 · 원두가 없으면 등록 버튼이 보인다", async () => {
+  it("AC-BREWFORM-08 · 다이얼로그에서 고르면 닫히고 선택이 반영된다", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(`${BASE}/bean-batches`, () =>
+        HttpResponse.json([
+          {
+            ...yirgacheffeBatch,
+            id: 9,
+            roastedAt: "2026-09-05",
+            daysOffRoast: 7,
+            remainingG: 180,
+          },
+          {
+            ...yirgacheffeBatch,
+            id: 8,
+            roastedAt: "2026-09-10",
+            daysOffRoast: 2,
+            remainingG: 200,
+          },
+        ]),
+      ),
+    );
+    const captured = captureCreate();
+
+    await renderNewPage();
+    const picker = await openBeanPicker(user);
+    await user.click(
+      picker.getAllByRole("button", { name: /프릿츠 예가체프/ })[1],
+    );
+
+    expect(screen.queryByRole("dialog", { name: "원두 고르기" })).toBeNull();
+    expect(screen.getByText("프릿츠 예가체프 · 7일차")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    await waitFor(() => expect(captured.body?.beanBatchId).toBe(9));
+  });
+
+  it("AC-BREWFORM-15 · 원두 재고가 없을 때", async () => {
+    const user = userEvent.setup();
     server.use(http.get(`${BASE}/bean-batches`, () => HttpResponse.json([])));
 
     await renderNewPage();
+    const picker = await openBeanPicker(user);
 
+    expect(picker.getByText("등록된 원두가 없습니다.")).toBeInTheDocument();
     expect(
-      await screen.findByText("등록된 원두가 없습니다"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "+ 원두 등록" }),
+      picker.getByRole("button", { name: "+ 새 원두" }),
     ).toBeInTheDocument();
   });
 
-  it("AC-WEBBREW-09 · 등록에 성공하면 그 재고가 선택된 상태가 된다", async () => {
+  it("AC-BREWFORM-09 · 다이얼로그 안에서 새 원두를 등록하면 선택된 채 닫힌다", async () => {
     const user = userEvent.setup();
-    const registered = { ...yirgacheffeBatch, id: 9, beanProductId: 3 };
+    const registered = { ...yirgacheffeBatch, id: 11, beanProductId: 3 };
     let hasBatch = false;
     server.use(
       http.get(`${BASE}/bean-batches`, () =>
@@ -229,14 +313,18 @@ describe("BrewNewPage", () => {
         return HttpResponse.json(registered, { status: 201 });
       }),
     );
+    const captured = captureCreate();
 
     await renderNewPage();
-    await user.click(
-      await screen.findByRole("button", { name: "+ 원두 등록" }),
-    );
-    await fillBeanDialog(user);
+    const dose = await screen.findByLabelText("원두량");
+    await user.clear(dose);
+    await user.type(dose, "21");
+    await registerBeanViaPicker(user);
 
-    expect(await screen.findByLabelText("원두")).toHaveValue("9");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.getByLabelText("원두량")).toHaveValue(21);
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    await waitFor(() => expect(captured.body?.beanBatchId).toBe(11));
   });
 
   it("AC-WEBBREW-24 · 그라인더를 모달에서 등록해도 작성 중인 값이 남는다", async () => {
@@ -290,10 +378,9 @@ describe("BrewNewPage", () => {
     await renderNewPage();
     await user.type(await screen.findByLabelText("메모"), "단맛이 좋았다");
 
-    await user.click(screen.getByRole("button", { name: "+ 원두 등록" }));
-    await fillBeanDialog(user);
+    await registerBeanViaPicker(user);
 
-    await screen.findByLabelText("원두");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(screen.getByLabelText("메모")).toHaveValue("단맛이 좋았다");
   });
 });
@@ -345,7 +432,8 @@ describe("BrewNewPage — 저장과 평가", () => {
     const captured = captureCreate();
 
     await renderNewPage();
-    await user.selectOptions(await screen.findByLabelText("원두"), "9");
+    const picker = await openBeanPicker(user);
+    await user.click(picker.getByRole("button", { name: /프릿츠 예가체프/ }));
     await user.click(screen.getByRole("button", { name: "기록하기" }));
 
     await waitFor(() => expect(captured.body).not.toBeNull());

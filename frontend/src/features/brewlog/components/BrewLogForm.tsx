@@ -25,6 +25,7 @@ import {
   type BrewLogFormState,
 } from "../formState";
 import { BeanBatchDialog } from "./BeanBatchDialog";
+import { BeanPickerDialog, beanName } from "./BeanPickerDialog";
 import {
   BrewFormLayout,
   FORM_SHELL_CLASS,
@@ -33,7 +34,7 @@ import {
 import { BrewHero } from "./BrewHero";
 import { BrewLogFields } from "./BrewLogFields";
 import { UserGrinderDialog } from "./UserGrinderDialog";
-import { Button, SELECT_EXTRA, Shell, controlClass } from "@/components/ui";
+import { Button, Shell } from "@/components/ui";
 
 /**
  * 로그 작성 화면.
@@ -107,7 +108,8 @@ function Fields({
     initialFormState(recipe, grinders),
   );
   const [addingGrinder, setAddingGrinder] = useState(false);
-  const [addingBean, setAddingBean] = useState(false);
+  // 원두는 고르기 → (없으면) 새로 등록의 두 단계다. 등록 단계는 기존 `BeanBatchDialog`가 맡는다.
+  const [beanDialog, setBeanDialog] = useState<"pick" | "create" | null>(null);
   const router = useRouter();
 
   const save = useMutation({
@@ -155,36 +157,19 @@ function Fields({
   ) => setState((prev) => ({ ...prev, [key]: value }));
 
   // `내린 시각`과 `그라인더` 사이에 들어간다. 편집 화면은 여기에 잠긴 원두 표시를 넣는다.
+  const chosen = (batches.data ?? []).find((b) => b.id === state.beanBatchId);
   const beanSlot = (
     <fieldset className="flex min-w-0 flex-col gap-2">
       <legend className="text-card-title font-semibold">원두</legend>
-      {(batches.data ?? []).length === 0 && !batches.isPending && (
-        <p className="text-body text-ink-3">등록된 원두가 없습니다</p>
-      )}
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="flex w-full items-center gap-2 text-body">
-          <span className="shrink-0 text-ink-3">원두</span>
-          <select
-            aria-label="원두"
-            value={state.beanBatchId ?? ""}
-            onChange={(e) =>
-              set(
-                "beanBatchId",
-                e.target.value === "" ? null : Number(e.target.value),
-              )
-            }
-            className={controlClass(SELECT_EXTRA)}
-          >
-            <option value="">선택 안 함</option>
-            {(batches.data ?? []).map((batch) => (
-              <option key={batch.id} value={batch.id}>
-                {batchLabel(batch, products.data ?? [], roasters.data ?? [])}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <Button onClick={() => setAddingBean(true)}>+ 원두 등록</Button>
+      <div className="flex min-h-11 items-center justify-between gap-3 text-body">
+        <span className={chosen ? "" : "text-ink-3"}>
+          {chosen
+            ? batchLabel(chosen, products.data ?? [], roasters.data ?? [])
+            : "고르지 않음"}
+        </span>
+        <Button aria-label="원두 변경" onClick={() => setBeanDialog("pick")}>
+          변경
+        </Button>
       </div>
     </fieldset>
   );
@@ -242,16 +227,30 @@ function Fields({
         />
       )}
 
-      {addingBean && (
+      {beanDialog === "pick" && (
+        <BeanPickerDialog
+          batches={batches.data ?? []}
+          products={products.data ?? []}
+          roasters={roasters.data ?? []}
+          onPick={(id) => {
+            set("beanBatchId", id);
+            setBeanDialog(null);
+          }}
+          onAddNew={() => setBeanDialog("create")}
+          onCancel={() => setBeanDialog(null)}
+        />
+      )}
+
+      {beanDialog === "create" && (
         <BeanBatchDialog
           onCreated={(created) => {
             // 재고 목록만 무효화하면 선택란에 나타나지만, 라벨은 제품·로스터가 있어야 완성된다.
             void queryClient.invalidateQueries({ queryKey: ["inventory"] });
             void queryClient.invalidateQueries({ queryKey: ["catalog"] });
             set("beanBatchId", created.id);
-            setAddingBean(false);
+            setBeanDialog(null);
           }}
-          onCancel={() => setAddingBean(false)}
+          onCancel={() => setBeanDialog(null)}
           onSessionLost={onSessionLost}
         />
       )}
@@ -270,15 +269,9 @@ function batchLabel(
   products: { id: number; name: string; roasterId: number }[],
   roasters: { id: number; name: string }[],
 ): string {
-  const product = products.find((p) => p.id === batch.beanProductId);
-  const roaster = roasters.find((r) => r.id === product?.roasterId);
-  const name = [roaster?.name, product?.name].filter(Boolean).join(" ");
   const age =
     batch.daysOffRoast === undefined ? null : `${batch.daysOffRoast}일차`;
-
-  return [name === "" ? `재고 ${batch.id}` : name, age]
-    .filter(Boolean)
-    .join(" · ");
+  return [beanName(batch, products, roasters), age].filter(Boolean).join(" · ");
 }
 
 function Screen({ children }: { children: React.ReactNode }) {

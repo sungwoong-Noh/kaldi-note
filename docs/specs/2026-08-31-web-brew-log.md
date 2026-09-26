@@ -224,19 +224,11 @@ plan: docs/archive/plans/2026-08-31-plan-web-brew-log.md
 - **Then** `제품 이름` 입력칸의 `aria-describedby`가 가리키는 요소에 `100자 이하여야 합니다`가 있다
 - **검증** 컴포넌트 테스트 `BeanBatchDialog.test.tsx`
 
-#### AC-WEBBREW-09 · 등록에 성공하면 그 재고가 선택된 상태가 된다
+**AC-WEBBREW-09 (대체됨)** · 원두 등록 후 `원두` 선택란의 값을 보던 원래 AC는, 선택란이 원장 행 + 고르기 다이얼로그로 바뀌며
+`docs/specs/2026-09-27-brew-form-redesign.md`의 AC-BREWFORM-09(다이얼로그 안에서 등록하면 선택된 채 닫힌다)로 대체됐다.
 
-- **Given** `POST /bean-batches`가 `{ id: 9, beanProductId: 4, weightG: 200.0, roastedAt: "2026-08-28", daysOffRoast: 3, degassingStatus: "IDEAL" }`을 반환한다
-- **When** 모달이 닫힌다
-- **Then** `원두` 선택란의 값이 `9`다
-- **검증** 페이지 테스트 `BrewNewPage.test.tsx`
-
-#### AC-WEBBREW-10 · 원두 선택란은 로스터·제품·경과일을 함께 보여준다
-
-- **Given** `GET /bean-batches`가 `{ id: 9, beanProductId: 4, daysOffRoast: 3, ... }`을, `GET /bean-products`가 `{ id: 4, roasterId: 3, name: "예가체프" }`를, `GET /roasters`가 `{ id: 3, name: "프릿츠" }`를 반환한다
-- **When** `/brews/new?recipeId=1`을 연다
-- **Then** `원두` 선택란에 `프릿츠 예가체프 · 3일차`라는 선택지가 있다
-- **검증** 페이지 테스트 `BrewNewPage.test.tsx`
+**AC-WEBBREW-10 (대체됨)** · `<select>` 선택지 라벨(`프릿츠 예가체프 · 3일차`)을 보던 원래 AC는
+`docs/specs/2026-09-27-brew-form-redesign.md`의 AC-BREWFORM-07(다이얼로그 목록)·08(고른 뒤 원장 행 `프릿츠 예가체프 · 7일차`)로 대체됐다.
 
 ### 로그 작성 — 초기값
 
@@ -328,12 +320,8 @@ plan: docs/archive/plans/2026-08-31-plan-web-brew-log.md
 
 ### 빈 상태와 모달
 
-#### AC-WEBBREW-23 · 원두가 없으면 등록 버튼이 보인다
-
-- **Given** `GET /bean-batches`가 빈 페이지를 반환한다
-- **When** `/brews/new?recipeId=1`을 연다
-- **Then** `등록된 원두가 없습니다`가 보이고 이름이 `+ 원두 등록`인 버튼이 있다
-- **검증** 페이지 테스트 `BrewNewPage.test.tsx`
+**AC-WEBBREW-23 (대체됨)** · 원두가 없을 때 폼에 `+ 원두 등록` 버튼을 보던 원래 AC는
+`docs/specs/2026-09-27-brew-form-redesign.md`의 AC-BREWFORM-15(다이얼로그 안 `등록된 원두가 없습니다.` + `+ 새 원두`)로 대체됐다.
 
 #### AC-WEBBREW-24 · 그라인더를 모달에서 등록해도 작성 중인 값이 남는다
 

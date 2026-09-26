@@ -276,7 +276,7 @@ supersedes:
 - [x] **Task 3: 레이아웃 — 원장 행 섹션 + 히어로 + 반응형 (작성·편집)** — Covers: AC-BREWFORM-01, AC-BREWFORM-02, AC-BREWFORM-03, AC-BREWFORM-04, AC-BREWFORM-12
   - 섹션 순서: 내린 시각 → 원두 → 수치 → 장비 → 결과 → 평가. 숫자 입력 단위는 입력칸 안 오른쪽 mono 11px `ink-3`
 
-- [ ] **Task 4: 원두 다이얼로그 (선택 + 안에서 등록, 모바일 바텀시트)** — Covers: AC-BREWFORM-07, AC-BREWFORM-08, AC-BREWFORM-09, AC-BREWFORM-15
+- [x] **Task 4: 원두 다이얼로그 (선택 + 안에서 등록, 모바일 바텀시트)** — Covers: AC-BREWFORM-07, AC-BREWFORM-08, AC-BREWFORM-09, AC-BREWFORM-15
   - 등록 단계는 기존 `BeanBatchDialog`의 입력·중복 방지 로직을 재사용한다
 
 - [ ] **Task 5: 공개 범위 3분할 (작성 추가, 편집 교체)** — Covers: AC-BREWFORM-10
@@ -288,7 +288,7 @@ supersedes:
 - [ ] **Task 8: 비기능 — E2E 폭·터치 타깃, 토큰 검사** — Covers: AC-BREWFORM-24, AC-BREWFORM-25, AC-BREWFORM-26
   - `e2e/brew-form.spec.ts`는 `e2e/recipe-drawer-responsive.spec.ts`의 API 목킹 방식을 따른다
 
-- [ ] **Task 9: 이전 AC 대체 표시** — 위 「대체하는 이전 AC」의 각 AC에 이전 스펙 본문 「(대체됨)」 표시 + 옮겨진 테스트 ID 정리. `./scripts/check-spec-coverage.sh`·`./scripts/check-docs.sh` 통과
+- [ ] **Task 9: 이전 AC 대체 표시** — 위 「대체하는 이전 AC」의 각 AC에 이전 스펙 본문 「(대체됨)」 표시 + 옮겨진 테스트 ID 정리. (WEBBREW-09·10·23은 Task 4에서 테스트를 옮기며 함께 처리했다 — 구현완료 스펙이라 표시가 없으면 커버리지 검사가 바로 실패한다.) `./scripts/check-spec-coverage.sh`·`./scripts/check-docs.sh` 통과
 
 ---
 

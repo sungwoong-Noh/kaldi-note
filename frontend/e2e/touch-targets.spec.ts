@@ -185,7 +185,7 @@ test.describe("터치 타깃 — 스윕", () => {
     await installStubs(page);
     await page.goto("/recipes");
 
-    for (const name of ["홈", "레시피", "기록", "더보기"]) {
+    for (const name of ["홈", "레시피", "내 잔", "더보기"]) {
       const box = await page
         .getByRole("link", { name, exact: true })
         .boundingBox();

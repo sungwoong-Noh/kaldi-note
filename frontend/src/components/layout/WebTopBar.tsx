@@ -9,7 +9,7 @@ import { Avatar, ButtonLink } from "@/components/ui";
 const NAV_LINKS = [
   { href: "/", label: "홈" },
   { href: "/recipes", label: "레시피" },
-  { href: "/brews", label: "기록" },
+  { href: "/brews", label: "내 잔" },
 ];
 
 /**

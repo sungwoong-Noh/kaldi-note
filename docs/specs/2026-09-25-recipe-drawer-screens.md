@@ -457,7 +457,7 @@ supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBR
 
 - [x] **Task 8: 반응형 4구간** — Covers: AC-RECIPESBREWS-83, 88, 89, 90, 91, 92, 93
 
-- [ ] **Task 9: 탭 개칭 "내 잔"** — Covers: AC-RECIPESBREWS-79
+- [x] **Task 9: 탭 개칭 "내 잔"** — Covers: AC-RECIPESBREWS-79
 
   ```
   BottomNav·WebTopBar 라벨 "기록" → "내 잔" 변경 전, docs/GOTCHAS.md

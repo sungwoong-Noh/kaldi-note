@@ -3,7 +3,6 @@ import {
   brewLogPage,
   grindedRecipe,
   homeCalendar,
-  yirgacheffeBatch,
 } from "../src/test/fixtures";
 import { installStubs, stubRecipeDetail } from "./stubs";
 
@@ -165,9 +164,13 @@ test.describe("홈 달력 — 모바일", () => {
     });
 
     await page.goto("/brews/new?recipeId=16");
+    // 원두는 원장 행의 「변경」 → 고르기 다이얼로그에서 고른다(docs/specs/2026-09-27-brew-form-redesign.md).
+    await page.getByRole("button", { name: "원두 변경" }).click();
     await page
-      .getByLabel("원두", { exact: true })
-      .selectOption(String(yirgacheffeBatch.id));
+      .getByRole("dialog", { name: "원두 고르기" })
+      .getByRole("button", { name: /예가체프/ })
+      .first()
+      .click();
     await page.getByRole("button", { name: "기록하기" }).click();
 
     await expect(page).toHaveURL("/brews/99");
@@ -244,7 +247,9 @@ test.describe("홈 달력 — 모바일 헤더", () => {
     await page.goto("/");
 
     const header = page.locator("header");
-    await expect(header.getByRole("link", { name: "이 레시피로 내렸다" })).toBeHidden();
+    await expect(
+      header.getByRole("link", { name: "이 레시피로 내렸다" }),
+    ).toBeHidden();
     await expect(header.getByRole("link", { name: "더보기" })).toBeHidden();
   });
 });

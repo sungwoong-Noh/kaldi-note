@@ -1,7 +1,7 @@
 ---
 id: BREWFORM
 title: 기록 작성·편집 화면 리디자인 — 03 폼 패턴 + 원두 다이얼로그 + 평가 5축
-status: 승인
+status: 구현완료
 milestone: M2
 supersedes:
 ---
@@ -82,7 +82,7 @@ supersedes:
 #### AC-BREWFORM-05 · 시간은 m:ss로 넣고 초로 보낸다
 
 - **Given** 작성 화면, 필수값 채움
-- **When** `총 시간`에 `3:30`, `드로다운`에 `0:45`를 넣고 `기록하기`
+- **When** `추출 시간`에 `3:30`, `드로다운 시간`에 `0:45`를 넣고 `기록하기`
 - **Then** 요청 본문 `actualTotalTimeSeconds`가 `210`, `actualDrawdownSeconds`가 `45`
 - **검증** 페이지 테스트
 
@@ -90,7 +90,7 @@ supersedes:
 
 - **Given** `GET /brew-logs/42`가 `actualTotalTimeSeconds=210`, `actualDrawdownSeconds=null`
 - **When** `/brews/42/edit`를 연다
-- **Then** `총 시간`이 `3:30`, `드로다운`이 빈칸
+- **Then** `추출 시간`이 `3:30`, `드로다운 시간`이 빈칸
 - **검증** 편집 페이지 테스트
 
 #### AC-BREWFORM-07 · 원두 다이얼로그는 재고를 로스팅일 최신순으로 보여준다
@@ -140,7 +140,7 @@ supersedes:
 #### AC-BREWFORM-13 · 시간 형식의 경계
 
 - **Given** 작성 화면
-- **When** `총 시간`에 `0:00`·`59:59` / `3:5`·`60:00`·`abc`·`3:60` / 빈칸을 넣고 저장
+- **When** `추출 시간`에 `0:00`·`59:59` / `3:5`·`60:00`·`abc`·`3:60` / 빈칸을 넣고 저장
 - **Then** `0:00`→`0`, `59:59`→`3599`로 전송 / 나머지 넷은 요청이 **0회** 나가고 그 칸에 `0:00 형식으로 입력해 주세요.` / 빈칸이면 `actualTotalTimeSeconds` 키가 없다
 - **검증** `formState.test.ts` + 페이지 테스트
 
@@ -254,49 +254,19 @@ supersedes:
 - AC-WEBLOGEDIT-04의 `추출 시간 210` 부분(docs/specs/2026-09-02-web-brew-log-edit.md) → AC-BREWFORM-06
 - AC-WEBLOGEDIT-05(docs/specs/2026-09-02-web-brew-log-edit.md) → AC-BREWFORM-10 — select·라벨 `맞팔로우만`/`전체 공개` → 3분할
 - AC-WEBLOGEDIT-10의 「바꾼 뒤 취소」 경우(docs/specs/2026-09-02-web-brew-log-edit.md) → AC-BREWFORM-17
+- AC-TOUCH-09(docs/specs/2026-09-09-touch-targets.md) → AC-BREWFORM-25 — 편집 화면 공개 범위 select 높이. select가 3분할 버튼이 되며 대상이 사라졌다(구현 중 발견해 추가)
 
 나머지 WEBBREW·WEBLOGEDIT·ERRFOCUS AC(그라인더 자동 선택, 5축 접힘, 바뀐 필드만 PATCH, 지우기 방지 등)는
 그대로 유효하다 — 레이아웃이 바뀌어도 테스트가 계속 통과해야 한다.
 
 ---
 
-## 구현 순서
-
-- [ ] **Task 1: 순수 함수 — m:ss 파싱·표시, 미리보기 비율·수율(HALF_UP)** — Covers: AC-BREWFORM-13, AC-BREWFORM-14
-
-  ```ts
-  // formState.ts
-  export function parseMinSec(text: string): number | null | "invalid" // "" → null
-  export function previewRatio(doseG: number | null, waterG: number | null): string // "1:15.6" | "1:—"
-  export function previewYield(doseG, beverageG, tds): string | null // "20.7" | null
-  ```
-
-- [ ] **Task 2: 시간 입력을 m:ss로 교체 (작성·편집 공통 `BrewLogFields`)** — Covers: AC-BREWFORM-05, AC-BREWFORM-06, AC-BREWFORM-13
-
-- [ ] **Task 3: 레이아웃 — 원장 행 섹션 + 히어로 + 반응형 (작성·편집)** — Covers: AC-BREWFORM-01, AC-BREWFORM-02, AC-BREWFORM-03, AC-BREWFORM-04, AC-BREWFORM-12
-  - 섹션 순서: 내린 시각 → 원두 → 수치 → 장비 → 결과 → 평가. 숫자 입력 단위는 입력칸 안 오른쪽 mono 11px `ink-3`
-
-- [ ] **Task 4: 원두 다이얼로그 (선택 + 안에서 등록, 모바일 바텀시트)** — Covers: AC-BREWFORM-07, AC-BREWFORM-08, AC-BREWFORM-09, AC-BREWFORM-15
-  - 등록 단계는 기존 `BeanBatchDialog`의 입력·중복 방지 로직을 재사용한다
-
-- [ ] **Task 5: 공개 범위 3분할 (작성 추가, 편집 교체)** — Covers: AC-BREWFORM-10
-
-- [ ] **Task 6: 평가 — 5축 1~5 버튼** — Covers: AC-BREWFORM-11, AC-BREWFORM-18
-
-- [ ] **Task 7: 상태 — recipeId 오류·나가기 확인·저장 중·에러 표시** — Covers: AC-BREWFORM-16, AC-BREWFORM-17, AC-BREWFORM-19, AC-BREWFORM-20, AC-BREWFORM-21, AC-BREWFORM-22, AC-BREWFORM-23
-
-- [ ] **Task 8: 비기능 — E2E 폭·터치 타깃, 토큰 검사** — Covers: AC-BREWFORM-24, AC-BREWFORM-25, AC-BREWFORM-26
-  - `e2e/brew-form.spec.ts`는 `e2e/recipe-drawer-responsive.spec.ts`의 API 목킹 방식을 따른다
-
-- [ ] **Task 9: 이전 AC 대체 표시** — 위 「대체하는 이전 AC」의 각 AC에 이전 스펙 본문 「(대체됨)」 표시 + 옮겨진 테스트 ID 정리. `./scripts/check-spec-coverage.sh`·`./scripts/check-docs.sh` 통과
-
----
-
 ## 수동 확인
 
-- [ ] ★ mockup-checker로 `/brews/new`·`/brews/[id]/edit`를 `390px`/`1280px`에서 캡처해 `03 Recipe Edit`(웹 W, 모바일 M1·S4·S6)·W3 평가 카드와 대조하고, 결과를 PR 본문에 첨부한다
+- [x] ★ mockup-checker로 `/brews/new`·`/brews/[id]/edit`를 `390px`/`1280px`에서 캡처해 `03 Recipe Edit`(웹 W, 모바일 M1·S4·S6)·W3 평가 카드와 대조하고, 결과를 PR 본문에 첨부한다
+  (2026-09-27 완료 — 큰 격차 2건은 반영, 나머지는 #161)
 - [ ] 실제 기기(모바일 PWA)에서 원두 바텀시트와 하단 고정 CTA가 키보드와 겹치지 않는지 본다
 
 ## 열어둔 결정
 
-- 원두 바텀시트의 높이(고정 vs 내용에 맞춤)는 Task 4에서 재고 5건 이상일 때 스크롤이 자연스러운 쪽으로 정하고 PR 「구현 중 결정」에 적는다
+- ~~원두 바텀시트의 높이~~ → 내용에 맞추고 화면을 넘으면 시트 안에서 스크롤(`max-h-full overflow-y-auto`)로 정했다(2026-09-27).

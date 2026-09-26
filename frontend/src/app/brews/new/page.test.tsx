@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -62,6 +62,19 @@ async function fillBeanDialog(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: "등록" }));
 }
 
+/** 원두 행의 `변경`으로 다이얼로그를 연다. */
+async function openBeanPicker(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(await screen.findByRole("button", { name: "원두 변경" }));
+  return within(await screen.findByRole("dialog", { name: "원두 고르기" }));
+}
+
+/** 다이얼로그를 열어 `+ 새 원두`로 3단 생성을 끝까지 채운다. */
+async function registerBeanViaPicker(user: ReturnType<typeof userEvent.setup>) {
+  const picker = await openBeanPicker(user);
+  await user.click(picker.getByRole("button", { name: "+ 새 원두" }));
+  await fillBeanDialog(user);
+}
+
 function renderNewPage() {
   return BrewNewPage({
     searchParams: Promise.resolve({ recipeId: "1" }),
@@ -93,7 +106,7 @@ describe("BrewNewPage", () => {
   it("AC-WEBBREW-12 · 추출 시간은 빈칸으로 시작한다", async () => {
     await renderNewPage();
 
-    expect(await screen.findByLabelText("추출 시간")).toHaveValue(null);
+    expect(await screen.findByLabelText("추출 시간")).toHaveValue("");
   });
 
   it("AC-WEBBREW-13 · 내린 시각의 기본값은 화면이 열린 시각이다", async () => {
@@ -189,30 +202,101 @@ describe("BrewNewPage", () => {
     expect(await screen.findByLabelText("그라인더")).toHaveValue("5");
   });
 
-  it("AC-WEBBREW-10 · 원두 선택란은 로스터·제품·경과일을 함께 보여준다", async () => {
-    await renderNewPage();
+  it("AC-BREWFORM-07 · 원두 다이얼로그는 재고를 로스팅일 최신순으로 보여준다", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(`${BASE}/bean-batches`, () =>
+        HttpResponse.json([
+          {
+            ...yirgacheffeBatch,
+            id: 9,
+            roastedAt: "2026-09-05",
+            daysOffRoast: 7,
+            remainingG: 180,
+          },
+          {
+            ...yirgacheffeBatch,
+            id: 8,
+            roastedAt: "2026-09-10",
+            daysOffRoast: 2,
+            remainingG: 200,
+          },
+          // 로스팅일이 같으면 id가 큰 것이 먼저다
+          {
+            ...yirgacheffeBatch,
+            id: 7,
+            roastedAt: "2026-09-05",
+            daysOffRoast: 7,
+            remainingG: 50,
+          },
+        ]),
+      ),
+    );
 
-    expect(
-      await screen.findByRole("option", { name: "프릿츠 예가체프 · 3일차" }),
-    ).toBeInTheDocument();
+    await renderNewPage();
+    const picker = await openBeanPicker(user);
+    const rows = picker.getAllByRole("button", { name: /프릿츠 예가체프/ });
+
+    expect(rows.map((row) => row.textContent)).toEqual([
+      "프릿츠 예가체프로스팅 09.10 · 2일차 · 남은 200 g",
+      "프릿츠 예가체프로스팅 09.05 · 7일차 · 남은 180 g",
+      "프릿츠 예가체프로스팅 09.05 · 7일차 · 남은 50 g",
+    ]);
   });
 
-  it("AC-WEBBREW-23 · 원두가 없으면 등록 버튼이 보인다", async () => {
+  it("AC-BREWFORM-08 · 다이얼로그에서 고르면 닫히고 선택이 반영된다", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(`${BASE}/bean-batches`, () =>
+        HttpResponse.json([
+          {
+            ...yirgacheffeBatch,
+            id: 9,
+            roastedAt: "2026-09-05",
+            daysOffRoast: 7,
+            remainingG: 180,
+          },
+          {
+            ...yirgacheffeBatch,
+            id: 8,
+            roastedAt: "2026-09-10",
+            daysOffRoast: 2,
+            remainingG: 200,
+          },
+        ]),
+      ),
+    );
+    const captured = captureCreate();
+
+    await renderNewPage();
+    const picker = await openBeanPicker(user);
+    await user.click(
+      picker.getAllByRole("button", { name: /프릿츠 예가체프/ })[1],
+    );
+
+    expect(screen.queryByRole("dialog", { name: "원두 고르기" })).toBeNull();
+    expect(screen.getByText("프릿츠 예가체프 · 7일차")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    await waitFor(() => expect(captured.body?.beanBatchId).toBe(9));
+  });
+
+  it("AC-BREWFORM-15 · 원두 재고가 없을 때", async () => {
+    const user = userEvent.setup();
     server.use(http.get(`${BASE}/bean-batches`, () => HttpResponse.json([])));
 
     await renderNewPage();
+    const picker = await openBeanPicker(user);
 
+    expect(picker.getByText("등록된 원두가 없습니다.")).toBeInTheDocument();
     expect(
-      await screen.findByText("등록된 원두가 없습니다"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "+ 원두 등록" }),
+      picker.getByRole("button", { name: "+ 새 원두" }),
     ).toBeInTheDocument();
   });
 
-  it("AC-WEBBREW-09 · 등록에 성공하면 그 재고가 선택된 상태가 된다", async () => {
+  it("AC-BREWFORM-09 · 다이얼로그 안에서 새 원두를 등록하면 선택된 채 닫힌다", async () => {
     const user = userEvent.setup();
-    const registered = { ...yirgacheffeBatch, id: 9, beanProductId: 3 };
+    const registered = { ...yirgacheffeBatch, id: 11, beanProductId: 3 };
     let hasBatch = false;
     server.use(
       http.get(`${BASE}/bean-batches`, () =>
@@ -229,14 +313,18 @@ describe("BrewNewPage", () => {
         return HttpResponse.json(registered, { status: 201 });
       }),
     );
+    const captured = captureCreate();
 
     await renderNewPage();
-    await user.click(
-      await screen.findByRole("button", { name: "+ 원두 등록" }),
-    );
-    await fillBeanDialog(user);
+    const dose = await screen.findByLabelText("원두량");
+    await user.clear(dose);
+    await user.type(dose, "21");
+    await registerBeanViaPicker(user);
 
-    expect(await screen.findByLabelText("원두")).toHaveValue("9");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.getByLabelText("원두량")).toHaveValue(21);
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    await waitFor(() => expect(captured.body?.beanBatchId).toBe(11));
   });
 
   it("AC-WEBBREW-24 · 그라인더를 모달에서 등록해도 작성 중인 값이 남는다", async () => {
@@ -290,10 +378,9 @@ describe("BrewNewPage", () => {
     await renderNewPage();
     await user.type(await screen.findByLabelText("메모"), "단맛이 좋았다");
 
-    await user.click(screen.getByRole("button", { name: "+ 원두 등록" }));
-    await fillBeanDialog(user);
+    await registerBeanViaPicker(user);
 
-    await screen.findByLabelText("원두");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(screen.getByLabelText("메모")).toHaveValue("단맛이 좋았다");
   });
 });
@@ -345,13 +432,15 @@ describe("BrewNewPage — 저장과 평가", () => {
     const captured = captureCreate();
 
     await renderNewPage();
-    await user.selectOptions(await screen.findByLabelText("원두"), "9");
+    const picker = await openBeanPicker(user);
+    await user.click(picker.getByRole("button", { name: /프릿츠 예가체프/ }));
     await user.click(screen.getByRole("button", { name: "기록하기" }));
 
     await waitFor(() => expect(captured.body).not.toBeNull());
     expect(captured.body).toEqual({
       recipeId: 1,
       beanBatchId: 9,
+      visibility: "PRIVATE",
       brewedAt: "2026-08-31T09:00:00.000Z",
       actualDoseG: 20,
       actualWaterG: 300,
@@ -475,18 +564,54 @@ describe("BrewNewPage — 저장과 평가", () => {
     }
   });
 
-  it("AC-WEBBREW-30 · 펼쳐서 고른 값이 본문에 담긴다", async () => {
+  it("AC-BREWFORM-11 · 5축은 1~5 버튼으로 고르고 다시 누르면 해제된다", async () => {
     const user = userEvent.setup();
     const captured = captureCreate();
 
     await renderNewPage();
     await user.click(await screen.findByRole("button", { name: "맛 자세히" }));
-    await user.selectOptions(screen.getByLabelText("산미"), "3");
-    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    const acidity = within(screen.getByRole("group", { name: "산미" }));
+    const four = acidity.getByRole("button", { name: "산미 4" });
 
+    await user.click(four);
+    expect(four).toHaveAttribute("aria-pressed", "true");
+    expect(
+      acidity
+        .getAllByRole("button")
+        .map((button) => button.hasAttribute("data-filled")),
+    ).toEqual([true, true, true, true, false]);
+
+    await user.click(four);
+    for (const button of acidity.getAllByRole("button")) {
+      expect(button).toHaveAttribute("aria-pressed", "false");
+    }
+
+    await user.click(acidity.getByRole("button", { name: "산미 3" }));
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
     await waitFor(() => expect(captured.body).not.toBeNull());
     expect(captured.body?.acidity).toBe(3);
     expect(captured.body).not.toHaveProperty("body");
+  });
+
+  it("AC-BREWFORM-18 · 5축은 접힌 채로 시작하고 펼치기 전엔 키가 없다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    await screen.findByRole("button", { name: "맛 자세히" });
+    expect(screen.queryByRole("button", { name: "산미 1" })).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    for (const key of [
+      "acidity",
+      "sweetness",
+      "body",
+      "bitterness",
+      "aftertaste",
+    ]) {
+      expect(captured.body).not.toHaveProperty(key);
+    }
   });
 
   it("AC-WEBBREW-31 · 메모 길이 초과는 서버 문구로 알린다", async () => {
@@ -512,7 +637,7 @@ describe("BrewNewPage — 드로다운·음료 중량·TDS", () => {
   it("AC-WEBSHELL-18 · 세 입력칸이 빈 채로 있다", async () => {
     await renderNewPage();
 
-    expect(await screen.findByLabelText("드로다운 시간")).toHaveValue(null);
+    expect(await screen.findByLabelText("드로다운 시간")).toHaveValue("");
     expect(screen.getByLabelText("음료 중량")).toHaveValue(null);
     expect(screen.getByLabelText("TDS")).toHaveValue(null);
   });
@@ -522,7 +647,7 @@ describe("BrewNewPage — 드로다운·음료 중량·TDS", () => {
     const captured = captureCreate();
 
     await renderNewPage();
-    await user.type(await screen.findByLabelText("드로다운 시간"), "35");
+    await user.type(await screen.findByLabelText("드로다운 시간"), "0:35");
     await user.type(screen.getByLabelText("음료 중량"), "260");
     await user.type(screen.getByLabelText("TDS"), "1.35");
     await user.click(screen.getByRole("button", { name: "기록하기" }));
@@ -641,5 +766,332 @@ describe("BrewNewPage — 에러 필드로 포커스 이동", () => {
     await waitFor(() =>
       expect(document.activeElement).toBe(screen.getByLabelText("물량")),
     );
+  });
+});
+
+describe("BrewNewPage — 시간 m:ss", () => {
+  it("AC-BREWFORM-05 · 시간은 m:ss로 넣고 초로 보낸다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    await user.type(await screen.findByLabelText("추출 시간"), "3:30");
+    await user.type(screen.getByLabelText("드로다운 시간"), "0:45");
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    expect(captured.body?.actualTotalTimeSeconds).toBe(210);
+    expect(captured.body?.actualDrawdownSeconds).toBe(45);
+  });
+
+  it.each(["3:5", "60:00", "abc", "3:60"])(
+    "AC-BREWFORM-13 · %s는 요청을 보내지 않고 형식 안내를 붙인다",
+    async (bad) => {
+      const user = userEvent.setup();
+      const captured = captureCreate();
+
+      await renderNewPage();
+      const input = await screen.findByLabelText("추출 시간");
+      await user.type(input, bad);
+      await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+      const describedBy = input.getAttribute("aria-describedby") ?? "";
+      await waitFor(() =>
+        expect(document.getElementById(describedBy)).toHaveTextContent(
+          "0:00 형식으로 입력해 주세요.",
+        ),
+      );
+      expect(captured.calls).toBe(0);
+    },
+  );
+
+  it("AC-BREWFORM-13 · 경계값 0:00과 59:59는 그대로 보낸다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    await user.type(await screen.findByLabelText("추출 시간"), "59:59");
+    await user.type(screen.getByLabelText("드로다운 시간"), "0:00");
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    expect(captured.body?.actualTotalTimeSeconds).toBe(3599);
+    expect(captured.body?.actualDrawdownSeconds).toBe(0);
+  });
+});
+
+/** 히어로 판. 넓은 폭에서는 오른쪽, 좁은 폭에서는 위에 오지만 DOM은 하나다. */
+async function hero() {
+  await screen.findByLabelText("원두량");
+  const el = document.querySelector<HTMLElement>("[data-hero]");
+  if (el === null) throw new Error("히어로가 없다");
+  return within(el);
+}
+
+describe("BrewNewPage — 히어로", () => {
+  it("AC-BREWFORM-02 · 히어로가 실측 비율을 실시간으로 보여준다", async () => {
+    const user = userEvent.setup();
+    await renderNewPage();
+    const dose = await screen.findByLabelText("원두량");
+    const water = screen.getByLabelText("물량");
+
+    await user.clear(dose);
+    await user.type(dose, "16");
+    await user.clear(water);
+    await user.type(water, "250");
+    expect((await hero()).getByText("1:15.6")).toBeInTheDocument();
+
+    await user.clear(dose);
+    expect((await hero()).getByText("1:—")).toBeInTheDocument();
+
+    await user.type(dose, "0");
+    expect((await hero()).getByText("1:—")).toBeInTheDocument();
+  });
+
+  it("AC-BREWFORM-03 · 히어로 아래 줄은 레시피 기준값이다", async () => {
+    await renderNewPage();
+    const h = await hero();
+
+    expect(h.getByText("분쇄도 있는 레시피")).toBeInTheDocument();
+    expect(h.getByText("20.0g → 300.0g · 92°C · 3:30")).toBeInTheDocument();
+  });
+
+  it("AC-BREWFORM-03 · 온도·시간이 없는 레시피는 그 조각이 빠진다", async () => {
+    const recipe: Record<string, unknown> = { ...grindedRecipe, id: 1 };
+    delete recipe.waterTempC;
+    delete recipe.totalTimeSeconds;
+    server.use(http.get(`${BASE}/recipes/1`, () => HttpResponse.json(recipe)));
+
+    await renderNewPage();
+
+    expect((await hero()).getByText("20.0g → 300.0g")).toBeInTheDocument();
+  });
+
+  it("AC-BREWFORM-04 · 값이 다 있으면 수율이 보인다", async () => {
+    const user = userEvent.setup();
+    await renderNewPage();
+    const dose = await screen.findByLabelText("원두량");
+
+    await user.clear(dose);
+    await user.type(dose, "15");
+    await user.type(screen.getByLabelText("음료 중량"), "225");
+    await user.type(screen.getByLabelText("TDS"), "1.38");
+    expect((await hero()).getByText("수율 20.7 %")).toBeInTheDocument();
+
+    await user.clear(screen.getByLabelText("TDS"));
+    expect(
+      (await hero()).getByText("TDS가 없으면 수율을 계산할 수 없습니다."),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("BrewNewPage — 공개 범위", () => {
+  it("AC-BREWFORM-10 · 공개 범위 3분할, 기본은 나만 보기", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    const group = await screen.findByRole("radiogroup", { name: "공개 범위" });
+    expect(
+      within(group)
+        .getAllByRole("radio")
+        .map((radio) => radio.textContent),
+    ).toEqual(["나만 보기", "맞팔로우 친구", "전체"]);
+    expect(
+      within(group).getByRole("radio", { name: "나만 보기" }),
+    ).toBeChecked();
+
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    await waitFor(() => expect(captured.body?.visibility).toBe("PRIVATE"));
+  });
+
+  it("AC-BREWFORM-10 · 전체를 고르면 PUBLIC으로 보낸다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("radio", { name: "전체" }));
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+    await waitFor(() => expect(captured.body?.visibility).toBe("PUBLIC"));
+  });
+});
+
+function serverError(status: number, code: string, message: string) {
+  return () => HttpResponse.json({ code, message }, { status });
+}
+
+describe("BrewNewPage — 상태", () => {
+  it.each([undefined, "abc"])(
+    "AC-BREWFORM-16 · recipeId가 %s면 요청 없이 레시피를 고르라고 안내한다",
+    async (recipeId) => {
+      let requests = 0;
+      server.events.on("request:start", () => {
+        requests += 1;
+      });
+
+      renderWithQuery(
+        await BrewNewPage({ searchParams: Promise.resolve({ recipeId }) }),
+      );
+
+      expect(
+        await screen.findByText("레시피를 골라 내려 주세요."),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("link", { name: "레시피 보러 가기" }),
+      ).toHaveAttribute("href", "/recipes");
+      expect(requests).toBe(0);
+      server.events.removeAllListeners();
+    },
+  );
+
+  it("AC-BREWFORM-17 · 아무것도 안 바꿨으면 확인 없이 나간다", async () => {
+    const user = userEvent.setup();
+    await renderNewPage();
+
+    await user.click(await screen.findByRole("button", { name: "취소" }));
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(push).toHaveBeenCalledWith("/recipes/1");
+  });
+
+  it("AC-BREWFORM-17 · 바꾼 뒤 취소하면 확인하고, 계속 편집이면 값이 남는다", async () => {
+    const user = userEvent.setup();
+    await renderNewPage();
+    const dose = await screen.findByLabelText("원두량");
+    await user.clear(dose);
+    await user.type(dose, "21");
+
+    await user.click(screen.getByRole("button", { name: "취소" }));
+    const confirm = within(
+      await screen.findByRole("dialog", { name: "저장하지 않고 나갈까요?" }),
+    );
+    await user.click(confirm.getByRole("button", { name: "계속 편집" }));
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByLabelText("원두량")).toHaveValue(21);
+    expect(push).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "취소" }));
+    await user.click(
+      within(await screen.findByRole("dialog")).getByRole("button", {
+        name: "나가기",
+      }),
+    );
+    expect(push).toHaveBeenCalledWith("/recipes/1");
+  });
+
+  it("AC-BREWFORM-19 · 저장 중에는 버튼이 저장 중…이고 잠긴다", async () => {
+    const user = userEvent.setup();
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(
+      http.post(`${BASE}/brew-logs`, async () => {
+        await held;
+        return HttpResponse.json(
+          { ...brewLogWithTds, id: 42 },
+          { status: 201 },
+        );
+      }),
+    );
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("button", { name: "기록하기" }));
+
+    expect(
+      await screen.findByRole("button", { name: "저장 중…" }),
+    ).toBeDisabled();
+    release();
+  });
+
+  it("AC-BREWFORM-20 · 필드 오류는 그 칸에 붙고 포커스가 간다", async () => {
+    const user = userEvent.setup();
+    captureCreate(badRequest("actualDoseG", "0보다 커야 합니다"));
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("button", { name: "기록하기" }));
+
+    const dose = screen.getByLabelText("원두량");
+    await waitFor(() => expect(document.activeElement).toBe(dose));
+    expect(
+      document.getElementById(dose.getAttribute("aria-describedby") ?? ""),
+    ).toHaveTextContent("0보다 커야 합니다");
+  });
+
+  it.each([
+    [
+      "GRIND_SETTING_OUT_OF_RANGE",
+      "이 그라인더에서 쓸 수 없는 설정값입니다.",
+      "장비",
+    ],
+    ["INVALID_BREW_MEASUREMENT", "추출 측정값이 올바르지 않습니다.", "결과"],
+  ])(
+    "AC-BREWFORM-21 · %s는 %s를 그 묶음 위 경고 블록에 보여준다",
+    async (code, message, section) => {
+      const user = userEvent.setup();
+      captureCreate(serverError(400, code, message));
+
+      await renderNewPage();
+      const dose = await screen.findByLabelText("원두량");
+      await user.clear(dose);
+      await user.type(dose, "21");
+      await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+      const group = screen.getByRole("group", { name: section });
+      const warning = await within(group).findByText(message);
+      expect(warning.closest("[data-warning]")).not.toBeNull();
+      expect(screen.getByLabelText("원두량")).toHaveValue(21);
+    },
+  );
+
+  it.each([
+    [404, "NOT_FOUND", "재고를 찾을 수 없습니다: 9"],
+    [403, "FORBIDDEN", "본인의 그라인더만 브루잉 로그에 연결할 수 있습니다."],
+  ])(
+    "AC-BREWFORM-22 · %s는 폼 맨 위 일반 에러에 서버 문구 그대로",
+    async (status, code, message) => {
+      const user = userEvent.setup();
+      captureCreate(serverError(status, code, message));
+
+      await renderNewPage();
+      await user.click(await screen.findByRole("button", { name: "기록하기" }));
+
+      const general = await waitFor(() => {
+        const el = document.querySelector("[data-general-error]");
+        if (el === null) throw new Error("일반 에러 없음");
+        return el;
+      });
+      expect(general).toHaveTextContent(message);
+      // 맨 위 — 첫 입력칸보다 앞에 있다
+      const firstInput = screen.getByLabelText("내린 시각");
+      expect(
+        general.compareDocumentPosition(firstInput) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(screen.getByLabelText("원두량")).toHaveValue(20);
+    },
+  );
+
+  it("AC-BREWFORM-23 · 레시피 조회 실패는 다시 시도할 수 있다", async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    server.use(
+      http.get(`${BASE}/recipes/1`, () => {
+        calls += 1;
+        return HttpResponse.json(
+          { code: "INTERNAL_ERROR", message: "서버 오류가 발생했습니다." },
+          { status: 500 },
+        );
+      }),
+    );
+
+    await renderNewPage();
+    const retry = await screen.findByRole("button", { name: "다시 시도" });
+    const before = calls;
+    await user.click(retry);
+
+    await waitFor(() => expect(calls).toBe(before + 1));
   });
 });

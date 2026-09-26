@@ -289,7 +289,7 @@ supersedes:
 - [x] **Task 8: 비기능 — E2E 폭·터치 타깃, 토큰 검사** — Covers: AC-BREWFORM-24, AC-BREWFORM-25, AC-BREWFORM-26
   - `e2e/brew-form.spec.ts`는 `e2e/recipe-drawer-responsive.spec.ts`의 API 목킹 방식을 따른다
 
-- [ ] **Task 9: 이전 AC 대체 표시** — 위 「대체하는 이전 AC」의 각 AC에 이전 스펙 본문 「(대체됨)」 표시 + 옮겨진 테스트 ID 정리. (WEBBREW-09·10·23은 Task 4에서, WEBLOGEDIT-05·TOUCH-09는 Task 5에서, WEBBREW-30은 Task 6에서 테스트를 옮기며 함께 처리했다 — 구현완료 스펙이라 표시가 없으면 커버리지 검사가 바로 실패한다.) `./scripts/check-spec-coverage.sh`·`./scripts/check-docs.sh` 통과
+- [x] **Task 9: 이전 AC 대체 표시** — 위 「대체하는 이전 AC」의 각 AC에 이전 스펙 본문 「(대체됨)」 표시 + 옮겨진 테스트 ID 정리. (WEBBREW-09·10·23은 Task 4에서, WEBLOGEDIT-05·TOUCH-09는 Task 5에서, WEBBREW-30은 Task 6에서 테스트를 옮기며 함께 처리했다 — 구현완료 스펙이라 표시가 없으면 커버리지 검사가 바로 실패한다.) `./scripts/check-spec-coverage.sh`·`./scripts/check-docs.sh` 통과
 
 ---
 

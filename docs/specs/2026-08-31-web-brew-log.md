@@ -290,6 +290,8 @@ plan: docs/archive/plans/2026-08-31-plan-web-brew-log.md
 - **Then** `POST /api/v1/brew-logs` 본문이 `{ "recipeId": 1, "beanBatchId": 9, "brewedAt": "2026-08-31T09:00:00.000Z", "actualDoseG": 20, "actualWaterG": 300, "actualWaterTempC": 92, "userGrinderId": 5, "actualGrindSettingValue": 22 }`이고 `visibility` 키가 없다
 - **검증** 페이지 테스트 `BrewNewPage.test.tsx`
 
+> **부분 대체.** 「`visibility` 키가 없다」 부분은 `docs/specs/2026-09-27-brew-form-redesign.md`의 AC-BREWFORM-10으로 대체됐다 — 작성 화면도 공개 범위를 고르고 기본값 `"PRIVATE"`를 담는다. 나머지 본문은 그대로 유효하다.
+
 #### AC-WEBBREW-19 · 저장하는 동안 버튼이 잠긴다
 
 - **Given** `POST /brew-logs` 응답이 지연된다

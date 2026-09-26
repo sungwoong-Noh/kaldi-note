@@ -1,7 +1,7 @@
 ---
 id: BREWFORM
 title: 기록 작성·편집 화면 리디자인 — 03 폼 패턴 + 원두 다이얼로그 + 평가 5축
-status: 초안
+status: 승인
 milestone: M2
 supersedes:
 ---

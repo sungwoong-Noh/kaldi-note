@@ -3,7 +3,7 @@ id: RECIPESBREWS
 title: 레시피 서랍 화면 — 웹·모바일 둘러보기/내 서랍/상세/내 잔
 status: 구현완료
 milestone: M1
-supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-69, AC-WEBEDIT-05(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-63, AC-TOUCH-06(docs/specs/2026-09-09-touch-targets.md) → AC-RECIPESBREWS-63, AC-STRUCT-04(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-63, AC-VISUAL-08(docs/specs/2026-09-07-visual-hierarchy.md) → AC-RECIPESBREWS-69, AC-STRUCT-17(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-69·73, AC-CONSIST-08(docs/specs/2026-09-08-screen-consistency.md) → AC-RECIPESBREWS-73, AC-WEB-22·23·25(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-74·75·96, AC-WEBEDIT-06(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-74, AC-WEBSHELL-17(docs/specs/2026-09-01-web-shell.md) → AC-RECIPESBREWS-81, AC-WEBSHELL-21·22(docs/specs/2026-09-01-web-shell.md) → AC-RECIPESBREWS-77, AC-STRUCT-18의 "/brews" 부분(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-77, AC-CONSIST-04·14의 "/brews" 부분(docs/specs/2026-09-08-screen-consistency.md) → AC-RECIPESBREWS-77
+supersedes:
 ---
 
 # 레시피 서랍 화면 스펙
@@ -419,6 +419,24 @@ supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBR
 - **검증** 유닛 테스트 `clientOnlyRoutes.test.ts`
 
 ---
+
+## 대체하는 이전 AC
+
+이전 스펙의 일부 AC만 대체한다(스펙 전체 대체가 아니라 frontmatter `supersedes`는 비워둔다).
+
+- AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-69
+- AC-WEBEDIT-05(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-63
+- AC-TOUCH-06(docs/specs/2026-09-09-touch-targets.md) → AC-RECIPESBREWS-63
+- AC-STRUCT-04(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-63
+- AC-VISUAL-08(docs/specs/2026-09-07-visual-hierarchy.md) → AC-RECIPESBREWS-69
+- AC-STRUCT-17(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-69·73
+- AC-CONSIST-08(docs/specs/2026-09-08-screen-consistency.md) → AC-RECIPESBREWS-73
+- AC-WEB-22·23·25(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-74·75·96
+- AC-WEBEDIT-06(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-74
+- AC-WEBSHELL-17(docs/specs/2026-09-01-web-shell.md) → AC-RECIPESBREWS-81
+- AC-WEBSHELL-21·22(docs/specs/2026-09-01-web-shell.md) → AC-RECIPESBREWS-77
+- AC-STRUCT-18의 "/brews" 부분(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-77
+- AC-CONSIST-04·14의 "/brews" 부분(docs/specs/2026-09-08-screen-consistency.md) → AC-RECIPESBREWS-77
 
 ## 수동 확인
 

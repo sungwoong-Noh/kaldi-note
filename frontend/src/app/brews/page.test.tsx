@@ -81,6 +81,21 @@ describe("BrewsPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("AC-RECIPESBREWS-83 · 마지막 페이지에서 '더 보기'가 숨는다", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(pageOf([brewLogWithTds], { hasNext: false })),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    await screen.findByText("Kasuya 4:6");
+    expect(
+      screen.queryByRole("button", { name: "더 보기" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("AC-WEBBREW-34 · 기록이 없으면 안내가 보인다", async () => {
     server.use(http.get(LIST_URL, () => HttpResponse.json(pageOf([]))));
 

@@ -380,7 +380,8 @@ describe("RecipesPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("AC-WEB-11 · hasNext가 false면 더 보기 버튼이 없다", async () => {
+  // 같은 시나리오를 AC-RECIPESBREWS-83도 요구한다.
+  it("AC-WEB-11 · AC-RECIPESBREWS-83 · hasNext가 false면 더 보기 버튼이 없다", async () => {
     server.use(
       http.get(LIST_URL, () =>
         HttpResponse.json(pageOf([hoffmannSummary, kasuyaSummary])),

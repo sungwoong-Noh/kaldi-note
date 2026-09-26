@@ -185,7 +185,9 @@ function LedgerTable({
             <th className="pb-2 font-normal">원두량</th>
             <th className="pb-2 font-normal">온도</th>
             <th className="pb-2 font-normal">시간</th>
-            <th className="pb-2 font-normal">수율</th>
+            <th className="hidden pb-2 font-normal min-[1024px]:table-cell">
+              수율
+            </th>
             <th className="pb-2 font-normal">평가</th>
           </tr>
         </thead>
@@ -207,7 +209,7 @@ function LedgerTable({
                   ? formatDuration(log.actualTotalTimeSeconds)
                   : "—"}
               </td>
-              <td className="py-2">
+              <td className="hidden py-2 min-[1024px]:table-cell">
                 {log.extractionYieldPercent !== undefined
                   ? `${log.extractionYieldPercent}%`
                   : "—"}

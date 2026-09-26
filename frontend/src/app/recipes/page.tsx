@@ -101,7 +101,11 @@ function RecipesPageContent() {
 
   return (
     <Screen state={state} setState={setState} onSessionLost={onSessionLost}>
-      <ul className="flex flex-col gap-3">
+      {/*
+        반응형 4구간(AC-RECIPESBREWS-88~93): <760 1열, 760~1023 2열, 1024~1279 3열,
+        ≥1280 4열.
+      */}
+      <ul className="grid grid-cols-1 gap-3 min-[760px]:grid-cols-2 min-[1024px]:grid-cols-3 min-[1280px]:grid-cols-4">
         {recipes.map((recipe) => (
           <RecipeCard key={recipe.id} recipe={recipe} scope={state.scope} />
         ))}

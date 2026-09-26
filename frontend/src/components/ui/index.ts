@@ -12,3 +12,4 @@ export { Eyebrow } from "./Eyebrow";
 export { Hero } from "./Hero";
 export { Shell } from "./Shell";
 export { Badge, Card, cardClass, MetricRow } from "./Surface";
+export { RoastDot } from "./RoastDot";

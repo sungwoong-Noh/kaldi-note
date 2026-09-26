@@ -8,7 +8,7 @@ import {
 } from "@/lib/format";
 import { kstTimeOf, representativeMetric } from "../dayListFormat";
 import { useRoastLevel } from "../useRoastLevel";
-import { RoastDot } from "./RoastDot";
+import { RoastDot } from "@/components/ui";
 
 /**
  * 웹 우측 컬럼 전용 카드 — 원장 행 대신 쓴다(AC-HOMECAL-112~117,

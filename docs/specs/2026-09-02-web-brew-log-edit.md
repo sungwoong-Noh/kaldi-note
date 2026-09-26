@@ -159,12 +159,10 @@ TDS  [        ]  ← 비움
 - **Then** `원두량`이 `20`, `물량`이 `300`, `물 온도`가 `92`, `추출 시간`이 `210`, `TDS`가 `1.35`다
 - **검증** 페이지 테스트 `BrewEditPage.test.tsx`
 
-#### AC-WEBLOGEDIT-05 · 공개범위 세 옵션이 있고 저장된 값이 골라져 있다
+> **부분 대체.** `추출 시간`이 `210`이라는 부분은 `docs/specs/2026-09-27-brew-form-redesign.md`의 AC-BREWFORM-06(`3:30`으로 채운다)으로 대체됐다. 나머지 값은 그대로 유효하다.
 
-- **Given** `GET /brew-logs/42`의 `visibility`가 `PRIVATE`이다
-- **When** `/brews/42/edit`를 연다
-- **Then** `공개 범위` 선택란에 `나만 보기`·`맞팔로우만`·`전체 공개` 세 항목이 있고 값이 `PRIVATE`이다
-- **검증** 페이지 테스트 `BrewEditPage.test.tsx`
+**AC-WEBLOGEDIT-05 (대체됨)** · 「공개 범위」 select의 세 선택지(`나만 보기`·`맞팔로우만`·`전체 공개`)를 보던 원래 AC는
+`docs/specs/2026-09-27-brew-form-redesign.md`의 AC-BREWFORM-10(작성·편집 공통 3분할 `나만 보기`·`맞팔로우 친구`·`전체`)으로 대체됐다.
 
 #### AC-WEBLOGEDIT-06 · 레시피와 원두는 바꿀 수 없다
 
@@ -201,6 +199,8 @@ TDS  [        ]  ← 비움
 - **When** `취소`를 누른다
 - **Then** `/brews/42`로 이동하고 `PATCH` 요청이 **0회** 나간다
 - **검증** 페이지 테스트 `BrewEditPage.test.tsx`
+
+> **부분 대체.** 값을 바꾼 뒤의 `취소`는 `docs/specs/2026-09-27-brew-form-redesign.md`의 AC-BREWFORM-17(나가기 확인)로 대체됐다. 아무것도 바꾸지 않은 `취소`는 이 AC 그대로다.
 
 ### 경계값
 

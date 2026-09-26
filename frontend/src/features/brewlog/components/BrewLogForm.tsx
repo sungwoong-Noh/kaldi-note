@@ -19,13 +19,25 @@ import { focusFirstInvalidField } from "@/lib/focusFirstError";
 import { createBrewLog } from "../api";
 import {
   initialFormState,
+  invalidTimeFields,
+  isDirty,
+  sectionWarningOf,
   toRequestBody,
+  withTimeErrors,
   type BrewLogFormState,
 } from "../formState";
 import { BeanBatchDialog } from "./BeanBatchDialog";
+import { BeanPickerDialog, beanName } from "./BeanPickerDialog";
+import {
+  BrewFormLayout,
+  FORM_SHELL_CLASS,
+  FormActions,
+  LeaveConfirmDialog,
+} from "./BrewFormLayout";
+import { BrewHero } from "./BrewHero";
 import { BrewLogFields } from "./BrewLogFields";
 import { UserGrinderDialog } from "./UserGrinderDialog";
-import { Button, SELECT_EXTRA, Shell, controlClass } from "@/components/ui";
+import { Button, ButtonLink, Shell } from "@/components/ui";
 
 /**
  * 로그 작성 화면.
@@ -33,7 +45,20 @@ import { Button, SELECT_EXTRA, Shell, controlClass } from "@/components/ui";
  * <p>레시피와 내 그라인더가 <b>둘 다 도착한 뒤에</b> 폼을 마운트한다. 그라인더 자동 선택이 두 응답을 함께 봐야 정해지는데,
  * 폼을 먼저 띄우면 나중에 도착한 값으로 사용자가 고친 입력을 덮어쓰게 된다.
  */
-export function BrewLogForm({ recipeId }: { recipeId: number }) {
+export function BrewLogForm({ recipeId }: { recipeId: number | null }) {
+  // 훅보다 먼저 가른다 — 세션 확인·그라인더 조회도 요청을 보낸다(AC-BREWFORM-16: 요청 0회).
+  if (recipeId === null) {
+    return (
+      <Screen>
+        <p className="text-body">레시피를 골라 내려 주세요.</p>
+        <ButtonLink href="/recipes">레시피 보러 가기</ButtonLink>
+      </Screen>
+    );
+  }
+  return <LoadedBrewLogForm recipeId={recipeId} />;
+}
+
+function LoadedBrewLogForm({ recipeId }: { recipeId: number }) {
   const { ready, onSessionLost } = useRequireSession();
 
   const recipe = useQuery({
@@ -95,11 +120,14 @@ function Fields({
   const roasters = useRoasters(onSessionLost);
   // 초기값은 마운트 시점에 한 번만 계산한다. 이후 그라인더 목록이 갱신돼도
   // 사용자가 고쳐둔 값을 덮어쓰지 않는다.
-  const [state, setState] = useState<BrewLogFormState>(() =>
+  const [initial] = useState<BrewLogFormState>(() =>
     initialFormState(recipe, grinders),
   );
+  const [state, setState] = useState(initial);
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
   const [addingGrinder, setAddingGrinder] = useState(false);
-  const [addingBean, setAddingBean] = useState(false);
+  // 원두는 고르기 → (없으면) 새로 등록의 두 단계다. 등록 단계는 기존 `BeanBatchDialog`가 맡는다.
+  const [beanDialog, setBeanDialog] = useState<"pick" | "create" | null>(null);
   const router = useRouter();
 
   const save = useMutation({
@@ -114,16 +142,38 @@ function Fields({
     },
   });
 
-  const fieldErrors =
+  // 저장을 한 번 눌러 본 뒤부터 시간 형식 안내를 띄운다. 입력하는 도중(`3:`)에는 띄우지 않는다.
+  const [timeChecked, setTimeChecked] = useState(false);
+  const [blockedAttempts, setBlockedAttempts] = useState(0);
+
+  // 측정·분쇄도 오류는 필드 하나가 아니라 묶음의 문제다 — 그 묶음 위에 서버 문구 그대로(AC-BREWFORM-21).
+  const sectionWarning =
+    save.error instanceof ApiError
+      ? sectionWarningOf(save.error.code, save.error.message)
+      : null;
+
+  const fieldErrors = withTimeErrors(
     save.error instanceof ApiError
       ? mapFieldErrors(save.error.fieldErrors)
-      : null;
+      : null,
+    timeChecked ? invalidTimeFields(state) : [],
+  );
 
   const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (save.error) focusFirstInvalidField(formRef.current);
-  }, [save.error]);
+    if (save.error || blockedAttempts > 0)
+      focusFirstInvalidField(formRef.current);
+  }, [save.error, blockedAttempts]);
+
+  function submit() {
+    setTimeChecked(true);
+    if (invalidTimeFields(state).length > 0) {
+      setBlockedAttempts((n) => n + 1);
+      return;
+    }
+    save.mutate();
+  }
 
   const set = <K extends keyof BrewLogFormState>(
     key: K,
@@ -131,42 +181,40 @@ function Fields({
   ) => setState((prev) => ({ ...prev, [key]: value }));
 
   // `내린 시각`과 `그라인더` 사이에 들어간다. 편집 화면은 여기에 잠긴 원두 표시를 넣는다.
+  const chosen = (batches.data ?? []).find((b) => b.id === state.beanBatchId);
   const beanSlot = (
     <fieldset className="flex min-w-0 flex-col gap-2">
       <legend className="text-card-title font-semibold">원두</legend>
-      {(batches.data ?? []).length === 0 && !batches.isPending && (
-        <p className="text-body text-ink-3">등록된 원두가 없습니다</p>
-      )}
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="flex w-full items-center gap-2 text-body">
-          <span className="shrink-0 text-ink-3">원두</span>
-          <select
-            aria-label="원두"
-            value={state.beanBatchId ?? ""}
-            onChange={(e) =>
-              set(
-                "beanBatchId",
-                e.target.value === "" ? null : Number(e.target.value),
-              )
-            }
-            className={controlClass(SELECT_EXTRA)}
-          >
-            <option value="">선택 안 함</option>
-            {(batches.data ?? []).map((batch) => (
-              <option key={batch.id} value={batch.id}>
-                {batchLabel(batch, products.data ?? [], roasters.data ?? [])}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <Button onClick={() => setAddingBean(true)}>+ 원두 등록</Button>
+      <div className="flex min-h-11 items-center justify-between gap-3 text-body">
+        <span className={chosen ? "" : "text-ink-3"}>
+          {chosen
+            ? batchLabel(chosen, products.data ?? [], roasters.data ?? [])
+            : "고르지 않음"}
+        </span>
+        <Button aria-label="원두 변경" onClick={() => setBeanDialog("pick")}>
+          변경
+        </Button>
       </div>
     </fieldset>
   );
 
   return (
-    <div ref={formRef} className="flex flex-col gap-4">
+    <BrewFormLayout
+      formRef={formRef}
+      generalError={
+        save.error && sectionWarning === null ? save.error.message : null
+      }
+      hero={
+        <BrewHero
+          title={recipe.title}
+          targets={recipe}
+          doseG={state.actualDoseG}
+          waterG={state.actualWaterG}
+          beverageWeightG={state.beverageWeightG}
+          tdsPercent={state.tdsPercent}
+        />
+      }
+    >
       <BrewLogFields
         state={state}
         grinders={grinders}
@@ -174,26 +222,35 @@ function Fields({
         onChange={set}
         onAddGrinder={() => setAddingGrinder(true)}
         beanSlot={beanSlot}
+        sectionWarning={sectionWarning}
       />
 
-      {save.error && (
-        <p data-general-error tabIndex={-1} className="text-body text-danger">
-          {save.error.message}
-        </p>
-      )}
-
-      <div className="flex items-center gap-2">
+      <FormActions>
         <Button
           disabled={save.isPending}
-          onClick={() => save.mutate()}
+          className="max-[759px]:flex-1"
+          onClick={submit}
           variant="primary"
         >
-          기록하기
+          {save.isPending ? "저장 중…" : "기록하기"}
         </Button>
-        <Button onClick={() => router.push(`/recipes/${recipe.id}`)}>
+        <Button
+          onClick={() =>
+            isDirty(initial, state)
+              ? setConfirmingLeave(true)
+              : router.push(`/recipes/${recipe.id}`)
+          }
+        >
           취소
         </Button>
-      </div>
+      </FormActions>
+
+      {confirmingLeave && (
+        <LeaveConfirmDialog
+          onLeave={() => router.push(`/recipes/${recipe.id}`)}
+          onStay={() => setConfirmingLeave(false)}
+        />
+      )}
 
       {addingGrinder && (
         <UserGrinderDialog
@@ -210,20 +267,34 @@ function Fields({
         />
       )}
 
-      {addingBean && (
+      {beanDialog === "pick" && (
+        <BeanPickerDialog
+          batches={batches.data ?? []}
+          products={products.data ?? []}
+          roasters={roasters.data ?? []}
+          onPick={(id) => {
+            set("beanBatchId", id);
+            setBeanDialog(null);
+          }}
+          onAddNew={() => setBeanDialog("create")}
+          onCancel={() => setBeanDialog(null)}
+        />
+      )}
+
+      {beanDialog === "create" && (
         <BeanBatchDialog
           onCreated={(created) => {
             // 재고 목록만 무효화하면 선택란에 나타나지만, 라벨은 제품·로스터가 있어야 완성된다.
             void queryClient.invalidateQueries({ queryKey: ["inventory"] });
             void queryClient.invalidateQueries({ queryKey: ["catalog"] });
             set("beanBatchId", created.id);
-            setAddingBean(false);
+            setBeanDialog(null);
           }}
-          onCancel={() => setAddingBean(false)}
+          onCancel={() => setBeanDialog(null)}
           onSessionLost={onSessionLost}
         />
       )}
-    </div>
+    </BrewFormLayout>
   );
 }
 
@@ -238,20 +309,14 @@ function batchLabel(
   products: { id: number; name: string; roasterId: number }[],
   roasters: { id: number; name: string }[],
 ): string {
-  const product = products.find((p) => p.id === batch.beanProductId);
-  const roaster = roasters.find((r) => r.id === product?.roasterId);
-  const name = [roaster?.name, product?.name].filter(Boolean).join(" ");
   const age =
     batch.daysOffRoast === undefined ? null : `${batch.daysOffRoast}일차`;
-
-  return [name === "" ? `재고 ${batch.id}` : name, age]
-    .filter(Boolean)
-    .join(" · ");
+  return [beanName(batch, products, roasters), age].filter(Boolean).join(" · ");
 }
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <Shell stack>
+    <Shell stack wide className={FORM_SHELL_CLASS}>
       <h1 className="text-page-title font-semibold">이 레시피로 내렸다</h1>
       {children}
     </Shell>

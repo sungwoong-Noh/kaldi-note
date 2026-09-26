@@ -4,6 +4,9 @@ import {
   clearedFields,
   formStateFromLog,
   initialFormState,
+  parseMinSec,
+  previewRatio,
+  previewYield,
   toPatchBody,
   toRequestBody,
 } from "./formState";
@@ -28,7 +31,7 @@ describe("initialFormState", () => {
       actualWaterG: 300.0,
       actualWaterTempC: 92.0,
       // 레시피의 totalTimeSeconds(210)는 계획 시간이다. 실측인 양 저장하지 않는다.
-      actualTotalTimeSeconds: null,
+      actualTotalTimeSeconds: "",
       userGrinderId: 5,
       actualGrindSettingValue: 22.0,
     });
@@ -91,16 +94,15 @@ describe("toRequestBody", () => {
       actualWaterTempC: 92.0,
       userGrinderId: 5,
       actualGrindSettingValue: 22.0,
+      visibility: "PRIVATE",
     });
   });
 
-  it("빈 값은 키째 빠지고 공개범위는 담지 않는다", () => {
+  it("빈 값은 키째 빠진다", () => {
     const body = toRequestBody({ ...filled, tdsPercent: null });
 
     expect(body).not.toHaveProperty("tdsPercent");
     expect(body).not.toHaveProperty("actualTotalTimeSeconds");
-    // 백엔드가 PRIVATE으로 고정한다. 보내면 의미 없는 값을 우리가 정하는 셈이 된다.
-    expect(body).not.toHaveProperty("visibility");
   });
 
   it("펼치지 않은 5축은 값이 있어도 빠진다", () => {
@@ -254,5 +256,40 @@ describe("formStateFromLog", () => {
     expect(
       formStateFromLog(brewLogSchema.parse(brewLogWithTds)).visibility,
     ).toBe("PRIVATE");
+  });
+});
+
+describe("parseMinSec", () => {
+  it("AC-BREWFORM-13 · m:ss를 초로 바꾸고 경계 밖은 invalid, 빈칸은 null", () => {
+    expect(parseMinSec("3:30")).toBe(210);
+    expect(parseMinSec("0:00")).toBe(0);
+    expect(parseMinSec("59:59")).toBe(3599);
+    for (const bad of ["3:5", "60:00", "abc", "3:60"]) {
+      expect(parseMinSec(bad)).toBe("invalid");
+    }
+    expect(parseMinSec("")).toBeNull();
+  });
+});
+
+describe("previewRatio", () => {
+  it("AC-BREWFORM-14 · 물량÷원두량을 소수 1자리 HALF_UP으로", () => {
+    expect(previewRatio(16, 250)).toBe("1:15.6");
+    expect(previewRatio(20, 313)).toBe("1:15.7");
+    // 267 / 20 = 13.35 — 부동소수로는 13.3499…라 toFixed(1)만 쓰면 13.3이 된다
+    expect(previewRatio(20, 267)).toBe("1:13.4");
+  });
+
+  it("원두량이나 물량이 없거나 0이면 1:—", () => {
+    expect(previewRatio(null, 250)).toBe("1:—");
+    expect(previewRatio(0, 250)).toBe("1:—");
+    expect(previewRatio(16, null)).toBe("1:—");
+  });
+});
+
+describe("previewYield", () => {
+  it("TDS × 음료 중량 ÷ 원두량을 소수 1자리로, 하나라도 없으면 null", () => {
+    expect(previewYield(15, 225, 1.38)).toBe("20.7");
+    expect(previewYield(15, 225, null)).toBeNull();
+    expect(previewYield(0, 225, 1.38)).toBeNull();
   });
 });

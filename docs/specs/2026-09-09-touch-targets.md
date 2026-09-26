@@ -173,13 +173,8 @@ AC-TOUCH-01)가 계속 검사한다.
 - **Then** `height`가 `44px`다
 - **검증** e2e `e2e/touch-targets.spec.ts`
 
-#### AC-TOUCH-09 · 「공개 범위」 select의 높이가 44px다
-
-- **Given** `/brews/2/edit` — 지금 99×29px이다. **`/brews/new`에는 이 select가 없다** —
-  공개 범위는 `BrewLogEditor`(편집)와 `RecipeForm`에만 있고 작성 폼에는 없다
-- **When** `getByLabelText("공개 범위")`의 높이를 잰다
-- **Then** `height`가 `44px`다
-- **검증** e2e `e2e/touch-targets.spec.ts`
+**AC-TOUCH-09 (대체됨)** · `/brews/2/edit`의 「공개 범위」 select 높이를 쟀던 원래 AC는, 그 select가 3분할 버튼으로 바뀌며
+`docs/specs/2026-09-27-brew-form-redesign.md`의 AC-BREWFORM-25(별점·5축·공개 범위 버튼 44×44 이상)로 대체됐다.
 
 #### AC-TOUCH-10 · `BottomNav` 탭 4개가 90×48px이다
 

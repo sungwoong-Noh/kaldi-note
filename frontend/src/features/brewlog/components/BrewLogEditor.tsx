@@ -13,6 +13,9 @@ import type { UserGrinder } from "@/features/gear/schema";
 import { fetchBrewLog, patchBrewLog } from "../api";
 import {
   clearedFields,
+  invalidTimeFields,
+  isDirty,
+  MIN_SEC_MESSAGE,
   formStateFromLog,
   toPatchBody,
   type BrewLogEditState,
@@ -20,18 +23,18 @@ import {
 } from "../formState";
 import type { BrewLog } from "../schema";
 import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
+import {
+  BrewFormLayout,
+  FORM_SHELL_CLASS,
+  FormActions,
+  LeaveConfirmDialog,
+} from "./BrewFormLayout";
+import { BrewHero } from "./BrewHero";
 import { BrewLogFields } from "./BrewLogFields";
-import { Button, SELECT_EXTRA, Shell, controlClass } from "@/components/ui";
+import { Button, Shell } from "@/components/ui";
 
 /** 스펙이 정한 문구다. 값을 바꾸거나 기록을 지우는 것 말고는 길이 없다. */
 const CLEAR_MESSAGE = "값을 지울 수 없습니다. 고치거나 기록을 삭제하세요";
-
-/** 레시피 폼과 같은 문구를 쓴다 — 같은 값이 두 화면에서 다른 이름으로 보이면 안 된다. */
-const VISIBILITY_LABELS: Record<BrewLogEditState["visibility"], string> = {
-  PRIVATE: "나만 보기",
-  FRIENDS: "맞팔로우만",
-  PUBLIC: "전체 공개",
-};
 
 export function BrewLogEditor({ id }: { id: number }) {
   const { ready, onSessionLost } = useRequireSession();
@@ -93,6 +96,7 @@ function Fields({
   // 초기값은 마운트 시점에 한 번만 만든다. 캐시가 갱신돼도 입력 중인 값을 덮지 않는다.
   const [initial] = useState<BrewLogEditState>(() => formStateFromLog(log));
   const [state, setState] = useState<BrewLogEditState>(initial);
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
 
   // 이름은 로그가 가리키는 id로 따로 읽는다. 실패해도 저장을 막지 않는다 —
   // 레시피·원두는 PATCH 본문에 들어가지 않아 저장과 아무 관계가 없다.
@@ -122,9 +126,12 @@ function Fields({
 
   // 서버 오류가 나중에 온 정보라 지우기 안내를 덮는다. 지우기 안내가 떠 있으면
   // 저장 자체가 막히므로 둘이 같은 칸에서 겹칠 일은 없다.
+  // 형식이 틀린 시간은 지우기와 같은 방식으로 저장을 막는다. 그대로 보내면 초로 바꿀 수 없어 조용히 빠진다.
+  const invalidTimes = invalidTimeFields(state);
   const fieldErrors = {
     byField: {
       ...Object.fromEntries(cleared.map((key) => [key, CLEAR_MESSAGE])),
+      ...Object.fromEntries(invalidTimes.map((key) => [key, MIN_SEC_MESSAGE])),
       ...(serverErrors?.byField ?? {}),
     },
     byStepIndex: {},
@@ -148,7 +155,18 @@ function Fields({
   ) => setState((prev) => ({ ...prev, [key]: value }));
 
   return (
-    <div className="flex flex-col gap-4">
+    <BrewFormLayout
+      hero={
+        <BrewHero
+          title={recipe.label}
+          targets={recipe.targets}
+          doseG={state.actualDoseG}
+          waterG={state.actualWaterG}
+          beverageWeightG={state.beverageWeightG}
+          tdsPercent={state.tdsPercent}
+        />
+      }
+    >
       <BrewLogFields
         state={state}
         grinders={grinders}
@@ -172,27 +190,6 @@ function Fields({
         }
       />
 
-      <label className="flex items-center gap-2 text-body">
-        <span className="w-20 shrink-0 text-ink-3">공개 범위</span>
-        <select
-          aria-label="공개 범위"
-          value={state.visibility}
-          onChange={(e) =>
-            setState((prev) => ({
-              ...prev,
-              visibility: toVisibility(e.target.value),
-            }))
-          }
-          className={controlClass(SELECT_EXTRA)}
-        >
-          {Object.entries(VISIBILITY_LABELS).map(([code, label]) => (
-            <option key={code} value={code}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
-
       {save.error !== null && (
         <div role="alert" className="flex flex-col gap-1 text-body text-danger">
           <p>{errorMessageOf(save.error)}</p>
@@ -202,28 +199,41 @@ function Fields({
         </div>
       )}
 
-      <div className="flex items-center gap-2">
+      <FormActions>
         <Button
-          disabled={save.isPending || cleared.length > 0}
+          disabled={
+            save.isPending || cleared.length > 0 || invalidTimes.length > 0
+          }
+          className="max-[759px]:flex-1"
           onClick={submit}
           variant="primary"
         >
           저장
         </Button>
-        <Button onClick={() => router.push(`/brews/${log.id}`)}>취소</Button>
-      </div>
-    </div>
-  );
-}
+        <Button
+          onClick={() =>
+            isDirty(initial, state)
+              ? setConfirmingLeave(true)
+              : router.push(`/brews/${log.id}`)
+          }
+        >
+          취소
+        </Button>
+      </FormActions>
 
-/** `select`의 값은 `string`이다. 단언 대신 좁혀서 받는다. */
-function toVisibility(value: string): BrewLogEditState["visibility"] {
-  return value === "FRIENDS" || value === "PUBLIC" ? value : "PRIVATE";
+      {confirmingLeave && (
+        <LeaveConfirmDialog
+          onLeave={() => router.push(`/brews/${log.id}`)}
+          onStay={() => setConfirmingLeave(false)}
+        />
+      )}
+    </BrewFormLayout>
+  );
 }
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <Shell stack>
+    <Shell stack wide className={FORM_SHELL_CLASS}>
       <h1 className="text-page-title font-semibold">기록 편집</h1>
       {children}
     </Shell>

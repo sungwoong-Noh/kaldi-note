@@ -4,6 +4,8 @@
  * <p>쓰기 슬라이스와 같은 방식이다 — `useState` 하나로 들고, 빈 값은 요청에서 키째 뺀다(`features/recipe/formState.ts`).
  */
 
+import type { MappedFieldErrors } from "@/lib/fieldErrors";
+import { formatDuration } from "@/lib/format";
 import type { Recipe } from "../recipe/schema";
 import type { UserGrinder } from "../gear/schema";
 import type { BrewLog } from "./schema";
@@ -22,8 +24,13 @@ export type BrewLogFormState = {
   actualDoseG: number | null;
   actualWaterG: number | null;
   actualWaterTempC: number | null;
-  actualTotalTimeSeconds: number | null;
-  actualDrawdownSeconds: number | null;
+  /**
+   * 입력칸의 `m:ss` 텍스트. 요청을 만들 때 초로 바꾼다.
+   *
+   * <p>키 이름을 서버 필드명과 같게 둔다 — 서버 필드 오류와 지우기 안내가 매핑 없이 이 칸에 붙는다.
+   */
+  actualTotalTimeSeconds: string;
+  actualDrawdownSeconds: string;
   beverageWeightG: number | null;
   tdsPercent: number | null;
   rating: number | null;
@@ -35,6 +42,8 @@ export type BrewLogFormState = {
   body: number | null;
   bitterness: number | null;
   aftertaste: number | null;
+  /** 작성 화면도 고른다 — 기본은 `PRIVATE`(docs/specs/2026-09-27-brew-form-redesign.md AC-BREWFORM-10) */
+  visibility: BrewLog["visibility"];
 };
 
 /**
@@ -81,8 +90,8 @@ export function initialFormState(
     actualDoseG: recipe.doseG,
     actualWaterG: recipe.waterG,
     actualWaterTempC: recipe.waterTempC ?? null,
-    actualTotalTimeSeconds: null,
-    actualDrawdownSeconds: null,
+    actualTotalTimeSeconds: "",
+    actualDrawdownSeconds: "",
     beverageWeightG: null,
     tdsPercent: null,
     rating: null,
@@ -93,13 +102,12 @@ export function initialFormState(
     body: null,
     bitterness: null,
     aftertaste: null,
+    visibility: "PRIVATE",
   };
 }
 
-/** 편집 화면의 상태. 작성 화면에 없는 `visibility`가 하나 더 있다. */
-export type BrewLogEditState = BrewLogFormState & {
-  visibility: BrewLog["visibility"];
-};
+/** 편집 화면의 상태. 작성 화면과 같다 — 공개 범위도 이제 두 화면 모두에 있다. */
+export type BrewLogEditState = BrewLogFormState;
 
 /**
  * 저장된 로그를 편집 폼 상태로 되돌린다.
@@ -116,8 +124,8 @@ export function formStateFromLog(log: BrewLog): BrewLogEditState {
     actualDoseG: log.actualDoseG,
     actualWaterG: log.actualWaterG,
     actualWaterTempC: log.actualWaterTempC,
-    actualTotalTimeSeconds: log.actualTotalTimeSeconds ?? null,
-    actualDrawdownSeconds: log.actualDrawdownSeconds ?? null,
+    actualTotalTimeSeconds: minSecOf(log.actualTotalTimeSeconds),
+    actualDrawdownSeconds: minSecOf(log.actualDrawdownSeconds),
     beverageWeightG: log.beverageWeightG ?? null,
     tdsPercent: log.tdsPercent ?? null,
     rating: log.rating ?? null,
@@ -158,6 +166,7 @@ export type BrewLogRequestBody = {
   body?: number;
   bitterness?: number;
   aftertaste?: number;
+  visibility?: BrewLog["visibility"];
 };
 
 /** 값이 있을 때만 키를 만든다. 백엔드가 `non_null`로 응답하는 것과 대칭이다. */
@@ -169,8 +178,6 @@ function omitEmpty<T extends object>(entries: [string, unknown][]): T {
 
 /**
  * 폼 상태를 요청 본문으로 만든다.
- *
- * <p><b>`visibility`는 담지 않는다.</b> 백엔드가 `PRIVATE`으로 고정한다.
  *
  * <p><b>5축은 펼쳤을 때만 담는다.</b> 접어둔 채 저장하면 사용자가 평가한 적이 없다는 뜻이다.
  */
@@ -194,12 +201,13 @@ export function toRequestBody(state: BrewLogFormState): BrewLogRequestBody {
     ["actualDoseG", state.actualDoseG],
     ["actualWaterG", state.actualWaterG],
     ["actualWaterTempC", state.actualWaterTempC],
-    ["actualTotalTimeSeconds", state.actualTotalTimeSeconds],
-    ["actualDrawdownSeconds", state.actualDrawdownSeconds],
+    ["actualTotalTimeSeconds", secondsOf(state.actualTotalTimeSeconds)],
+    ["actualDrawdownSeconds", secondsOf(state.actualDrawdownSeconds)],
     ["beverageWeightG", state.beverageWeightG],
     ["tdsPercent", state.tdsPercent],
     ["rating", state.rating],
     ["overallNote", state.overallNote],
+    ["visibility", state.visibility],
     ...sensory,
   ]);
 }
@@ -251,7 +259,12 @@ export function toPatchBody(
     if (before === after) continue;
     if (after === null || after === "") continue;
 
-    body[key] = key === "brewedAt" ? toInstant(String(after)) : after;
+    body[key] =
+      key === "brewedAt"
+        ? toInstant(String(after))
+        : TIME_FIELDS.includes(key as TimeField)
+          ? secondsOf(String(after))
+          : after;
   }
 
   return body;
@@ -285,4 +298,114 @@ function toInstant(local: string): string | null {
   if (local === "") return null;
   const parsed = new Date(local);
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+const MIN_SEC = /^([0-5]?\d):([0-5]\d)$/;
+
+/** `3:30` → 210. 빈칸은 `null`(값 없음), 형식이 틀리면 `"invalid"`. 범위는 `0:00`~`59:59`. */
+export function parseMinSec(text: string): number | null | "invalid" {
+  if (text === "") return null;
+  const match = MIN_SEC.exec(text);
+  if (!match) return "invalid";
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+/**
+ * `numerator / denominator`를 소수 1자리 HALF_UP으로. 둘 다 정수여야 한다.
+ *
+ * <p>부동소수로 나눈 뒤 `toFixed(1)`를 쓰면 `267 / 20 = 13.35`가 `13.3499…`로 표현돼 `13.3`이 된다.
+ * 정수끼리 반올림해서 그 오차를 피한다.
+ */
+function roundHalfUp1(numerator: number, denominator: number): string {
+  return (
+    Math.floor((20 * numerator + denominator) / (2 * denominator)) / 10
+  ).toFixed(1);
+}
+
+/** 원두량·물량은 소수 1자리까지만 받는다 — 10을 곱하면 정수다. */
+const tenths = (value: number) => Math.round(value * 10);
+
+/**
+ * 히어로의 실측 비율 미리보기. 저장 전 표시용이라 클라이언트가 계산한다 — 저장 후 화면은 서버 값을 쓴다
+ * (docs/specs/2026-09-27-brew-form-redesign.md 「용어」).
+ */
+export function previewRatio(
+  doseG: number | null,
+  waterG: number | null,
+): string {
+  if (!doseG || !waterG) return "1:—";
+  return `1:${roundHalfUp1(tenths(waterG), tenths(doseG))}`;
+}
+
+/** 수율(%) 미리보기 = TDS × 음료 중량 ÷ 원두량. 셋 중 하나라도 없으면 `null`. */
+export function previewYield(
+  doseG: number | null,
+  beverageWeightG: number | null,
+  tdsPercent: number | null,
+): string | null {
+  if (!doseG || !beverageWeightG || !tdsPercent) return null;
+  // TDS는 소수 2자리 → 100배, 중량은 10배. 수율 = T·B / (100·D) 이고 그 10배를 정수로 반올림한다.
+  const t = Math.round(tdsPercent * 100);
+  return roundHalfUp1(t * tenths(beverageWeightG), 100 * tenths(doseG));
+}
+
+const TIME_FIELDS = [
+  "actualTotalTimeSeconds",
+  "actualDrawdownSeconds",
+] as const;
+type TimeField = (typeof TIME_FIELDS)[number];
+
+export const MIN_SEC_MESSAGE = "0:00 형식으로 입력해 주세요.";
+
+/** `m:ss` 형식이 틀린 시간 칸. 하나라도 있으면 화면이 요청을 보내지 않는다. */
+export function invalidTimeFields(state: BrewLogFormState): TimeField[] {
+  return TIME_FIELDS.filter((key) => parseMinSec(state[key]) === "invalid");
+}
+
+/** 요청용 초. 형식이 틀린 값은 {@link invalidTimeFields}가 먼저 막으므로 여기서는 없는 값으로 본다. */
+function secondsOf(text: string): number | null {
+  const parsed = parseMinSec(text);
+  return parsed === "invalid" ? null : parsed;
+}
+
+function minSecOf(seconds: number | undefined): string {
+  return seconds === undefined ? "" : formatDuration(seconds);
+}
+
+/** 형식이 틀린 시간 칸의 안내를 필드 오류에 얹는다. 서버 오류가 같은 칸에 있으면 서버 쪽을 남긴다. */
+export function withTimeErrors(
+  errors: MappedFieldErrors | null,
+  invalid: readonly string[],
+): MappedFieldErrors | null {
+  if (invalid.length === 0) return errors;
+  return {
+    byField: {
+      ...Object.fromEntries(invalid.map((key) => [key, MIN_SEC_MESSAGE])),
+      ...(errors?.byField ?? {}),
+    },
+    byStepIndex: errors?.byStepIndex ?? {},
+    unmapped: errors?.unmapped ?? [],
+  };
+}
+
+/** 폼 값이 처음 연 때와 달라졌는가. `취소`가 확인을 띄울지 정한다(AC-BREWFORM-17). */
+export function isDirty(initial: BrewLogFormState, current: BrewLogFormState) {
+  return JSON.stringify(initial) !== JSON.stringify(current);
+}
+
+export type SectionWarning = {
+  section: "equipment" | "result";
+  message: string;
+};
+
+/** 서버 오류 코드 중 폼의 한 묶음에 붙는 것. 나머지는 폼 맨 위 일반 에러로 간다. */
+export function sectionWarningOf(
+  code: string,
+  message: string,
+): SectionWarning | null {
+  if (code === "GRIND_SETTING_OUT_OF_RANGE")
+    return { section: "equipment", message };
+  if (code === "INVALID_BREW_MEASUREMENT")
+    return { section: "result", message };
+  return null;
 }

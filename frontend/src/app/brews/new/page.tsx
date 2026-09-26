@@ -12,5 +12,9 @@ export default async function BrewNewPage({
 }) {
   const { recipeId } = await searchParams;
 
-  return <BrewLogForm recipeId={Number(recipeId)} />;
+  // 숫자가 아니면 `Number()`가 `NaN`을 만들고 그대로 조회하면 에러 화면이 뜬다 — 안내로 돌린다(AC-BREWFORM-16).
+  const id =
+    recipeId !== undefined && /^\d+$/.test(recipeId) ? Number(recipeId) : null;
+
+  return <BrewLogForm recipeId={id} />;
 }

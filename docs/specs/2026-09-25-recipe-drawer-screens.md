@@ -467,7 +467,7 @@ supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBR
 
 - [x] **Task 10: 로딩·에러·빈 상태 전반** — Covers: AC-RECIPESBREWS-84, 85, 86, 87, 94, 95, 96, 97, 101
 
-- [ ] **Task 11: 비기능 검증** — Covers: AC-RECIPESBREWS-98, 99, 100
+- [x] **Task 11: 비기능 검증** — Covers: AC-RECIPESBREWS-98, 99, 100
 
 ---
 

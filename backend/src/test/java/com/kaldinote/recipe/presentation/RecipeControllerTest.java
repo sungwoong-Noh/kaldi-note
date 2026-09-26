@@ -1851,6 +1851,37 @@ class RecipeControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
+  @DisplayName("AC-RECIPESBREWS-99 · 목록 API는 작성자·잔 수 조회로 추가 쿼리가 늘지 않는다(N+1 없음)")
+  void 목록_API는_배치_조회로_N1이_없다() throws Exception {
+    String owner = token();
+    for (int i = 0; i < 5; i++) {
+      createRecipe(
+          owner,
+          """
+          {"title":"쿼리카운트 %d","doseG":15.0,"waterG":250.0,"visibility":"PUBLIC"}
+          """
+              .formatted(i));
+    }
+
+    org.hibernate.stat.Statistics stats =
+        entityManager
+            .getEntityManagerFactory()
+            .unwrap(org.hibernate.SessionFactory.class)
+            .getStatistics();
+
+    stats.clear();
+    listRecipes(owner, "?scope=PUBLIC&size=1").andExpect(status().isOk());
+    long queriesForOne = stats.getQueryExecutionCount();
+
+    stats.clear();
+    listRecipes(owner, "?scope=PUBLIC&size=5").andExpect(status().isOk());
+    long queriesForFive = stats.getQueryExecutionCount();
+
+    // 페이지 크기가 늘어도 쿼리 수는 그대로다 — 배치 조회라 항목 수에 비례하지 않는다.
+    assertThat(queriesForFive).isEqualTo(queriesForOne);
+  }
+
+  @Test
   @DisplayName("AC-RECIPESBREWS-01 · q로 레시피 제목이 부분 일치 검색된다")
   void q로_제목이_검색된다() throws Exception {
     String owner = token();

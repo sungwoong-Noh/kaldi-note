@@ -64,7 +64,9 @@ function classNames(): Map<string, string[]> {
 }
 
 describe("타입 스케일", () => {
-  it("AC-VISUAL-05 · AC-READ-09 · AC-DS2-12 · 글자 크기가 정해진 단계 밖을 쓰지 않는다", () => {
+  // 레시피 서랍 화면 스펙(AC-RECIPESBREWS-98)도 이 허용목록으로 새 text-* 크기를 검사한다 —
+  // 그 스펙이 쓴 크기는 전부 기존 6단계 안이라 SCALE에 추가되지 않았다.
+  it("AC-VISUAL-05 · AC-READ-09 · AC-DS2-12 · AC-RECIPESBREWS-98 · 글자 크기가 정해진 단계 밖을 쓰지 않는다", () => {
     const allowed = new Set(SCALE.map((name) => `text-${name}`));
     // RatingInput의 text-[22px]는 별 아이콘 크기라 글자 위계와 무관하다(AC-READ-10이 소유한다).
     allowed.add("text-[22px]");

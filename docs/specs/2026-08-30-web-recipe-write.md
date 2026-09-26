@@ -220,6 +220,12 @@ pill · `scope=DRAWER&owner=MINE`)이 대체한다.
 - **Then** `/recipes/42/edit`로 이동한다 (첫 슬라이스 스펙의 `WEB-24`를 대체한다)
 - **검증** 페이지 테스트 `RecipeDetailPage.test.tsx`
 
+> **정정 (2026-09-25):** 버튼 이름이 "내 서랍에 담기"로 바뀌고, 이동 대상도
+> **`/recipes/42/edit`(편집)에서 `/recipes/42`(상세)로 되돌아갔다**
+> (`docs/specs/2026-09-25-recipe-drawer-screens.md`의 `AC-RECIPESBREWS-74`) — 담기는 바로
+> 고치라는 뜻이 아니라 "서랍에 넣어 둔다"는 뜻이라는 쪽으로 판단이 바뀌었다. 위 본문은 당시
+> 결정의 기록으로 남기고, 테스트는 `AC-RECIPESBREWS-74`라는 이름으로 새 동작을 검증한다.
+
 ### 생성과 저장
 
 #### AC-WEBEDIT-07 · 최소 입력만으로 저장하면 세 필드만 담아 보낸다

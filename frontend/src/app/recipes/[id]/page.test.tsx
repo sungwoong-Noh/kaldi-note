@@ -79,23 +79,27 @@ function leadElements(): Element[] {
 }
 
 describe("RecipeDetailPage", () => {
-  it("AC-CONSIST-08 · 대표 수치가 하나이고 1:16.7이다", async () => {
+  // AC-CONSIST-08(대표 수치가 비율)을 대체한다 — 레시피 서랍 화면 스펙이 상세 히어로를
+  // 원두량·Hot/Ice·추천 배전도로 재설계했다(docs/specs/2026-09-25-recipe-drawer-screens.md).
+  it("AC-RECIPESBREWS-73 · 상세 화면에 히어로·원장·스텝이 있다", async () => {
     await renderDetail();
     await screen.findByRole("heading", { level: 1 });
 
     const leads = leadElements();
 
     expect(leads).toHaveLength(1);
-    // 갱신(2026-09-15): structure 스펙이 대표 수치를 1:비율로 통일했다.
-    // 이 파일의 픽스처는 hoffmann이라 ratio 16.7이다.
-    //
-    // 갱신(2026-09-17): 히어로 도입으로 라벨이 sr-only dt에서 **보이는 아이브로우**가 됐다
-    // — 목업이 10px Mono 대문자로 쓴다. `data-lead`는 이제 값만 담는다.
-    expect(leads[0].textContent).toBe("1:16.7");
+    expect(leads[0].textContent).toBe("30.0g");
     expect(
       leads[0].closest("[data-hero]")?.querySelector("[data-eyebrow]")
         ?.textContent,
-    ).toBe("비율");
+    ).toBe("원두량");
+    // hoffmann은 temperatureType HOT, recommendedRoastLevel MEDIUM이다.
+    expect(screen.getByText("Hot")).toBeInTheDocument();
+    expect(screen.getByText("중배전")).toBeInTheDocument();
+    // 원장 — 기구.
+    expect(screen.getByText("Hario V60 02")).toBeInTheDocument();
+    // 스텝 목록.
+    expect(screen.getByText("푸어 스텝")).toBeInTheDocument();
   });
 
   it("AC-CONSIST-05 · 상세 메타줄의 라벨이 화면에 보인다", async () => {
@@ -188,15 +192,17 @@ describe("RecipeDetailPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("AC-WEB-22 · 남의 레시피에는 포크 버튼이 보인다", async () => {
+  // AC-WEB-22를 대체한다 — 버튼 이름이 "내 서랍에 담기"로 바뀌었다.
+  it("AC-RECIPESBREWS-74 · 남의 레시피 상세에는 담기 버튼이 보인다", async () => {
     await renderDetail();
 
     expect(
-      await screen.findByRole("button", { name: "내 레시피로 가져오기" }),
+      await screen.findByRole("button", { name: "내 서랍에 담기" }),
     ).toBeInTheDocument();
   });
 
-  it("AC-WEB-23 · 내 레시피에는 포크 버튼이 없다", async () => {
+  // AC-WEB-23을 대체한다 — 같은 시나리오, 새 버튼 이름(AC-RECIPESBREWS-75).
+  it("AC-RECIPESBREWS-75 · 내 레시피 상세에는 담기 버튼이 없다", async () => {
     server.use(
       http.get(`${BASE}/recipes/2`, () =>
         HttpResponse.json({ ...hoffmann, ownerUserId: 7 }),
@@ -208,17 +214,19 @@ describe("RecipeDetailPage", () => {
     await screen.findByText("James Hoffmann Ultimate V60");
     await waitFor(() =>
       expect(
-        screen.queryByRole("button", { name: "내 레시피로 가져오기" }),
+        screen.queryByRole("button", { name: "내 서랍에 담기" }),
       ).not.toBeInTheDocument(),
     );
   });
 
-  // 이름에 두 ID를 함께 남긴다 — AC-WEBEDIT-06이 AC-WEB-24를 대체했고,
-  // 이 테스트 하나가 "그 자리에서 무엇이 일어나는가"를 검증한다.
-  it("AC-WEBEDIT-06 · 포크에 성공하면 새 레시피의 편집 화면으로 간다 (AC-WEB-24 대체)", async () => {
+  // AC-WEBEDIT-06(그 전의 AC-WEB-24)을 대체한다 — 담긴 레시피는 이제 편집이 아니라
+  // 상세로 이동한다(AC-RECIPESBREWS-74).
+  it("AC-RECIPESBREWS-74 · 담기는 바디 없이 즉시 담기고 담긴 레시피로 이동한다", async () => {
+    let forkBody: unknown;
     server.use(
-      http.post(`${BASE}/recipes/2/fork`, () =>
-        HttpResponse.json(
+      http.post(`${BASE}/recipes/2/fork`, async ({ request }) => {
+        forkBody = await request.text();
+        return HttpResponse.json(
           {
             ...hoffmann,
             id: 42,
@@ -227,21 +235,23 @@ describe("RecipeDetailPage", () => {
             visibility: "PRIVATE",
           },
           { status: 201 },
-        ),
-      ),
+        );
+      }),
     );
 
     await renderDetail();
 
     await userEvent.click(
-      await screen.findByRole("button", { name: "내 레시피로 가져오기" }),
+      await screen.findByRole("button", { name: "내 서랍에 담기" }),
     );
 
-    // 상세가 아니라 편집 화면으로 간다.
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/recipes/42/edit"));
+    expect(forkBody).toBe("");
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/recipes/42"));
   });
 
-  it("AC-WEB-25 · 포크에 실패하면 페이지가 유지되고 메시지가 보인다", async () => {
+  // AC-WEB-25를 대체한다 — 같은 시나리오, 새 버튼 이름. 정식 AC ID는 이후 Task 10이
+  // AC-RECIPESBREWS-96으로 붙인다(레시피 서랍 화면 스펙, 아직 승인 단계라 지금은 없어도 된다).
+  it("담기가 실패하면 페이지가 유지되고 메시지가 보인다", async () => {
     server.use(
       http.post(`${BASE}/recipes/2/fork`, () =>
         HttpResponse.json(
@@ -254,14 +264,14 @@ describe("RecipeDetailPage", () => {
     await renderDetail();
 
     const button = await screen.findByRole("button", {
-      name: "내 레시피로 가져오기",
+      name: "내 서랍에 담기",
     });
     await userEvent.click(button);
 
     expect(await screen.findByText("권한이 없습니다.")).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
     expect(
-      screen.getByRole("button", { name: "내 레시피로 가져오기" }),
+      screen.getByRole("button", { name: "내 서랍에 담기" }),
     ).toBeEnabled();
   });
 });
@@ -294,7 +304,7 @@ describe("RecipeDetailPage — 편집과 삭제", () => {
     );
 
     await renderDetail();
-    await screen.findByRole("button", { name: "내 레시피로 가져오기" });
+    await screen.findByRole("button", { name: "내 서랍에 담기" });
 
     expect(
       screen.queryByRole("link", { name: "편집" }),
@@ -371,13 +381,16 @@ describe("RecipeDetailPage — 편집과 삭제", () => {
     ).toHaveAttribute("href", "/brews/new?recipeId=2");
   });
 
-  it("AC-WEBSHELL-17 · 남의 레시피에는 안내만 있다", async () => {
+  // AC-WEBSHELL-17을 대체한다 — 안내 문구 대신 실제로 기록을 시작하는 링크가 있다
+  // (AC-RECIPESBREWS-81). 백엔드가 담지 않은 레시피로도 기록을 받는다
+  // (RecipeService.requireViewable).
+  it("AC-RECIPESBREWS-81 · 바로 내리기는 기록 작성 화면을 연다", async () => {
     // 기본 픽스처가 CURATED이고 ownerUserId 키가 없다.
     await renderDetail();
 
     expect(
-      await screen.findByText("포크한 뒤 기록할 수 있습니다"),
-    ).toBeInTheDocument();
+      await screen.findByRole("link", { name: "이 레시피로 바로 내리기" }),
+    ).toHaveAttribute("href", "/brews/new?recipeId=2");
     expect(
       screen.queryByRole("link", { name: "이 레시피로 내렸다" }),
     ).not.toBeInTheDocument();

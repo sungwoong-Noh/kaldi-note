@@ -330,17 +330,9 @@ AC-RECIPESBREWS-63(owner pill)으로 대체되며 함께 없어졌다. 체크박
 
 ### 대표 수치와 빈 화면
 
-#### AC-STRUCT-17 · 레시피 상세의 대표 수치가 `1:비율`이다
-
-- **Given** `/recipes/12`
-- **When** 대표 수치(36px 요소)의 텍스트를 읽는다
-- **Then** **`1:16.7`** 형태다 — `→`를 포함하지 않는다
-- **검증** e2e `structure.spec.ts`
-
-> **갱신 (2026-09-25).** 원래 `/recipes`(목록 카드)도 함께 검사했으나,
-> `docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-69가 카드 대표 수치를
-> 원두량으로 바꾸며 그 부분을 대체했다. 상세(`/recipes/12`)는 그대로 비율이다 — 상세 히어로
-> 자체의 재설계는 그 스펙 Task 6(AC-RECIPESBREWS-73)이 다룬다.
+**AC-STRUCT-17 (대체됨)** · 레시피 목록·상세의 대표 수치가 비율이라던 원래 AC는
+`docs/specs/2026-09-25-recipe-drawer-screens.md`가 완전히 대체한다 — 목록 카드는
+AC-RECIPESBREWS-69, 상세 히어로는 AC-RECIPESBREWS-73(Task 6)이 원두량으로 바꿨다.
 
 #### AC-STRUCT-18 · 기록 상세·카드의 대표 수치가 `1:비율`이다
 

@@ -16,11 +16,16 @@ import {
   formatTemperature,
 } from "@/lib/format";
 import { deleteRecipe, fetchRecipe, forkRecipe } from "../api";
+import { ROAST_OPTIONS } from "../filterOptions";
 import type { Recipe } from "../schema";
 import { DeleteRecipeDialog } from "./DeleteRecipeDialog";
 import { RecipeStepList } from "./RecipeStepList";
 import { statusLabel } from "@/lib/statusLabel";
 import { Button, ButtonLink, Hero, MetricRow, Shell } from "@/components/ui";
+
+function roastLabel(level: Recipe["recommendedRoastLevel"]): string {
+  return ROAST_OPTIONS.find((opt) => opt.value === level)?.label ?? level;
+}
 
 export function RecipeDetail({ id }: { id: number }) {
   const router = useRouter();
@@ -41,8 +46,9 @@ export function RecipeDetail({ id }: { id: number }) {
 
   const fork = useMutation({
     mutationFn: () => forkRecipe(id, onSessionLost),
-    // 포크한 뒤 바로 고칠 수 있게 편집 화면으로 보낸다(WEBEDIT 스펙이 기존 AC-WEB-24를 대체했다).
-    onSuccess: (created) => router.push(`/recipes/${created.id}/edit`),
+    // 담긴 레시피로 곧장 이동한다 — 편집이 아니라 상세다(AC-RECIPESBREWS-74가
+    // 기존 AC-WEBEDIT-06의 편집 이동을 대체했다).
+    onSuccess: (created) => router.push(`/recipes/${created.id}`),
   });
 
   const remove = useMutation({
@@ -126,42 +132,50 @@ export function RecipeDetail({ id }: { id: number }) {
       </header>
 
       {/*
-        dl의 직계 자식은 dt·dd 또는 그것을 감싼 div만 허용된다. span을 그대로 두면
-        파서가 교정하면서 서버 HTML과 클라이언트 트리가 어긋날 수 있다.
+        히어로는 원두량·온도유형·추천 배전도다(AC-RECIPESBREWS-73) — 배치 크기에 좌우되는
+        도즈가 "이 레시피가 어느 규모인가"를 가장 먼저 답한다.
       */}
-      {/*
-        대표 수치는 히어로 판 위에 올린다 — docs/specs/2026-09-17-screen-reskin.md
-        아이브로우가 라벨 역할을 하므로 sr-only dt가 따로 필요없다.
-      */}
-      <Hero eyebrow="비율" lead={formatRatio(recipe.ratio)} className="mt-4">
+      <Hero eyebrow="원두량" lead={formatGrams(recipe.doseG)} className="mt-4">
         <dl className="grid grid-cols-2 gap-x-4">
           <MetricRow
-            label="원두량"
-            value={formatGrams(recipe.doseG)}
+            label="온도"
+            value={recipe.temperatureType === "ICE" ? "Ice" : "Hot"}
             tone="hero"
           />
           <MetricRow
-            label="물량"
-            value={formatGrams(recipe.waterG)}
+            label="추천 배전도"
+            value={roastLabel(recipe.recommendedRoastLevel)}
             tone="hero"
           />
-          {recipe.waterTempC !== undefined && (
-            <MetricRow
-              label="물 온도"
-              value={formatTemperature(recipe.waterTempC)}
-              tone="hero"
-            />
-          )}
-          {recipe.totalTimeSeconds !== undefined && (
-            <MetricRow
-              label="총 시간"
-              value={formatDuration(recipe.totalTimeSeconds)}
-              tone="hero"
-            />
-          )}
         </dl>
       </Hero>
 
+      {/*
+        물량·물 온도·총 시간은 메타줄 라벨로 보여야 한다(AC-CONSIST-05) — sr-only가 아니다.
+        구분자 "·"는 쓰지 않는다(AC-CONSIST-02). 비율은 이 스펙 AC는 아니지만 값 자체는
+        여전히 필요하다(AC-WEB-14).
+      */}
+      <dl className="mt-2 grid grid-cols-2 gap-x-4">
+        <MetricRow label="물량" value={formatGrams(recipe.waterG)} />
+        <MetricRow label="비율" value={formatRatio(recipe.ratio)} />
+        {recipe.waterTempC !== undefined && (
+          <MetricRow
+            label="물 온도"
+            value={formatTemperature(recipe.waterTempC)}
+          />
+        )}
+        {recipe.totalTimeSeconds !== undefined && (
+          <MetricRow
+            label="총 시간"
+            value={formatDuration(recipe.totalTimeSeconds)}
+          />
+        )}
+      </dl>
+
+      {/*
+        원장의 나머지 — 기구(AC-RECIPESBREWS-73). 총 시간은 위 메타줄이, 분쇄도는
+        아래 분쇄도 섹션이 각자 보여준다 — 굳이 한 블록에 몰아넣지 않는다.
+      */}
       {(brewer || filter) && (
         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-body text-ink-3">
           {brewer && <span>{`${brewer.brand} ${brewer.name}`}</span>}
@@ -193,17 +207,17 @@ export function RecipeDetail({ id }: { id: number }) {
       </section>
 
       {/*
-        `POST /brew-logs`는 본인 소유 레시피만 받는다(BrewLogService.requireOwnedRecipe).
-        남의 레시피에 진입점을 두면 눌렀을 때 403이 난다 — 포크라는 정답으로 안내한다.
+        `POST /brew-logs`는 볼 수 있는 레시피면 받는다(RecipeService.requireViewable) — 담지
+        않고도 「바로 내리기」로 곧장 기록할 수 있다(AC-RECIPESBREWS-81).
       */}
       {isMine ? (
         <ButtonLink href={`/brews/new?recipeId=${id}`} variant="primary">
           이 레시피로 내렸다
         </ButtonLink>
       ) : (
-        <p className="mt-6 text-center text-body text-ink-3">
-          포크한 뒤 기록할 수 있습니다
-        </p>
+        <ButtonLink href={`/brews/new?recipeId=${id}`} variant="primary">
+          이 레시피로 바로 내리기
+        </ButtonLink>
       )}
 
       {isMine && (
@@ -229,14 +243,13 @@ export function RecipeDetail({ id }: { id: number }) {
       )}
 
       {!isMine && (
-        <div className="mt-6">
+        <div className="mt-3">
           <Button
             onClick={() => fork.mutate()}
             disabled={fork.isPending}
-            variant="primary"
             block
           >
-            내 레시피로 가져오기
+            내 서랍에 담기
           </Button>
 
           {fork.error && (

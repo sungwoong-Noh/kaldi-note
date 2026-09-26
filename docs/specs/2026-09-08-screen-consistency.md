@@ -198,14 +198,12 @@ plan: docs/archive/plans/2026-09-08-plan-screen-consistency.md
 > **색은 토큰을 가리키므로 이 AC를 바꾸지 않는다** — `--color-muted` 값이 `#545454`로 바뀌어도
 > 조건은 그대로 성립한다.
 
-#### AC-CONSIST-08 · `RecipeDetail`의 대표 수치가 정확히 하나이고 `1:16.7`이다
-
-- **Given** `ratio: 16.7`인 레시피 상세 — `src/test/fixtures.ts`의 `hoffmann`이다
-- **When** 대표 수치 단계·`font-semibold`·`tabular-nums`를 모두 가진 요소를 센다
-- **Then** 정확히 1개이고, 그 텍스트가 **`비율1:16.7`**이며, 그 안의 `dt`는 `sr-only`다
-- **검증** 컴포넌트 테스트 `src/app/recipes/[id]/page.test.tsx`
+**AC-CONSIST-08 (대체됨)** · `RecipeDetail`의 대표 수치가 비율이라던 원래 AC는
+`docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-73(히어로가
+원두량·Hot/Ice·추천 배전도로 재설계됨)이 대체한다.
 
 > **갱신 (2026-09-15).** 대표 수치가 `1:비율`로 통일됐다(`2026-09-15-structure.md`).
+> **(2026-09-25에 다시 원두량으로 바뀌었다 — 위 참조.)**
 
 #### AC-CONSIST-09 · `BrewDetail`의 대표 수치가 정확히 하나이고 `1:15.0`이다
 

@@ -564,18 +564,54 @@ describe("BrewNewPage — 저장과 평가", () => {
     }
   });
 
-  it("AC-WEBBREW-30 · 펼쳐서 고른 값이 본문에 담긴다", async () => {
+  it("AC-BREWFORM-11 · 5축은 1~5 버튼으로 고르고 다시 누르면 해제된다", async () => {
     const user = userEvent.setup();
     const captured = captureCreate();
 
     await renderNewPage();
     await user.click(await screen.findByRole("button", { name: "맛 자세히" }));
-    await user.selectOptions(screen.getByLabelText("산미"), "3");
-    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    const acidity = within(screen.getByRole("group", { name: "산미" }));
+    const four = acidity.getByRole("button", { name: "산미 4" });
 
+    await user.click(four);
+    expect(four).toHaveAttribute("aria-pressed", "true");
+    expect(
+      acidity
+        .getAllByRole("button")
+        .map((button) => button.hasAttribute("data-filled")),
+    ).toEqual([true, true, true, true, false]);
+
+    await user.click(four);
+    for (const button of acidity.getAllByRole("button")) {
+      expect(button).toHaveAttribute("aria-pressed", "false");
+    }
+
+    await user.click(acidity.getByRole("button", { name: "산미 3" }));
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
     await waitFor(() => expect(captured.body).not.toBeNull());
     expect(captured.body?.acidity).toBe(3);
     expect(captured.body).not.toHaveProperty("body");
+  });
+
+  it("AC-BREWFORM-18 · 5축은 접힌 채로 시작하고 펼치기 전엔 키가 없다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    await screen.findByRole("button", { name: "맛 자세히" });
+    expect(screen.queryByRole("button", { name: "산미 1" })).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    for (const key of [
+      "acidity",
+      "sweetness",
+      "body",
+      "bitterness",
+      "aftertaste",
+    ]) {
+      expect(captured.body).not.toHaveProperty(key);
+    }
   });
 
   it("AC-WEBBREW-31 · 메모 길이 초과는 서버 문구로 알린다", async () => {

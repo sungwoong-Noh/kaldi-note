@@ -176,27 +176,12 @@ export function BrewLogFields({
 
         {state.sensoryExpanded &&
           SENSORY_AXES.map(({ key, label }) => (
-            <label key={key} className="flex items-center gap-2 text-body">
-              <span className="w-20 shrink-0 text-ink-3">{label}</span>
-              <select
-                aria-label={label}
-                value={state[key] ?? ""}
-                onChange={(e) =>
-                  set(
-                    key,
-                    e.target.value === "" ? null : Number(e.target.value),
-                  )
-                }
-                className={controlClass(SELECT_EXTRA)}
-              >
-                <option value="">선택 안 함</option>
-                {[1, 2, 3, 4, 5].map((score) => (
-                  <option key={score} value={score}>
-                    {score}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <TasteScale
+              key={key}
+              label={label}
+              value={state[key]}
+              onChange={(v) => set(key, v)}
+            />
           ))}
 
         <label className="flex flex-col gap-1 text-body">
@@ -361,6 +346,44 @@ function VisibilityField({
             className="min-h-11 flex-1 rounded-tag border border-border px-3 py-2 text-body font-medium aria-checked:border-ink aria-checked:bg-ink aria-checked:text-on-ink"
           >
             {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 5점 척도 한 줄 — docs/specs/2026-09-27-brew-form-redesign.md AC-BREWFORM-11.
+ *
+ * <p>고른 값 이하의 칸을 채운다(디자인 시스템 「Taste scale」). 같은 값을 다시 누르면 해제된다 —
+ * 평가하지 않은 축은 요청에 담지 않으므로 「선택 안 함」으로 돌아갈 길이 있어야 한다.
+ */
+function TasteScale({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (value: number | null) => void;
+}) {
+  return (
+    <div role="group" aria-label={label} className="flex items-center gap-2">
+      {/* 라벨은 두 글자다. 80px(다른 행의 라벨 폭)이면 360px 폰에서 버튼 5개가 넘친다 */}
+      <span className="w-12 shrink-0 text-body text-ink-3">{label}</span>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((score) => (
+          <button
+            key={score}
+            type="button"
+            aria-label={`${label} ${score}`}
+            aria-pressed={value === score}
+            data-filled={value !== null && score <= value ? "" : undefined}
+            onClick={() => onChange(value === score ? null : score)}
+            className="min-h-11 min-w-11 rounded-tag border border-border text-metric data-filled:border-accent data-filled:bg-accent data-filled:text-on-ink"
+          >
+            {score}
           </button>
         ))}
       </div>

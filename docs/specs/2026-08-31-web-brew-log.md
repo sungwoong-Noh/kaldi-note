@@ -366,12 +366,8 @@ plan: docs/archive/plans/2026-08-31-plan-web-brew-log.md
 - **Then** 본문에 `acidity`·`sweetness`·`body`·`bitterness`·`aftertaste` 키가 하나도 없다
 - **검증** 페이지 테스트 `BrewNewPage.test.tsx`
 
-#### AC-WEBBREW-30 · 펼쳐서 고른 값이 본문에 담긴다
-
-- **Given** `맛 자세히`를 눌러 펼쳤다
-- **When** `산미`를 `3`으로 고르고 `기록하기`를 누른다
-- **Then** 본문의 `acidity`가 `3`이고, 고르지 않은 `body` 키는 없다
-- **검증** 페이지 테스트 `BrewNewPage.test.tsx`
+**AC-WEBBREW-30 (대체됨)** · 5축을 `select`로 골라 본문에 담던 원래 AC는, 5축이 1~5 버튼으로 바뀌며
+`docs/specs/2026-09-27-brew-form-redesign.md`의 AC-BREWFORM-11(고르고 다시 누르면 해제, 고른 것만 본문에)로 대체됐다.
 
 #### AC-WEBBREW-31 · 메모 길이 초과는 서버 문구로 알린다
 

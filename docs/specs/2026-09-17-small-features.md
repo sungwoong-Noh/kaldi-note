@@ -1,10 +1,21 @@
 ---
 id: SMALL
 title: 작은 기능 3개 — 비교표 문구 · 이 값으로 기록 · 다시 내리기
-status: 승인
+status: 구현중
 milestone: M2
 plan: docs/archive/plans/2026-09-17-plan-small-features.md
 ---
+
+> **2026-09-28 부분 랜딩 (#142).** `feat/small-features`를 통째로 리베이스하지 않았다. 9-25 이후 main에
+> M1 레시피 서랍 화면과 기록 폼 리디자인(`2026-09-27-brew-form-redesign.md`)이 들어와, 「이 값으로
+> 기록하기」 커밋(`48089d1`, AC-SMALL-07~09)이 코드 충돌 6곳을 냈다 — 옛 `/recipes`·`BrewLogForm` 위에서
+> 짠 것이라 새 화면 위에서 **다시 구현해야 한다(#146, M3)**. M2 몫인 비교표 문구(AC-01~06)·다시
+> 내리기(AC-10)만 cherry-pick했다.
+>
+> **AC-SMALL-11은 지금 재현할 수 없다.** 「레시피 없는 기록」이 생기는 경로가 없다 — 생성 API가
+> `recipeId`를 `@NotNull`로 받고, 레시피 삭제는 soft delete라 기록의 `recipeId`가 남으며, 프론트
+> 스키마도 `recipeId`를 필수로 둔다(컬럼만 nullable). 코드의 가드(`recipeId !== undefined`)는 남아 있다.
+> 이 AC를 어떻게 할지는 사람이 정한다.
 
 > **2026-09-25 확인 — 분할하지 않는다.** 승인만 되고 미구현인 채로 로드맵 정리
 > (`docs/ROADMAP.md` M0)에서 발견돼, 처음에는 M2·M3로 쪼개 새 스펙으로 다시 쓰려 했다.

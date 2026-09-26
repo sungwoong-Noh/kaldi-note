@@ -28,6 +28,10 @@
   `check-docs.sh`가 경로로 읽어 CI에서 실패한다(로컬 `check-spec-coverage.sh`는 못 잡는다).
   일부 AC 대체는 본문 「대체하는 이전 AC」 섹션에 쓰고, 푸시 전 `./scripts/check-docs.sh`도 돌린다.
 
+- **CI 워크플로는 경로 필터가 있어 PR마다 다 돌지 않는다.** 프론트만 바뀌면 `backend.yml` run이 아예
+  생기지 않는다 — `gh run list`로 「run이 생길 때까지」 기다리는 루프는 영원히 돈다(실제로 6시간 돌았다).
+  기다릴 때는 `gh pr checks --watch`처럼 **PR에 실제로 붙은 체크**만 본다.
+
 ## 프론트 테스트
 
 - **모바일 하단 고정 버튼은 `fixed` + 아래 여백이 아니라 `sticky bottom-0`으로 만든다.** 버튼 줄

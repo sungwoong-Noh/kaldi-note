@@ -14,12 +14,22 @@ import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { searchRecipes } from "@/features/recipe/api";
 import { RecipeCard } from "@/features/recipe/components/RecipeCard";
+import { FilterSheet } from "@/features/recipe/components/FilterSheet";
+import {
+  DRIPPER_OPTIONS,
+  ROAST_OPTIONS,
+  toggleValue,
+} from "@/features/recipe/filterOptions";
 import {
   toSearchFilter,
   useRecipeSearchState,
   type RecipeSearchState,
 } from "@/features/recipe/useRecipeSearchState";
+import { useViewportWidth } from "@/lib/useViewportWidth";
 import { Button, ButtonLink, Input, Shell } from "@/components/ui";
+
+/** ≥760px는 웹 pill 줄, 그 아래는 모바일 필터 시트다(AC-RECIPESBREWS-61·82). */
+const WEB_BREAKPOINT_PX = 760;
 
 /** `useSearchParams()`가 CSR bailout을 일으키므로 Next가 요구하는 Suspense 경계를 둔다. */
 export default function RecipesPage() {
@@ -57,7 +67,7 @@ function RecipesPageContent() {
 
   if (!ready || isPending) {
     return (
-      <Screen state={state} setState={setState}>
+      <Screen state={state} setState={setState} onSessionLost={onSessionLost}>
         <LoadingState />
       </Screen>
     );
@@ -65,7 +75,7 @@ function RecipesPageContent() {
 
   if (error) {
     return (
-      <Screen state={state} setState={setState}>
+      <Screen state={state} setState={setState} onSessionLost={onSessionLost}>
         <ErrorState error={error} onRetry={() => void refetch()} />
       </Screen>
     );
@@ -75,7 +85,7 @@ function RecipesPageContent() {
 
   if (recipes.length === 0) {
     return (
-      <Screen state={state} setState={setState}>
+      <Screen state={state} setState={setState} onSessionLost={onSessionLost}>
         {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md */}
         <div data-empty className="flex flex-col gap-3">
           <p className="py-6 text-center text-body text-ink-3">
@@ -90,7 +100,7 @@ function RecipesPageContent() {
   }
 
   return (
-    <Screen state={state} setState={setState}>
+    <Screen state={state} setState={setState} onSessionLost={onSessionLost}>
       <ul className="flex flex-col gap-3">
         {recipes.map((recipe) => (
           <RecipeCard key={recipe.id} recipe={recipe} />
@@ -114,10 +124,12 @@ function Screen({
   children,
   state,
   setState,
+  onSessionLost,
 }: {
   children: React.ReactNode;
   state: RecipeSearchState;
   setState: (patch: Partial<RecipeSearchState>) => void;
+  onSessionLost: () => void;
 }) {
   return (
     <Shell>
@@ -131,7 +143,11 @@ function Screen({
       <SegmentTabs state={state} setState={setState} />
 
       {state.scope === "PUBLIC" && (
-        <ExploreFilters state={state} setState={setState} />
+        <ExploreFilters
+          state={state}
+          setState={setState}
+          onSessionLost={onSessionLost}
+        />
       )}
 
       {children}
@@ -172,42 +188,112 @@ function SegmentTabs({
 }
 
 /**
- * 둘러보기 전용 검색·필터 뼈대. 필터 pill 전체(AC-61·62), owner pill(AC-63)은 이후 Task가
- * 채운다 — 지금은 검색어(디바운스·IME)·온도·정렬만 둔다.
+ * 둘러보기 전용 검색·필터. 웹(≥760px)은 pill 줄이 즉시 반영되고(AC-61), 모바일은 필터
+ * 버튼이 스테이징 시트를 연다(AC-82). owner pill(AC-63)은 내 서랍 전용이라 여기 없다.
  */
 function ExploreFilters({
   state,
   setState,
+  onSessionLost,
 }: {
   state: RecipeSearchState;
   setState: (patch: Partial<RecipeSearchState>) => void;
+  onSessionLost: () => void;
 }) {
+  const width = useViewportWidth();
+  const isMobile = width !== null && width < WEB_BREAKPOINT_PX;
+  const [sheetOpen, setSheetOpen] = useState(false);
+
   return (
     <div className="mb-4 flex flex-col gap-3">
       <RecipeSearchInput q={state.q} onCommit={(q) => setState({ q })} />
 
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          aria-pressed={state.temp === "HOT"}
-          onClick={() =>
-            setState({ temp: state.temp === "HOT" ? undefined : "HOT" })
-          }
-          className="min-h-11 rounded-tag border border-border px-3 py-2 text-body-sm aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-on-ink"
-        >
-          Hot
-        </button>
-        <button
-          type="button"
-          aria-pressed={state.temp === "ICE"}
-          onClick={() =>
-            setState({ temp: state.temp === "ICE" ? undefined : "ICE" })
-          }
-          className="min-h-11 rounded-tag border border-border px-3 py-2 text-body-sm aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-on-ink"
-        >
-          Ice
-        </button>
-      </div>
+      {!isMobile && (
+        <>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="온도">
+            <button
+              type="button"
+              aria-pressed={state.temp === "HOT"}
+              onClick={() =>
+                setState({ temp: state.temp === "HOT" ? undefined : "HOT" })
+              }
+              className="min-h-11 rounded-tag border border-border px-3 py-2 text-body-sm aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-on-ink"
+            >
+              Hot
+            </button>
+            <button
+              type="button"
+              aria-pressed={state.temp === "ICE"}
+              onClick={() =>
+                setState({ temp: state.temp === "ICE" ? undefined : "ICE" })
+              }
+              className="min-h-11 rounded-tag border border-border px-3 py-2 text-body-sm aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-on-ink"
+            >
+              Ice
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2" role="group" aria-label="배전도">
+            {ROAST_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                aria-pressed={state.roast.includes(opt.value)}
+                onClick={() =>
+                  setState({ roast: toggleValue(state.roast, opt.value) })
+                }
+                className="min-h-11 rounded-tag border border-border px-3 py-2 text-body-sm aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-on-ink"
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-2" role="group" aria-label="기구">
+            {DRIPPER_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                aria-pressed={state.dripper.includes(opt.value)}
+                onClick={() =>
+                  setState({ dripper: toggleValue(state.dripper, opt.value) })
+                }
+                className="min-h-11 rounded-tag border border-border px-3 py-2 text-body-sm aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-on-ink"
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          <DoseRangeFilter
+            doseMin={state.doseMin}
+            doseMax={state.doseMax}
+            onCommit={(patch) => setState(patch)}
+          />
+        </>
+      )}
+
+      {isMobile && (
+        <Button type="button" onClick={() => setSheetOpen(true)}>
+          필터
+        </Button>
+      )}
+
+      {isMobile && sheetOpen && (
+        <FilterSheet
+          q={state.q}
+          applied={{
+            temp: state.temp,
+            roast: state.roast,
+            dripper: state.dripper,
+          }}
+          onApply={(patch) => {
+            setState(patch);
+            setSheetOpen(false);
+          }}
+          onSessionLost={onSessionLost}
+        />
+      )}
 
       <div className="flex gap-2 text-body-sm" role="group" aria-label="정렬">
         <button
@@ -227,6 +313,100 @@ function ExploreFilters({
           최신순
         </button>
       </div>
+    </div>
+  );
+}
+
+const DOSE_MIN = 10;
+const DOSE_MAX = 30;
+const DOSE_COMMIT_DEBOUNCE_MS = 200;
+
+/**
+ * 원두량 슬라이더(10–30g). 드래그는 pointerup에서 1회, 화살표 키는 마지막 입력 후 200ms
+ * 디바운스로 1회만 커밋한다(AC-RECIPESBREWS-62).
+ */
+function DoseRangeFilter({
+  doseMin,
+  doseMax,
+  onCommit,
+}: {
+  doseMin?: number;
+  doseMax?: number;
+  onCommit: (patch: { doseMin?: number; doseMax?: number }) => void;
+}) {
+  const [draftMin, setDraftMin] = useState(doseMin ?? DOSE_MIN);
+  const [draftMax, setDraftMax] = useState(doseMax ?? DOSE_MAX);
+  const draggingRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  function commit(min: number, max: number) {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    onCommit({
+      doseMin: min === DOSE_MIN ? undefined : min,
+      doseMax: max === DOSE_MAX ? undefined : max,
+    });
+  }
+
+  function scheduleCommit(min: number, max: number) {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(
+      () => commit(min, max),
+      DOSE_COMMIT_DEBOUNCE_MS,
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-body-sm text-ink-3">
+        원두량 {draftMin}–{draftMax}g
+      </span>
+      <input
+        type="range"
+        aria-label="원두량 최소"
+        min={DOSE_MIN}
+        max={DOSE_MAX}
+        value={draftMin}
+        onPointerDown={() => {
+          draggingRef.current = true;
+        }}
+        onPointerUp={() => {
+          draggingRef.current = false;
+          commit(draftMin, draftMax);
+        }}
+        onChange={(e) => {
+          const value = Math.min(Number(e.target.value), draftMax);
+          setDraftMin(value);
+          if (!draggingRef.current) scheduleCommit(value, draftMax);
+        }}
+      />
+      <input
+        type="range"
+        aria-label="원두량 최대"
+        min={DOSE_MIN}
+        max={DOSE_MAX}
+        value={draftMax}
+        onPointerDown={() => {
+          draggingRef.current = true;
+        }}
+        onPointerUp={() => {
+          draggingRef.current = false;
+          commit(draftMin, draftMax);
+        }}
+        onChange={(e) => {
+          const value = Math.max(Number(e.target.value), draftMin);
+          setDraftMax(value);
+          if (!draggingRef.current) scheduleCommit(draftMin, value);
+        }}
+      />
     </div>
   );
 }

@@ -159,6 +159,91 @@ describe("RecipesPage", () => {
     expect(input).toHaveFocus();
   });
 
+  it("AC-RECIPESBREWS-61 · 온도·배전도·기구 필터가 웹에서 즉시 반영된다", async () => {
+    const searches: string[] = [];
+    server.use(
+      http.get(LIST_URL, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json(pageOf([hoffmannSummary]));
+      }),
+    );
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipesPage />);
+    await user.click(await screen.findByRole("tab", { name: "둘러보기" }));
+
+    await user.click(screen.getByRole("button", { name: "Hot" }));
+    await user.click(screen.getByRole("button", { name: "중배전" }));
+    await user.click(screen.getByRole("button", { name: "V60" }));
+
+    await waitFor(() => {
+      const last = decodeURIComponent(searches.at(-1) ?? "");
+      expect(last).toContain("temp=HOT");
+      expect(last).toContain("roast=MEDIUM");
+      expect(last).toContain("dripper=V60");
+    });
+  });
+
+  it("AC-RECIPESBREWS-62 · 원두량 슬라이더는 드래그(pointerup)에서 1회만 조회된다", async () => {
+    const searches: string[] = [];
+    server.use(
+      http.get(LIST_URL, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json(pageOf([hoffmannSummary]));
+      }),
+    );
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipesPage />);
+    await user.click(await screen.findByRole("tab", { name: "둘러보기" }));
+    const callsBeforeDrag = searches.length;
+    const minHandle = screen.getByLabelText("원두량 최소");
+
+    fireEvent.pointerDown(minHandle);
+    fireEvent.change(minHandle, { target: { value: "15" } });
+    fireEvent.change(minHandle, { target: { value: "18" } });
+    expect(searches.length).toBe(callsBeforeDrag);
+
+    fireEvent.pointerUp(minHandle);
+
+    await waitFor(() =>
+      expect(searches.length).toBe(callsBeforeDrag + 1),
+    );
+    expect(searches.at(-1)).toContain("doseMin=18");
+  });
+
+  it("AC-RECIPESBREWS-62 · 화살표 키 연타는 마지막 입력 후 200ms 디바운스로 1회만 조회된다", async () => {
+    const searches: string[] = [];
+    server.use(
+      http.get(LIST_URL, ({ request }) => {
+        searches.push(new URL(request.url).search);
+        return HttpResponse.json(pageOf([hoffmannSummary]));
+      }),
+    );
+    const user = userEvent.setup();
+
+    renderWithQuery(<RecipesPage />);
+    await user.click(await screen.findByRole("tab", { name: "둘러보기" }));
+    const callsBeforeKeys = searches.length;
+    const maxHandle = screen.getByLabelText("원두량 최대");
+
+    vi.useFakeTimers();
+    for (const value of [29, 28, 27, 26, 25]) {
+      fireEvent.change(maxHandle, { target: { value: String(value) } });
+    }
+    expect(searches.length).toBe(callsBeforeKeys);
+
+    await vi.advanceTimersByTimeAsync(199);
+    expect(searches.length).toBe(callsBeforeKeys);
+
+    await vi.advanceTimersByTimeAsync(1);
+    vi.useRealTimers();
+    await waitFor(() =>
+      expect(searches.length).toBe(callsBeforeKeys + 1),
+    );
+    expect(searches.at(-1)).toContain("doseMax=25");
+  });
+
   it("AC-RECIPESBREWS-67 · '더 보기'로 불러온 페이지 depth는 URL에 반영되지 않는다", async () => {
     server.use(
       http.get(LIST_URL, ({ request }) => {

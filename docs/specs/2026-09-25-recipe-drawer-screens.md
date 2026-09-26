@@ -445,7 +445,7 @@ supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBR
 
 - [x] **Task 2: 검색 입력 — 디바운스·IME** — Covers: AC-RECIPESBREWS-59, 60, 80
 
-- [ ] **Task 3: 필터 — 웹 pill 줄 · 모바일 스테이징 시트** — Covers: AC-RECIPESBREWS-61, 62, 82
+- [x] **Task 3: 필터 — 웹 pill 줄 · 모바일 스테이징 시트** — Covers: AC-RECIPESBREWS-61, 62, 82
 
 - [ ] **Task 4: RecipeCard 재설계** — Covers: AC-RECIPESBREWS-69, 70, 71, 72
 

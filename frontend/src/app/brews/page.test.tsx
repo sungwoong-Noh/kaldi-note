@@ -41,6 +41,11 @@ beforeEach(() => {
     http.get(`${BASE}/recipes/12`, () =>
       HttpResponse.json({ ...grindedRecipe, id: 12, title: "Kasuya 4:6" }),
     ),
+    // 통계는 이 파일 대부분의 테스트와 무관하다 — 기본값을 깔아 목록 테스트가
+    // 통계 실패로 ErrorState를 그리지 않게 한다. 통계 자체를 보는 테스트는 덮어쓴다.
+    http.get(`${BASE}/brew-logs/stats`, () =>
+      HttpResponse.json({ monthCount: 0 }),
+    ),
   );
 });
 
@@ -124,7 +129,9 @@ describe("BrewsPage", () => {
     expect(screen.queryByText(/%/)).not.toBeInTheDocument();
   });
 
-  it("AC-WEBSHELL-21 · 카드에 비율·온도·시간이 보인다", async () => {
+  // AC-WEBSHELL-21·22를 대체한다 — 카드가 테이블/원장 행으로 바뀌면서 비율 열이
+  // 빠지고 7열(AC-RECIPESBREWS-77)로 재구성됐다.
+  it("AC-RECIPESBREWS-77 · 웹은 날짜·레시피/원두·원두량·온도·시간·수율·평가 7열 테이블이다", async () => {
     server.use(
       http.get(LIST_URL, () =>
         HttpResponse.json(
@@ -132,7 +139,7 @@ describe("BrewsPage", () => {
             {
               ...brewLogWithTds,
               recipeId: 12,
-              brewRatio: 15.0,
+              actualDoseG: 20.0,
               actualWaterTempC: 92.0,
               actualTotalTimeSeconds: 210,
             },
@@ -143,16 +150,32 @@ describe("BrewsPage", () => {
 
     renderWithQuery(<BrewsPage />);
 
-    expect(await screen.findByText("1:15.0")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("columnheader", { name: "날짜" }),
+    ).toBeInTheDocument();
+    for (const header of [
+      "레시피/원두",
+      "원두량",
+      "온도",
+      "시간",
+      "수율",
+      "평가",
+    ]) {
+      expect(
+        screen.getByRole("columnheader", { name: header }),
+      ).toBeInTheDocument();
+    }
+
+    expect(await screen.findByText("Kasuya 4:6")).toBeInTheDocument();
+    expect(screen.getByText("20.0g")).toBeInTheDocument();
     expect(screen.getByText("92°C")).toBeInTheDocument();
     expect(screen.getByText("3:30")).toBeInTheDocument();
   });
 
-  it("AC-WEBSHELL-22 · 추출 시간이 없으면 그 자리가 없다", async () => {
+  it("AC-RECIPESBREWS-77 · 총 시간이 없으면 그 칸이 빈다", async () => {
     const withoutTime: Record<string, unknown> = {
       ...brewLogWithTds,
       recipeId: 12,
-      brewRatio: 15.0,
     };
     delete withoutTime.actualTotalTimeSeconds;
     server.use(
@@ -161,8 +184,30 @@ describe("BrewsPage", () => {
 
     renderWithQuery(<BrewsPage />);
 
-    expect(await screen.findByText("1:15.0")).toBeInTheDocument();
+    await screen.findByText("Kasuya 4:6");
     expect(screen.queryByText(/^\d+:\d{2}$/)).not.toBeInTheDocument();
+  });
+
+  it("AC-RECIPESBREWS-76 · 통계 카드에 이번 달·평균 별점·최빈 원두량·즐겨 쓴 레시피가 있다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+      http.get(`${BASE}/brew-logs/stats`, () =>
+        HttpResponse.json({
+          monthCount: 9,
+          averageRating: 3.7,
+          favoriteDoseG: 16.0,
+          favoriteRecipeId: 12,
+          favoriteRecipeTitle: "케냐 94도 3푸어",
+        }),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("9잔")).toBeInTheDocument();
+    expect(screen.getByText("★ 3.7")).toBeInTheDocument();
+    expect(screen.getByText("16.0g")).toBeInTheDocument();
+    expect(screen.getByText("케냐 94도 3푸어")).toBeInTheDocument();
   });
 });
 

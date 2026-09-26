@@ -3,7 +3,7 @@ id: RECIPESBREWS
 title: 레시피 서랍 화면 — 웹·모바일 둘러보기/내 서랍/상세/내 잔
 status: 승인
 milestone: M1
-supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-69, AC-WEBEDIT-05(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-63, AC-TOUCH-06(docs/specs/2026-09-09-touch-targets.md) → AC-RECIPESBREWS-63, AC-STRUCT-04(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-63, AC-VISUAL-08(docs/specs/2026-09-07-visual-hierarchy.md) → AC-RECIPESBREWS-69, AC-STRUCT-17(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-69·73, AC-CONSIST-08(docs/specs/2026-09-08-screen-consistency.md) → AC-RECIPESBREWS-73, AC-WEB-22·23·25(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-74·75·96, AC-WEBEDIT-06(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-74, AC-WEBSHELL-17(docs/specs/2026-09-01-web-shell.md) → AC-RECIPESBREWS-81
+supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-69, AC-WEBEDIT-05(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-63, AC-TOUCH-06(docs/specs/2026-09-09-touch-targets.md) → AC-RECIPESBREWS-63, AC-STRUCT-04(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-63, AC-VISUAL-08(docs/specs/2026-09-07-visual-hierarchy.md) → AC-RECIPESBREWS-69, AC-STRUCT-17(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-69·73, AC-CONSIST-08(docs/specs/2026-09-08-screen-consistency.md) → AC-RECIPESBREWS-73, AC-WEB-22·23·25(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBREWS-74·75·96, AC-WEBEDIT-06(docs/specs/2026-08-30-web-recipe-write.md) → AC-RECIPESBREWS-74, AC-WEBSHELL-17(docs/specs/2026-09-01-web-shell.md) → AC-RECIPESBREWS-81, AC-WEBSHELL-21·22(docs/specs/2026-09-01-web-shell.md) → AC-RECIPESBREWS-77, AC-STRUCT-18의 "/brews" 부분(docs/specs/2026-09-15-structure.md) → AC-RECIPESBREWS-77, AC-CONSIST-04·14의 "/brews" 부분(docs/specs/2026-09-08-screen-consistency.md) → AC-RECIPESBREWS-77
 ---
 
 # 레시피 서랍 화면 스펙
@@ -453,7 +453,7 @@ supersedes: AC-WEB-09(docs/specs/2026-08-21-web-recipe-read.md) → AC-RECIPESBR
 
 - [x] **Task 6: 레시피 상세 재설계 — 담기·바로 내리기** — Covers: AC-RECIPESBREWS-73, 74, 75, 81
 
-- [ ] **Task 7: 내 잔(BW1/BM1) — 통계 + 목록** — Covers: AC-RECIPESBREWS-76, 77, 78
+- [x] **Task 7: 내 잔(BW1/BM1) — 통계 + 목록** — Covers: AC-RECIPESBREWS-76, 77, 78
 
 - [ ] **Task 8: 반응형 4구간** — Covers: AC-RECIPESBREWS-83, 88, 89, 90, 91, 92, 93
 

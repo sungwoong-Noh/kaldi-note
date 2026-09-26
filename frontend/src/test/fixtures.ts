@@ -694,6 +694,18 @@ export const brewLogPage = {
 };
 
 /**
+ * `GET /brew-logs/stats`. `brewLogPage`의 두 항목(평가 있는 것 하나, 없는 것 하나)에서
+ * 계산되는 값을 그대로 옮겼다 — 지어낸 숫자가 아니라 같은 픽스처 집합의 집계다.
+ */
+export const brewLogStats = {
+  monthCount: 2,
+  averageRating: 4.0,
+  favoriteDoseG: 20.0,
+  favoriteRecipeId: 12,
+  favoriteRecipeTitle: "Tetsu Kasuya 4:6 Method",
+};
+
+/**
  * `GET /brew-logs/calendar`. e2e는 `page.clock`으로 "오늘"을 `2026-09-19T01:00:00Z`(KST
  * 09-19)에 고정해 두고 이 달을 본다 — 실제 실행 날짜가 바뀌어도 어긋나지 않는다.
  */

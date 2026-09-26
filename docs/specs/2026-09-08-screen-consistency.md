@@ -166,6 +166,10 @@ plan: docs/archive/plans/2026-09-08-plan-screen-consistency.md
 - **Then** 네 값이 전부 `12px`다
 - **검증** e2e `e2e/consistency.spec.ts`
 
+> **갱신 (2026-09-25).** `/brews`(목록)는 빠졌다 —
+> `docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-77이 카드를
+> 테이블/원장 행으로 바꾸며 "카드 보조줄"(gap-x-3 flex 행) 자체가 없어졌다.
+
 #### AC-CONSIST-05 · `RecipeDetail`의 메타줄 라벨이 화면에 보인다
 
 - **Given** `doseG: 30`, `waterG: 500`, `waterTempC: 100`, `totalTimeSeconds: 210`인 레시피 상세
@@ -226,6 +230,9 @@ plan: docs/archive/plans/2026-09-08-plan-screen-consistency.md
 - **When** 각 화면의 대표 수치 요소에서 `getComputedStyle(el).fontVariantNumeric`을 읽는다
 - **Then** 네 값이 전부 `tabular-nums`다
 - **검증** e2e `e2e/consistency.spec.ts`
+
+> **갱신 (2026-09-25).** `/brews`(목록)는 빠졌다 — AC-RECIPESBREWS-77이 대표 수치(히어로)
+> 자체를 없앴다. 나머지 세 화면은 그대로다.
 
 ### 경계값
 

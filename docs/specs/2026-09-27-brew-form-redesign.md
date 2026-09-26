@@ -1,7 +1,7 @@
 ---
 id: BREWFORM
 title: 기록 작성·편집 화면 리디자인 — 03 폼 패턴 + 원두 다이얼로그 + 평가 5축
-status: 구현중
+status: 구현완료
 milestone: M2
 supersedes:
 ---
@@ -261,43 +261,12 @@ supersedes:
 
 ---
 
-## 구현 순서
-
-- [x] **Task 1: 순수 함수 — m:ss 파싱·표시, 미리보기 비율·수율(HALF_UP)** — Covers: AC-BREWFORM-13, AC-BREWFORM-14
-
-  ```ts
-  // formState.ts
-  export function parseMinSec(text: string): number | null | "invalid" // "" → null
-  export function previewRatio(doseG: number | null, waterG: number | null): string // "1:15.6" | "1:—"
-  export function previewYield(doseG, beverageG, tds): string | null // "20.7" | null
-  ```
-
-- [x] **Task 2: 시간 입력을 m:ss로 교체 (작성·편집 공통 `BrewLogFields`)** — Covers: AC-BREWFORM-05, AC-BREWFORM-06, AC-BREWFORM-13
-
-- [x] **Task 3: 레이아웃 — 원장 행 섹션 + 히어로 + 반응형 (작성·편집)** — Covers: AC-BREWFORM-01, AC-BREWFORM-02, AC-BREWFORM-03, AC-BREWFORM-04, AC-BREWFORM-12
-  - 섹션 순서: 내린 시각 → 원두 → 수치 → 장비 → 결과 → 평가. 숫자 입력 단위는 입력칸 안 오른쪽 mono 11px `ink-3`
-
-- [x] **Task 4: 원두 다이얼로그 (선택 + 안에서 등록, 모바일 바텀시트)** — Covers: AC-BREWFORM-07, AC-BREWFORM-08, AC-BREWFORM-09, AC-BREWFORM-15
-  - 등록 단계는 기존 `BeanBatchDialog`의 입력·중복 방지 로직을 재사용한다
-
-- [x] **Task 5: 공개 범위 3분할 (작성 추가, 편집 교체)** — Covers: AC-BREWFORM-10
-
-- [x] **Task 6: 평가 — 5축 1~5 버튼** — Covers: AC-BREWFORM-11, AC-BREWFORM-18
-
-- [x] **Task 7: 상태 — recipeId 오류·나가기 확인·저장 중·에러 표시** — Covers: AC-BREWFORM-16, AC-BREWFORM-17, AC-BREWFORM-19, AC-BREWFORM-20, AC-BREWFORM-21, AC-BREWFORM-22, AC-BREWFORM-23
-
-- [x] **Task 8: 비기능 — E2E 폭·터치 타깃, 토큰 검사** — Covers: AC-BREWFORM-24, AC-BREWFORM-25, AC-BREWFORM-26
-  - `e2e/brew-form.spec.ts`는 `e2e/recipe-drawer-responsive.spec.ts`의 API 목킹 방식을 따른다
-
-- [x] **Task 9: 이전 AC 대체 표시** — 위 「대체하는 이전 AC」의 각 AC에 이전 스펙 본문 「(대체됨)」 표시 + 옮겨진 테스트 ID 정리. (WEBBREW-09·10·23은 Task 4에서, WEBLOGEDIT-05·TOUCH-09는 Task 5에서, WEBBREW-30은 Task 6에서 테스트를 옮기며 함께 처리했다 — 구현완료 스펙이라 표시가 없으면 커버리지 검사가 바로 실패한다.) `./scripts/check-spec-coverage.sh`·`./scripts/check-docs.sh` 통과
-
----
-
 ## 수동 확인
 
-- [ ] ★ mockup-checker로 `/brews/new`·`/brews/[id]/edit`를 `390px`/`1280px`에서 캡처해 `03 Recipe Edit`(웹 W, 모바일 M1·S4·S6)·W3 평가 카드와 대조하고, 결과를 PR 본문에 첨부한다
+- [x] ★ mockup-checker로 `/brews/new`·`/brews/[id]/edit`를 `390px`/`1280px`에서 캡처해 `03 Recipe Edit`(웹 W, 모바일 M1·S4·S6)·W3 평가 카드와 대조하고, 결과를 PR 본문에 첨부한다
+  (2026-09-27 완료 — 큰 격차 2건은 반영, 나머지는 #161)
 - [ ] 실제 기기(모바일 PWA)에서 원두 바텀시트와 하단 고정 CTA가 키보드와 겹치지 않는지 본다
 
 ## 열어둔 결정
 
-- 원두 바텀시트의 높이(고정 vs 내용에 맞춤)는 Task 4에서 재고 5건 이상일 때 스크롤이 자연스러운 쪽으로 정하고 PR 「구현 중 결정」에 적는다
+- ~~원두 바텀시트의 높이~~ → 내용에 맞추고 화면을 넘으면 시트 안에서 스크롤(`max-h-full overflow-y-auto`)로 정했다(2026-09-27).

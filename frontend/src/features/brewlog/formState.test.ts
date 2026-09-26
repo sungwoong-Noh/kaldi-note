@@ -4,6 +4,9 @@ import {
   clearedFields,
   formStateFromLog,
   initialFormState,
+  parseMinSec,
+  previewRatio,
+  previewYield,
   toPatchBody,
   toRequestBody,
 } from "./formState";
@@ -254,5 +257,40 @@ describe("formStateFromLog", () => {
     expect(
       formStateFromLog(brewLogSchema.parse(brewLogWithTds)).visibility,
     ).toBe("PRIVATE");
+  });
+});
+
+describe("parseMinSec", () => {
+  it("AC-BREWFORM-13 · m:ss를 초로 바꾸고 경계 밖은 invalid, 빈칸은 null", () => {
+    expect(parseMinSec("3:30")).toBe(210);
+    expect(parseMinSec("0:00")).toBe(0);
+    expect(parseMinSec("59:59")).toBe(3599);
+    for (const bad of ["3:5", "60:00", "abc", "3:60"]) {
+      expect(parseMinSec(bad)).toBe("invalid");
+    }
+    expect(parseMinSec("")).toBeNull();
+  });
+});
+
+describe("previewRatio", () => {
+  it("AC-BREWFORM-14 · 물량÷원두량을 소수 1자리 HALF_UP으로", () => {
+    expect(previewRatio(16, 250)).toBe("1:15.6");
+    expect(previewRatio(20, 313)).toBe("1:15.7");
+    // 267 / 20 = 13.35 — 부동소수로는 13.3499…라 toFixed(1)만 쓰면 13.3이 된다
+    expect(previewRatio(20, 267)).toBe("1:13.4");
+  });
+
+  it("원두량이나 물량이 없거나 0이면 1:—", () => {
+    expect(previewRatio(null, 250)).toBe("1:—");
+    expect(previewRatio(0, 250)).toBe("1:—");
+    expect(previewRatio(16, null)).toBe("1:—");
+  });
+});
+
+describe("previewYield", () => {
+  it("TDS × 음료 중량 ÷ 원두량을 소수 1자리로, 하나라도 없으면 null", () => {
+    expect(previewYield(15, 225, 1.38)).toBe("20.7");
+    expect(previewYield(15, 225, null)).toBeNull();
+    expect(previewYield(0, 225, 1.38)).toBeNull();
   });
 });

@@ -262,7 +262,7 @@ supersedes:
 
 ## 구현 순서
 
-- [ ] **Task 1: 순수 함수 — m:ss 파싱·표시, 미리보기 비율·수율(HALF_UP)** — Covers: AC-BREWFORM-13, AC-BREWFORM-14
+- [x] **Task 1: 순수 함수 — m:ss 파싱·표시, 미리보기 비율·수율(HALF_UP)** — Covers: AC-BREWFORM-13, AC-BREWFORM-14
 
   ```ts
   // formState.ts

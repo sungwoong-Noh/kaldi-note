@@ -182,7 +182,7 @@ supersedes:
 
 - **Given** `doseG: 15.0`인 레시피
 - **When** 카드를 렌더한다
-- **Then** `data-lead` 안에 기존 `formatGrams()`로 `"15.0g"`이 렌더된다. (목업의 `15 g`(공백·소수 생략) 표기는 이 스펙에서 다루지 않고 시각 보정 트랙에서 근사를 재검토한다)
+- **Then** `data-lead` 안에 `formatGrams()`로 `"15 g"`이 렌더된다. (표기 갱신 2026-09-27 — 이 스펙이 미뤄둔 목업 표기를 `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-06이 반영했다)
 - **검증** 컴포넌트 테스트 `RecipeCard`
 
 #### AC-RECIPESBREWS-70 · 둘러보기 카드에 작성자 줄이 있다
@@ -231,8 +231,10 @@ supersedes:
 
 - **Given** `BrewLogStatsResponse { monthCount: 9, averageRating: 3.7, favoriteDoseG: 16.0, favoriteRecipeTitle: "케냐 94도 3푸어" }`
 - **When** 웹 `/brews`를 렌더한다
-- **Then** 4칸이 각각 `"9잔"` / `"★ 3.7"` / `"16.0g"` / `"케냐 94도 3푸어"`로 렌더된다. 모바일(`<760px`)은 `이번 달`·`평균 별점` 2칸만 렌더되고 나머지 둘은 DOM에 없다
+- **Then** 4칸이 각각 `"9잔"` / `"★ 3.7"` / `"16 g"` / `"케냐 94도 3푸어"`로 렌더된다. 모바일(`<760px`)은 `이번 달`·`평균 별점` 2칸만 렌더되고 나머지 둘은 DOM에 없다
 - **검증** 컴포넌트 테스트 `BrewsPage`
+
+> **표기 갱신 (2026-09-27).** 수치 표기가 목업에 맞춰 바뀌었다 — [`2026-09-27-web-shell-grammar.md`](2026-09-27-web-shell-grammar.md) AC-GRAMMAR-06. 위 값은 갱신한 값이다.
 
 #### AC-RECIPESBREWS-77 · 내 잔 목록이 웹은 테이블, 모바일은 2줄 원장 행이다
 

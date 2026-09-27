@@ -69,7 +69,7 @@ supersedes:
 
 - **Given** 레시피 `doseG=16.0`, `waterG=250.0`, `waterTempC=92.0`, `totalTimeSeconds=210`
 - **When** 작성 화면을 연다
-- **Then** 히어로에 레시피 제목과 `16.0g → 250.0g · 92°C · 3:30`이 보인다. `waterTempC`·`totalTimeSeconds`가 없으면 그 조각과 앞의 ` · `가 빠진다
+- **Then** 히어로에 레시피 제목과 `16g → 250g · 92°C · 3:30`이 보인다(표기 갱신 2026-09-27 — `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-07). `waterTempC`·`totalTimeSeconds`가 없으면 그 조각과 앞의 ` · `가 빠진다
 - **검증** 페이지 테스트
 
 #### AC-BREWFORM-04 · 값이 다 있으면 수율이 보인다

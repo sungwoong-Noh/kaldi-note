@@ -175,7 +175,7 @@ describe("BrewDetailPage", () => {
     const leads = leadElements();
 
     expect(leads).toHaveLength(1);
-    expect(leads[0].textContent).toBe("92°C");
+    expect(leads[0].textContent).toBe("92 °C");
     expect(leadLabel(leads[0])).toBe("물 온도");
   });
 
@@ -225,12 +225,12 @@ describe("BrewDetailPage", () => {
     }
   });
 
-  it("AC-WEBBREW-40 · 실측값이 서버 값 그대로 보인다", async () => {
+  it("AC-WEBBREW-40 · AC-GRAMMAR-08 · 실측값이 서버 값 그대로 보인다", async () => {
     await renderDetail();
 
-    expect(await screen.findByText("20.0g")).toBeInTheDocument();
-    expect(screen.getByText("300.0g")).toBeInTheDocument();
-    expect(screen.getByText("92°C")).toBeInTheDocument();
+    expect(await screen.findByText("20 g")).toBeInTheDocument();
+    expect(screen.getByText("300 g")).toBeInTheDocument();
+    expect(screen.getByText("92 °C")).toBeInTheDocument();
   });
 
   it("AC-WEBBREW-41 · TDS가 있으면 추출 분석이 보인다", async () => {
@@ -264,7 +264,7 @@ describe("BrewDetailPage", () => {
 
     await renderDetail();
 
-    expect(await screen.findByText("20.0g")).toBeInTheDocument();
+    expect(await screen.findByText("20 g")).toBeInTheDocument();
     expect(screen.queryByText("추출 분석")).not.toBeInTheDocument();
   });
 
@@ -430,7 +430,7 @@ describe("BrewDetailPage — 푸어 스텝", () => {
     const items = within(await stepSection()).getAllByRole("listitem");
     expect(items).toHaveLength(6);
     expect(within(items[0]).getByText("블룸")).toBeInTheDocument();
-    expect(items[0]).toHaveTextContent("50g");
+    expect(items[0]).toHaveTextContent("50 g");
   });
 
   it("AC-WEBLOGSTEP-02 · 스텝 절은 실측값 뒤, 추출 분석 앞에 온다", async () => {

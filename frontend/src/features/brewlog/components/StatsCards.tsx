@@ -45,7 +45,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <Card pad="tight">
       <p className="text-body-sm text-ink-3">{label}</p>
-      <p className="mt-1 text-metric font-semibold">{value}</p>
+      <p className="mt-1 text-metric">{value}</p>
     </Card>
   );
 }

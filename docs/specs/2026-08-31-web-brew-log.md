@@ -430,8 +430,10 @@ plan: docs/archive/plans/2026-08-31-plan-web-brew-log.md
 
 - **Given** `GET /brew-logs/42`가 `actualDoseG=20.0`, `actualWaterG=300.0`, `actualWaterTempC=92.0`을 반환한다
 - **When** `/brews/42`를 연다
-- **Then** `20.0g`과 `300.0g`과 `92°C`가 보인다
+- **Then** `20 g`과 `300 g`과 `92 °C`가 보인다
 - **검증** 페이지 테스트 `BrewDetailPage.test.tsx`
+
+> **표기 갱신 (2026-09-27).** 수치 표기가 목업에 맞춰 바뀌었다 — [`2026-09-27-web-shell-grammar.md`](2026-09-27-web-shell-grammar.md) AC-GRAMMAR-06·08. 위 값은 갱신한 값이다.
 
 #### AC-WEBBREW-41 · TDS가 있으면 추출 분석이 보인다
 

@@ -265,7 +265,7 @@ test.describe("구조 — 기록 비교표", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page.locator("[data-compare]")).toHaveCount(0);
-    await expect(page.getByText("20.0g")).toBeVisible();
+    await expect(page.getByText("20 g")).toBeVisible();
   });
 });
 

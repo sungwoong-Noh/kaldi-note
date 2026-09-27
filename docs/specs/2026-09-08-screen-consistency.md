@@ -240,7 +240,7 @@ plan: docs/archive/plans/2026-09-08-plan-screen-consistency.md
 
 - **Given** `brewRatio`가 `undefined`이고 `actualWaterTempC: 92`인 브루로그 상세
 - **When** 대표 수치 요소를 읽는다
-- **Then** 정확히 1개이고, 그 텍스트가 `92°C`다
+- **Then** 정확히 1개이고, 그 텍스트가 `92 °C`다 (표기 갱신 2026-09-27 — `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-06)
 - **검증** 컴포넌트 테스트 `src/app/brews/[id]/page.test.tsx`
 
 #### AC-CONSIST-11 · 대표로 올린 항목은 아래 「실측값」에 없다

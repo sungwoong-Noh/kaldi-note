@@ -1,5 +1,9 @@
 import { Hero } from "@/components/ui";
-import { formatDuration, formatGrams, formatTemperature } from "@/lib/format";
+import {
+  formatDuration,
+  formatGramsCompact,
+  formatTemperatureCompact,
+} from "@/lib/format";
 import { previewRatio, previewYield } from "../formState";
 import type { RecipeTargets } from "../useEntityLabels";
 
@@ -46,11 +50,11 @@ export function BrewHero({
   );
 }
 
-/** `20.0g → 300.0g · 92°C · 3:30`. 레시피에 없는 조각은 뺀다. */
+/** `20g → 300g · 92°C · 3:30` — 요약 줄이라 단위를 붙인다(AC-GRAMMAR-07). 레시피에 없는 조각은 뺀다. */
 function recipeBaseline(recipe: RecipeTargets): string {
   return [
-    `${formatGrams(recipe.doseG)} → ${formatGrams(recipe.waterG)}`,
-    recipe.waterTempC !== undefined && formatTemperature(recipe.waterTempC),
+    `${formatGramsCompact(recipe.doseG)} → ${formatGramsCompact(recipe.waterG)}`,
+    recipe.waterTempC !== undefined && formatTemperatureCompact(recipe.waterTempC),
     recipe.totalTimeSeconds !== undefined &&
       formatDuration(recipe.totalTimeSeconds),
   ]

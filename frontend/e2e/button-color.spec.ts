@@ -101,12 +101,14 @@ test.describe("버튼 색 — 라이트", () => {
     expect(style.background).not.toBe(await token(page, "accent"));
   });
 
-  test("AC-BTN-05 · secondary가 표면색 + 1px 테두리다", async ({ page }) => {
+  // AC-BTN-05(표면색 배경)를 대체한다 — 화면 목업의 secondary는 배경이 없다
+  // (docs/specs/2026-09-27-web-shell-grammar.md). ButtonLink는 AC-BTN-14가 같은 색을 보장한다.
+  test("AC-GRAMMAR-11 · secondary는 배경 없이 1px 테두리다", async ({ page }) => {
     await openLight(page);
     await mount(page, "secondary");
     const style = await styleOf(page);
 
-    expect(style.background).toBe(await token(page, "surface"));
+    expect(style.background).toBe("rgba(0, 0, 0, 0)");
     expect(style.borderWidth).toBe("1px");
     expect(style.borderColor).toBe(await token(page, "border"));
     expect(style.color).toBe(await token(page, "ink"));

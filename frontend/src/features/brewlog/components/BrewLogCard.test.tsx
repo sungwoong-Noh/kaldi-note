@@ -36,23 +36,21 @@ describe("브루잉 로그 카드", () => {
 
     expect(screen.getByText("1:15.0").parentElement).toHaveClass(
       "text-metric-hero",
-      "font-semibold",
     );
   });
 
   it("AC-VISUAL-10 · 비율이 없으면 물 온도가 승격된다", () => {
     renderCard(withoutRatio);
 
-    expect(screen.getByText("92°C").parentElement).toHaveClass(
+    expect(screen.getByText("92 °C").parentElement).toHaveClass(
       "text-metric-hero",
-      "font-semibold",
     );
   });
 
   it("AC-VISUAL-11 · 승격된 값은 보조줄에 다시 나오지 않는다", () => {
     renderCard(withoutRatio);
 
-    expect(screen.getAllByText("92°C")).toHaveLength(1);
+    expect(screen.getAllByText("92 °C")).toHaveLength(1);
   });
 
   it("AC-VISUAL-12 · 대표 수치는 두 경우 모두 정확히 1개다", () => {
@@ -60,7 +58,7 @@ describe("브루잉 로그 카드", () => {
       const { container, unmount } = renderCard(log);
 
       expect(
-        container.querySelectorAll(".text-metric-hero.font-semibold"),
+        container.querySelectorAll(".text-metric-hero"),
       ).toHaveLength(1);
 
       unmount();

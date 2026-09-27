@@ -121,7 +121,7 @@ export default function BrewsPage() {
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <Shell>
+    <Shell wide>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-page-title font-semibold">내 잔</h1>
         <Link

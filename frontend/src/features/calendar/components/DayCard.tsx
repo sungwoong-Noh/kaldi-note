@@ -4,7 +4,7 @@ import { Badge, Card } from "@/components/ui";
 import {
   formatDuration,
   formatRatio,
-  formatTemperature,
+  formatTemperatureCompact,
 } from "@/lib/format";
 import { kstTimeOf, representativeMetric } from "../dayListFormat";
 import { useRoastLevel } from "../useRoastLevel";
@@ -52,7 +52,7 @@ export function DayCard({
         {log.brewRatio !== undefined && (
           <Badge tone="accent">{formatRatio(log.brewRatio)}</Badge>
         )}
-        <Badge>{formatTemperature(log.actualWaterTempC)}</Badge>
+        <Badge>{formatTemperatureCompact(log.actualWaterTempC)}</Badge>
         {log.actualTotalTimeSeconds !== undefined && (
           <Badge>{formatDuration(log.actualTotalTimeSeconds)}</Badge>
         )}

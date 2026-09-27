@@ -19,3 +19,22 @@ export function isActive(href: string, pathname: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
+
+/**
+ * 상세·도구 화면의 「뒤로」 대상. 모바일에서 이 화면들은 탭바 대신 뒤로를 둔다
+ * (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-12).
+ *
+ * <p>`router.back()`을 쓰지 않는다 — PWA로 바로 열거나 새로고침한 뒤에는 히스토리가 없어
+ * 앱 밖으로 나가 버린다. 고정 부모 경로로 간다.
+ */
+const BACK_TARGETS: [RegExp, string][] = [
+  [/^\/recipes\/[^/]+$/, "/recipes"],
+  [/^\/brews\/[^/]+$/, "/brews"],
+  [/^\/u\/[^/]+$/, "/"],
+  [/^\/gear\/grind-converter$/, "/more"],
+];
+
+export function backHref(pathname: string): string | null {
+  if (isHidden(pathname)) return null;
+  return BACK_TARGETS.find(([pattern]) => pattern.test(pathname))?.[1] ?? null;
+}

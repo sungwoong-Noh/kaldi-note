@@ -141,13 +141,13 @@ test.describe("레시피 캐시", () => {
     });
 
     await page.goto("/recipes/2");
-    await expect(page.getByText("100°C")).toBeVisible();
+    await expect(page.getByText("100 °C")).toBeVisible();
 
     await stubRecipeDetail(context, { ...hoffmann, waterTempC: 94.0 });
     await page.goto("/recipes/2");
 
-    await expect(page.getByText("94°C")).toBeVisible();
-    await expect(page.getByText("100°C")).toHaveCount(0);
+    await expect(page.getByText("94 °C")).toBeVisible();
+    await expect(page.getByText("100 °C")).toHaveCount(0);
   });
 
   test("AC-PWA-19 · 50개까지는 전부 남는다", async ({ page, context }) => {

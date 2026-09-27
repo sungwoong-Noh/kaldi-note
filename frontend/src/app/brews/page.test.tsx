@@ -203,8 +203,8 @@ describe("BrewsPage", () => {
     }
 
     expect(await screen.findByText("Kasuya 4:6")).toBeInTheDocument();
-    expect(screen.getByText("20.0g")).toBeInTheDocument();
-    expect(screen.getByText("92°C")).toBeInTheDocument();
+    expect(screen.getByText("20 g")).toBeInTheDocument();
+    expect(screen.getByText("92 °C")).toBeInTheDocument();
     expect(screen.getByText("3:30")).toBeInTheDocument();
   });
 
@@ -242,7 +242,7 @@ describe("BrewsPage", () => {
 
     expect(await screen.findByText("9잔")).toBeInTheDocument();
     expect(screen.getByText("★ 3.7")).toBeInTheDocument();
-    expect(screen.getByText("16.0g")).toBeInTheDocument();
+    expect(screen.getByText("16 g")).toBeInTheDocument();
     expect(screen.getByText("케냐 94도 3푸어")).toBeInTheDocument();
   });
 });

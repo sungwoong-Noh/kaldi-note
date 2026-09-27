@@ -7,10 +7,15 @@ import type { ReactNode } from "react";
  * (`flex flex-col gap-6`이 붙은 것과 아닌 것). 거터를 24px로 올릴 때 11곳을 동시에
  * 고쳐야 했던 것이 그 비용이다.
  *
+ * <p>거터는 모바일 24px, 웹(`≥1100px`) 48px다 — 목업 README 「화면 좌우 거터」
+ * (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-01). `grow`(홈)만 예외로 24px를 둔다 —
+ * 홈 웹은 두 컬럼이 각자 48px 패딩을 가져 바깥 거터가 겹치면 달력이 눌린다(AC-HOMECAL-84).
+ *
  * @param stack 자식을 세로 스택으로 배치한다. 폼 화면이 쓰던 변형이다.
  * @param wide `max-w-2xl`(672px)을 빼고 전체 너비를 쓴다. 홈의 웹 레이아웃(달력 `flex:1` +
  *   우측 고정 420px)이 그 안에 눌려 칸이 20~30px까지 좁아졌던 것을 2026-09-20에 발견했다
- *   (docs/specs/2026-09-19-home-calendar.md AC-HOMECAL-84).
+ *   (docs/specs/2026-09-19-home-calendar.md AC-HOMECAL-84). 목록 화면(`/recipes`·`/brews`·`/u/[id]`)도
+ *   웹에서 전폭을 쓴다(AC-GRAMMAR-01). 상세·폼·도구 화면은 각 화면 스펙이 2컬럼으로 다시 짤 때까지 좁게 둔다.
  * @param grow 남는 뷰포트 세로 공간을 채운다 — `body`가 이미 `flex flex-col min-h-full`이므로
  *   `<main>`이 `flex-1`이면 나머지 공간을 그대로 물려받는다. 홈이 두 가지 목적으로 쓴다:
  *   2컬럼 달력이 `flex:1`로 남는 공간을 채우고(docs/specs/2026-09-20-calendar-grid-responsive.md
@@ -31,7 +36,7 @@ export function Shell({
 }) {
   return (
     <main
-      className={`mx-auto w-full ${wide ? "" : "max-w-2xl"} px-6 py-6 ${stack ? "flex flex-col gap-6" : ""} ${grow ? "flex-1" : ""} ${className}`
+      className={`mx-auto w-full ${wide ? "" : "max-w-2xl"} px-6 py-6 ${grow ? "" : "min-[1100px]:px-12"} ${stack ? "flex flex-col gap-6" : ""} ${grow ? "flex-1" : ""} ${className}`
         .replace(/\s+/g, " ")
         .trim()}
     >

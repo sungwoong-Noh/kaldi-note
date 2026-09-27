@@ -1,4 +1,4 @@
-import { formatCumulativeGrams, formatDuration } from "@/lib/format";
+import { formatGrams, formatDuration } from "@/lib/format";
 import type { RecipeStep } from "../schema";
 
 const STEP_LABEL: Record<RecipeStep["stepType"], string> = {
@@ -73,15 +73,15 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
                 <span className="font-medium">{STEP_LABEL[step.stepType]}</span>
 
                 {step.waterG !== undefined && (
-                  <span className="text-body">
-                    {formatCumulativeGrams(step.waterG)}
+                  <span className="text-body font-num">
+                    {formatGrams(step.waterG)}
                   </span>
                 )}
 
                 {showCumulative && (
-                  <span className="text-body text-ink-3">
+                  <span className="text-body font-num text-ink-3">
                     누적{" "}
-                    {formatCumulativeGrams(step.cumulativeWaterG as number)}
+                    {formatGrams(step.cumulativeWaterG as number)}
                   </span>
                 )}
 

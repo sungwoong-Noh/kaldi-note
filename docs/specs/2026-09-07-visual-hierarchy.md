@@ -289,14 +289,14 @@ plan: docs/archive/plans/2026-09-07-plan-visual-hierarchy.md
 
 - **Given** 실제 응답 `brewLogPage.content[0]`에서 `brewRatio`만 덜어낸 `BrewLogSummary` (`actualWaterTempC: 92`). **프론트 스키마가 허용하는 상태이며, 지금 백엔드로는 도달할 수 없다**
 - **When** `BrewLogCard`를 렌더한다
-- **Then** `92°C`를 담은 요소가 `text-lg`와 `font-semibold`를 갖는다
+- **Then** `92 °C`를 담은 요소가 대표 수치 단계(지금은 `text-metric-hero`, 굵기는 유틸이 정한다 — AC-GRAMMAR-09)를 갖는다 (표기 갱신 2026-09-27 — `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-06)
 - **검증** 단위 테스트 `BrewLogCard.test.tsx`
 
 #### AC-VISUAL-11 · 승격된 값은 보조줄에 다시 나오지 않는다
 
 - **Given** AC-VISUAL-10과 같은 `BrewLogSummary` (`brewRatio`만 덜어낸 것)
 - **When** `BrewLogCard`를 렌더한다
-- **Then** `92°C`가 화면 전체에 **정확히 1번** 나타난다
+- **Then** `92 °C`가 화면 전체에 **정확히 1번** 나타난다 (표기 갱신 2026-09-27 — `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-06)
 - **검증** 단위 테스트 `BrewLogCard.test.tsx`
 
 #### AC-VISUAL-12 · 대표 수치는 언제나 정확히 하나다

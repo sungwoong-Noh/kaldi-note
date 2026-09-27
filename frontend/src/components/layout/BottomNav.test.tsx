@@ -41,36 +41,31 @@ describe("BottomNav", () => {
     );
   });
 
-  it("AC-WEBSHELL-03 · 로그 상세에서도 내 잔 탭이 켜진다", () => {
-    pathname = "/brews/42";
+  // AC-WEBSHELL-03·04(상세에서도 탭이 켜진다)를 대체한다 — 목업은 상세·도구 화면에 탭 바가 없고
+  // 「뒤로」만 둔다(docs/specs/2026-09-27-web-shell-grammar.md).
+  it.each(["/brews/42", "/recipes/12", "/u/11", "/gear/grind-converter"])(
+    "AC-GRAMMAR-12 · %s(상세·도구)에는 탭바가 없다",
+    (path) => {
+      pathname = path;
 
-    render(<BottomNav />);
+      const { container } = render(<BottomNav />);
 
-    expect(screen.getByRole("link", { name: "내 잔" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
-    expect(screen.getByRole("link", { name: "홈" })).not.toHaveAttribute(
-      "aria-current",
-    );
-    expect(screen.getByRole("link", { name: "레시피" })).not.toHaveAttribute(
-      "aria-current",
-    );
-    expect(screen.getByRole("link", { name: "더보기" })).not.toHaveAttribute(
-      "aria-current",
-    );
-  });
+      expect(container).toBeEmptyDOMElement();
+    },
+  );
 
-  it("AC-WEBSHELL-04 · 레시피 상세에서도 레시피 탭이 켜진다", () => {
-    pathname = "/recipes/12";
+  it.each(["/", "/recipes", "/brews", "/more"])(
+    "AC-GRAMMAR-15 · %s(탭 화면)에는 탭바가 있다",
+    (path) => {
+      pathname = path;
 
-    render(<BottomNav />);
+      render(<BottomNav />);
 
-    expect(screen.getByRole("link", { name: "레시피" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
-  });
+      expect(
+        screen.getByRole("navigation", { name: "주요 화면" }),
+      ).toBeInTheDocument();
+    },
+  );
 
   it("AC-WEBLOGEDIT-18 · 로그 편집 화면에는 탭바가 없다", () => {
     pathname = "/brews/42/edit";

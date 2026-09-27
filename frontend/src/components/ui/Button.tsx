@@ -25,7 +25,7 @@ export const BUTTON_BASE =
 export const BUTTON_VARIANT: Record<ButtonVariant, string> = {
   primary: "bg-ink text-on-ink enabled:hover:bg-ink-hover",
   secondary:
-    "border border-border bg-surface text-ink enabled:hover:bg-sunken",
+    "border border-border bg-transparent text-ink enabled:hover:bg-sunken",
   ghost: "text-accent enabled:hover:bg-accent-wash",
 };
 

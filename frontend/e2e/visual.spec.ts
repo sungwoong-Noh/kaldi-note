@@ -73,7 +73,7 @@ test.describe("시각 위계 — 라이트", () => {
     await page.goto("/recipes");
 
     // 갱신(2026-09-15): 「1:16.7」이 대표 수치로 올라갔다. 보조줄에 남은 값을 잰다.
-    const meta = page.getByText("100°C").first();
+    const meta = page.getByText("100 °C").first();
     await expect(meta).toBeVisible();
 
     expect(await meta.evaluate((el) => getComputedStyle(el).color)).toBe(

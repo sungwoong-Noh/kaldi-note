@@ -11,14 +11,7 @@ async function delayMe(page: Page, ms: number) {
   });
 }
 
-const TARGET_PAGES = [
-  "/recipes",
-  "/recipes/12",
-  "/brews",
-  "/brews/2",
-  "/more",
-  "/gear/grind-converter",
-];
+const TAB_PAGES = ["/recipes", "/brews", "/more"];
 
 const EXCLUDED_PAGES = [
   "/login",
@@ -29,7 +22,9 @@ const EXCLUDED_PAGES = [
 ];
 
 test.describe("웹 헤더 롤아웃", () => {
-  for (const path of TARGET_PAGES) {
+  // 상세·도구 화면은 `<1100px`에서 로고 대신 「뒤로」다 — AC-WEBHDR-01의 그 부분은
+  // docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-12가 대체했다.
+  for (const path of TAB_PAGES) {
     test(`AC-WEBHDR-01 · ${path}에 로고 헤더가 보인다(<1100px)`, async ({
       page,
     }) => {
@@ -67,9 +62,11 @@ test.describe("웹 헤더 롤아웃", () => {
     await expect(
       header.getByRole("link", { name: "내 잔", exact: true }),
     ).toBeVisible();
-    const cta = header.getByRole("link", { name: "이 레시피로 내렸다" });
+    // CTA는 화면별이다 — /recipes는 `새 레시피`(docs/specs/2026-09-27-web-shell-grammar.md
+    // AC-GRAMMAR-05가 이 AC의 CTA 부분을 대체했다).
+    const cta = header.getByRole("link", { name: "새 레시피" });
     await expect(cta).toBeVisible();
-    await expect(cta).toHaveAttribute("href", "/recipes");
+    await expect(cta).toHaveAttribute("href", "/recipes/new");
     await expect(header.getByRole("link", { name: "더보기" })).toBeVisible();
   });
 

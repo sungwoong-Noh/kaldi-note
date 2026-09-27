@@ -37,16 +37,16 @@ export function LedgerTable({
                   {labels.get(log.recipeId) ?? ""}
                 </Link>
               </td>
-              <td className="py-2">{formatGrams(log.actualDoseG)}</td>
-              <td className="py-2">
+              <td className="py-2 font-num">{formatGrams(log.actualDoseG)}</td>
+              <td className="py-2 font-num">
                 {formatTemperature(log.actualWaterTempC)}
               </td>
-              <td className="py-2">
+              <td className="py-2 font-num">
                 {log.actualTotalTimeSeconds !== undefined
                   ? formatDuration(log.actualTotalTimeSeconds)
                   : "—"}
               </td>
-              <td className="hidden py-2 min-[1024px]:table-cell">
+              <td className="hidden py-2 font-num min-[1024px]:table-cell">
                 {log.extractionYieldPercent !== undefined
                   ? `${log.extractionYieldPercent}%`
                   : "—"}

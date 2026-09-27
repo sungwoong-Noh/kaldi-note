@@ -268,8 +268,10 @@ plan: docs/archive/plans/2026-08-21-plan-web-recipe-read.md
 
 - **Given** 상세 응답이 `title: "James Hoffmann Ultimate V60"`, `authorName: "James Hoffmann"`, `doseG: 30.0`, `waterG: 500.0`, `ratio: 16.7`이다
 - **When** `/recipes/1`을 연다
-- **Then** 제목·`James Hoffmann`·`30.0g`·`500.0g`·`1:16.7`이 모두 화면에 있다
+- **Then** 제목·`James Hoffmann`·`30 g`·`500 g`·`1:16.7`이 모두 화면에 있다
 - **검증** 페이지 테스트 `RecipeDetailPage.test.tsx`
+
+> **표기 갱신 (2026-09-27).** 수치 표기가 목업에 맞춰 바뀌었다 — [`2026-09-27-web-shell-grammar.md`](2026-09-27-web-shell-grammar.md) AC-GRAMMAR-06·08. 위 값은 갱신한 값이다.
 
 #### AC-WEB-15 · 스텝이 순서대로, 시작 시각이 m:ss로 표시된다
 
@@ -282,7 +284,7 @@ plan: docs/archive/plans/2026-08-21-plan-web-recipe-read.md
 
 - **Given** 붓는 스텝의 `waterG`가 순서대로 `60.0`, `240.0`, `200.0`이다
 - **When** 스텝 목록을 렌더링한다
-- **Then** 누적 물량으로 `60g`, `300g`, `500g`이 표시된다
+- **Then** 누적 물량으로 `60 g`, `300 g`, `500 g`이 표시된다 (표기 갱신 2026-09-27 — `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-06)
 - **검증** 컴포넌트 테스트 `RecipeStepList.test.tsx`
 
 #### AC-WEB-17 · 붓지 않는 스텝에는 물량이 표시되지 않는다

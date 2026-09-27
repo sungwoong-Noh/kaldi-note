@@ -108,14 +108,14 @@ export function RecipeComparison({
               <dt data-compare-label className="flex-1">
                 {row.label}
               </dt>
-              <dd className="w-20 text-right tabular-nums text-ink-3">
+              <dd className="w-20 text-right font-num tabular-nums text-ink-3">
                 {row.target ?? "—"}
               </dd>
-              {/* 같으면 조용하고 다를 때만 드러난다. 값 자체는 언제나 보인다. */}
+              {/* 같으면 조용하고 다를 때만 드러난다(색만 — 굵기는 목업 W3대로 mono 500, AC-GRAMMAR-22). */}
               <dd
                 data-diff={row.differs}
-                className={`w-20 text-right tabular-nums ${
-                  row.differs ? "font-semibold text-accent" : ""
+                className={`w-20 text-right font-num tabular-nums ${
+                  row.differs ? "text-accent" : ""
                 }`}
               >
                 {row.actual}

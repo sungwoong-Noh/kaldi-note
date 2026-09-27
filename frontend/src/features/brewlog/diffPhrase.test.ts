@@ -7,18 +7,18 @@ import { diffPhrase } from "./diffPhrase";
  * <p>「같은 레시피를 여러 번 내렸을 때 결과 차이를 추적하는 것이 이 서비스의 존재 이유」인데
  * (CLAUDE.md), 비교표는 다른 값에 색을 칠할 뿐이라 **얼마나 달랐는지를 사용자가 암산**해야 했다.
  *
- * <p><b>평가하지 않는다.</b> 「1.0g 더 썼습니다」이지 「너무 많습니다」가 아니다.
+ * <p><b>평가하지 않는다.</b> 「1.0 g 더 썼습니다」이지 「너무 많습니다」가 아니다.
  */
 describe("diffPhrase", () => {
-  it("AC-SMALL-01 · 더 쓴 무게를 말한다", () => {
+  it("AC-SMALL-01 · AC-GRAMMAR-17 · 더 쓴 무게를 말한다", () => {
     expect(diffPhrase("weight", "원두", 30.0, 31.0)).toBe(
-      "원두를 1.0g 더 썼습니다.",
+      "원두를 1.0 g 더 썼습니다.",
     );
   });
 
-  it("AC-SMALL-02 · 덜 쓴 무게를 말한다", () => {
+  it("AC-SMALL-02 · AC-GRAMMAR-17 · 덜 쓴 무게를 말한다", () => {
     expect(diffPhrase("weight", "물", 500.0, 498.0)).toBe(
-      "물을 2.0g 덜 썼습니다.",
+      "물을 2.0 g 덜 썼습니다.",
     );
   });
 
@@ -31,12 +31,12 @@ describe("diffPhrase", () => {
     );
   });
 
-  it("AC-SMALL-04 · 온도는 높다/낮다로 말한다", () => {
+  it("AC-SMALL-04 · AC-GRAMMAR-17 · 온도는 높다/낮다로 말한다", () => {
     expect(diffPhrase("temperature", "물", 93, 96)).toBe(
-      "3°C 높게 내렸습니다.",
+      "3 °C 높게 내렸습니다.",
     );
     expect(diffPhrase("temperature", "물", 93, 90)).toBe(
-      "3°C 낮게 내렸습니다.",
+      "3 °C 낮게 내렸습니다.",
     );
   });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isActive, isHidden } from "./navScreens";
+import { backHref, isActive, isHidden } from "./navScreens";
 
 describe("isHidden", () => {
   it("로그인·작성·편집 화면은 숨긴다", () => {
@@ -31,5 +31,26 @@ describe("isActive", () => {
     expect(isActive("/recipes", "/recipes")).toBe(true);
     expect(isActive("/recipes", "/recipes/12")).toBe(true);
     expect(isActive("/recipes", "/brews")).toBe(false);
+  });
+});
+
+describe("backHref", () => {
+  it("AC-GRAMMAR-12 · 상세·도구 화면은 고정 부모 경로로 돌아간다", () => {
+    expect(backHref("/recipes/12")).toBe("/recipes");
+    expect(backHref("/brews/2")).toBe("/brews");
+    expect(backHref("/u/11")).toBe("/");
+    expect(backHref("/gear/grind-converter")).toBe("/more");
+  });
+
+  it("AC-GRAMMAR-15 · 탭 화면은 뒤로가 없다", () => {
+    for (const path of ["/", "/recipes", "/brews", "/more"]) {
+      expect(backHref(path)).toBeNull();
+    }
+  });
+
+  it("AC-GRAMMAR-16 · 새 레시피·편집 경로는 상세로 오인하지 않는다", () => {
+    expect(backHref("/recipes/new")).toBeNull();
+    expect(backHref("/recipes/1/edit")).toBeNull();
+    expect(backHref("/brews/1/edit")).toBeNull();
   });
 });

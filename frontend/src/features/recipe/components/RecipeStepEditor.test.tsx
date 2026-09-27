@@ -180,8 +180,8 @@ describe("RecipeStepEditor", () => {
       />,
     );
 
-    expect(screen.getByText("240.0g / 300.0g")).toBeInTheDocument();
-    expect(screen.getByText("60.0g 부족합니다")).toBeInTheDocument();
+    expect(screen.getByText("240 g / 300 g")).toBeInTheDocument();
+    expect(screen.getByText("60 g 부족합니다")).toBeInTheDocument();
   });
 
   it("AC-WEBEDIT-23 · 합계가 맞으면 부족·초과 문구가 없다", () => {
@@ -195,7 +195,7 @@ describe("RecipeStepEditor", () => {
       />,
     );
 
-    expect(screen.getByText("300.0g / 300.0g")).toBeInTheDocument();
+    expect(screen.getByText("300 g / 300 g")).toBeInTheDocument();
     expect(screen.queryByText(/부족합니다/)).not.toBeInTheDocument();
     expect(screen.queryByText(/초과합니다/)).not.toBeInTheDocument();
   });

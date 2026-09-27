@@ -44,7 +44,7 @@ export function Hero({
       </span>
 
       <div className="flex items-baseline gap-2">
-        <span data-lead className="text-metric-hero font-medium text-on-hero">
+        <span data-lead className="text-metric-hero text-on-hero">
           {lead}
         </span>
         {leadUnit !== undefined && (

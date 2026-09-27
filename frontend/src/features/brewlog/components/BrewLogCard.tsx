@@ -39,7 +39,7 @@ export function BrewLogCard({
         <dl className="mt-2 flex flex-col gap-1">
           <div
             data-lead
-            className="text-metric-hero font-semibold tabular-nums tracking-[-0.02em]"
+            className="text-metric-hero tabular-nums tracking-[-0.02em]"
           >
             <dt className="sr-only">{lead.label}</dt>
             <dd>{lead.value}</dd>

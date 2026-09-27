@@ -32,6 +32,11 @@ import {
 const HANDLERS: ReadonlyArray<readonly [RegExp, unknown]> = [
   [/^\/api\/v1\/users\/me$/, me],
   [/^\/api\/v1\/users\/me\/mutual-follows$/, mutualFollows],
+  // 공개 프로필은 `me`의 부분집합이다(publicProfileSchema). 본인(/u/11)이라 팔로우 상태는 부르지 않는다.
+  [
+    /^\/api\/v1\/users\/\d+$/,
+    { id: me.id, nickname: me.nickname, profileImageUrl: me.profileImageUrl },
+  ],
   // 상세가 목록보다 먼저 와야 한다. 순서를 바꾸면 `/recipes/12`가 목록 응답을 받는다.
   // id 3만 kasuya다 — 「연결 없음」 화면이 서로 다른 레시피 둘을 보여주는지 재려면
   // 캐시에 제목이 다른 항목이 둘 필요하다. `kasuyaSummary`가 3이라 id를 맞춘다.

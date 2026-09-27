@@ -280,7 +280,7 @@ supersedes:
   `${subject}${objectParticle(subject)} ${gap.toFixed(1)} g ${more ? "더" : "덜"} 썼습니다.`
   ```
 
-- [ ] **Task 2: 수치 굵기** — Covers: AC-GRAMMAR-09
+- [x] **Task 2: 수치 굵기** — Covers: AC-GRAMMAR-09
 
   `globals.css`의 `text-metric`·`text-metric-hero`·`text-card-metric`에 `font-weight: 500`을 넣고,
   같은 요소에 붙은 `font-semibold`·`font-bold`를 뗀다(`grep -rn "text-metric.*font-semibold\|font-semibold.*text-metric"`).

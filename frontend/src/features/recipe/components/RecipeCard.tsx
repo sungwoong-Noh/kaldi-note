@@ -45,7 +45,7 @@ export function RecipeCard({
               (AC-RECIPESBREWS-69). 배치 크기 독립적 비교는 상세에서 비율로 이어간다. */}
           <div
             data-lead
-            className="flex items-center gap-1 text-metric-hero font-semibold tabular-nums tracking-[-0.02em]"
+            className="flex items-center gap-1 text-metric-hero tabular-nums tracking-[-0.02em]"
           >
             <dt className="sr-only">원두량</dt>
             <dd>{formatGrams(recipe.doseG)}</dd>

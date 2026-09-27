@@ -36,7 +36,6 @@ describe("브루잉 로그 카드", () => {
 
     expect(screen.getByText("1:15.0").parentElement).toHaveClass(
       "text-metric-hero",
-      "font-semibold",
     );
   });
 
@@ -45,7 +44,6 @@ describe("브루잉 로그 카드", () => {
 
     expect(screen.getByText("92 °C").parentElement).toHaveClass(
       "text-metric-hero",
-      "font-semibold",
     );
   });
 
@@ -60,7 +58,7 @@ describe("브루잉 로그 카드", () => {
       const { container, unmount } = renderCard(log);
 
       expect(
-        container.querySelectorAll(".text-metric-hero.font-semibold"),
+        container.querySelectorAll(".text-metric-hero"),
       ).toHaveLength(1);
 
       unmount();

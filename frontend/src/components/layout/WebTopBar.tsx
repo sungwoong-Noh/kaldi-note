@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMe } from "@/features/user/queries";
-import { isActive, isHidden } from "@/lib/navScreens";
+import { backHref, isActive, isHidden } from "@/lib/navScreens";
 import { Avatar, ButtonLink } from "@/components/ui";
 
 const NAV_LINKS = [
@@ -29,9 +29,26 @@ export function WebTopBar() {
 
   if (isHidden(pathname)) return null;
 
+  // 상세·도구 화면은 `<1100px`에서 로고 대신 「뒤로」다. 목업의 뒤로 바에는 밑줄이 없다
+  // (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-12).
+  const back = backHref(pathname);
+
   return (
-    <header className="flex items-center justify-between gap-6 border-b border-border bg-paper px-6 py-3">
-      <Link href="/" className="flex min-h-11 items-center gap-2">
+    <header
+      className={`flex items-center justify-between gap-6 border-border bg-paper px-6 py-3 ${back ? "min-[1100px]:border-b" : "border-b"}`}
+    >
+      {back && (
+        <Link
+          href={back}
+          className="flex min-h-11 min-w-11 items-center text-body text-ink-3 min-[1100px]:hidden"
+        >
+          뒤로
+        </Link>
+      )}
+      <Link
+        href="/"
+        className={`min-h-11 items-center gap-2 ${back ? "hidden min-[1100px]:flex" : "flex"}`}
+      >
         <LogoSymbol />
         <span className="text-card-title font-semibold tracking-[-0.03em]">
           kaldi<span className="text-accent-soft">·</span>note

@@ -20,6 +20,8 @@ const TARGET_PAGES = [
   "/gear/grind-converter",
 ];
 
+const TAB_PAGES = ["/recipes", "/brews", "/more"];
+
 const EXCLUDED_PAGES = [
   "/login",
   "/recipes/new",
@@ -29,7 +31,9 @@ const EXCLUDED_PAGES = [
 ];
 
 test.describe("웹 헤더 롤아웃", () => {
-  for (const path of TARGET_PAGES) {
+  // 상세·도구 화면은 `<1100px`에서 로고 대신 「뒤로」다 — AC-WEBHDR-01의 그 부분은
+  // docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-12가 대체했다.
+  for (const path of TAB_PAGES) {
     test(`AC-WEBHDR-01 · ${path}에 로고 헤더가 보인다(<1100px)`, async ({
       page,
     }) => {

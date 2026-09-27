@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { isActive, isHidden } from "@/lib/navScreens";
+import { backHref, isActive, isHidden } from "@/lib/navScreens";
 
 interface Tab {
   href: string;
@@ -19,7 +19,8 @@ const TABS: Tab[] = [
 export function BottomNav() {
   const pathname = usePathname();
 
-  if (isHidden(pathname)) {
+  // 상세·도구 화면은 탭바 대신 상단의 「뒤로」를 쓴다(AC-GRAMMAR-12).
+  if (isHidden(pathname) || backHref(pathname) !== null) {
     return null;
   }
 

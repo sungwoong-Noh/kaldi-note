@@ -174,6 +174,9 @@ test.describe("홈 달력 — 모바일", () => {
     await page.getByRole("button", { name: "기록하기" }).click();
 
     await expect(page).toHaveURL("/brews/99");
+    // 기록 상세에는 탭바가 없다 — 뒤로(내 잔)를 거쳐 홈으로 간다
+    // (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-12).
+    await page.getByRole("link", { name: "뒤로" }).click();
     await page.getByRole("link", { name: "홈" }).click();
 
     await expect(

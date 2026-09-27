@@ -95,3 +95,54 @@ test.describe("모바일 탭 바", () => {
     }
   });
 });
+
+const DETAIL_BACK: [string, string][] = [
+  ["/recipes/12", "/recipes"],
+  ["/brews/2", "/brews"],
+  ["/u/11", "/"],
+  ["/gear/grind-converter", "/more"],
+];
+
+test.describe("뒤로 규칙", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  for (const [path, target] of DETAIL_BACK) {
+    test(`AC-GRAMMAR-12 · ${path}은 탭 바·로고 대신 뒤로(${target})다`, async ({
+      page,
+    }) => {
+      await installStubs(page);
+      await page.goto(path);
+
+      const back = page.getByRole("link", { name: "뒤로" });
+      await expect(back).toBeVisible();
+      await expect(back).toHaveAttribute("href", target);
+      await expect(page.locator('nav[aria-label="주요 화면"]')).toHaveCount(0);
+      await expect(page.getByText("kaldi·note")).toBeHidden();
+    });
+  }
+
+  test("AC-GRAMMAR-20 · 뒤로 링크는 44×44px 이상이다", async ({ page }) => {
+    await installStubs(page);
+    await page.goto("/brews/2");
+
+    const box = await page.getByRole("link", { name: "뒤로" }).boundingBox();
+    expect(box?.width).toBeGreaterThanOrEqual(44);
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+  });
+});
+
+test.describe("뒤로 경계", () => {
+  test("AC-GRAMMAR-13 · 1100px은 웹, 1099px은 모바일이다", async ({ page }) => {
+    await installStubs(page);
+
+    await page.setViewportSize({ width: 1100, height: 900 });
+    await page.goto("/recipes/12");
+    const header = page.locator("header");
+    await expect(header.getByRole("link", { name: "홈" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "뒤로" })).toBeHidden();
+
+    await page.setViewportSize({ width: 1099, height: 900 });
+    await expect(page.getByRole("link", { name: "뒤로" })).toBeVisible();
+    await expect(header.getByRole("link", { name: "홈" })).toBeHidden();
+  });
+});

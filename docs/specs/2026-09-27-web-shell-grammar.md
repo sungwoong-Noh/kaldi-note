@@ -301,7 +301,7 @@ supersedes:
   `BottomNav`: `h-[59px]` 그리드(테두리 1px 포함), `border-divider-strong`, 활성 탭 라벨 아래 막대 span
   (`mt-2 h-0.5 w-[18px] rounded-tag bg-ink`), 글자는 `text-body-sm`(13px). 44px 히트 영역은 58px 높이가 보장한다.
 
-- [ ] **Task 5: 뒤로 규칙** — Covers: AC-GRAMMAR-12, 13, 15, 16, 20
+- [x] **Task 5: 뒤로 규칙** — Covers: AC-GRAMMAR-12, 13, 15, 16, 20
 
   `navScreens.ts`에 `backHref(pathname): string | null`을 둔다. `BottomNav`는 `backHref`가 있으면 렌더하지 않고,
   `WebTopBar`는 `<1100px`에서 로고 대신 `뒤로` 링크를 그린다(`≥1100px` 부분은 그대로).

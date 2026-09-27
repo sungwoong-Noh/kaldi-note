@@ -1,7 +1,7 @@
 ---
 id: GRAMMAR
 title: 웹 셸·공통 문법 목업 정합 — 본문 폭·상단 바·수치 표기·탭 바·secondary·뒤로
-status: 구현중
+status: 구현완료
 milestone: M2
 supersedes:
 ---
@@ -51,6 +51,16 @@ supersedes:
 | 로고 → 내비 | 40px | 40px (`gap-6` + `ml-4`) — 정확 |
 | 탭 밑줄 위 여백 · 모서리 | 7px · 2px | 8px (`mt-2`) · `rounded-tag` (rounded-full 6곳 상한, AC-SPACE-07) |
 | 탭 바 세이프에어리어 | 58px + safe-area | 58px — `viewport-fit=cover`가 없어 `env()`가 늘 0이고 브라우저가 인디케이터 자리를 비운다 |
+
+### 구현 중 정한 것
+
+- **홈(`Shell grow`)은 웹 거터 24px를 유지한다** — 웹 두 컬럼이 각자 48px 패딩을 가져 바깥 거터를 올리면 달력이 900px로 눌린다(AC-HOMECAL-84)
+- `UserProfile`은 로컬 `Shell`(`px-4`)을 쓰고 있어 공용 `Shell`(`wide`)을 감싸게 바꿨다
+- 수치 유틸 `text-metric`·`text-metric-hero`·`text-card-metric`이 굵기 500을 갖는다. 크기를 상속하는 자리(표 셀·비교표·스텝 물량)는
+  `font-num`(글꼴·굵기만)을 쓴다 — `text-` 접두어는 글자 크기 허용목록 검사(AC-VISUAL-05)에 걸린다
+- 비교표에서 다른 실측값은 accent 색만 칠하고 굵게 하지 않는다(목업 W3 — 실측 열 mono 500)
+- `formatCumulativeGrams`는 `formatGrams`와 같아져 지웠다. 뒤로 대상은 `navScreens.backHref`의 표 하나다
+- 탭 바는 `h-[59px]`(테두리 1px 포함, 탭 자체 58px)
 
 ## 용어
 
@@ -240,6 +250,16 @@ supersedes:
 - **Then** `document.documentElement.scrollWidth`가 `clientWidth` 이하다
 - **검증** e2e
 
+#### AC-GRAMMAR-22 · 표·비교표·스텝의 수치도 mono 500이다
+
+> 2026-09-27 추가(사용자 승인). ★ 목업 대조에서 AC-09가 수치 유틸이 붙은 요소만 봐서, 유틸 없이 그려지는
+> 독립 값 자리가 Sans로 남은 것을 놓쳤다(README 82행 「수치를 Sans로 쓰지 마세요」).
+
+- **Given** 뷰포트 `1280×900`
+- **When** `/brews` 표의 원두량 셀(`20 g`)·물 온도 셀(`92 °C`), `/brews/2` 비교표의 값 셀(`30 g`·`20 g`), `/recipes/12` 스텝 물량(`60 g`)을 읽는다
+- **Then** 모두 computed `font-family`가 `IBM Plex Mono`로 시작하고 `font-weight`가 `500`이다
+- **검증** e2e
+
 ---
 
 ## 대체하는 이전 AC
@@ -269,96 +289,11 @@ supersedes:
 
 ---
 
-## 구현 순서
-
-각 태스크는 TDD 사이클 하나로 끝나고 커밋 하나를 남긴다. 한 브랜치에서 진행한다.
-
-- [x] **Task 1: 수치 표기** — Covers: AC-GRAMMAR-06, 07, 08, 17
-
-  `formatCumulativeGrams`는 `formatGrams`와 같아지므로 지우고 `RecipeStepList`가 `formatGrams`를 쓴다.
-  요약 줄 호출처는 `BrewHero`(기준값 줄)와 `DayCard`(배지) 둘이다. 나머지는 독립 값이다.
-
-  ```ts
-  function trimTrailingZero(value: number): string {
-    return value.toFixed(1).replace(/\.0$/, "");
-  }
-  export const formatGrams = (g: number) => `${trimTrailingZero(g)} g`;
-  export const formatGramsCompact = (g: number) => `${trimTrailingZero(g)}g`;
-  export const formatTemperature = (c: number) => `${trimTrailingZero(c)} °C`;
-  export const formatTemperatureCompact = (c: number) => `${trimTrailingZero(c)}°C`;
-
-  // diffPhrase.ts — 차이는 소수 1자리 유지
-  `${subject}${objectParticle(subject)} ${gap.toFixed(1)} g ${more ? "더" : "덜"} 썼습니다.`
-  ```
-
-- [x] **Task 2: 수치 굵기** — Covers: AC-GRAMMAR-09
-
-  `globals.css`의 `text-metric`·`text-metric-hero`·`text-card-metric`에 `font-weight: 500`을 넣고,
-  같은 요소에 붙은 `font-semibold`·`font-bold`를 뗀다(`grep -rn "text-metric.*font-semibold\|font-semibold.*text-metric"`).
-
-- [x] **Task 3: secondary 버튼** — Covers: AC-GRAMMAR-11
-
-  ```ts
-  secondary: "border border-border bg-transparent text-ink enabled:hover:bg-sunken",
-  ```
-
-  `ButtonLink`는 `:enabled`가 없어 hover가 안 먹는다 — 기존 동작 그대로이며 이 스펙에서 바꾸지 않는다.
-
-- [x] **Task 4: 모바일 탭 바** — Covers: AC-GRAMMAR-10
-
-  `BottomNav`: `h-[59px]` 그리드(테두리 1px 포함), `border-divider-strong`, 활성 탭 라벨 아래 막대 span
-  (`mt-2 h-0.5 w-[18px] rounded-tag bg-ink`), 글자는 `text-body-sm`(13px). 44px 히트 영역은 58px 높이가 보장한다.
-
-- [x] **Task 5: 뒤로 규칙** — Covers: AC-GRAMMAR-12, 13, 15, 16, 20
-
-  `navScreens.ts`에 `backHref(pathname): string | null`을 둔다. `BottomNav`는 `backHref`가 있으면 렌더하지 않고,
-  `WebTopBar`는 `<1100px`에서 로고 대신 `뒤로` 링크를 그린다(`≥1100px` 부분은 그대로).
-
-  ```ts
-  const BACK: [RegExp, string][] = [
-    [/^\/recipes\/[^/]+$/, "/recipes"],
-    [/^\/brews\/[^/]+$/, "/brews"],
-    [/^\/u\/[^/]+$/, "/"],
-    [/^\/gear\/grind-converter$/, "/more"],
-  ];
-  export function backHref(pathname: string): string | null {
-    if (isHidden(pathname)) return null;
-    return BACK.find(([re]) => re.test(pathname))?.[1] ?? null;
-  }
-  ```
-
-- [x] **Task 6: 웹 상단 바** — Covers: AC-GRAMMAR-03, 04, 05, 14, 18, 19
-
-  배치를 `[로고 gap-6 + 내비 ml-4 (= 40px), 내비 gap-6, text-body] … [CTA gap-4 아바타 34]`, 패딩 `py-4 min-[1100px]:px-12`로 바꾼다.
-  활성 `font-medium text-ink` / 비활성 `text-ink-3`. CTA는 경로 → `{label, href} | null` 표.
-
-  ```ts
-  const CTA: Record<string, { label: string; href: string }> = {
-    "/": { label: "이 레시피로 내렸다", href: "/recipes" },
-    "/recipes": { label: "새 레시피", href: "/recipes/new" },
-    "/brews": { label: "기록하기", href: "/recipes" },
-  };
-  const cta = CTA[pathname]; // 정확히 일치할 때만 — 상세 화면은 CTA 없음
-  ```
-
-- [x] **Task 7: 본문 폭** — Covers: AC-GRAMMAR-01, 02, 21
-
-  `Shell`에 `min-[1100px]:px-12`를 더하고, `/recipes`·`/brews`·`UserProfile`의 `<Shell>`에 `wide`를 붙인다.
-  상세·폼·도구 화면은 건드리지 않는다. **홈(`grow`)은 24px를 유지한다** — 웹 두 컬럼이 각자 48px 패딩을 가져
-  바깥 거터를 올리면 달력이 900px로 눌린다(AC-HOMECAL-84, 구현 중 발견). `UserProfile`은 로컬 `Shell`(`px-4`)을
-  쓰고 있어 공용 `Shell`을 감싸게 바꿨다.
-
-- [x] **Task 8: 이전 AC 정리 + 목업 대조**
-
-  「대체하는 이전 AC」의 테스트 ID를 새 AC로 옮기고, 원래 스펙에 「(대체됨)」 표시를 단다.
-  `./scripts/check-spec-coverage.sh` 통과를 확인한다.
-
----
-
 ## 수동 확인
 
-- [ ] ★ mockup-checker로 `/`·`/recipes`·`/brews`·`/recipes/12`·`/brews/2`를 `390px`/`1280px`에서 캡처해 목업과 대조한다.
+- [x] ★ mockup-checker로 `/`·`/recipes`·`/brews`·`/recipes/12`·`/brews/2`를 `390px`/`1280px`에서 캡처해 목업과 대조한다.
   상단 바·탭 바·secondary·수치 표기의 격차가 「큼」 0건이어야 한다. 결과를 PR 본문에 첨부한다
+  (2026-09-27 완료 — 범위 내 「큼」 0건. 「중간」 1건(표·비교표·스텝 수치가 Sans)은 AC-GRAMMAR-22로 반영)
 - [ ] 실제 기기(iOS PWA)에서 탭 바가 홈 인디케이터와 겹치지 않는지(세이프에어리어) 본다
 
 ## 열어둔 결정

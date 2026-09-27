@@ -304,3 +304,36 @@ test.describe("본문 폭", () => {
     });
   }
 });
+
+test.describe("유틸 없는 수치 자리", () => {
+  test.use({ viewport: WEB });
+
+  const CASES: [string, string, string][] = [
+    ["/brews", "cell", "20 g"],
+    ["/brews", "cell", "92 °C"],
+    ["/brews/2", "text", "30 g"],
+    ["/brews/2", "text", "20 g"],
+    ["/recipes/12", "text", "60 g"],
+  ];
+
+  for (const [path, kind, value] of CASES) {
+    test(`AC-GRAMMAR-22 · ${path}의 ${value}가 mono 500이다`, async ({
+      page,
+    }) => {
+      await installStubs(page);
+      await page.goto(path);
+      const target =
+        kind === "cell"
+          ? page.getByRole("cell", { name: value, exact: true }).first()
+          : page.getByText(value, { exact: true }).first();
+      await expect(target).toBeVisible();
+
+      const style = await target.evaluate((el) => {
+        const s = getComputedStyle(el);
+        return { family: s.fontFamily, weight: s.fontWeight };
+      });
+      expect(style.family).toMatch(/^"?IBM Plex Mono/);
+      expect(style.weight).toBe("500");
+    });
+  }
+});

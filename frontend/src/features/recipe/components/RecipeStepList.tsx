@@ -73,13 +73,13 @@ export function RecipeStepList({ steps }: { steps: RecipeStep[] }) {
                 <span className="font-medium">{STEP_LABEL[step.stepType]}</span>
 
                 {step.waterG !== undefined && (
-                  <span className="text-body">
+                  <span className="text-body font-num">
                     {formatGrams(step.waterG)}
                   </span>
                 )}
 
                 {showCumulative && (
-                  <span className="text-body text-ink-3">
+                  <span className="text-body font-num text-ink-3">
                     누적{" "}
                     {formatGrams(step.cumulativeWaterG as number)}
                   </span>

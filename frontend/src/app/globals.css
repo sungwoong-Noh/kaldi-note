@@ -187,6 +187,15 @@
   letter-spacing: -0.04em;
 }
 
+/*
+ * 크기는 두고 글꼴·굵기만 수치로 — 표 셀·비교표·스텝 물량처럼 주변 글자 크기를 따르는 자리
+ * (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-22).
+ */
+@utility font-num {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
 @utility text-metric {
   font-family: var(--font-mono);
   font-weight: 500;

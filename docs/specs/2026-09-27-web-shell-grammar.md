@@ -49,7 +49,8 @@ supersedes:
 | 상단 바 링크 간격 | 26px | 24px (`gap-6`) |
 | 상단 바 링크 글자 | 14.5px | 15px (`text-body`) |
 | 로고 → 내비 | 40px | 40px (`gap-6` + `ml-4`) — 정확 |
-| 탭 밑줄 위 여백 · 모서리 | 7px · 2px | 8px (`mt-2`) · `rounded-full` |
+| 탭 밑줄 위 여백 · 모서리 | 7px · 2px | 8px (`mt-2`) · `rounded-tag` (rounded-full 6곳 상한, AC-SPACE-07) |
+| 탭 바 세이프에어리어 | 58px + safe-area | 58px — `viewport-fit=cover`가 없어 `env()`가 늘 0이고 브라우저가 인디케이터 자리를 비운다 |
 
 ## 용어
 
@@ -147,8 +148,8 @@ supersedes:
 
 - **Given** 뷰포트 `390×844`, `/recipes`
 - **When** 탭 바를 본다
-- **Then** 탭 바의 content-box 높이가 `58`px(세이프에어리어 padding 제외), `border-top`이 `1px` `--divider-strong`이다.
-  활성 탭 `레시피`는 글자 `13px`/`600`/`--ink`이고 그 아래 `18×2`px `--ink` 막대(라벨 bottom과 막대 top 사이 `8`px, `rounded-full`)가 있다.
+- **Then** 탭 바의 높이가 border-top을 빼고 `58`px, `border-top`이 `1px` `--divider-strong`이다.
+  활성 탭 `레시피`는 글자 `13px`/`600`/`--ink`이고 그 아래 `18×2`px `--ink` 막대(라벨 bottom과 막대 top 사이 `8`px)가 있다.
   나머지 탭은 `13px`/`400`/`--ink-3`이고 막대가 없다
 - **검증** e2e
 
@@ -254,6 +255,8 @@ supersedes:
 - AC-BREWFORM-03(docs/specs/2026-09-27-brew-form-redesign.md)의 `16.0g → 250.0g · 92°C · 3:30` → AC-GRAMMAR-07·08 — `16g → 250g · 92°C · 3:30`
 - AC-SMALL-01·02·04(docs/specs/2026-09-17-small-features.md)의 차이 문구 → AC-GRAMMAR-17 — `1.0g` → `1.0 g`, `3°C` → `3 °C`
 
+- AC-TOUCH-10(docs/specs/2026-09-09-touch-targets.md)의 탭 크기 `90×49.5` → AC-GRAMMAR-10 — `90×58`(구현 중 발견해 추가)
+
 구현 중 이 목록 밖의 테스트가 표기 때문에 깨지면, 그 AC를 이 목록에 추가하고 같은 방식으로 옮긴다.
 
 ---
@@ -293,10 +296,10 @@ supersedes:
 
   `ButtonLink`는 `:enabled`가 없어 hover가 안 먹는다 — 기존 동작 그대로이며 이 스펙에서 바꾸지 않는다.
 
-- [ ] **Task 4: 모바일 탭 바** — Covers: AC-GRAMMAR-10
+- [x] **Task 4: 모바일 탭 바** — Covers: AC-GRAMMAR-10
 
-  `BottomNav`: `h-[58px]` 그리드 + `pb-[env(safe-area-inset-bottom)]`, `border-divider-strong`, 활성 탭 아래 `after:` 막대
-  (`after:mt-2 after:h-0.5 after:w-[18px] after:rounded-full after:bg-ink`), 글자는 `text-body-sm`(13px). 44px 히트 영역은 58px 높이가 보장한다.
+  `BottomNav`: `h-[59px]` 그리드(테두리 1px 포함), `border-divider-strong`, 활성 탭 라벨 아래 막대 span
+  (`mt-2 h-0.5 w-[18px] rounded-tag bg-ink`), 글자는 `text-body-sm`(13px). 44px 히트 영역은 58px 높이가 보장한다.
 
 - [ ] **Task 5: 뒤로 규칙** — Covers: AC-GRAMMAR-12, 13, 15, 16, 20
 

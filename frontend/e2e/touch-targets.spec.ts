@@ -169,7 +169,7 @@ test.describe("터치 타깃 — 스윕", () => {
     });
   }
 
-  test("AC-TOUCH-10 · BottomNav 탭 4개가 90×49.5로 44px을 넘는다", async ({
+  test("AC-TOUCH-10 · AC-GRAMMAR-10 · BottomNav 탭 4개가 90×58로 44px을 넘는다", async ({
     page,
   }) => {
     await installStubs(page);
@@ -182,7 +182,9 @@ test.describe("터치 타깃 — 스윕", () => {
 
       // 갱신(2026-09-17): 라벨이 14→13px로 작아졌지만 body-sm의 행간(1.6)이 늘어
       // 오히려 48→49.5px가 됐다. 44px 하한은 그대로 지킨다.
-      expect(box, name).toMatchObject({ width: 90, height: 49.5 });
+      // 갱신(2026-09-27): 탭 바가 목업 규격 58px이 되며 탭이 그 높이를 채운다
+      // (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-10).
+      expect(box, name).toMatchObject({ width: 90, height: 58 });
     }
   });
 });

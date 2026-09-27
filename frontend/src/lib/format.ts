@@ -16,13 +16,17 @@ function trimTrailingZero(value: number): string {
   return value.toFixed(1).replace(/\.0$/, "");
 }
 
-/** 레시피 카드·헤더의 중량. 계량 정밀도를 드러내려고 스케일 1을 유지한다. */
+/*
+ * 표기가 둘이다 — docs/specs/2026-09-27-web-shell-grammar.md(AC-GRAMMAR-06·07).
+ * 값 하나가 한 칸을 차지하는 자리(히어로·원장 행·비교표 셀)는 `16 g`, 여러 값을 한 줄로
+ * 잇는 요약 줄(`16g → 250g · 92°C · 3:30`)과 배지는 붙여 쓴다. 목업이 그렇게 갈라 쓴다.
+ */
+
 export function formatGrams(grams: number): string {
-  return `${grams.toFixed(1)}g`;
+  return `${trimTrailingZero(grams)} g`;
 }
 
-/** 스텝의 누적 물량. 추출 중에 흘깃 보는 값이라 짧게 만든다. */
-export function formatCumulativeGrams(grams: number): string {
+export function formatGramsCompact(grams: number): string {
   return `${trimTrailingZero(grams)}g`;
 }
 
@@ -32,5 +36,9 @@ export function formatRatio(ratio: number): string {
 }
 
 export function formatTemperature(celsius: number): string {
+  return `${trimTrailingZero(celsius)} °C`;
+}
+
+export function formatTemperatureCompact(celsius: number): string {
   return `${trimTrailingZero(celsius)}°C`;
 }

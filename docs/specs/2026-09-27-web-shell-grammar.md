@@ -1,7 +1,7 @@
 ---
 id: GRAMMAR
 title: 웹 셸·공통 문법 목업 정합 — 본문 폭·상단 바·수치 표기·탭 바·secondary·뒤로
-status: 승인
+status: 구현중
 milestone: M2
 supersedes:
 ---
@@ -262,7 +262,7 @@ supersedes:
 
 각 태스크는 TDD 사이클 하나로 끝나고 커밋 하나를 남긴다. 한 브랜치에서 진행한다.
 
-- [ ] **Task 1: 수치 표기** — Covers: AC-GRAMMAR-06, 07, 08, 17
+- [x] **Task 1: 수치 표기** — Covers: AC-GRAMMAR-06, 07, 08, 17
 
   `formatCumulativeGrams`는 `formatGrams`와 같아지므로 지우고 `RecipeStepList`가 `formatGrams`를 쓴다.
   요약 줄 호출처는 `BrewHero`(기준값 줄)와 `DayCard`(배지) 둘이다. 나머지는 독립 값이다.

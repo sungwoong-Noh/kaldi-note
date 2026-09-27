@@ -22,9 +22,9 @@ describe("RecipeStepList", () => {
   it("AC-WEB-16 · 붓는 스텝의 누적 물량이 표시된다", () => {
     render(<RecipeStepList steps={hoffmannSteps} />);
 
-    expect(screen.getByText("누적 60g")).toBeInTheDocument();
-    expect(screen.getByText("누적 300g")).toBeInTheDocument();
-    expect(screen.getByText("누적 500g")).toBeInTheDocument();
+    expect(screen.getByText("누적 60 g")).toBeInTheDocument();
+    expect(screen.getByText("누적 300 g")).toBeInTheDocument();
+    expect(screen.getByText("누적 500 g")).toBeInTheDocument();
   });
 
   it("AC-WEB-17 · 붓지 않는 스텝에는 물량이 표시되지 않는다", () => {

@@ -1,4 +1,4 @@
-import { formatGrams, formatTemperature } from "@/lib/format";
+import { formatTemperature } from "@/lib/format";
 
 /**
  * 비교표의 차이를 한국어 문장으로 옮긴다 — docs/specs/2026-09-17-small-features.md
@@ -6,11 +6,11 @@ import { formatGrams, formatTemperature } from "@/lib/format";
  * <p>「같은 레시피를 여러 번 내렸을 때 결과 차이를 추적하는 것이 이 서비스의 존재 이유」인데
  * (CLAUDE.md), 비교표가 다른 값에 색만 칠하면 **얼마나 달랐는지를 사용자가 암산**해야 한다.
  *
- * <p><b>평가하지 않는다.</b> 「1.0g 더 썼습니다」이지 「너무 많습니다」가 아니다 —
+ * <p><b>평가하지 않는다.</b> 「1.0 g 더 썼습니다」이지 「너무 많습니다」가 아니다 —
  * 브랜드 문서의 목소리 규칙이고, 「앱은 커피가 맛있었는지 판단하지 않는다」는 원칙이다.
  *
- * <p>표기는 기존 포맷터를 그대로 쓴다. 여기서 새 표기를 만들면 표의 숫자와 문장의 숫자가
- * 달라 보인다.
+ * <p>무게 차이만 소수 1자리를 남긴다(`1.0 g`) — 차이는 작은 값이라 `.0`을 떼면 정밀도가
+ * 사라져 보인다. 목업 W3의 표기다(docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-17).
  */
 export type DiffKind = "weight" | "temperature" | "duration";
 
@@ -57,7 +57,7 @@ export function diffPhrase(
 
   switch (kind) {
     case "weight":
-      return `${subject}${objectParticle(subject)} ${formatGrams(gap)} ${more ? "더" : "덜"} 썼습니다.`;
+      return `${subject}${objectParticle(subject)} ${gap.toFixed(1)} g ${more ? "더" : "덜"} 썼습니다.`;
     case "temperature":
       return `${formatTemperature(gap)} ${more ? "높게" : "낮게"} 내렸습니다.`;
     case "duration":

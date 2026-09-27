@@ -22,7 +22,7 @@ import { tokenColor } from "./tokenColor";
 // 갱신(2026-09-15): structure 스펙이 대표 수치를 1:비율로 통일하면서 `1:16.7`이 메타줄에서
 // 대표 자리로 올라갔다. 메타줄 앵커를 거기 남은 값으로 바꾼다.
 const META_ROWS = [
-  { path: "/recipes", text: "100°C", what: "카드 보조줄" },
+  { path: "/recipes", text: "100 °C", what: "카드 보조줄" },
   // "/brews"(목록)는 빠졌다 — AC-RECIPESBREWS-77이 카드를 테이블/원장 행으로 바꾸며
   // "카드 보조줄"(gap-x-3 flex 행) 자체가 없어졌다(테이블 <td>·원장 행은 다른 레이아웃이다).
   /*

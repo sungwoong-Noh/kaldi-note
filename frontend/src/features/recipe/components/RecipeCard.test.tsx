@@ -11,7 +11,7 @@ describe("레시피 카드", () => {
       </ul>,
     );
 
-    const line = screen.getByText("15.0g").parentElement;
+    const line = screen.getByText("15 g").parentElement;
 
     expect(line).toHaveClass("text-metric-hero", "font-semibold");
     expect(line).toHaveAttribute("data-lead");

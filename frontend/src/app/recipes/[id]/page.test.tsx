@@ -88,7 +88,7 @@ describe("RecipeDetailPage", () => {
     const leads = leadElements();
 
     expect(leads).toHaveLength(1);
-    expect(leads[0].textContent).toBe("30.0g");
+    expect(leads[0].textContent).toBe("30 g");
     expect(
       leads[0].closest("[data-hero]")?.querySelector("[data-eyebrow]")
         ?.textContent,
@@ -117,16 +117,17 @@ describe("RecipeDetailPage", () => {
     }
   });
 
-  it("AC-WEB-14 · 제목과 출처와 파라미터가 표시된다", async () => {
+  it("AC-WEB-14 · AC-GRAMMAR-08 · 제목과 출처와 파라미터가 표시된다", async () => {
     await renderDetail();
 
     expect(
       await screen.findByText("James Hoffmann Ultimate V60"),
     ).toBeInTheDocument();
     expect(screen.getByText("James Hoffmann")).toBeInTheDocument();
-    expect(screen.getByText("30.0g")).toBeInTheDocument();
-    expect(screen.getByText("500.0g")).toBeInTheDocument();
+    expect(screen.getByText("30 g")).toBeInTheDocument();
+    expect(screen.getByText("500 g")).toBeInTheDocument();
     expect(screen.getByText("1:16.7")).toBeInTheDocument();
+    expect(document.body.textContent).not.toMatch(/\d\.0g/);
   });
 
   it("AC-WEB-18 · 분쇄도가 없으면 그 영역이 렌더링되지 않는다", async () => {

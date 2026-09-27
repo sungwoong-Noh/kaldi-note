@@ -848,12 +848,12 @@ describe("BrewNewPage — 히어로", () => {
     expect((await hero()).getByText("1:—")).toBeInTheDocument();
   });
 
-  it("AC-BREWFORM-03 · 히어로 아래 줄은 레시피 기준값이다", async () => {
+  it("AC-BREWFORM-03 · AC-GRAMMAR-08 · 히어로 아래 줄은 레시피 기준값이다", async () => {
     await renderNewPage();
     const h = await hero();
 
     expect(h.getByText("분쇄도 있는 레시피")).toBeInTheDocument();
-    expect(h.getByText("20.0g → 300.0g · 92°C · 3:30")).toBeInTheDocument();
+    expect(h.getByText("20g → 300g · 92°C · 3:30")).toBeInTheDocument();
   });
 
   it("AC-BREWFORM-03 · 온도·시간이 없는 레시피는 그 조각이 빠진다", async () => {
@@ -864,7 +864,7 @@ describe("BrewNewPage — 히어로", () => {
 
     await renderNewPage();
 
-    expect((await hero()).getByText("20.0g → 300.0g")).toBeInTheDocument();
+    expect((await hero()).getByText("20g → 300g")).toBeInTheDocument();
   });
 
   it("AC-BREWFORM-04 · 값이 다 있으면 수율이 보인다", async () => {

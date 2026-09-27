@@ -334,10 +334,12 @@ supersedes:
   const cta = CTA[pathname]; // 정확히 일치할 때만 — 상세 화면은 CTA 없음
   ```
 
-- [ ] **Task 7: 본문 폭** — Covers: AC-GRAMMAR-01, 02, 21
+- [x] **Task 7: 본문 폭** — Covers: AC-GRAMMAR-01, 02, 21
 
   `Shell`에 `min-[1100px]:px-12`를 더하고, `/recipes`·`/brews`·`UserProfile`의 `<Shell>`에 `wide`를 붙인다.
-  상세·폼·도구 화면은 건드리지 않는다.
+  상세·폼·도구 화면은 건드리지 않는다. **홈(`grow`)은 24px를 유지한다** — 웹 두 컬럼이 각자 48px 패딩을 가져
+  바깥 거터를 올리면 달력이 900px로 눌린다(AC-HOMECAL-84, 구현 중 발견). `UserProfile`은 로컬 `Shell`(`px-4`)을
+  쓰고 있어 공용 `Shell`을 감싸게 바꿨다.
 
 - [ ] **Task 8: 이전 AC 정리 + 목업 대조**
 

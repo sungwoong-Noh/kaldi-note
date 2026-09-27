@@ -9,7 +9,7 @@ import {
   useToggleFollow,
 } from "@/features/user/queries";
 import { LoadingState } from "@/components/LoadingState";
-import { Button } from "@/components/ui";
+import { Button, Shell as SharedShell } from "@/components/ui";
 
 /**
  * 상태 넷을 문구 하나로 접는다. 화면이 boolean 셋을 직접 읽으면 조합을 빠뜨린다.
@@ -112,6 +112,14 @@ function FollowSection({
   );
 }
 
+/**
+ * 공용 `Shell`의 거터·폭을 따른다 — 목록 화면이라 웹에서 전폭이다
+ * (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-01). 세로 간격 16px만 이 화면 것이다.
+ */
 function Shell({ children }: { children: React.ReactNode }) {
-  return <main className="flex flex-col gap-4 px-4 py-6">{children}</main>;
+  return (
+    <SharedShell wide className="flex flex-col gap-4">
+      {children}
+    </SharedShell>
+  );
 }

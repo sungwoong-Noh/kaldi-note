@@ -154,6 +154,22 @@ test.describe("웹 상단 바", () => {
     page,
   }) => {
     await installStubs(page);
+    // 아바타가 me의 실제 카카오 CDN 주소를 가리킨다. 외부 요청이 늦거나 실패하면 img가
+    // 34px로 잡히기 전에 재게 되어 전체 실행에서만 깨졌다 — 1×1 PNG로 바꿔 끼운다.
+    let swapped = 0;
+    await page.route(
+      (url) => url.hostname.endsWith("kakaocdn.net"),
+      (route) => {
+        swapped += 1;
+        return route.fulfill({
+          contentType: "image/png",
+          body: Buffer.from(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+            "base64",
+          ),
+        });
+      },
+    );
     await page.goto("/recipes");
     const header = page.locator("header");
     const avatar = header.getByRole("link", { name: "더보기" }).locator("> *");
@@ -178,9 +194,12 @@ test.describe("웹 상단 바", () => {
 
     expect(withinTolerance(home.x - (logo.x + logo.width), 40)).toBe(true);
     expect(withinTolerance(recipes.x - (home.x + home.width), 24)).toBe(true);
-    expect(withinTolerance(cups.x - (recipes.x + recipes.width), 24)).toBe(true);
+    expect(withinTolerance(cups.x - (recipes.x + recipes.width), 24)).toBe(
+      true,
+    );
     expect(cups.x + cups.width).toBeLessThan(cta.x);
     expect(withinTolerance(face.x - (cta.x + cta.width), 16)).toBe(true);
+    expect(swapped).toBeGreaterThan(0);
     expect(face).toMatchObject({ width: 34, height: 34 });
     expect(
       await header
@@ -196,12 +215,10 @@ test.describe("웹 상단 바", () => {
     await page.goto("/recipes");
     const header = page.locator("header");
     const style = (name: string) =>
-      header
-        .getByRole("link", { name, exact: true })
-        .evaluate((el) => {
-          const s = getComputedStyle(el);
-          return { color: s.color, weight: s.fontWeight };
-        });
+      header.getByRole("link", { name, exact: true }).evaluate((el) => {
+        const s = getComputedStyle(el);
+        return { color: s.color, weight: s.fontWeight };
+      });
 
     expect(await style("레시피")).toEqual({
       color: await tokenColor(page, "ink"),
@@ -232,4 +249,58 @@ test.describe("매핑에 없는 경로", () => {
     await expect(header.locator("a.bg-ink")).toHaveCount(0);
     expect(errors).toEqual([]);
   });
+});
+
+test.describe("본문 폭", () => {
+  test.use({ viewport: WEB });
+
+  const mainBox = (page: import("@playwright/test").Page) =>
+    page
+      .locator("main")
+      .first()
+      .evaluate((el) => {
+        const s = getComputedStyle(el);
+        return {
+          width: el.getBoundingClientRect().width,
+          padding: [s.paddingLeft, s.paddingRight],
+        };
+      });
+
+  for (const path of ["/recipes", "/brews", "/u/11"]) {
+    test(`AC-GRAMMAR-01 · ${path}은 전폭이고 거터가 48px다`, async ({
+      page,
+    }) => {
+      await installStubs(page);
+      await page.goto(path);
+      await expect(page.locator("main").first()).toBeVisible();
+
+      const box = await mainBox(page);
+      expect(withinTolerance(box.width, 1280)).toBe(true);
+      expect(box.padding).toEqual(["48px", "48px"]);
+    });
+  }
+
+  for (const path of ["/recipes/12", "/brews/2", "/gear/grind-converter"]) {
+    test(`AC-GRAMMAR-02 · ${path}은 672px 폭을 유지한다`, async ({ page }) => {
+      await installStubs(page);
+      await page.goto(path);
+      await expect(page.locator("main").first()).toBeVisible();
+
+      expect((await mainBox(page)).width).toBeLessThanOrEqual(672);
+    });
+  }
+
+  for (const path of ["/recipes", "/brews"]) {
+    test(`AC-GRAMMAR-21 · ${path}에 가로 스크롤이 없다`, async ({ page }) => {
+      await installStubs(page);
+      await page.goto(path);
+      await expect(page.locator("main").first()).toBeVisible();
+
+      const { scroll, client } = await page.evaluate(() => ({
+        scroll: document.documentElement.scrollWidth,
+        client: document.documentElement.clientWidth,
+      }));
+      expect(scroll).toBeLessThanOrEqual(client);
+    });
+  }
 });

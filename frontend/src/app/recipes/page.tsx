@@ -132,7 +132,7 @@ function Screen({
   onSessionLost: () => void;
 }) {
   return (
-    <Shell>
+    <Shell wide>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h1 className="text-page-title font-semibold">레시피</h1>
         <ButtonLink href="/recipes/new" variant="primary">

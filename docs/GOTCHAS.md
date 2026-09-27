@@ -69,6 +69,11 @@
   (`text-[Npx]`), `rounded-full` 개수(상한 고정)를 막는다. **주석 안의 글자도 센다** — 주석에 `rounded-full`을
   쓰기만 해도 개수가 늘어난다. 목업의 18px·26px·14.5px 같은 값은 가장 가까운 허용값으로 근사하고 스펙에 적는다.
 
+- **레시피 상세(`/api/v1/recipes/{id}`)를 읽는 e2e는 `installSwStubs(context)`도 건다.** 그 요청은 Service Worker가
+  가로채는데 `installStubs(page)`의 `page.route`는 SW의 fetch를 못 잡는다. 평소엔 SW가 제어권을 늦게 잡아 통과하다가
+  **부하가 걸린 CI에서만** 레시피 조회가 실패해 비교표·스텝이 통째로 없는 회차가 생긴다(`e2e/shell-grammar.spec.ts` AC-GRAMMAR-22).
+  기존 `structure.spec.ts`의 비교표 테스트도 같은 잠재 위험이 있다.
+
 - **`me` 픽스처의 `profileImageUrl`은 실제 카카오 CDN 주소다.** e2e에서 아바타 크기를 재면 외부 이미지가
   늦게 오거나 실패할 때 `img`가 34px이 아닌 높이로 잡혀 **전체 실행에서만** 깨진다. 아바타를 재는 테스트는
   `page.route((url) => url.hostname.endsWith("kakaocdn.net"), …)`로 이미지를 바꿔 끼운다(`e2e/shell-grammar.spec.ts`).

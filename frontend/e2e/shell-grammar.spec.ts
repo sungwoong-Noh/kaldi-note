@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { installStubs } from "./stubs";
+import { installStubs, installSwStubs } from "./stubs";
 import { tokenColor } from "./tokenColor";
 import { withinTolerance } from "./tolerance";
 
@@ -308,32 +308,33 @@ test.describe("본문 폭", () => {
 test.describe("유틸 없는 수치 자리", () => {
   test.use({ viewport: WEB });
 
-  const CASES: [string, string, string][] = [
-    ["/brews", "cell", "20 g"],
-    ["/brews", "cell", "92 °C"],
-    ["/brews/2", "text", "30 g"],
-    ["/brews/2", "text", "20 g"],
-    ["/recipes/12", "text", "60 g"],
+  // scope: 같은 값이 화면 여러 곳에 있어(/brews/2의 `20 g`는 실측값 행과 비교표 둘 다) 자리를 좁힌다.
+  // `toHaveCSS`로 재는 이유 — 비교표는 레시피 응답이 온 뒤 다시 그려져, 한 번만 `evaluate`하면
+  // 떨어져 나간 노드를 읽어 빈 문자열이 나온다(CI에서 실제로 났다).
+  // installSwStubs도 거는 이유 — 레시피 상세 요청은 Service Worker가 가로채는데 page.route는 SW의
+  // fetch를 못 잡는다. 부하가 걸려 SW가 먼저 제어권을 잡으면 레시피 조회가 실패해 비교표가 아예
+  // 없는 회차가 생겼다(stubs.ts의 installSwStubs 주석).
+  const CASES: [string, string | null, string][] = [
+    ["/brews", "table", "20 g"],
+    ["/brews", "table", "92 °C"],
+    ["/brews/2", "[data-compare]", "30 g"],
+    ["/brews/2", "[data-compare]", "20 g"],
+    ["/recipes/12", null, "60 g"],
   ];
 
-  for (const [path, kind, value] of CASES) {
+  for (const [path, scope, value] of CASES) {
     test(`AC-GRAMMAR-22 · ${path}의 ${value}가 mono 500이다`, async ({
       page,
+      context,
     }) => {
+      await installSwStubs(context);
       await installStubs(page);
       await page.goto(path);
-      const target =
-        kind === "cell"
-          ? page.getByRole("cell", { name: value, exact: true }).first()
-          : page.getByText(value, { exact: true }).first();
-      await expect(target).toBeVisible();
+      const root = scope === null ? page.locator("body") : page.locator(scope);
+      const target = root.getByText(value, { exact: true }).first();
 
-      const style = await target.evaluate((el) => {
-        const s = getComputedStyle(el);
-        return { family: s.fontFamily, weight: s.fontWeight };
-      });
-      expect(style.family).toMatch(/^"?IBM Plex Mono/);
-      expect(style.weight).toBe("500");
+      await expect(target).toHaveCSS("font-family", /^"?IBM Plex Mono/);
+      await expect(target).toHaveCSS("font-weight", "500");
     });
   }
 });

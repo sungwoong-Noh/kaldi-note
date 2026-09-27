@@ -285,7 +285,7 @@ supersedes:
   `globals.css`의 `text-metric`·`text-metric-hero`·`text-card-metric`에 `font-weight: 500`을 넣고,
   같은 요소에 붙은 `font-semibold`·`font-bold`를 뗀다(`grep -rn "text-metric.*font-semibold\|font-semibold.*text-metric"`).
 
-- [ ] **Task 3: secondary 버튼** — Covers: AC-GRAMMAR-11
+- [x] **Task 3: secondary 버튼** — Covers: AC-GRAMMAR-11
 
   ```ts
   secondary: "border border-border bg-transparent text-ink enabled:hover:bg-sunken",

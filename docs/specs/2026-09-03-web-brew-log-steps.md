@@ -73,7 +73,7 @@ plan: docs/archive/plans/2026-09-03-plan-web-brew-log-steps.md
 
 - **Given** `/brews/42`를 연다. 로그의 `recipeId`가 `12`이고, `GET /recipes/12`가 `steps` 6개를 주며 그중 첫째가 `stepOrder: 1`·`stepType: "BLOOM"`·`waterG: 50.0`이다
 - **When** 화면이 그려진다
-- **Then** `푸어 스텝`이라는 제목이 화면에 있고, 목록 항목이 `6`개이며, 첫 항목에 `블룸`과 `50g`이 보인다
+- **Then** `푸어 스텝`이라는 제목이 화면에 있고, 목록 항목이 `6`개이며, 첫 항목에 `블룸`과 `50 g`이 보인다 (표기 갱신 2026-09-27 — `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-06)
 - **검증** 화면 테스트 `src/app/brews/[id]/page.test.tsx`
 
 #### AC-WEBLOGSTEP-02 · 스텝 절은 실측값 뒤, 추출 분석 앞에 온다

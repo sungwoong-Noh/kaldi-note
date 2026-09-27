@@ -82,13 +82,17 @@ plan: docs/archive/plans/2026-09-17-plan-small-features.md
 
 - **Given** 레시피 원두량 `30.0g`, 실측 원두량 `31.0g`인 기록
 - **When** 기록 상세의 비교표를 읽는다
-- **Then** 그 행에 **「원두를 1.0g 더 썼습니다」**가 있다
+- **Then** 그 행에 **「원두를 1.0 g 더 썼습니다」**가 있다
+
+> **표기 갱신 (2026-09-27).** 수치 표기가 목업에 맞춰 바뀌었다 — [`2026-09-27-web-shell-grammar.md`](2026-09-27-web-shell-grammar.md) AC-GRAMMAR-17. 위 값은 갱신한 값이다.
 
 #### AC-SMALL-02 · 적게 쓴 경우를 구분한다
 
 - **Given** 레시피 물량 `500.0g`, 실측 물량 `498.0g`
 - **When** 비교표를 읽는다
-- **Then** **「물을 2.0g 덜 썼습니다」**가 있다
+- **Then** **「물을 2.0 g 덜 썼습니다」**가 있다
+
+> **표기 갱신 (2026-09-27).** 수치 표기가 목업에 맞춰 바뀌었다 — [`2026-09-27-web-shell-grammar.md`](2026-09-27-web-shell-grammar.md) AC-GRAMMAR-17. 위 값은 갱신한 값이다.
 
 #### AC-SMALL-03 · 시간은 빠르다/늦다로 말한다
 
@@ -100,7 +104,9 @@ plan: docs/archive/plans/2026-09-17-plan-small-features.md
 
 - **Given** 레시피 물 온도 `93°C`, 실측 `96°C`
 - **When** 비교표를 읽는다
-- **Then** **「3°C 높게 내렸습니다」**가 있다
+- **Then** **「3 °C 높게 내렸습니다」**가 있다
+
+> **표기 갱신 (2026-09-27).** 수치 표기가 목업에 맞춰 바뀌었다 — [`2026-09-27-web-shell-grammar.md`](2026-09-27-web-shell-grammar.md) AC-GRAMMAR-17. 위 값은 갱신한 값이다.
 
 #### AC-SMALL-05 · 같으면 문구가 없다
 

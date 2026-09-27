@@ -121,12 +121,8 @@ hover를 함께 정의하는 이유는 지금 앱 전체에 hover가 세 곳밖�
 - **And** 배경이 `--accent` 값과 **다르다**
 - **검증** e2e `button-color.spec.ts`
 
-#### AC-BTN-05 · secondary가 표면색 + 1px 테두리다
-
-- **Given** 라이트 모드, `<Button variant="secondary">`
-- **When** 배경색·테두리·글자색을 잰다
-- **Then** 배경이 `--surface`, 테두리가 `1px` 두께에 `--border` 색, 글자가 `--ink`다
-- **검증** e2e `button-color.spec.ts`
+**AC-BTN-05 (대체됨)** · secondary가 표면색(`--surface`) + 1px 테두리라던 원래 AC는, 화면 목업의 secondary가 배경 없이
+테두리만 있어 `docs/specs/2026-09-27-web-shell-grammar.md`의 AC-GRAMMAR-11(배경 투명 + 1px `--border` + `--ink`)로 대체됐다.
 
 #### AC-BTN-06 · ghost는 배경이 없다
 

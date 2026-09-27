@@ -53,6 +53,9 @@ plan: docs/archive/plans/2026-09-20-plan-web-header-rollout.md
 - **Then** 각 화면 상단에 `svg` 요소와 텍스트 `kaldi·note`가 있다
 - **검증** e2e `web-header-rollout.spec.ts`
 
+> **일부 대체 (2026-09-27).** 상세·도구 화면(`/recipes/[id]`·`/brews/[id]`·`/gear/grind-converter`)은 `<1100px`에서 로고 대신
+> 「뒤로」다 — `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-12. 이 AC는 `/recipes`·`/brews`·`/more`에서만 유효하다.
+
 #### AC-WEBHDR-02 · 그 헤더에는 네비·CTA·아바타가 없다
 
 - **Given** 뷰포트 폭 `390px`, `/recipes`를 연다
@@ -64,8 +67,11 @@ plan: docs/archive/plans/2026-09-20-plan-web-header-rollout.md
 
 - **Given** 뷰포트 폭 `1440px`, `/recipes`를 연다
 - **When** 상단 헤더를 본다
-- **Then** `홈`·`레시피`·`기록` 링크, `기록하기` 버튼(목적지 `/recipes`), 아바타 링크가 모두 보인다
+- **Then** `홈`·`레시피`·`내 잔` 링크, `새 레시피` 버튼(목적지 `/recipes/new`), 아바타 링크가 모두 보인다
 - **검증** e2e `web-header-rollout.spec.ts`
+
+> **CTA 부분 대체 (2026-09-27).** CTA가 화면별이 되어 `/recipes`는 `새 레시피`다 —
+> `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-05. 위 값은 갱신한 값이다.
 
 #### AC-WEBHDR-04 · 현재 화면의 네비 링크가 감전다
 

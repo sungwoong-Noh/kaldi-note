@@ -69,6 +69,7 @@ supersedes:
 
 ## 인수 조건
 
+> 스텁 id: 레시피 상세 `/recipes/12`, 기록 상세 `/brews/2`, 프로필 `/u/11`(본인, `e2e/stubs.ts`).
 > 검증 파일: 순수 함수 `src/lib/format.test.ts`·`src/lib/navScreens.test.ts`·`src/features/brewlog/diffPhrase.test.ts`,
 > 컴포넌트 `src/components/layout/*.test.tsx`, E2E `e2e/shell-grammar.spec.ts`(기존 `stubs.ts`로 390/1280).
 > 픽셀 비교는 `e2e/tolerance.ts`의 허용 오차(±1px)를 쓴다.
@@ -78,14 +79,14 @@ supersedes:
 #### AC-GRAMMAR-01 · 웹 목록 화면은 전폭이고 거터가 48px다
 
 - **Given** 뷰포트 `1280×900`
-- **When** `/recipes`·`/brews`·`/u/1`을 각각 연다
+- **When** `/recipes`·`/brews`·`/u/11`을 각각 연다
 - **Then** `<main>`의 폭이 `1280`px, computed `padding-left`·`padding-right`가 각각 `48px`다
 - **검증** e2e
 
 #### AC-GRAMMAR-02 · 웹 상세·폼·도구 화면은 672px 폭을 유지한다
 
 - **Given** 뷰포트 `1280×900`
-- **When** `/recipes/1`·`/brews/1`·`/gear/grind-converter`를 각각 연다
+- **When** `/recipes/12`·`/brews/2`·`/gear/grind-converter`를 각각 연다
 - **Then** `<main>`의 폭이 `672`px 이하다
 - **검증** e2e
 
@@ -131,16 +132,17 @@ supersedes:
 
 #### AC-GRAMMAR-08 · 화면에서 두 표기가 제자리에 쓰인다
 
-- **Given** 레시피 `doseG=30.0`, `waterG=500.0`, `waterTempC=92.0`, `totalTimeSeconds=210`과 그 레시피로 쓴 기록 `actualDoseG=20.0`
-- **When** 레시피 상세, 그 기록의 상세, 기록 작성 화면(`/brews/new?recipeId=…`)을 연다
-- **Then** 레시피 상세 히어로에 `30 g`이, 기록 상세 비교표 셀에 `30 g`과 `20 g`이, 기록 작성 히어로 아래 줄에
-  `30g → 500g · 92°C · 3:30`이 보인다. 화면 어디에도 `30.0g`·`20.0g`이 없다
-- **검증** 컴포넌트 테스트 `RecipeDetail.test.tsx`·`BrewDetail.test.tsx`·`src/app/brews/new/page.test.tsx`
+- **Given** 레시피 `doseG=30.0`, `waterG=500.0` / 기록 `actualDoseG=20.0`, `actualWaterG=300.0`, `actualWaterTempC=92.0` /
+  기록 작성 화면의 레시피 `doseG=20.0`, `waterG=300.0`, `waterTempC=92.0`, `totalTimeSeconds=210`
+- **When** 레시피 상세, 기록 상세, 기록 작성 화면(`/brews/new?recipeId=…`)을 연다
+- **Then** 레시피 상세에 `30 g`·`500 g`이 보이고 본문 어디에도 `\d.0g` 형태가 없다. 기록 상세에 `20 g`·`300 g`·`92 °C`가
+  보인다. 기록 작성 히어로 아래 줄은 `20g → 300g · 92°C · 3:30`이다
+- **검증** 컴포넌트 테스트 `src/app/recipes/[id]/page.test.tsx`(AC-WEB-14와 함께)·`src/app/brews/[id]/page.test.tsx`(AC-WEBBREW-40과 함께)·`src/app/brews/new/page.test.tsx`(AC-BREWFORM-03과 함께)
 
 #### AC-GRAMMAR-09 · 수치 유틸의 굵기는 500이다
 
 - **Given** 뷰포트 `1280×900`
-- **When** `/recipes`·`/recipes/1`·`/brews/1`에서 `text-metric`·`text-metric-hero`·`text-card-metric` 클래스를 가진 요소를 모두 모은다
+- **When** `/recipes`·`/recipes/12`·`/brews/2`에서 `text-metric`·`text-metric-hero`·`text-card-metric` 클래스를 가진 요소를 모두 모은다
 - **Then** 모은 요소가 1개 이상이고, 전부 computed font-weight가 `500`이다
 - **검증** e2e
 
@@ -163,7 +165,7 @@ supersedes:
 #### AC-GRAMMAR-12 · 모바일 상세·도구 화면은 탭 바 대신 뒤로를 둔다
 
 - **Given** 뷰포트 `390×844`
-- **When** `/recipes/1`·`/brews/1`·`/u/1`·`/gear/grind-converter`를 각각 연다
+- **When** `/recipes/12`·`/brews/2`·`/u/11`·`/gear/grind-converter`를 각각 연다
 - **Then** `nav[aria-label="주요 화면"]`이 없고, 텍스트 `kaldi·note`가 없고, 이름이 `뒤로`인 링크가 있다.
   그 `href`는 순서대로 `/recipes`·`/brews`·`/`·`/more`다
 - **검증** 단위 테스트 `navScreens.test.ts`(경로 → 뒤로 대상) + e2e
@@ -172,7 +174,7 @@ supersedes:
 
 #### AC-GRAMMAR-13 · 1100px은 웹이고 1099px은 모바일이다
 
-- **Given** `/recipes/1`
+- **Given** `/recipes/12`
 - **When** 뷰포트 폭을 `1100`px / `1099`px로 둔다
 - **Then** `1100`: `뒤로` 링크가 없고 상단 바 링크 3개가 보인다 / `1099`: `뒤로` 링크가 있고 상단 바 링크가 보이지 않는다
 - **검증** e2e
@@ -180,7 +182,7 @@ supersedes:
 #### AC-GRAMMAR-14 · CTA가 없는 화면
 
 - **Given** 뷰포트 `1280×900`
-- **When** `/recipes/1`·`/brews/1`·`/more`·`/u/1`·`/gear/grind-converter`를 각각 연다
+- **When** `/recipes/12`·`/brews/2`·`/more`·`/u/11`·`/gear/grind-converter`를 각각 연다
 - **Then** 상단 바는 보이고, 그 안에 primary 링크가 `0`개다
 - **검증** 컴포넌트 테스트 `WebTopBar.test.tsx`
 
@@ -226,7 +228,7 @@ supersedes:
 
 #### AC-GRAMMAR-20 · 뒤로 링크는 44×44px 이상이다
 
-- **Given** 뷰포트 `390×844`, `/brews/1`
+- **Given** 뷰포트 `390×844`, `/brews/2`
 - **When** `뒤로` 링크의 박스를 잰다
 - **Then** 너비와 높이가 각각 `44`px 이상이다
 - **검증** e2e
@@ -245,6 +247,10 @@ supersedes:
 이전 스펙의 일부 AC만 대체한다(스펙 전체 대체가 아니라 frontmatter `supersedes`는 비워둔다). 구현하면서
 해당 테스트를 새 AC로 옮기고, 이전 스펙의 그 AC에 「(대체됨)」 표시를 단다.
 
+**동작이 바뀐 AC**(WEBSHELL-03·04, BTN-05)는 헤딩을 「(대체됨)」 문단으로 바꾸고 테스트 ID를 새 AC로 옮겼다.
+**값만 바뀐 AC**(표기 리터럴·CTA·탭 크기)는 원래 AC의 값을 갱신하고 「표기 갱신」·「일부 대체」 노트를 달았다 —
+테스트는 두 ID를 함께 단다(예: `AC-WEB-14 · AC-GRAMMAR-08`).
+
 - AC-WEBHDR-01(docs/specs/2026-09-20-web-header-rollout.md)의 상세·도구 화면 부분 → AC-GRAMMAR-12 — 탭 화면에서는 유지
 - AC-WEBSHELL-03·04(docs/specs/2026-09-01-web-shell.md) → AC-GRAMMAR-12 — 모바일 상세에서 탭 바가 사라진다. 웹 상단 바의 활성 표시는 AC-WEBHDR-04가 계속 지킨다
 - AC-BTN-05(docs/specs/2026-09-21-button-color-fidelity.md) → AC-GRAMMAR-11 — `--surface` → 투명. 목업 README 컴포넌트 표(bg `surface`)와 화면 목업(배경 없음)이 어긋나 **화면 목업을 정본으로 정했다**(2026-09-27 사용자 결정)
@@ -256,6 +262,7 @@ supersedes:
 - AC-SMALL-01·02·04(docs/specs/2026-09-17-small-features.md)의 차이 문구 → AC-GRAMMAR-17 — `1.0g` → `1.0 g`, `3°C` → `3 °C`
 
 - AC-WEBHDR-03(docs/specs/2026-09-20-web-header-rollout.md)의 CTA 부분 → AC-GRAMMAR-05 — `/recipes`의 CTA가 `새 레시피`(`/recipes/new`)(구현 중 발견해 추가)
+- AC-WEB-16·AC-WEBLOGSTEP-01·AC-VISUAL-10·11·AC-CONSIST-10의 표기 리터럴(`60g`·`50g`·`92°C`) → AC-GRAMMAR-06 — 값만 갱신(구현 중 발견해 추가)
 - AC-TOUCH-10(docs/specs/2026-09-09-touch-targets.md)의 탭 크기 `90×49.5` → AC-GRAMMAR-10 — `90×58`(구현 중 발견해 추가)
 
 구현 중 이 목록 밖의 테스트가 표기 때문에 깨지면, 그 AC를 이 목록에 추가하고 같은 방식으로 옮긴다.
@@ -341,7 +348,7 @@ supersedes:
   바깥 거터를 올리면 달력이 900px로 눌린다(AC-HOMECAL-84, 구현 중 발견). `UserProfile`은 로컬 `Shell`(`px-4`)을
   쓰고 있어 공용 `Shell`을 감싸게 바꿨다.
 
-- [ ] **Task 8: 이전 AC 정리 + 목업 대조**
+- [x] **Task 8: 이전 AC 정리 + 목업 대조**
 
   「대체하는 이전 AC」의 테스트 ID를 새 AC로 옮기고, 원래 스펙에 「(대체됨)」 표시를 단다.
   `./scripts/check-spec-coverage.sh` 통과를 확인한다.
@@ -350,7 +357,7 @@ supersedes:
 
 ## 수동 확인
 
-- [ ] ★ mockup-checker로 `/`·`/recipes`·`/brews`·`/recipes/1`·`/brews/1`을 `390px`/`1280px`에서 캡처해 목업과 대조한다.
+- [ ] ★ mockup-checker로 `/`·`/recipes`·`/brews`·`/recipes/12`·`/brews/2`를 `390px`/`1280px`에서 캡처해 목업과 대조한다.
   상단 바·탭 바·secondary·수치 표기의 격차가 「큼」 0건이어야 한다. 결과를 PR 본문에 첨부한다
 - [ ] 실제 기기(iOS PWA)에서 탭 바가 홈 인디케이터와 겹치지 않는지(세이프에어리어) 본다
 

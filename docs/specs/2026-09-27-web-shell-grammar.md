@@ -38,6 +38,19 @@ supersedes:
 - 새 색 토큰(다크 포함). 목업의 secondary 테두리 `oklch(0.85 …)`는 기존 `border`(0.88)로 근사한다
 - 활성 탭 재탭 시 맨 위로·탭별 스크롤 위치 유지(README 내비 규칙의 나머지)
 
+### 목업 수치의 근사
+
+간격 스케일(`4·8·12·16·24·48`, 임의값 금지 — AC-SPACE-03)·글자 토큰(AC-READ-10)·모서리 4종(AC-SPACE-04)이 잠겨 있어
+목업 수치 일부를 가장 가까운 허용값으로 근사한다(구현 착수 시 확인, 2026-09-27).
+
+| 자리 | 목업 | 이 스펙 |
+|---|---|---|
+| 웹 상단 바 세로 패딩 | 18px | 16px (`py-4`) |
+| 상단 바 링크 간격 | 26px | 24px (`gap-6`) |
+| 상단 바 링크 글자 | 14.5px | 15px (`text-body`) |
+| 로고 → 내비 | 40px | 40px (`gap-6` + `ml-4`) — 정확 |
+| 탭 밑줄 위 여백 · 모서리 | 7px · 2px | 8px (`mt-2`) · `rounded-full` |
+
 ## 용어
 
 | 용어 | 정의 |
@@ -79,8 +92,8 @@ supersedes:
 
 - **Given** 뷰포트 `1280×900`, `/recipes`
 - **When** 상단 바를 본다
-- **Then** `<header>`의 computed `padding-left`·`padding-right`가 `48px`, `padding-top`·`padding-bottom`이 `18px`다.
-  링크 `홈`의 left − 로고 링크의 right = `40`px, 링크 사이 간격이 `26`px, 링크 글자 크기가 `14.5px`다.
+- **Then** `<header>`의 computed `padding-left`·`padding-right`가 `48px`, `padding-top`·`padding-bottom`이 `16px`다.
+  링크 `홈`의 left − 로고 링크의 right = `40`px, 링크 사이 간격이 `24`px, 링크 글자 크기가 `15px`(`text-body`)다.
   링크 `내 잔`의 right < CTA의 left이고, CTA의 right와 아바타 left 사이가 `16`px, 아바타가 `34×34`px다
 - **검증** e2e
 
@@ -135,7 +148,7 @@ supersedes:
 - **Given** 뷰포트 `390×844`, `/recipes`
 - **When** 탭 바를 본다
 - **Then** 탭 바의 content-box 높이가 `58`px(세이프에어리어 padding 제외), `border-top`이 `1px` `--divider-strong`이다.
-  활성 탭 `레시피`는 글자 `13px`/`600`/`--ink`이고 그 아래 `18×2`px `--ink` 막대(라벨 bottom과 막대 top 사이 `7`px)가 있다.
+  활성 탭 `레시피`는 글자 `13px`/`600`/`--ink`이고 그 아래 `18×2`px `--ink` 막대(라벨 bottom과 막대 top 사이 `8`px, `rounded-full`)가 있다.
   나머지 탭은 `13px`/`400`/`--ink-3`이고 막대가 없다
 - **검증** e2e
 
@@ -283,7 +296,7 @@ supersedes:
 - [ ] **Task 4: 모바일 탭 바** — Covers: AC-GRAMMAR-10
 
   `BottomNav`: `h-[58px]` 그리드 + `pb-[env(safe-area-inset-bottom)]`, `border-divider-strong`, 활성 탭 아래 `after:` 막대
-  (`after:mt-[7px] after:h-0.5 after:w-[18px] after:rounded-[2px] after:bg-ink`). 44px 히트 영역은 58px 높이가 보장한다.
+  (`after:mt-2 after:h-0.5 after:w-[18px] after:rounded-full after:bg-ink`), 글자는 `text-body-sm`(13px). 44px 히트 영역은 58px 높이가 보장한다.
 
 - [ ] **Task 5: 뒤로 규칙** — Covers: AC-GRAMMAR-12, 13, 15, 16, 20
 
@@ -305,7 +318,7 @@ supersedes:
 
 - [ ] **Task 6: 웹 상단 바** — Covers: AC-GRAMMAR-03, 04, 05, 14, 18, 19
 
-  배치를 `[로고 gap-10 내비(gap-[26px], 14.5px)] … [CTA gap-4 아바타 34]`, 패딩 `py-[18px] min-[1100px]:px-12`로 바꾼다.
+  배치를 `[로고 gap-6 + 내비 ml-4 (= 40px), 내비 gap-6, text-body] … [CTA gap-4 아바타 34]`, 패딩 `py-4 min-[1100px]:px-12`로 바꾼다.
   활성 `font-medium text-ink` / 비활성 `text-ink-3`. CTA는 경로 → `{label, href} | null` 표.
 
   ```ts

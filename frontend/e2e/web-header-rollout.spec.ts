@@ -11,15 +11,6 @@ async function delayMe(page: Page, ms: number) {
   });
 }
 
-const TARGET_PAGES = [
-  "/recipes",
-  "/recipes/12",
-  "/brews",
-  "/brews/2",
-  "/more",
-  "/gear/grind-converter",
-];
-
 const TAB_PAGES = ["/recipes", "/brews", "/more"];
 
 const EXCLUDED_PAGES = [
@@ -71,9 +62,11 @@ test.describe("웹 헤더 롤아웃", () => {
     await expect(
       header.getByRole("link", { name: "내 잔", exact: true }),
     ).toBeVisible();
-    const cta = header.getByRole("link", { name: "이 레시피로 내렸다" });
+    // CTA는 화면별이다 — /recipes는 `새 레시피`(docs/specs/2026-09-27-web-shell-grammar.md
+    // AC-GRAMMAR-05가 이 AC의 CTA 부분을 대체했다).
+    const cta = header.getByRole("link", { name: "새 레시피" });
     await expect(cta).toBeVisible();
-    await expect(cta).toHaveAttribute("href", "/recipes");
+    await expect(cta).toHaveAttribute("href", "/recipes/new");
     await expect(header.getByRole("link", { name: "더보기" })).toBeVisible();
   });
 

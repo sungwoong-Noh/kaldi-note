@@ -146,3 +146,90 @@ test.describe("뒤로 경계", () => {
     await expect(header.getByRole("link", { name: "홈" })).toBeHidden();
   });
 });
+
+test.describe("웹 상단 바", () => {
+  test.use({ viewport: WEB });
+
+  test("AC-GRAMMAR-03 · 로고 옆에 내비를 두고 오른쪽에 CTA·아바타를 둔다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.goto("/recipes");
+    const header = page.locator("header");
+    const avatar = header.getByRole("link", { name: "더보기" }).locator("> *");
+    await expect(avatar).toBeVisible();
+
+    const padding = await header.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return [s.paddingLeft, s.paddingRight, s.paddingTop, s.paddingBottom];
+    });
+    expect(padding).toEqual(["48px", "48px", "16px", "16px"]);
+
+    const box = async (name: string) =>
+      (await header.getByRole("link", { name, exact: true }).boundingBox())!;
+    const logo = (await header.getByRole("link").first().boundingBox())!;
+    const [home, recipes, cups, cta] = [
+      await box("홈"),
+      await box("레시피"),
+      await box("내 잔"),
+      await box("새 레시피"),
+    ];
+    const face = (await avatar.boundingBox())!;
+
+    expect(withinTolerance(home.x - (logo.x + logo.width), 40)).toBe(true);
+    expect(withinTolerance(recipes.x - (home.x + home.width), 24)).toBe(true);
+    expect(withinTolerance(cups.x - (recipes.x + recipes.width), 24)).toBe(true);
+    expect(cups.x + cups.width).toBeLessThan(cta.x);
+    expect(withinTolerance(face.x - (cta.x + cta.width), 16)).toBe(true);
+    expect(face).toMatchObject({ width: 34, height: 34 });
+    expect(
+      await header
+        .getByRole("link", { name: "홈", exact: true })
+        .evaluate((el) => getComputedStyle(el).fontSize),
+    ).toBe("15px");
+  });
+
+  test("AC-GRAMMAR-04 · 활성 링크는 ink 500, 비활성은 ink-3 400이다", async ({
+    page,
+  }) => {
+    await installStubs(page);
+    await page.goto("/recipes");
+    const header = page.locator("header");
+    const style = (name: string) =>
+      header
+        .getByRole("link", { name, exact: true })
+        .evaluate((el) => {
+          const s = getComputedStyle(el);
+          return { color: s.color, weight: s.fontWeight };
+        });
+
+    expect(await style("레시피")).toEqual({
+      color: await tokenColor(page, "ink"),
+      weight: "500",
+    });
+    const inkThree = await tokenColor(page, "ink-3");
+    for (const name of ["홈", "내 잔"]) {
+      expect(await style(name)).toEqual({ color: inkThree, weight: "400" });
+    }
+  });
+});
+
+test.describe("매핑에 없는 경로", () => {
+  test.use({ viewport: WEB });
+
+  test("AC-GRAMMAR-19 · /offline에서 상단 바가 깨지지 않는다", async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on("console", (msg) => {
+      if (msg.type() === "error") errors.push(msg.text());
+    });
+    await installStubs(page);
+    await page.goto("/offline");
+
+    const header = page.locator("header");
+    await expect(header.getByRole("img", { name: "kaldi-note" })).toBeVisible();
+    await expect(header.locator("a.bg-ink")).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+});

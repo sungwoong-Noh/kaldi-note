@@ -13,8 +13,20 @@ const NAV_LINKS = [
 ];
 
 /**
+ * 화면별 CTA. 정확히 일치하는 경로에만 붙는다 — 상세 화면의 CTA(담기·수정·공유)는 데이터에
+ * 따라 달라져 각 화면 스펙이 넣는다(docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-05·14).
+ * 기록은 레시피를 고른 뒤에만 시작하므로 `기록하기`도 `/recipes`로 간다.
+ */
+const CTA: Record<string, { label: string; href: string }> = {
+  "/": { label: "이 레시피로 내렸다", href: "/recipes" },
+  "/recipes": { label: "새 레시피", href: "/recipes/new" },
+  "/brews": { label: "기록하기", href: "/recipes" },
+};
+
+/**
  * 전역 상단 헤더. `BottomNav`가 보이는 화면 전부에 뜬다.
- * 로고+워드마크는 모든 폭에서, 네비·CTA·아바타는 `≥1100px`에서만 보인다.
+ * 로고+워드마크는 모든 폭에서(상세·도구 화면의 `<1100px`은 「뒤로」), 네비·CTA·아바타는
+ * `≥1100px`에서만 보인다.
  *
  * <p>2026-09-20 갱신: 홈 전용 컴포넌트였다가 `layout.tsx`로 옮겨 전역화했다
  * (docs/specs/2026-09-20-web-header-rollout.md). `me`를 prop으로 받지 않고
@@ -33,9 +45,14 @@ export function WebTopBar() {
   // (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-12).
   const back = backHref(pathname);
 
+  const cta = CTA[pathname];
+
+  // 배치는 목업 RW1 헤더다 — 로고 옆에 내비, 오른쪽에 CTA + 아바타
+  // (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-03). 로고→내비 40px은 간격
+  // 스케일에 없어 `gap-6`(24) + `ml-4`(16)로 만든다.
   return (
     <header
-      className={`flex items-center justify-between gap-6 border-border bg-paper px-6 py-3 ${back ? "min-[1100px]:border-b" : "border-b"}`}
+      className={`flex items-center justify-between gap-6 border-border bg-paper px-6 py-3 min-[1100px]:px-12 min-[1100px]:py-4 ${back ? "min-[1100px]:border-b" : "border-b"}`}
     >
       {back && (
         <Link
@@ -45,17 +62,17 @@ export function WebTopBar() {
           뒤로
         </Link>
       )}
-      <Link
-        href="/"
-        className={`min-h-11 items-center gap-2 ${back ? "hidden min-[1100px]:flex" : "flex"}`}
-      >
-        <LogoSymbol />
-        <span className="text-card-title font-semibold tracking-[-0.03em]">
-          kaldi<span className="text-accent-soft">·</span>note
-        </span>
-      </Link>
-      <div className="hidden min-[1100px]:flex items-center gap-6">
-        <nav className="flex items-center gap-4 text-body">
+      <div className="flex items-center gap-6">
+        <Link
+          href="/"
+          className={`min-h-11 items-center gap-2 ${back ? "hidden min-[1100px]:flex" : "flex"}`}
+        >
+          <LogoSymbol />
+          <span className="text-card-title font-semibold tracking-[-0.03em]">
+            kaldi<span className="text-accent-soft">·</span>note
+          </span>
+        </Link>
+        <nav className="ml-4 hidden items-center gap-6 text-body min-[1100px]:flex">
           {NAV_LINKS.map((link) => {
             const active = isActive(link.href, pathname);
             return (
@@ -63,28 +80,30 @@ export function WebTopBar() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={active ? "font-semibold text-accent" : undefined}
+                className={active ? "font-medium text-ink" : "text-ink-3"}
               >
                 {link.label}
               </Link>
             );
           })}
         </nav>
-        <div className="flex items-center gap-4">
-          <ButtonLink href="/recipes" variant="primary">
-            이 레시피로 내렸다
+      </div>
+      <div className="hidden items-center gap-4 min-[1100px]:flex">
+        {cta && (
+          <ButtonLink href={cta.href} variant="primary">
+            {cta.label}
           </ButtonLink>
-          {me.data && (
-            <Link href="/more" aria-label="더보기">
-              <Avatar
-                nickname={me.data.nickname}
-                profileImageUrl={me.data.profileImageUrl}
-                size={36}
-                userId={me.data.id}
-              />
-            </Link>
-          )}
-        </div>
+        )}
+        {me.data && (
+          <Link href="/more" aria-label="더보기">
+            <Avatar
+              nickname={me.data.nickname}
+              profileImageUrl={me.data.profileImageUrl}
+              size={34}
+              userId={me.data.id}
+            />
+          </Link>
+        )}
       </div>
     </header>
   );

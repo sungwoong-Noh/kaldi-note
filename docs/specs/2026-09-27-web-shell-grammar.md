@@ -255,6 +255,7 @@ supersedes:
 - AC-BREWFORM-03(docs/specs/2026-09-27-brew-form-redesign.md)의 `16.0g → 250.0g · 92°C · 3:30` → AC-GRAMMAR-07·08 — `16g → 250g · 92°C · 3:30`
 - AC-SMALL-01·02·04(docs/specs/2026-09-17-small-features.md)의 차이 문구 → AC-GRAMMAR-17 — `1.0g` → `1.0 g`, `3°C` → `3 °C`
 
+- AC-WEBHDR-03(docs/specs/2026-09-20-web-header-rollout.md)의 CTA 부분 → AC-GRAMMAR-05 — `/recipes`의 CTA가 `새 레시피`(`/recipes/new`)(구현 중 발견해 추가)
 - AC-TOUCH-10(docs/specs/2026-09-09-touch-targets.md)의 탭 크기 `90×49.5` → AC-GRAMMAR-10 — `90×58`(구현 중 발견해 추가)
 
 구현 중 이 목록 밖의 테스트가 표기 때문에 깨지면, 그 AC를 이 목록에 추가하고 같은 방식으로 옮긴다.
@@ -319,7 +320,7 @@ supersedes:
   }
   ```
 
-- [ ] **Task 6: 웹 상단 바** — Covers: AC-GRAMMAR-03, 04, 05, 14, 18, 19
+- [x] **Task 6: 웹 상단 바** — Covers: AC-GRAMMAR-03, 04, 05, 14, 18, 19
 
   배치를 `[로고 gap-6 + 내비 ml-4 (= 40px), 내비 gap-6, text-body] … [CTA gap-4 아바타 34]`, 패딩 `py-4 min-[1100px]:px-12`로 바꾼다.
   활성 `font-medium text-ink` / 비활성 `text-ink-3`. CTA는 경로 → `{label, href} | null` 표.

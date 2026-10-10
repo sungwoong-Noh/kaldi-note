@@ -112,3 +112,4 @@ node scripts/generate-contract-types.mjs
 | 계약 | 스펙 | 상태 |
 |---|---|---|
 | `2026-09-21-recipes-and-brews-search-api.json` | `2026-09-21-recipes-and-brews-search-api.md` | 스펙 `승인` — 테스트는 건너뛰는 중. M1에서 구현하면서 `구현완료`로 올리면 강제된다 |
+| `2026-10-10-my-cups-ledger.json` | `2026-10-10-my-cups-ledger.md` | 스펙 `초안` — `GET /brew-logs`에 `month`·`minRating` 추가 |

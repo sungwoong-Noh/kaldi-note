@@ -1,0 +1,63 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "내 잔 목록 — 원장 정합 + 이번 달·별점 필터", "version": "1.0.0" },
+  "paths": {
+    "/api/v1/brew-logs": {
+      "get": {
+        "operationId": "listBrewLogs",
+        "parameters": [
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "size", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "recipeId", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "userId", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "beanBatchId", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "date", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "month", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "minRating", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PageOfBrewLogSummary" } }
+            }
+          },
+          "400": { "description": "month·minRating 형식·범위 위반 — code INVALID_REQUEST" },
+          "401": { "description": "인증 없음" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BrewLogSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "userId": { "type": "integer" },
+          "recipeId": { "type": "integer" },
+          "beanBatchId": { "type": "integer", "nullable": true },
+          "brewedAt": { "type": "string" },
+          "actualDoseG": { "type": "number" },
+          "actualWaterTempC": { "type": "number" },
+          "actualTotalTimeSeconds": { "type": "integer", "nullable": true },
+          "extractionYieldPercent": { "type": "number", "nullable": true },
+          "rating": { "type": "number", "nullable": true }
+        },
+        "required": ["id", "userId", "recipeId", "brewedAt", "actualDoseG", "actualWaterTempC"]
+      },
+      "PageOfBrewLogSummary": {
+        "type": "object",
+        "properties": {
+          "content": { "type": "array", "items": { "$ref": "#/components/schemas/BrewLogSummary" } },
+          "page": { "type": "integer" },
+          "size": { "type": "integer" },
+          "totalElements": { "type": "integer" },
+          "totalPages": { "type": "integer" },
+          "hasNext": { "type": "boolean" }
+        },
+        "required": ["content", "page", "size", "totalElements", "totalPages", "hasNext"]
+      }
+    }
+  }
+}

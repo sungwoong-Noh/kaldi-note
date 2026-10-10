@@ -8,8 +8,12 @@ import {
   brewLogWithTds,
   grindedRecipe,
   brewLogWithoutTds,
+  brewers,
+  fritzRoaster,
   kasuyaRecipe,
   me,
+  yirgacheffeBatch,
+  yirgacheffeProduct,
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
@@ -215,7 +219,7 @@ describe("BrewsPage", () => {
     );
   });
 
-  it("AC-WEBBREW-35 · 항목에 날짜·레시피 제목·별점이 있다", async () => {
+  it("AC-WEBBREW-35 · AC-MYCUPS-13 · 항목에 날짜·레시피 제목·별점이 있다", async () => {
     server.use(
       http.get(LIST_URL, () =>
         HttpResponse.json(
@@ -234,7 +238,7 @@ describe("BrewsPage", () => {
     renderWithQuery(<BrewsPage />);
 
     expect(await screen.findByText("Kasuya 4:6")).toBeInTheDocument();
-    expect(screen.getByText("2026-08-31")).toBeInTheDocument();
+    expect(screen.getByText("08.31")).toBeInTheDocument();
     expect(screen.getByText("4.5")).toBeInTheDocument();
   });
 
@@ -288,7 +292,7 @@ describe("BrewsPage", () => {
       await screen.findByRole("columnheader", { name: "날짜" }),
     ).toBeInTheDocument();
     for (const header of [
-      "레시피/원두",
+      "레시피 / 원두",
       "원두량",
       "온도",
       "시간",
@@ -603,5 +607,74 @@ describe("내 잔 — 모바일 원장 행", () => {
     // 별점도 없는 행은 오른쪽 자리가 비고 `·`가 남지 않는다.
     expect(screen.queryByText(/^\s*·|·\s*$/)).toBeNull();
     expect(document.querySelectorAll("[data-ledger-accent]")).toHaveLength(1);
+  });
+});
+
+describe("내 잔 — 웹 표 보조줄", () => {
+  beforeEach(() => {
+    server.use(
+      http.get(`${BASE}/gear/brewers`, () => HttpResponse.json(brewers)),
+      // grindedRecipe에는 brewerId가 없다 — 보조줄의 드리퍼를 보려고 2(Hario V60 02)를 준다.
+      http.get(`${BASE}/recipes/12`, () =>
+        HttpResponse.json({ ...grindedRecipe, id: 12, title: "Kasuya 4:6", brewerId: 2 }),
+      ),
+      http.get(`${BASE}/bean-batches/3`, () => HttpResponse.json(yirgacheffeBatch)),
+      http.get(`${BASE}/bean-products/:id`, () => HttpResponse.json(yirgacheffeProduct)),
+      http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
+      // 드리퍼도 원두도 없는 경우를 만들려고 brewerId 없는 레시피를 둔다.
+      http.get(`${BASE}/recipes/17`, () =>
+        HttpResponse.json({ ...grindedRecipe, id: 17, title: "드리퍼 없음", brewerId: undefined }),
+      ),
+    );
+  });
+
+  it("AC-MYCUPS-15 · 보조줄은 원두 · 드리퍼, 원두가 없으면 드리퍼만, 둘 다 없으면 없다", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(
+          pageOf([
+            { ...brewLogWithTds, id: 2 },
+            { ...brewLogWithTds, id: 5, beanBatchId: undefined },
+            { ...brewLogWithTds, id: 6, beanBatchId: undefined, recipeId: 17 },
+          ]),
+        ),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("프릿츠 예가체프 · Hario V60 02")).toBeInTheDocument();
+    expect(screen.getByText("Hario V60 02")).toBeInTheDocument();
+    expect(await screen.findByText("드리퍼 없음")).toBeInTheDocument();
+    expect(document.querySelectorAll("[data-ledger-sub]")).toHaveLength(2);
+    // 점 자리는 원두가 없어도 비워 둔다 — 제목의 왼쪽 선이 행마다 같다.
+    expect(document.querySelectorAll("[data-ledger-dot]")).toHaveLength(3);
+  });
+
+  it("AC-MYCUPS-24 · 보조줄·점을 위해 새 API를 부르지 않는다", async () => {
+    const paths = new Set<string>();
+    const record = ({ request }: { request: Request }) => {
+      paths.add(new URL(request.url).pathname);
+    };
+    server.events.on("request:start", record);
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+    );
+
+    renderWithQuery(<BrewsPage />);
+    expect(await screen.findByText("프릿츠 예가체프 · Hario V60 02")).toBeInTheDocument();
+    server.events.removeListener("request:start", record);
+
+    const allowed = [
+      /^\/api\/v1\/users\/me$/,
+      /^\/api\/v1\/brew-logs$/,
+      /^\/api\/v1\/brew-logs\/stats$/,
+      /^\/api\/v1\/recipes\/\d+$/,
+      /^\/api\/v1\/gear\/brewers$/,
+      /^\/api\/v1\/bean-batches\/\d+$/,
+      /^\/api\/v1\/bean-products\/\d+$/,
+      /^\/api\/v1\/roasters$/,
+    ];
+    expect([...paths].filter((path) => !allowed.some((re) => re.test(path)))).toEqual([]);
   });
 });

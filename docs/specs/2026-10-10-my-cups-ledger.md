@@ -140,6 +140,7 @@ supersedes:
 - **검증** 컴포넌트 테스트 `BrewsPage`(라벨·값) + e2e(크기)
 
 > AC-RECIPESBREWS-76의 라벨 `최빈 원두량`을 이 AC가 `가장 많이 쓴 원두량`으로 갱신한다(목업 BW1). 값은 그대로다.
+> AC-WEBBREW-35의 날짜 `2026-08-31`은 AC-MYCUPS-13 표기 `08.31`로 갱신했다(구현 중 발견해 추가).
 
 #### AC-MYCUPS-11 · 모바일만 하단 전폭 「기록하기」가 있다
 
@@ -278,7 +279,7 @@ supersedes:
 
   kit `LedgerRow` + `formatLedgerDate(brewedAt, today)`(`src/lib/format.ts`).
 
-- [ ] **Task 5: 웹 표 · 보조줄** — Covers: AC-MYCUPS-09, 15, 24
+- [x] **Task 5: 웹 표 · 보조줄** — Covers: AC-MYCUPS-09, 15, 24
 
   행 컴포넌트 안에서 `useBeanLabel`·`useRoastLevel`, 페이지에서 `useBrewers` 한 번.
 

@@ -405,8 +405,11 @@ plan: docs/archive/plans/2026-08-31-plan-web-brew-log.md
 
 - **Given** 로그 하나의 `brewedAt`이 `2026-08-31T09:00:00Z`, `recipeId`가 `1`, `rating`이 `4.5`이고 `GET /recipes/1`이 제목 `Kasuya 4:6`을 준다
 - **When** `/brews`를 연다
-- **Then** 그 항목에 `2026-08-31`과 `Kasuya 4:6`과 `4.5`가 있다
+- **Then** 그 항목에 `08.31`과 `Kasuya 4:6`과 `4.5`가 있다
 - **검증** 페이지 테스트 `BrewsPage.test.tsx`
+
+> **표기 갱신 (2026-10-10).** 날짜가 목업 BW1의 원장 표기 `08.31 월`로 바뀌었다 —
+> [`2026-10-10-my-cups-ledger.md`](2026-10-10-my-cups-ledger.md) AC-MYCUPS-13. 원래 값은 `2026-08-31`이었다.
 
 #### AC-WEBBREW-36 · EY가 없는 항목은 그 자리가 비어 있다
 

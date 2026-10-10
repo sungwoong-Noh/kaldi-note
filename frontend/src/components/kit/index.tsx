@@ -139,7 +139,8 @@ export function LedgerRow({
 }) {
   return (
     <div className="flex items-start gap-[13px] border-t border-divider-strong py-[15px]">
-      <span className="mt-[5px] flex shrink-0">
+      {/* 점이 없어도 10px 자리를 남긴다 — 제목의 왼쪽 선이 행마다 같아야 한다. */}
+      <span data-ledger-dot className="mt-[5px] flex size-[10px] shrink-0">
         <RoastDot roastLevel={roastLevel} size={10} />
       </span>
       <div className="min-w-0 flex-1">

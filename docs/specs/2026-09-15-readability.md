@@ -222,96 +222,30 @@ muted  #545454   7.57:1   「읽어도 되고 안 읽어도 된다」   ← 이�
 
 ### 글자 — 소스 검사
 
-#### AC-READ-07 · 앱 코드에 `text-xl`과 `text-xs`가 0곳이다
+**AC-READ-07 (대체됨)** · 「앱 코드에 `text-xl`과 `text-xs`가 0곳이다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** `frontend/src` 아래 `.tsx` 중 `*.test.tsx`가 아닌 파일 전부
-- **When** `text-xl`·`text-xs` 클래스를 센다
-- **Then** 둘 다 **0곳**이다
-- **검증** 단위 테스트 `designTokens.test.ts`
+**AC-READ-08 (대체됨)** · 「다섯 단계가 각각 쓰인다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-#### AC-READ-08 · 다섯 단계가 각각 쓰인다
+**AC-READ-09 (대체됨)** · 「허용된 5단계 밖의 크기 클래스가 없다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** 앱 코드 전부
-- **When** 다섯 클래스를 센다
-- **Then** `text-4xl` · `text-2xl` · `text-lg` · `text-base` · `text-sm`이 **각각 1곳 이상**이다
-- **검증** 단위 테스트 `designTokens.test.ts`
+**AC-READ-10 (대체됨)** · 「임의값 크기가 별 아이콘 1곳뿐이다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-> **갱신 (2026-09-15, 두 번째).** 처음에는 개수를 `4/15/18/127/20`으로 박았고 치환 순서
-> 사고(이중 변환)를 잡는 것이 목적이었다. **그 일은 끝났고, 이제는 컴포넌트를 하나 추가할
-> 때마다 승인된 AC를 고쳐야 하는 부담만 남았다** — 실제로 `structure` 스펙 구현 중 두 번
-> 깨졌다. `AC-READ-20`이 같은 이유로 숫자를 뺐다.
->
-> 회귀는 `AC-READ-07`(`text-xl`·`text-xs`가 0곳)과 `AC-READ-09`(허용목록)가 막는다.
-> 숫자를 뺀 뒤에도 검사가 비어 있지 않은지 돌연변이로 확인했다 — `h2`에 `text-3xl`을 넣으니
-> `AC-READ-09`·`AC-READ-21`·`AC-VISUAL-05`가 함께 빨개졌다.
-
-#### AC-READ-09 · 허용된 5단계 밖의 크기 클래스가 없다
-
-- **Given** 앱 코드 전부
-- **When** `text-` 로 시작하는 크기 클래스를 모은다
-- **Then** `text-4xl` · `text-2xl` · `text-lg` · `text-base` · `text-sm` **다섯 개뿐**이다
-- **검증** 단위 테스트 `designTokens.test.ts`
-
-#### AC-READ-10 · 임의값 크기가 별 아이콘 1곳뿐이다
-
-- **Given** 앱 코드 전부
-- **When** `text-[` 로 시작하는 임의값 크기를 센다
-- **Then** **정확히 1곳**이고 그 값이 `text-[22px]`다(별 아이콘 — 글자가 아니라 도형이다)
-- **검증** 단위 테스트 `designTokens.test.ts`
-
-#### AC-READ-21 · 모든 `h2`가 `text-lg`다
-
-- **Given** 앱 코드의 `<h2>` 전부
-- **When** 각 `className`을 읽는다
-- **Then** **전부** `text-lg`를 포함한다 — 크기를 지정하지 않은 `h2`가 하나도 없다
-- **검증** 단위 테스트 `designTokens.test.ts`
-
-> 「크기를 안 줘서 상속받는 제목」을 없애는 조건이다. 상속은 부모가 바뀌면 조용히 따라 움직여서,
-> 본문만 키웠을 때 제목이 본문과 같아지는 사고가 난다.
->
-> **갱신 (2026-09-15).** 처음에는 「13곳」이라고 개수를 박았다. **새 화면을 만들 때마다 깨진다** —
-> `structure` 스펙이 비교표를 더하자 14곳이 됐다. 이 조건의 목적은 개수와 무관하다.
-
+**AC-READ-21 (대체됨)** · 「모든 `h2`가 `text-lg`다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 ### 글자 — 렌더 측정
 
 > 소스 검사는 「금지된 것이 없다」만 본다. 클래스가 붙어 있어도 부모가 짓누르면 크기가 달라지므로
 > 브라우저에서 실제로 잰다.
 
-#### AC-READ-11 · 화면 제목이 24px로 렌더된다
+**AC-READ-11 (대체됨)** · 「화면 제목이 24px로 렌더된다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** `/recipes`를 연다
-- **When** `h1`의 `getComputedStyle().fontSize`를 읽는다
-- **Then** `24px`다
-- **검증** e2e `readability.spec.ts`
+**AC-READ-12 (대체됨)** · 「대표 수치가 36px로 렌더된다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-#### AC-READ-12 · 대표 수치가 36px로 렌더된다
+**AC-READ-13 (대체됨)** · 「대표 수치의 굵기가 600이고 자간이 -0.02em이다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** `/recipes/12`를 연다
-- **When** 대표 수치 요소의 `fontSize`를 읽는다
-- **Then** `36px`다
-- **검증** e2e `readability.spec.ts`
+**AC-READ-14 (대체됨)** · 「본문이 16px로 렌더된다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-#### AC-READ-13 · 대표 수치의 굵기가 600이고 자간이 -0.02em이다
-
-- **Given** `/recipes/12`를 연다
-- **When** 대표 수치의 `fontWeight`와 `letterSpacing`을 읽는다
-- **Then** `fontWeight`가 `600`이고 `letterSpacing`이 **-0.72px**이다(36px × -0.02)
-- **검증** e2e `readability.spec.ts`
-
-#### AC-READ-14 · 본문이 16px로 렌더된다
-
-- **Given** `/recipes/12`를 연다
-- **When** 푸어 스텝 설명 문단의 `fontSize`를 읽는다
-- **Then** `16px`다
-- **검증** e2e `readability.spec.ts`
-
-#### AC-READ-15 · 라벨이 14px이고 보조색으로 렌더된다
-
-- **Given** `/recipes/12`를 연다
-- **When** 메타줄 라벨(`dt`)의 `fontSize`와 `color`를 읽는다
-- **Then** `14px`이고 색이 **`rgb(84, 84, 84)`**다
-- **검증** e2e `readability.spec.ts`
+**AC-READ-15 (대체됨)** · 「라벨이 14px이고 보조색으로 렌더된다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 ### 집계
 

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { meetsTouchTarget, TOUCH_TARGET_PX } from "../src/test/touchTarget";
 import { SCREENS } from "./screens";
+import { TARGETS, undersized } from "./hitArea";
 import { installStubs } from "./stubs";
 
 /**
@@ -9,17 +9,6 @@ import { installStubs } from "./stubs";
  * <p><b>소스 검사를 쓰지 않는다.</b> 클래스가 붙어 있어도 부모가 짓누르면 44px가 안 되고,
  * 그건 렌더 측정만 잡는다.
  */
-
-test.describe("터치 타깃 — 입력 요소", () => {
-  test("AC-TOUCH-08 · 「원두량」 입력칸의 높이가 44px다", async ({ page }) => {
-    await installStubs(page);
-    await page.goto("/brews/new?recipeId=12");
-
-    const box = await page.getByLabel("원두량").boundingBox();
-
-    expect(box?.height).toBe(TOUCH_TARGET_PX);
-  });
-});
 
 test.describe("터치 타깃 — 예외", () => {
   /**
@@ -60,15 +49,10 @@ test.describe("터치 타깃 — 아이콘 버튼", () => {
     await page.goto("/brews/new?recipeId=12");
 
     for (const star of [1, 2, 3, 4, 5]) {
-      const box = await page
-        .getByRole("button", { name: `별점 ${star}` })
-        .boundingBox();
+      const stars = page.getByRole("button", { name: `별점 ${star}` });
+      await expect(stars).toHaveCount(1);
 
-      expect(box, `별점 ${star}`).not.toBeNull();
-      expect(
-        meetsTouchTarget(box!),
-        `별점 ${star} ${box!.width}x${box!.height}`,
-      ).toBe(true);
+      expect(await stars.evaluateAll(undersized)).toEqual([]);
     }
   });
 
@@ -77,12 +61,10 @@ test.describe("터치 타깃 — 아이콘 버튼", () => {
     await page.goto("/recipes/12/edit");
 
     for (const name of ["스텝 2 위로", "스텝 2 아래로", "스텝 2 삭제"]) {
-      const box = await page.getByRole("button", { name }).boundingBox();
+      const button = page.getByRole("button", { name });
+      await expect(button).toHaveCount(1);
 
-      expect(
-        meetsTouchTarget(box!),
-        `${name} ${box!.width}x${box!.height}`,
-      ).toBe(true);
+      expect(await button.evaluateAll(undersized)).toEqual([]);
     }
   });
 
@@ -97,52 +79,10 @@ test.describe("터치 타깃 — 아이콘 버튼", () => {
     await expect(first).toBeDisabled();
     await expect(last).toBeDisabled();
 
-    expect(meetsTouchTarget((await first.boundingBox())!)).toBe(true);
-    expect(meetsTouchTarget((await last.boundingBox())!)).toBe(true);
+    expect(await first.evaluateAll(undersized)).toEqual([]);
+    expect(await last.evaluateAll(undersized)).toEqual([]);
   });
 });
-
-/**
- * 예외 밖의 상호작용 요소 중 44×44에 못 미치는 것. 사람이 읽을 수 있는 문자열로 돌려준다.
- *
- * <p><b>`meetsTouchTarget`을 여기서 못 쓴다.</b> `page.evaluate`는 브라우저 안에서 돌아 Node
- * 모듈을 볼 수 없다. 숫자 44가 두 곳에 생기는 것을 알고 남긴다 — 경계값 자체는
- * `AC-TOUCH-11`이 단위 테스트로 못박는다.
- */
-async function undersized(
-  page: import("@playwright/test").Page,
-): Promise<string[]> {
-  return page.evaluate(() => {
-    const all = [
-      ...document.querySelectorAll("button, a, input, select, textarea"),
-    ];
-    const exempt = new Set(
-      document.querySelectorAll(":is(p, h1, h2, h3, h4, h5, h6) a"),
-    );
-    return (
-      all
-        .filter((el) => !exempt.has(el))
-        // 미디어 쿼리로 숨긴 컨트롤(웹 상단 바 등)은 이 뷰포트에서 탭할 수 없다 —
-        // 2026-09-19 홈 달력의 WebTopBar가 처음으로 이 경우를 만들었다.
-        .filter((el) => (el as HTMLElement).checkVisibility())
-        .map((el) => {
-          // 라벨에 감싸인 컨트롤은 라벨 전체가 탭을 받는다. 사람이 실제로 누르는 것을 잰다
-          // (docs/specs/2026-09-15-structure.md AC-STRUCT-04).
-          const label = el.closest("label");
-          const target = label !== null && label.contains(el) ? label : el;
-          const r = target.getBoundingClientRect();
-          const name =
-            (el as HTMLElement).innerText?.trim().slice(0, 20) ||
-            el.getAttribute("aria-label") ||
-            (el as HTMLInputElement).type ||
-            el.tagName.toLowerCase();
-          return { name: name.replace(/\s+/g, " "), w: r.width, h: r.height };
-        })
-        .filter((b) => b.w < 44 || b.h < 44)
-        .map((b) => `${b.name} ${Math.round(b.w)}x${Math.round(b.h)}`)
-    );
-  });
-}
 
 test.describe("터치 타깃 — 스윕", () => {
   for (const { path } of SCREENS) {
@@ -153,7 +93,9 @@ test.describe("터치 타깃 — 스윕", () => {
       await page.goto(path);
       await page.waitForLoadState("networkidle");
 
-      expect(await undersized(page)).toEqual([]);
+      expect(await page.locator(TARGETS).evaluateAll(undersized)).toEqual(
+        [],
+      );
     });
 
     test(`AC-TOUCH-12 · ${path}에 가로 스크롤이 없다`, async ({ page }) => {
@@ -169,24 +111,6 @@ test.describe("터치 타깃 — 스윕", () => {
     });
   }
 
-  test("AC-TOUCH-10 · AC-GRAMMAR-10 · BottomNav 탭 4개가 90×58로 44px을 넘는다", async ({
-    page,
-  }) => {
-    await installStubs(page);
-    await page.goto("/recipes");
-
-    for (const name of ["홈", "레시피", "내 잔", "더보기"]) {
-      const box = await page
-        .getByRole("link", { name, exact: true })
-        .boundingBox();
-
-      // 갱신(2026-09-17): 라벨이 14→13px로 작아졌지만 body-sm의 행간(1.6)이 늘어
-      // 오히려 48→49.5px가 됐다. 44px 하한은 그대로 지킨다.
-      // 갱신(2026-09-27): 탭 바가 목업 규격 58px이 되며 탭이 그 높이를 채운다
-      // (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-10).
-      expect(box, name).toMatchObject({ width: 90, height: 58 });
-    }
-  });
 });
 
 test.describe("터치 타깃 — 다이얼로그", () => {
@@ -220,7 +144,9 @@ test.describe("터치 타깃 — 다이얼로그", () => {
         await page.getByRole("button", { name }).click();
       }
 
-      expect(await undersized(page)).toEqual([]);
+      expect(await page.locator(TARGETS).evaluateAll(undersized)).toEqual(
+        [],
+      );
     });
   }
 });

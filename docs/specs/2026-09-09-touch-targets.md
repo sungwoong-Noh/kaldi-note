@@ -7,6 +7,13 @@ plan: docs/archive/plans/2026-09-09-plan-touch-targets.md
 
 # 터치 타깃 44×44px 스펙
 
+> ## ★ 2026-10-10 갱신 — 44px은 「누르는 영역」이다
+>
+> [ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)으로 보이는 크기와 누르는 영역을 분리했다.
+> 이 스펙의 「44×44px」은 전부 **hit area** — 박스와 `::before`·`::after` 중 큰 쪽 — 로 읽는다
+> (`frontend/e2e/hitArea.ts`). 보이는 박스가 36px여도 `hit-44` 레이어가 44px를 채우면 통과다.
+> 박스 크기 자체를 못박던 `AC-TOUCH-08`·`10`은 대체됐다.
+
 > 2026-09-09 `/interview`로 확정. 작성 규칙은 [`docs/conventions/workflow.md`](../conventions/workflow.md).
 > **모든 인수 조건은 자동화된 테스트로 옮길 수 있어야 한다.**
 
@@ -166,29 +173,12 @@ AC-TOUCH-01)가 계속 검사한다.
 > 사람이 실제로 누르는 것을 재는 쪽이 맞다. 판정이 여전히 작동하는지는 돌연변이로 확인했다
 > (라벨을 20px로 줄이니 둘 다 빨개졌다).
 
-#### AC-TOUCH-08 · 「원두량」 입력칸의 높이가 44px다
-
-- **Given** `/brews/new?recipeId=12` — 지금 128×30px이다
-- **When** `getByLabelText("원두량")`의 높이를 잰다
-- **Then** `height`가 `44px`다
-- **검증** e2e `e2e/touch-targets.spec.ts`
+**AC-TOUCH-08 (대체됨)** · 「원두량」 입력칸의 높이가 44px다를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 **AC-TOUCH-09 (대체됨)** · `/brews/2/edit`의 「공개 범위」 select 높이를 쟀던 원래 AC는, 그 select가 3분할 버튼으로 바뀌며
 `docs/specs/2026-09-27-brew-form-redesign.md`의 AC-BREWFORM-25(별점·5축·공개 범위 버튼 44×44 이상)로 대체됐다.
 
-#### AC-TOUCH-10 · `BottomNav` 탭 4개가 90×48px이다
-
-- **Given** `/recipes`
-- **When** `홈`·`레시피`·`기록`·`더보기` 링크를 잰다
-- **Then** 넷 다 `width`가 `90px`, `height`가 `48px`다
-- **검증** e2e `e2e/touch-targets.spec.ts`
-
-> **갱신 (2026-09-15).** 처음에는 `90×44px`이었고 「이 스펙이 그것을 바꾸지 않는다」였다.
-> `readability` 스펙이 탭 라벨을 12→14px로 키우면서 `py-3`의 콘텐츠 높이가 늘어 **48px이 됐다.**
-> **44px 규약은 계속 만족하며 오히려 커졌다** — 줄이지 않고 값을 확정한다.
->
-> **갱신 (2026-09-17 · 2026-09-27).** 라벨이 13px(body-sm)이 되며 `90×49.5`가 됐고, 탭 바가 목업 규격
-> 58px이 되며(`docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-10) 지금은 **`90×58px`**이다. 테스트가 그 값을 잰다.
+**AC-TOUCH-10 (대체됨)** · 「`BottomNav` 탭 4개가 90×48px이다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 ### 경계값
 

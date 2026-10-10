@@ -14,62 +14,12 @@ import { tokenColor } from "./tokenColor";
 // 갱신(2026-09-17): 리터럴 색을 버리고 `tokenColor`로 기준을 만든다. visual.spec.ts와 같다.
 
 /**
- * 스텁이 주는 것만 쓴다.
- *
- * <p><b>`/recipes/12`는 hoffmann이다</b>(30.0g → 500.0g · 1:16.7 · 100°C). kasuya는 id 3이다 —
- * `e2e/stubs.ts`의 핸들러 순서가 그렇게 정한다. 지어낸 값으로 쓰면 셀렉터가 빗나간다.
- */
-// 갱신(2026-09-15): structure 스펙이 대표 수치를 1:비율로 통일하면서 `1:16.7`이 메타줄에서
-// 대표 자리로 올라갔다. 메타줄 앵커를 거기 남은 값으로 바꾼다.
-const META_ROWS = [
-  { path: "/recipes", text: "100 °C", what: "카드 보조줄" },
-  // "/brews"(목록)는 빠졌다 — AC-RECIPESBREWS-77이 카드를 테이블/원장 행으로 바꾸며
-  // "카드 보조줄"(gap-x-3 flex 행) 자체가 없어졌다(테이블 <td>·원장 행은 다른 레이아웃이다).
-  /*
-   * 갱신(2026-09-17): `/recipes/12`의 상세 메타줄은 히어로 판 안으로 들어가면서
-   * 한 줄 나열이 아니라 **2열 그리드**가 됐다(`gap-x-4`). 판 안의 격자는 이 조건이
-   * 보려던 「메타줄의 가로 간격」과 다른 것이므로 목록에서 뺀다 —
-   * 히어로 안의 간격은 `AC-SKIN-03`이 구조로 본다.
-   */
-  // 「20.0g」은 비교표에도 있다(2026-09-15). 실측값에만 있는 분쇄도를 앵커로 쓴다.
-  { path: "/brews/2", text: "22", what: "상세 실측값" },
-] as const;
-
-/**
  * 대표 수치는 `data-lead`로 찾는다 — 텍스트로 찾으면 표현이 바뀔 때마다 깨진다.
  * "/brews"(목록)는 빠졌다 — AC-RECIPESBREWS-77이 대표 수치(히어로) 자체를 없앴다.
  */
 const LEAD_PATHS = ["/recipes", "/recipes/12", "/brews/2"] as const;
 
-/** `text`를 담은 요소에서 위로 올라가 `className`에 `token`을 가진 첫 조상. */
-function ancestorWith(
-  page: import("@playwright/test").Page,
-  text: string,
-  token: string,
-) {
-  return page
-    .getByText(text, { exact: true })
-    .first()
-    .locator(`xpath=ancestor-or-self::*[contains(@class,'${token}')][1]`);
-}
-
 test.describe("일관성 — 렌더값", () => {
-  for (const { path, text, what } of META_ROWS) {
-    test(`AC-CONSIST-04 · ${path}의 ${what} column-gap이 12px다`, async ({
-      page,
-    }) => {
-      await installStubs(page);
-      await page.goto(path);
-
-      const row = ancestorWith(page, text, "gap-x-3");
-      await expect(row).toBeAttached();
-
-      expect(await row.evaluate((el) => getComputedStyle(el).columnGap)).toBe(
-        "12px",
-      );
-    });
-  }
-
   // 화면마다 메타줄에 남은 라벨이 다르다(2026-09-15). `/brews/2`의 원두량·물량·물 온도·
   // 추출 시간은 비교표로 옮겨갔고 분쇄도만 실측값에 남는다.
   /*

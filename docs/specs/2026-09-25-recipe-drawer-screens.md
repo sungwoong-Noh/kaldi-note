@@ -399,12 +399,7 @@ supersedes:
 
 ### 비기능
 
-#### AC-RECIPESBREWS-98 · 새 글자 크기는 타입 스케일에 등록된다
-
-- **Given** 이 스펙에서 새로 쓰는 `text-*` 크기 클래스
-- **When** `pnpm test -- typography`를 실행한다
-- **Then** `frontend/src/test/typography.test.ts`의 `SCALE`에 등록되지 않은 크기가 없다
-- **검증** 유닛 테스트 `typography.test.ts`
+**AC-RECIPESBREWS-98 (대체됨)** · 「새 글자 크기는 타입 스케일에 등록된다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 #### AC-RECIPESBREWS-99 · 목록 API는 작성자·잔 수 조회로 추가 쿼리가 1회를 넘지 않는다
 

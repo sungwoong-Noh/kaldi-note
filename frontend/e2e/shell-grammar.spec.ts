@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { undersized } from "./hitArea";
 import { installStubs, installSwStubs } from "./stubs";
 import { tokenColor } from "./tokenColor";
 import { withinTolerance } from "./tolerance";
@@ -125,9 +126,9 @@ test.describe("뒤로 규칙", () => {
     await installStubs(page);
     await page.goto("/brews/2");
 
-    const box = await page.getByRole("link", { name: "뒤로" }).boundingBox();
-    expect(box?.width).toBeGreaterThanOrEqual(44);
-    expect(box?.height).toBeGreaterThanOrEqual(44);
+    const back = page.getByRole("link", { name: "뒤로" });
+    await expect(back).toHaveCount(1);
+    expect(await back.evaluateAll(undersized)).toEqual([]);
   });
 });
 

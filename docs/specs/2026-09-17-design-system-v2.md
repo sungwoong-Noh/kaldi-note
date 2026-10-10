@@ -298,21 +298,9 @@ plan: docs/archive/plans/2026-09-17-plan-design-system-v2.md
 
 ### 타이포그래피
 
-#### AC-DS2-12 · 글자 크기가 정해진 단계 밖을 쓰지 않는다
+**AC-DS2-12 (대체됨)** · 「글자 크기가 정해진 단계 밖을 쓰지 않는다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** `frontend/src` 아래의 모든 `.ts`·`.tsx` (이 검사 파일 자신은 제외)
-- **When** `text-` 뒤에 크기가 오는 Tailwind 클래스를 모은다
-- **Then** `page-title` · `card-title` · `body` · `body-sm` · `metric-hero` · `metric`
-  밖이 하나도 없다
-- **And** 임의값(`text-[...px]`)이 **별 아이콘 1곳**을 빼고 없다
-
-#### AC-DS2-13 · 각 단계가 쓰인다
-
-- **Given** 위와 같음
-- **When** 실제로 쓰인 크기 이름을 모은다
-- **Then** 6개 전부가 **1곳 이상** 쓰인다
-
-> `AC-SPACE-02`와 같은 이유다. **쓰이지 않는 단계는 체계가 아니라 장식이다.**
+**AC-DS2-13 (대체됨)** · 「각 단계가 쓰인다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 #### AC-DS2-14 · 대표 수치가 Mono다
 
@@ -328,17 +316,9 @@ plan: docs/archive/plans/2026-09-17-plan-design-system-v2.md
 
 ### 간격·모서리
 
-#### AC-DS2-16 · 모서리가 4종 밖을 쓰지 않는다
+**AC-DS2-16 (대체됨)** · 「모서리가 4종 밖을 쓰지 않는다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** `frontend/src` 아래의 모든 `.tsx`
-- **When** `rounded` 계열 클래스를 모은다
-- **Then** **태그(3px) · 컨트롤(7–8px) · 면(10–14px) · 원형** 4종에 대응하는 클래스 밖이 없다
-
-#### AC-DS2-17 · `shadow`가 포커스 링 외에 없다
-
-- **Given** `frontend/src` 아래의 모든 `.ts`·`.tsx`와 `globals.css`
-- **When** `shadow` 클래스와 `box-shadow` 선언을 모은다
-- **Then** 포커스 링 하나를 제외하고 **0곳**이다
+**AC-DS2-17 (대체됨)** · 「`shadow`가 포커스 링 외에 없다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 ### UI 프리미티브
 
@@ -354,22 +334,9 @@ plan: docs/archive/plans/2026-09-17-plan-design-system-v2.md
 - **When** `variant`에 `primary`·`secondary`·`ghost`를 주고, `disabled`를 준다
 - **Then** 네 경우의 클래스가 서로 다르다
 
-#### AC-DS2-20 · 프리미티브 밖에서 컨트롤 스타일을 직접 쓰지 않는다
+**AC-DS2-20 (대체됨)** · 「프리미티브 밖에서 컨트롤 스타일을 직접 쓰지 않는다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** `frontend/src` 아래의 `.tsx` 중 `src/components/ui`가 아닌 것
-- **When** `<button`·`<input`·`<select` 엘리먼트에 붙은 `className`을 모은다
-- **Then** `rounded`·`border-`·`px-`·`py-`를 함께 가진 문자열이 **0곳**이다
-
-> 지금 이 문자열이 8곳·7곳에 복붙돼 있다. **이 AC가 그 상태로 돌아가는 것을 막는다.**
-
-#### AC-DS2-21 · 프리미티브가 터치 타깃 44px을 보장한다
-
-- **Given** `Button`·`Input`·`Select`를 기본값으로 렌더한 결과
-- **When** 계산된 높이를 읽는다
-- **Then** 전부 **44px 이상**이다
-
-> `docs/specs/2026-09-09-touch-targets.md`의 규칙을 프리미티브가 떠안는다.
-> 개별 화면이 `min-h-11`을 기억할 필요가 없어진다.
+**AC-DS2-21 (대체됨)** · 「프리미티브가 터치 타깃 44px을 보장한다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 ### 폼 검증 에러
 

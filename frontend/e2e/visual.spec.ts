@@ -25,31 +25,6 @@ test.describe("시각 위계 — 라이트", () => {
     ).toBe(await tokenColor(page, "ink"));
   });
 
-  test("AC-VISUAL-15 · 화면 제목이 27px다", async ({ page }) => {
-    await installStubs(page);
-    await page.goto("/recipes");
-
-    const heading = page.getByRole("heading", { level: 1 });
-    await expect(heading).toBeVisible();
-
-    expect(await heading.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
-      "27px",
-    );
-  });
-
-  test("AC-VISUAL-16 · 카드 대표 수치가 36px다", async ({ page }) => {
-    await installStubs(page);
-    await page.goto("/recipes");
-
-    // 갱신(2026-09-15): 대표 수치가 1:비율이 됐다. data-lead로 찾는다.
-    const dose = page.locator("[data-lead]").first();
-    await expect(dose).toBeVisible();
-
-    expect(await dose.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
-      "36px",
-    );
-  });
-
   test("AC-DS2-14 · 대표 수치가 Mono로 렌더된다", async ({ page }) => {
     await installStubs(page);
     await page.goto("/recipes");

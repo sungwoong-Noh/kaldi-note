@@ -196,6 +196,23 @@
   font-weight: 500;
 }
 
+/*
+ * 누르는 영역만 44×44로 넓힌다 — 보이는 크기는 목업대로 둔다(docs/decisions/0010).
+ * 의사 요소는 그 요소의 히트 테스트에 포함되고, e2e/hitArea.ts가 박스와 이것 중 큰 쪽을 잰다.
+ */
+@utility hit-44 {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
 @utility text-metric {
   font-family: var(--font-mono);
   font-weight: 500;

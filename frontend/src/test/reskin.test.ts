@@ -36,17 +36,6 @@ describe("리스킨 — 구조", () => {
     expect(bad).toEqual([]);
   });
 
-  it("AC-SKIN-02 · 면이 Card·Hero 프리미티브를 쓴다", () => {
-    // rounded-surface를 직접 쓰면 카드가 제각각이 된다 — 남긴 채로 신규 화면을 만들면
-    // 그 예외가 영구히 굳는다.
-    const bad: string[] = [];
-    for (const path of OUTSIDE_UI) {
-      if (/\brounded-surface\b/.test(readFileSync(path, "utf8"))) bad.push(path);
-    }
-
-    expect(bad).toEqual([]);
-  });
-
   it("AC-SKIN-08 · data-* 훅이 그대로다", () => {
     // 테스트가 이 훅으로 화면을 잡는다. 마크업을 바꿔도 남긴다.
     const all = APP.map((path) => readFileSync(path, "utf8")).join("");

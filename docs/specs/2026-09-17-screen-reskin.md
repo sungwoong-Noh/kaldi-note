@@ -87,11 +87,7 @@ plan: docs/archive/plans/2026-09-17-plan-screen-reskin.md
 - **Then** `mx-auto w-full max-w-2xl px-6 py-6`을 공통으로 갖는 형태가 **1종**이다
   (`flex flex-col gap-6`은 그 위에 얹는 변형으로 허용한다)
 
-#### AC-SKIN-02 · 면이 Card 프리미티브를 쓴다
-
-- **Given** `src/components/ui` 밖의 모든 `.tsx`
-- **When** `rounded-surface`를 직접 쓴 곳을 찾는다
-- **Then** **0곳**이다 — 카드·다이얼로그는 `Card`를 쓴다
+**AC-SKIN-02 (대체됨)** · 「면이 Card 프리미티브를 쓴다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 #### AC-SKIN-03 · 대표 수치가 히어로 카드 안에 있다
 

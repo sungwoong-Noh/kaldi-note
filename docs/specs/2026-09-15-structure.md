@@ -182,15 +182,7 @@ plan: docs/archive/plans/2026-09-15-plan-structure.md
 
 ### 폼과 컨트롤
 
-#### AC-STRUCT-01 · 폼 4개의 일반 필드가 전부 같은 오른쪽 끝을 갖는다
-
-- **Given** 360×800에서 `/recipes/new` · `/recipes/12/edit` · `/brews/new?recipeId=12` ·
-  `/gear/grind-converter`를 연다
-- **When** 스텝 행 밖의 `input`·`select`·`textarea`에서 `getBoundingClientRect().right`를 반올림해 모은다
-- **Then** 각 화면에서 **정확히 1종류**이고 그 값이 **344**다
-- **검증** e2e `structure.spec.ts`
-
-> 변경 전 종류 수는 `10 · 13 · 4 · 2`다. 이 조건이 그것을 1로 만든다.
+**AC-STRUCT-01 (대체됨)** · 「폼 4개의 일반 필드가 전부 같은 오른쪽 끝을 갖는다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 #### AC-STRUCT-02 · `select` 13곳이 네이티브 모양을 벗는다
 
@@ -213,14 +205,7 @@ plan: docs/archive/plans/2026-09-15-plan-structure.md
 > data URI의 따옴표·괄호를 파서가 처리하지 못해 `background-image: none`이 된다(실측).
 > `globals.css`의 `.select-chevron`에서 정의한다.
 
-#### AC-STRUCT-03 · `select`의 렌더 높이가 44px를 유지한다
-
-- **Given** `/recipes/new`
-- **When** 「공개 범위」 `select`의 `getBoundingClientRect().height`를 읽는다
-- **Then** **44**다
-- **검증** e2e `structure.spec.ts`
-
-> 모양을 바꾸면서 터치 타깃을 잃지 않는지 본다. `AC-TOUCH-09`와 같은 값을 다시 잰다.
+**AC-STRUCT-03 (대체됨)** · 「`select`의 렌더 높이가 44px를 유지한다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 **AC-STRUCT-04 (대체됨)** · `/recipes`의 「내 레시피만」 체크박스(20×20px 모양·44×44px 탭 영역)를
 쟀던 원래 AC는, 그 체크박스 자체가 `docs/specs/2026-09-25-recipe-drawer-screens.md`의
@@ -250,16 +235,7 @@ AC-RECIPESBREWS-63(owner pill)으로 대체되며 함께 없어졌다. 체크박
 - **Then** **두 화면 모두 정확히 1개**씩 있다
 - **검증** e2e `structure.spec.ts`
 
-#### AC-STRUCT-08 · 시간 열의 폭이 두 화면에서 같다
-
-- **Given** `/recipes/12`와 `/brews/2`
-- **When** 첫 스텝의 시간 표시(`0:00`) 요소 폭을 각각 읽는다
-- **Then** **두 화면 모두 48px**이다
-- **검증** e2e `structure.spec.ts`
-
-> **검증 방식 조정 (2026-09-15).** 처음에는 한 테스트에서 두 화면을 돌며 「두 값이 같다」를
-> 봤는데, 한 테스트 안에서 두 번 `goto`하면 두 번째 화면의 요소를 기다리다 타임아웃했다.
-> 화면마다 독립 테스트로 나누고 **리터럴 48px**을 본다 — **「같다」를 함의하면서 안정적이다.**
+**AC-STRUCT-08 (대체됨)** · 「시간 열의 폭이 두 화면에서 같다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 #### AC-STRUCT-09 · 편집 화면에는 타임라인이 없다
 

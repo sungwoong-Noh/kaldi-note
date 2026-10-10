@@ -241,17 +241,7 @@ plan: docs/archive/plans/2026-09-07-plan-visual-hierarchy.md
 - **예외** 카카오 로그인 버튼의 `bg-[#FEE500]`·`text-[#191600]` **두 리터럴만** 면제한다. 카카오 디자인 가이드가 강제하는 브랜드 색이라 우리 토큰으로 칠할 수 없다. **파일이 아니라 그 두 값만 면제한다** — 파일째 빼면 로그인 화면에 아무 색이나 새로 들어온다
 - **검증** 단위 테스트 `designTokens.test.ts`
 
-#### AC-VISUAL-05 · 허용된 글자 크기 5개 밖이 없다
-
-- **Given** `frontend/src` 아래의 모든 `.ts`·`.tsx` 파일
-- **When** `text-` 뒤에 크기가 오는 클래스를 찾는다
-- **Then** `text-sm`·`text-base`·`text-lg`·`text-2xl`·`text-4xl` **다섯 개만** 나온다. 예외는 `RatingInput.tsx`의 `text-[22px]` **한 곳**이다
-- **검증** 단위 테스트 `designTokens.test.ts`
-
-> **갱신 (2026-09-15).** 다섯 단계가 `20/18/16/14/12`에서 **`36/24/18/16/14`**로 재배치됐다.
-> **개수는 그대로 다섯이고 값만 바뀌었다.** 본문 14px·라벨 12px이 부엌에서 작았고, 주요 수치
-> 18px과 화면 제목 20px의 차이가 2px뿐이라 위계가 평평했다
-> (`docs/specs/2026-09-15-readability.md`).
+**AC-VISUAL-05 (대체됨)** · 「허용된 글자 크기 5개 밖이 없다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 #### AC-VISUAL-06 · 토큰 8개가 라이트·다크 값을 모두 갖는다
 
@@ -306,22 +296,7 @@ plan: docs/archive/plans/2026-09-07-plan-visual-hierarchy.md
 - **Then** 두 경우 모두 `text-lg font-semibold`를 가진 요소가 **정확히 1개**다
 - **검증** 단위 테스트 `BrewLogCard.test.tsx`
 
-#### AC-VISUAL-13 · 화면 제목 14곳이 같은 단계를 쓴다
-
-- **Given** `frontend/src` 아래에서 `<h1`을 그리는 곳 **14곳**
-- **When** 각 `<h1`의 `className`을 읽는다
-- **Then** 14곳 모두 `text-xl`과 `font-semibold`를 갖는다. `text-2xl`·`font-bold`는 **0곳**이다
-- **검증** 단위 테스트 `headings.test.ts` (소스 검사). **실제로 20px로 렌더되는지는 `AC-VISUAL-15`가 브라우저에서 잰다** — 클래스가 맞아도 화면이 다를 수 있으므로 둘 다 필요하다
-
-> **2026-09-08 갱신: 14곳 → 15곳.** `screen-consistency` 스펙이 `BrewDetail`에 `h1`을 더했다.
-> **브루로그 상세만 화면 제목이 없었다** — 레시피 이름이 `<Link className="text-lg font-medium">`
-> 이라 제목 탐색으로 「지금 무엇을 보고 있는가」를 알 수 없었다.
-> **조건 자체(「모든 `h1`이 `text-xl font-semibold`」)는 그대로다.**
->
-> **2026-09-19 정정: 15곳 → 14곳.** `docs/specs/2026-09-19-home-calendar.md`가 홈을 달력으로
-> 바꾸며 `h1`(`최근 기록`)을 없앴다 — 홈의 헤더는 이제 「로고만」이다(레일·월 헤더가 곧바로
-> 「지금 무엇을 보고 있는가」를 말해준다). 화면 제목이 없는 화면이 하나 늘어난 것이지,
-> 조건 자체는 여전히 그대로다.
+**AC-VISUAL-13 (대체됨)** · 「화면 제목 14곳이 같은 단계를 쓴다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 ### 정상 동작 — 실제 렌더값 (Playwright)
 
@@ -341,23 +316,9 @@ plan: docs/archive/plans/2026-09-07-plan-visual-hierarchy.md
 - **Then** `ink` 토큰 값과 같다
 - **검증** e2e `visual.spec.ts`, `button-color.spec.ts`
 
-#### AC-VISUAL-15 · 화면 제목이 24px로 렌더된다
+**AC-VISUAL-15 (대체됨)** · 「화면 제목이 24px로 렌더된다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** `/recipes`를 연다
-- **When** `h1`의 `font-size`를 읽는다
-- **Then** `24px`다
-- **검증** e2e `visual.spec.ts`
-
-> **갱신 (2026-09-15).** `docs/specs/2026-09-15-readability.md`가 글자 5단계를 재배치했다. 제목과 섹션의 차이가 2px뿐이라 위계가 평평했다.
-
-#### AC-VISUAL-16 · 대표 수치가 36px로 렌더된다
-
-- **Given** `/recipes`를 연다 (픽스처 레시피 1건)
-- **When** 카드 대표 수치의 `font-size`를 읽는다
-- **Then** `36px`다
-- **검증** e2e `visual.spec.ts`
-
-> **갱신 (2026-09-15).** `docs/specs/2026-09-15-readability.md`가 글자 5단계를 재배치했다. 이 앱은 숫자가 주인공인데 주인공이 화면 제목보다 작았다.
+**AC-VISUAL-16 (대체됨)** · 「대표 수치가 36px로 렌더된다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 #### AC-VISUAL-17 · 라벨이 보조색으로 렌더된다
 

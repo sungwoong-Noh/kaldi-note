@@ -81,7 +81,7 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
    * 여부를 알아내는 것을 막는다.
    *
    * <p><b>★ {@link #countByKstDay}·{@link #findVisibleForPrimaryRecipe}의 where 절과 문자 그대로 같아야
-   * 한다.</b> 한쪽만 고치면 「목록에는 보이는데 달력에는 점이 없다」가 된다.
+   * 한다</b>(목록 전용 {@code minRating} 줄은 예외 — 달력은 별점으로 거르지 않는다). 한쪽만 고치면 「목록에는 보이는데 달력에는 점이 없다」가 된다.
    *
    * <p><b>{@code startInclusive}·{@code endExclusive}는 null을 받지 않는다.</b> JPQL에서 온전히 IS NULL로만 쓰이는
    * {@code Instant} 파라미터는 PostgreSQL이 바인드 타입을 추론하지 못해 "could not determine data type" 오류를 낸다({@code
@@ -98,6 +98,7 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
             and (:beanBatchId is null or b.beanBatchId = :beanBatchId)
             and b.brewedAt >= :startInclusive
             and b.brewedAt < :endExclusive
+            and (:minRating is null or b.rating >= :minRating)
             and ( b.userId = :viewerId
                or b.visibility = com.kaldinote.brewlog.domain.BrewLogVisibility.PUBLIC
                or ( b.visibility = com.kaldinote.brewlog.domain.BrewLogVisibility.FRIENDS
@@ -117,6 +118,7 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
             and (:beanBatchId is null or b.beanBatchId = :beanBatchId)
             and b.brewedAt >= :startInclusive
             and b.brewedAt < :endExclusive
+            and (:minRating is null or b.rating >= :minRating)
             and ( b.userId = :viewerId
                or b.visibility = com.kaldinote.brewlog.domain.BrewLogVisibility.PUBLIC
                or ( b.visibility = com.kaldinote.brewlog.domain.BrewLogVisibility.FRIENDS
@@ -134,6 +136,7 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
       @Param("beanBatchId") Long beanBatchId,
       @Param("startInclusive") Instant startInclusive,
       @Param("endExclusive") Instant endExclusive,
+      @Param("minRating") BigDecimal minRating,
       Pageable pageable);
 
   /**

@@ -283,7 +283,7 @@ supersedes:
 
   행 컴포넌트 안에서 `useBeanLabel`·`useRoastLevel`, 페이지에서 `useBrewers` 한 번.
 
-- [ ] **Task 6: 하단 CTA·행 링크·더 보기** — Covers: AC-MYCUPS-11, 12, 22
+- [x] **Task 6: 하단 CTA·행 링크·더 보기** — Covers: AC-MYCUPS-11, 12, 22
 
   kit `BottomCta`를 링크로도 쓸 수 있게(`href` prop). 「더 보기」는 밑줄 텍스트 모양의 `button` + `hit-44`.
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import type { RoastLevel } from "@/features/catalog/schema";
 import { RoastDot } from "@/components/ui";
@@ -264,14 +265,27 @@ export function RecipeCardKit({
   );
 }
 
-/** 하단 전폭 CTA. 높이 52(15px 패딩 + 22 행). */
-export function BottomCta({ children, onClick }: { children: string; onClick?: () => void }) {
+/** 하단 전폭 CTA. 높이 52(15px 패딩 + 22 행). `href`가 있으면 링크로 그린다. */
+export function BottomCta({
+  children,
+  onClick,
+  href,
+}: {
+  children: string;
+  onClick?: () => void;
+  href?: string;
+}) {
+  const className =
+    "block w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-medium text-on-ink";
+  if (href !== undefined) {
+    return (
+      <Link href={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-medium text-on-ink"
-    >
+    <button type="button" onClick={onClick} className={className}>
       {children}
     </button>
   );

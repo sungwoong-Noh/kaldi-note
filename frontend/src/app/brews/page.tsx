@@ -19,10 +19,10 @@ import {
   useMyCupsFilter,
 } from "@/features/brewlog/useMyCupsFilter";
 import { useMe, type Me } from "@/features/user/queries";
-import { PageHeader, PillFilter } from "@/components/kit";
+import { BottomCta, PageHeader, PillFilter } from "@/components/kit";
 import { kstToday } from "@/lib/kstDate";
 import { useViewportWidth } from "@/lib/useViewportWidth";
-import { Avatar, Button, ButtonLink, Shell } from "@/components/ui";
+import { Avatar, ButtonLink, Shell } from "@/components/ui";
 
 /** 레시피 목록과 같은 기준이다 — ≥760px가 웹(테이블), 그 아래가 모바일(2줄 원장). */
 const WEB_BREAKPOINT_PX = 760;
@@ -179,15 +179,23 @@ function BrewsPageContent() {
         <LedgerTable logs={logs} labels={labels} />
       )}
 
+      {/* 목업 BM1·BW1 — 버튼이 아니라 밑줄 글자다. 페이지를 더 부르는 동작이라 링크가 아니라 button이다. */}
       {hasNextPage && (
-        <Button
-          onClick={() => void fetchNextPage()}
-          disabled={isFetchingNextPage}
-          block
-        >
-          더 보기
-        </Button>
+        <div className="flex justify-center pt-[10px]">
+          <button
+            type="button"
+            onClick={() => void fetchNextPage()}
+            disabled={isFetchingNextPage}
+            className="hit-44 border-b border-border pb-[2px] text-[13.5px] text-ink-2 disabled:text-ink-3"
+          >
+            더 보기
+          </button>
+        </div>
       )}
+
+      {/* 기록은 레시피를 고른 뒤 시작한다 — /recipes로 보낸다(AC-RECIPESBREWS-86과 같은 이유).
+          웹은 상단 바 CTA가 이 자리를 맡는다(AC-GRAMMAR-05). */}
+      {isMobile && <BottomCta href="/recipes">기록하기</BottomCta>}
     </BrewsScreen>
   );
 }

@@ -608,6 +608,32 @@ describe("내 잔 — 모바일 원장 행", () => {
     expect(screen.queryByText(/^\s*·|·\s*$/)).toBeNull();
     expect(document.querySelectorAll("[data-ledger-accent]")).toHaveLength(1);
   });
+
+  it("AC-MYCUPS-11 · 모바일은 목록 아래 전폭 「기록하기」가 /recipes로 간다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByRole("link", { name: "기록하기" })).toHaveAttribute(
+      "href",
+      "/recipes",
+    );
+  });
+});
+
+describe("내 잔 — 웹 하단", () => {
+  it("AC-MYCUPS-11 · 웹 본문에는 「기록하기」가 없다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("Kasuya 4:6")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "기록하기" })).toBeNull();
+  });
 });
 
 describe("내 잔 — 웹 표 보조줄", () => {

@@ -1,7 +1,7 @@
 ---
 id: MYCUPS
 title: 내 잔 목록 — 목업 BM1·BW1 정합 + 이번 달·별점 필터
-status: 초안
+status: 승인
 milestone: M2
 supersedes:
 ---

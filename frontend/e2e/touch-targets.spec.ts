@@ -113,6 +113,26 @@ test.describe("터치 타깃 — 스윕", () => {
 
 });
 
+/**
+ * 부품 키트의 세그먼트·알약은 보이는 높이가 36px 안팎이다(목업 값). `hit-44`가 누르는 영역을
+ * 채우므로 통과해야 한다 — 측정이 의사 요소를 보는지가 여기서 갈린다(docs/decisions/0010).
+ */
+test("AC-TOUCH-01 · /dev/kit의 작은 컨트롤도 누르는 영역이 44×44 이상이다", async ({
+  page,
+}) => {
+  await installStubs(page);
+  await page.goto("/dev/kit");
+
+  const small = page.getByRole("radio").or(page.locator("button[aria-pressed]"));
+  await expect(small).toHaveCount(5);
+  const boxes = await small.evaluateAll((els) =>
+    els.map((el) => el.getBoundingClientRect().height),
+  );
+  expect(Math.max(...boxes)).toBeLessThan(44);
+
+  expect(await small.evaluateAll(undersized)).toEqual([]);
+});
+
 test.describe("터치 타깃 — 다이얼로그", () => {
   const CASES = [
     // 원두 등록은 고르기 다이얼로그 안의 `+ 새 원두`로 들어간다(docs/specs/2026-09-27-brew-form-redesign.md).

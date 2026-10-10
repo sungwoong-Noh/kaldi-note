@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, delay, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -136,10 +136,11 @@ describe("내 잔 — 범위와 필터 (docs/specs/2026-10-10-my-cups-ledger.md)
 
     renderWithQuery(<BrewsPage />);
 
-    expect(
-      await screen.findByRole("button", { name: "전체" }),
-    ).toHaveAttribute("aria-pressed", "true");
-    expect(list.params().get("userId")).toBe("11");
+    await waitFor(() => expect(list.params().get("userId")).toBe("11"));
+    expect(screen.getByRole("button", { name: "전체" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     expect(list.params().get("month")).toBeNull();
     expect(list.params().get("minRating")).toBeNull();
   });
@@ -203,7 +204,9 @@ describe("BrewsPage", () => {
     renderWithQuery(<BrewsPage />);
 
     expect(await screen.findByText("아직 기록이 없습니다")).toBeInTheDocument();
-    expect(screen.getByText("0잔")).toBeInTheDocument();
+    // 웹 머리의 개수(`0잔`, AC-MYCUPS-07)와 글자가 같다 — 통계 타일 안에서 찾는다.
+    const monthTile = screen.getByText("이번 달", { selector: "[data-stat-label]" }).parentElement!;
+    expect(within(monthTile).getByText("0잔")).toBeInTheDocument();
     expect(screen.getAllByText("—")).toHaveLength(3);
     expect(screen.getByRole("link", { name: "기록하기" })).toHaveAttribute(
       "href",
@@ -318,7 +321,7 @@ describe("BrewsPage", () => {
     expect(screen.queryByText(/^\d+:\d{2}$/)).not.toBeInTheDocument();
   });
 
-  it("AC-RECIPESBREWS-76 · 통계 카드에 이번 달·평균 별점·최빈 원두량·즐겨 쓴 레시피가 있다", async () => {
+  it("AC-RECIPESBREWS-76 · AC-MYCUPS-10 · 통계 카드에 이번 달·평균 별점·가장 많이 쓴 원두량·즐겨 쓴 레시피가 있다", async () => {
     server.use(
       http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
       http.get(`${BASE}/brew-logs/stats`, () =>
@@ -338,6 +341,86 @@ describe("BrewsPage", () => {
     expect(screen.getByText("★ 3.7")).toBeInTheDocument();
     expect(screen.getByText("16 g")).toBeInTheDocument();
     expect(screen.getByText("케냐 94도 3푸어")).toBeInTheDocument();
+    for (const label of ["이번 달", "평균 별점", "가장 많이 쓴 원두량", "즐겨 쓴 레시피"]) {
+      expect(screen.getByText(label, { selector: "[data-stat-label]" })).toBeInTheDocument();
+    }
+  });
+});
+
+describe("내 잔 — 헤더·통계·빈 결과", () => {
+  const STATS = {
+    monthCount: 9,
+    averageRating: 3.7,
+    favoriteDoseG: 16.0,
+    favoriteRecipeId: 12,
+    favoriteRecipeTitle: "케냐 94도 3푸어",
+  };
+  const initialWidth = window.innerWidth;
+
+  afterEach(() => {
+    window.innerWidth = initialWidth;
+  });
+
+  it("AC-MYCUPS-07 · 웹 헤더는 연도 eyebrow와 알약·개수다", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(pageOf([brewLogWithTds, { ...brewLogWithTds, id: 3 }])),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("My cups · 2026")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "내 잔" })).toBeInTheDocument();
+    expect(await screen.findByText("2잔")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "레시피" })).toBeNull();
+  });
+
+  it("AC-MYCUPS-06 · 모바일 헤더는 개수 eyebrow와 아바타다", async () => {
+    window.innerWidth = 390;
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(pageOf([brewLogWithTds, { ...brewLogWithTds, id: 3 }])),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("My cups · 2")).toBeInTheDocument();
+    expect(screen.queryByText("2잔")).toBeNull();
+    expect(screen.queryByRole("link", { name: "레시피" })).toBeNull();
+  });
+
+  it("AC-MYCUPS-10 · 모바일 통계는 2칸이다", async () => {
+    window.innerWidth = 390;
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+      http.get(`${BASE}/brew-logs/stats`, () => HttpResponse.json(STATS)),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("9잔")).toBeInTheDocument();
+    expect(screen.getByText("★ 3.7")).toBeInTheDocument();
+    expect(screen.queryByText("가장 많이 쓴 원두량")).toBeNull();
+    expect(screen.queryByText("즐겨 쓴 레시피")).toBeNull();
+  });
+
+  it("AC-MYCUPS-18 · 필터 결과 0건이면 안내와 전체 보기가 뜨고 통계는 그대로다", async () => {
+    currentSearch = "filter=rated";
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([]))),
+      http.get(`${BASE}/brew-logs/stats`, () => HttpResponse.json(STATS)),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("조건에 맞는 잔이 없습니다")).toBeInTheDocument();
+    expect(screen.getByText("9잔")).toBeInTheDocument();
+    expect(screen.queryByText("아직 기록이 없습니다")).toBeNull();
+
+    await userEvent.click(screen.getByRole("button", { name: "전체 보기" }));
+    expect(replace).toHaveBeenLastCalledWith("/brews");
   });
 });
 

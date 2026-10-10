@@ -270,7 +270,7 @@ supersedes:
   // queryKey: ["brew-logs", "mine", filter]
   ```
 
-- [ ] **Task 3: 헤더·통계 타일·빈 상태** — Covers: AC-MYCUPS-06, 07, 10, 18
+- [x] **Task 3: 헤더·통계 타일·빈 상태** — Covers: AC-MYCUPS-06, 07, 10, 18
 
   kit `PageHeader`·`StatTile`·`PillFilter`. 웹 타일은 값 24px·패딩 18/20 변형을 `StatTile`에 prop으로 더한다.
 

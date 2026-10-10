@@ -156,12 +156,41 @@ export function LedgerRow({
   );
 }
 
-/** 통계 타일. BM1 — mono 라벨 + 22px 값. */
-export function StatTile({ label, value }: { label: string; value: string }) {
+/**
+ * 통계 타일. BM1(모바일) — 값 Mono 22px · 패딩 14/16. BW1(웹, `web`) — 값 24px · 패딩 18/20.
+ * `prose`면 값이 Sans 15px다(즐겨 쓴 레시피처럼 글인 값).
+ */
+export function StatTile({
+  label,
+  value,
+  web = false,
+  prose = false,
+}: {
+  label: string;
+  value: string;
+  web?: boolean;
+  prose?: boolean;
+}) {
   return (
-    <div className="flex-1 rounded-[10px] border border-divider bg-surface px-[16px] py-[14px]">
-      <div className="font-mono text-[9.5px] tracking-[0.1em] text-ink-3 uppercase">{label}</div>
-      <div className="mt-[5px] font-mono text-[22px] font-medium text-ink">{value}</div>
+    <div
+      className={cx(
+        "flex-1 rounded-[10px] border border-divider bg-surface",
+        web ? "px-[20px] py-[18px]" : "px-[16px] py-[14px]",
+      )}
+    >
+      <div data-stat-label className="font-mono text-[9.5px] tracking-[0.1em] text-ink-3 uppercase">
+        {label}
+      </div>
+      <div
+        className={cx(
+          "text-ink",
+          prose
+            ? "mt-[8px] text-[15px] font-medium"
+            : cx("font-mono font-medium", web ? "mt-[6px] text-[24px]" : "mt-[5px] text-[22px]"),
+        )}
+      >
+        {value}
+      </div>
     </div>
   );
 }

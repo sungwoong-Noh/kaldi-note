@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { undersized } from "./hitArea";
 import { installStubs } from "./stubs";
 
 /** docs/specs/2026-09-27-brew-form-redesign.md — 기록 작성·편집 레이아웃. */
@@ -96,14 +97,7 @@ test("AC-BREWFORM-25 · 별점·5축·공개 범위 버튼은 44×44 이상", as
 
   const small: string[] = [];
   for (const target of targets) {
-    for (const el of await target.all()) {
-      const box = await el.boundingBox();
-      if (box === null || box.width < 44 || box.height < 44) {
-        small.push(
-          `${(await el.getAttribute("aria-label")) ?? (await el.textContent())}: ${box?.width}×${box?.height}`,
-        );
-      }
-    }
+    small.push(...(await target.evaluateAll(undersized)));
   }
   expect(small).toEqual([]);
 });

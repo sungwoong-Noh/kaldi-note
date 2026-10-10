@@ -152,23 +152,9 @@ plan: docs/archive/plans/2026-09-08-plan-screen-consistency.md
 - **Then** 0개다
 - **검증** 소스 검사 `src/test/consistency.test.ts`
 
-#### AC-CONSIST-03 · 메타줄 4곳의 가로 간격 클래스가 `gap-x-3`이다
+**AC-CONSIST-03 (대체됨)** · 「메타줄 4곳의 가로 간격 클래스가 `gap-x-3`이다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** `RecipeCard.tsx` · `BrewLogCard.tsx` · `RecipeDetail.tsx` · `BrewDetail.tsx`
-- **When** 각 파일의 보조줄·메타줄 `<dl>`/`<div>` 클래스를 읽는다
-- **Then** 넷 다 `gap-x-3`을 포함하고, `gap-x-1`·`gap-x-2`·`gap-x-4`를 포함하지 않는다
-- **검증** 소스 검사 `src/test/consistency.test.ts`
-
-#### AC-CONSIST-04 · 브라우저에서 잰 메타줄의 `column-gap`이 12px이다
-
-- **Given** 360×800 뷰포트에서 `/recipes` · `/brews` · `/recipes/12` · `/brews/2`을 연다
-- **When** 각 화면의 보조줄·메타줄 요소에서 `getComputedStyle(el).columnGap`을 읽는다
-- **Then** 네 값이 전부 `12px`다
-- **검증** e2e `e2e/consistency.spec.ts`
-
-> **갱신 (2026-09-25).** `/brews`(목록)는 빠졌다 —
-> `docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-77이 카드를
-> 테이블/원장 행으로 바꾸며 "카드 보조줄"(gap-x-3 flex 행) 자체가 없어졌다.
+**AC-CONSIST-04 (대체됨)** · 「브라우저에서 잰 메타줄의 `column-gap`이 12px이다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 #### AC-CONSIST-05 · `RecipeDetail`의 메타줄 라벨이 화면에 보인다
 

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { undersized } from "./hitArea";
 import { installStubs } from "./stubs";
 
 /**
@@ -80,41 +81,7 @@ test.describe("구조 — 대표 수치", () => {
   }
 });
 
-const FORMS = [
-  "/recipes/new",
-  "/recipes/12/edit",
-  "/brews/new?recipeId=12",
-  "/gear/grind-converter",
-] as const;
-
 test.describe("구조 — 폼", () => {
-  for (const path of FORMS) {
-    test(`AC-STRUCT-01 · ${path}의 일반 필드가 right 1종류다`, async ({
-      page,
-    }) => {
-      await installStubs(page);
-      await page.goto(path);
-      await page.waitForLoadState("networkidle");
-
-      const rights = await page.evaluate(() => {
-        const out = new Set<number>();
-        for (const el of document.querySelectorAll("input, select, textarea")) {
-          // 스텝 행은 예외다 — 한 줄에 컨트롤 여럿이 들어간다.
-          if (el.closest("[data-step-row]")) continue;
-          if (el.getAttribute("type") === "checkbox") continue;
-          const rect = el.getBoundingClientRect();
-          if (rect.width === 0) continue;
-          out.add(Math.round(rect.right));
-        }
-        return [...out];
-      });
-
-      // 갱신(2026-09-17): 화면 좌우 거터가 16→24px가 되면서 344→336이 됐다
-      // (docs/design/design_handoff_kaldi_note/README.md 「화면 좌우 거터: 모바일 24px」).
-      expect(rights, path).toEqual([336]);
-    });
-  }
-
   test("AC-STRUCT-06 · 단위가 입력칸 안에 있다", async ({ page }) => {
     await installStubs(page);
     await page.goto("/recipes/new");
@@ -125,21 +92,6 @@ test.describe("구조 — 폼", () => {
 
     expect(unit!.x + unit!.width).toBeLessThan(input!.x + input!.width);
   });
-});
-
-test.describe("구조 — 컨트롤", () => {
-  test("AC-STRUCT-03 · select의 렌더 높이가 44px를 유지한다", async ({
-    page,
-  }) => {
-    await installStubs(page);
-    await page.goto("/recipes/new");
-    await page.waitForLoadState("networkidle");
-
-    const box = await page.getByLabel("공개 범위").boundingBox();
-
-    expect(box!.height).toBe(44);
-  });
-
 });
 
 test("AC-STRUCT-05 · 스텝 행의 열 위치가 행마다 같다", async ({ page }) => {
@@ -171,23 +123,6 @@ test.describe("구조 — 타임라인", () => {
       await page.waitForLoadState("networkidle");
 
       await expect(page.locator("[data-timeline-axis]"), path).toHaveCount(1);
-    });
-  }
-
-  // 한 테스트에서 두 번 goto하면 두 번째 화면의 요소를 기다리다 타임아웃한다.
-  // 화면마다 독립 테스트로 나누고 「둘 다 48px」을 본다 — 같은 값임을 함의하면서 안정적이다.
-  for (const path of ["/recipes/12", "/brews/2"]) {
-    test(`AC-STRUCT-08 · ${path}의 시간 열이 48px다`, async ({ page }) => {
-      await installStubs(page);
-      await page.goto(path);
-      await page.waitForLoadState("networkidle");
-
-      const box = await page
-        .locator('[data-testid="step-start"]')
-        .first()
-        .boundingBox();
-
-      expect(Math.round(box!.width), path).toBe(48);
     });
   }
 
@@ -283,8 +218,7 @@ test.describe("구조 — 빈 화면", () => {
       const link = page.locator('[data-empty] a[href="/recipes"]');
       await expect(link, path).toHaveCount(1);
 
-      const box = await link.boundingBox();
-      expect(box!.height, path).toBeGreaterThanOrEqual(44);
+      expect(await link.evaluateAll(undersized), path).toEqual([]);
     });
   }
 

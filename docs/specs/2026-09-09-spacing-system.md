@@ -1,11 +1,16 @@
 ---
 id: SPACE
 title: 간격·모서리 체계
-status: 구현완료
+status: 대체됨
 plan: docs/archive/plans/2026-09-09-plan-spacing-system.md
 ---
 
 # 간격·모서리 체계 스펙
+
+> ## ★ 2026-10-10 — 전체 대체됨
+>
+> AC 11개가 전부 [ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)(목업이 시각의 정본)으로
+> 대체돼 스펙 전체가 `대체됨`이다. 간격·모서리·그림자는 이제 목업 값을 그대로 쓴다.
 
 > ## ★ 2026-09-17 갱신 — 모서리가 4종이 되고 거터가 24px가 됐다
 >
@@ -120,100 +125,29 @@ plan: docs/archive/plans/2026-09-09-plan-spacing-system.md
 
 ### 정상 동작
 
-#### AC-SPACE-01 · 간격이 6단계 밖의 값을 쓰지 않는다
+**AC-SPACE-01 (대체됨)** · 「간격이 6단계 밖의 값을 쓰지 않는다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** `frontend/src` 아래의 `.ts`·`.tsx` 전부(파일명에 `.test.`가 든 것과 검사 파일 자신은 제외)
-- **When** `gap-` · `gap-x-` · `gap-y-` · `space-x-` · `space-y-` · `p`/`px`/`py`/`pt`/`pr`/`pb`/`pl-` ·
-  `m`/`mx`/`my`/`mt`/`mr`/`mb`/`ml-` 뒤의 숫자를 전부 모은다
-- **Then** 값의 집합이 정확히 `{1, 2, 3, 4, 6, 12}`의 부분집합이다.
-  `0.5` · `1.5` · `2.5` · `5` · `8`은 **0곳**이다
-- **검증** 소스 검사 `src/test/spacing.test.ts`
+**AC-SPACE-02 (대체됨)** · 「6단계가 각각 최소 1곳에서 쓰인다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-#### AC-SPACE-02 · 6단계가 각각 최소 1곳에서 쓰인다
+**AC-SPACE-03 (대체됨)** · 「임의값 간격과 음수 마진이 0곳이다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** 같은 소스 집합
-- **When** 단계별 사용 횟수를 센다
-- **Then** `1`·`2`·`3`·`4`·`6`·`12` 여섯 개가 **모두 1회 이상**이다 — 죽은 단계가 없다
-- **검증** 소스 검사 `src/test/spacing.test.ts`
+**AC-SPACE-04 (대체됨)** · 「`rounded`(4px)가 0곳이다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-#### AC-SPACE-03 · 임의값 간격과 음수 마진이 0곳이다
+**AC-SPACE-05 (대체됨)** · 「면 7곳이 `rounded-lg`다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** 같은 소스 집합
-- **When** `p-[…]`·`m-[…]`·`gap-[…]` 같은 임의값과 `-mt-4` 같은 음수 마진을 센다
-- **Then** 둘 다 **0곳**이다
-- **검증** 소스 검사 `src/test/spacing.test.ts`
+**AC-SPACE-06 (대체됨)** · 「`rounded-lg`가 면 7곳에만 있다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-#### AC-SPACE-04 · `rounded`(4px)가 0곳이다
+**AC-SPACE-07 (대체됨)** · 「`rounded-full`이 정확히 6곳이다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** 같은 소스 집합 — 지금 **32곳**이다
-- **When** 뒤에 값이 붙지 않은 `rounded`를 센다(`rounded-md`·`rounded-lg`·`rounded-full`은 제외)
-- **Then** **0곳**이다
-- **검증** 소스 검사 `src/test/spacing.test.ts`
+**AC-SPACE-08 (대체됨)** · 「`shadow-*`가 0곳이다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-#### AC-SPACE-05 · 면 7곳이 `rounded-lg`다
+**AC-SPACE-09 (대체됨)** · 「카드의 렌더된 padding이 16px, border-radius가 8px다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-- **Given** `RecipeCard` · `BrewLogCard` · `BeanBatchDialog` · `UserGrinderDialog` ·
-  `DeleteRecipeDialog` · `DeleteBrewLogDialog` · `RecipeStepEditor`
-- **When** 각 파일의 `rounded-lg` 개수를 센다
-- **Then** 일곱 파일이 각각 **1곳**씩, 합쳐서 **7곳**이다
-- **검증** 소스 검사 `src/test/spacing.test.ts`
-
-#### AC-SPACE-06 · `rounded-lg`가 면 7곳에만 있다
-
-- **Given** 같은 소스 집합 — 지금 **12곳**이고 그중 **5곳이 컨트롤**이다
-- **When** 위 일곱 파일 밖에서 `rounded-lg`를 센다
-- **Then** **0곳**이다. 컨트롤 5곳이 `rounded-md`로 옮겨졌다는 뜻이다
-- **검증** 소스 검사 `src/test/spacing.test.ts`
-
-#### AC-SPACE-07 · `rounded-full`이 정확히 6곳이다
-
-> **정정 (뒤늦게 기록):** `2026-09-17` 다크 모드 토글이 스위치 트랙·손잡이 2곳을 더해
-> **4곳**이 됐었다(테스트는 그때 고쳐졌으나 이 문서에 정정 주석이 빠졌었다). `2026-09-19`
-> `docs/specs/2026-09-19-home-calendar.md`의 팔로우 레일이 아바타 2곳(사진 있을 때 `img`,
-> 없을 때 닉네임 첫 글자 대체 원)을 더해 **6곳**이 됐다.
-
-- **Given** `UserProfile`·`LoadingState`·`ThemeToggle`(트랙·손잡이)·`Avatar`(사진·대체 원 — 홈 달력 레일과 웹 상단 바가 공유)
-- **When** 전체에서 `rounded-full`을 센다
-- **Then** **6곳**이고, 전부 그 파일들 안에 있다
-- **검증** 소스 검사 `src/test/spacing.test.ts`
-
-#### AC-SPACE-08 · `shadow-*`가 0곳이다
-
-- **Given** 같은 소스 집합 — 지금 **0곳**이다
-- **When** `shadow`로 시작하는 클래스를 센다
-- **Then** **0곳**이다. **이 조건은 지금 상태를 지키는 것이 목적이다**
-- **검증** 소스 검사 `src/test/spacing.test.ts`
-
-#### AC-SPACE-09 · 카드의 렌더된 padding이 16px, border-radius가 8px다
-
-- **Given** 360×800 뷰포트에서 `/recipes`를 연다
-- **When** 첫 카드의 링크 요소에서 `getComputedStyle`의 `paddingTop`과 `borderTopLeftRadius`를 읽는다
-- **Then** `16px`와 `8px`다
-- **검증** e2e `e2e/spacing.spec.ts`
-
-#### AC-SPACE-10 · 버튼의 렌더된 border-radius가 6px다
-
-- **Given** 360×800 뷰포트에서 `/recipes`를 연다
-- **When** 「새 레시피」 링크에서 `borderTopLeftRadius`를 읽는다
-- **Then** `6px`다
-- **검증** e2e `e2e/spacing.spec.ts`
+**AC-SPACE-10 (대체됨)** · 「버튼의 렌더된 border-radius가 6px다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 ### 경계값
 
-#### AC-SPACE-11 · 빈 상태의 렌더된 세로 여백이 24px다 — 스케일의 위쪽 끝
-
-- **Given** 360×800 뷰포트에서 `/recipes`를 열되, **레시피 목록만 빈 페이지로 덮어쓴다.**
-  기본 스텁은 `hoffmannSummary`·`kasuyaSummary` 둘을 주므로 그대로는 빈 상태가 뜨지 않는다
-- **When** `레시피가 없습니다` 문단의 `paddingTop`을 읽는다
-- **Then** `24px`다. **`12`가 스케일에서 살아 있는 유일한 자리이므로, 여기가 깨지면 `AC-SPACE-02`도
-  함께 깨진다**
-- **검증** e2e `e2e/spacing.spec.ts`
-
-> **문구는 `레시피가 없습니다`다**(`src/app/recipes/page.tsx:62`). 「아직 …」이 아니다.
-
-> **갱신 (2026-09-15).** 처음에는 **48px**(스케일의 위쪽 끝)이었다. `2026-09-15-structure.md`가
-> 빈 화면에 행동 버튼을 넣으면서 버튼이 자리를 차지해 문구 위아래 48px이 과해졌다.
-> **스케일 안의 다음 단계인 24px로 내렸다** — 6단계(`1·2·3·4·6·12`)를 벗어나지 않는다.
+**AC-SPACE-11 (대체됨)** · 「빈 상태의 렌더된 세로 여백이 24px다 — 스케일의 위쪽 끝」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
 ### 에러
 

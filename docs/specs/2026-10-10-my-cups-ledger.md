@@ -1,7 +1,7 @@
 ---
 id: MYCUPS
 title: 내 잔 목록 — 목업 BM1·BW1 정합 + 이번 달·별점 필터
-status: 승인
+status: 구현완료
 milestone: M2
 supersedes:
 ---
@@ -252,50 +252,10 @@ supersedes:
 
 ---
 
-## 구현 순서
-
-- [x] **Task 1: 백엔드 — month·minRating 필터** — Covers: AC-MYCUPS-02, 03, 16, 17, 19, 20
-
-  ```java
-  // BrewLogController.list: @RequestParam(required=false) String month, @RequestParam(required=false) Integer minRating
-  // month → CalendarMonth.parse(month)로 [start, end) — date와 둘 다 있으면 교집합(max start, min end)
-  // minRating: null 또는 1..5, 아니면 BusinessException(INVALID_REQUEST)
-  // BrewLogRepository.findVisible(..., Integer minRating, ...): (:minRating is null or b.rating >= :minRating)
-  ```
-
-- [x] **Task 2: 프론트 API·URL 상태** — Covers: AC-MYCUPS-01, 04, 05, 21
-
-  ```ts
-  // fetchBrewLogPage(page, size, { userId, month, minRating }, onSessionLost)
-  // useMyCupsFilter(): ?filter=month|rated → { month: kstMonth(today) } | { minRating: 4 } | {}
-  // queryKey: ["brew-logs", "mine", filter]
-  ```
-
-- [x] **Task 3: 헤더·통계 타일·빈 상태** — Covers: AC-MYCUPS-06, 07, 10, 18
-
-  kit `PageHeader`·`StatTile`·`PillFilter`. 웹 타일은 값 24px·패딩 18/20 변형을 `StatTile`에 prop으로 더한다.
-
-- [x] **Task 4: 모바일 원장 행 · 날짜 표기** — Covers: AC-MYCUPS-08, 13, 14
-
-  kit `LedgerRow` + `formatLedgerDate(brewedAt, today)`(`src/lib/format.ts`).
-
-- [x] **Task 5: 웹 표 · 보조줄** — Covers: AC-MYCUPS-09, 15, 24
-
-  행 컴포넌트 안에서 `useBeanLabel`·`useRoastLevel`, 페이지에서 `useBrewers` 한 번.
-
-- [x] **Task 6: 하단 CTA·행 링크·더 보기** — Covers: AC-MYCUPS-11, 12, 22
-
-  kit `BottomCta`를 링크로도 쓸 수 있게(`href` prop). 「더 보기」는 밑줄 텍스트 모양의 `button` + `hit-44`.
-
-- [ ] **Task 7: e2e·목업 대조** — Covers: AC-MYCUPS-23 (+ 06·07·09·11·12·22의 e2e 부분)
-
-  `e2e/my-cups.spec.ts` 작성, `pnpm compare`로 `brews-390`·`brews-1440` 재생성.
-
----
-
 ## 수동 확인
 
-- [ ] ★ `pnpm compare`의 `brews-390`·`brews-1440`에서 목업 BM1·BW1 대비 「큼」 격차 0건. 비교 이미지를 PR 본문에 첨부한다
+- [x] ★ `pnpm compare`의 `brews-390`·`brews-1440`에서 목업 BM1·BW1 대비 「큼」 격차 0건. 비교 이미지를 PR 본문에 첨부한다
+  (2026-10-10 — 「큼」 0건. 「작음」: 모바일 마지막 행 아래 구분선 없음, 실제 카카오 이미지로 찍으면 아바타가 무너짐(#179))
 
 ## 열어둔 결정
 

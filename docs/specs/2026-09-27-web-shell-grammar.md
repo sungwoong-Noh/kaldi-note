@@ -256,9 +256,13 @@ supersedes:
 > 독립 값 자리가 Sans로 남은 것을 놓쳤다(README 82행 「수치를 Sans로 쓰지 마세요」).
 
 - **Given** 뷰포트 `1280×900`
-- **When** `/brews` 표의 원두량 셀(`20 g`)·물 온도 셀(`92 °C`), `/brews/2` 비교표의 값 셀(`30 g`·`20 g`), `/recipes/12` 스텝 물량(`60 g`)을 읽는다
+- **When** `/brews` 표의 원두량 셀(`20 g`), `/brews/2` 비교표의 값 셀(`30 g`·`20 g`), `/recipes/12` 스텝 물량(`60 g`)을 읽는다
 - **Then** 모두 computed `font-family`가 `IBM Plex Mono`로 시작하고 `font-weight`가 `500`이다
 - **검증** e2e
+
+> **일부 대체 (2026-10-10).** `/brews` 물 온도 셀(`92 °C`)은 목업 BW1이 온도·시간을 mono **400**(보조색)으로,
+> 원두량·수율만 500으로 그린다. [ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)에 따라 그 칸을 이 AC에서 뺐다 —
+> 표 열은 [`2026-10-10-my-cups-ledger.md`](2026-10-10-my-cups-ledger.md) AC-MYCUPS-09가 소유한다.
 
 ---
 

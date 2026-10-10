@@ -149,7 +149,11 @@ export function LedgerRow({
         </div>
         <div className="mt-[5px] flex justify-between gap-[10px] font-mono text-[11.5px]">
           <span className="text-ink-3">{meta}</span>
-          {accent !== undefined && <span className="shrink-0 text-accent">{accent}</span>}
+          {accent !== undefined && (
+            <span data-ledger-accent className="shrink-0 text-accent">
+              {accent}
+            </span>
+          )}
         </div>
       </div>
     </div>

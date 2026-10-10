@@ -274,7 +274,7 @@ supersedes:
 
   kit `PageHeader`·`StatTile`·`PillFilter`. 웹 타일은 값 24px·패딩 18/20 변형을 `StatTile`에 prop으로 더한다.
 
-- [ ] **Task 4: 모바일 원장 행 · 날짜 표기** — Covers: AC-MYCUPS-08, 13, 14
+- [x] **Task 4: 모바일 원장 행 · 날짜 표기** — Covers: AC-MYCUPS-08, 13, 14
 
   kit `LedgerRow` + `formatLedgerDate(brewedAt, today)`(`src/lib/format.ts`).
 

@@ -1,7 +1,16 @@
+"use client";
+
 import Link from "next/link";
-import { cardClass } from "@/components/ui";
-import { formatDuration, formatGrams, formatTemperature } from "@/lib/format";
-import { toKstDate } from "@/lib/kstDate";
+import { LedgerRow } from "@/components/kit";
+import { useRoastLevel } from "@/features/calendar/useRoastLevel";
+import {
+  formatDuration,
+  formatGrams,
+  formatLedgerDate,
+  formatTemperature,
+  formatTemperatureCompact,
+} from "@/lib/format";
+import { kstToday, toKstDate } from "@/lib/kstDate";
 import type { BrewLogSummary } from "../schema";
 
 /** 웹(≥760px) — 날짜·레시피/원두·원두량·온도·시간·수율·평가 7열(AC-RECIPESBREWS-77). */
@@ -68,7 +77,10 @@ export function LedgerTable({
   );
 }
 
-/** 모바일(<760px) — 2줄 원장 행(AC-RECIPESBREWS-77). */
+/**
+ * 모바일 2줄 원장 행 — 목업 BM1(docs/specs/2026-10-10-my-cups-ledger.md AC-MYCUPS-08·14).
+ * 2줄 왼쪽은 날짜·온도·시간, 오른쪽(accent)은 수율·별점이고 없는 조각은 빠진다.
+ */
 export function LedgerList({
   logs,
   labels,
@@ -76,40 +88,52 @@ export function LedgerList({
   logs: BrewLogSummary[];
   labels: Map<number, string>;
 }) {
+  const today = kstToday();
   return (
-    <ul className="flex flex-col gap-3">
+    <ul>
       {logs.map((log) => (
         <li key={log.id}>
-          <Link
-            href={`/brews/${log.id}`}
-            className={cardClass("block active:bg-surface")}
-          >
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="font-medium">
-                {labels.get(log.recipeId) ?? ""}
-              </span>
-              <span className="text-metric">
-                {formatGrams(log.actualDoseG)}
-              </span>
-            </div>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-ink-3">
-              <span>{toKstDate(log.brewedAt)}</span>
-              <span>{formatTemperature(log.actualWaterTempC)}</span>
-              {log.actualTotalTimeSeconds !== undefined && (
-                <span>{formatDuration(log.actualTotalTimeSeconds)}</span>
-              )}
-              {log.extractionYieldPercent !== undefined && (
-                <span>{log.extractionYieldPercent}%</span>
-              )}
-              {log.rating !== undefined && (
-                <span>
-                  <span aria-hidden>★</span> <span>{log.rating}</span>
-                </span>
-              )}
-            </div>
-          </Link>
+          <MobileRow log={log} label={labels.get(log.recipeId) ?? ""} today={today} />
         </li>
       ))}
     </ul>
+  );
+}
+
+function MobileRow({
+  log,
+  label,
+  today,
+}: {
+  log: BrewLogSummary;
+  label: string;
+  today: string;
+}) {
+  const roastLevel = useRoastLevel(log.beanBatchId, true);
+  const { date, weekday } = formatLedgerDate(log.brewedAt, today);
+  const meta = [
+    `${date} ${weekday}`,
+    formatTemperatureCompact(log.actualWaterTempC),
+    log.actualTotalTimeSeconds !== undefined ? formatDuration(log.actualTotalTimeSeconds) : undefined,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const accent = [
+    log.extractionYieldPercent !== undefined ? `${log.extractionYieldPercent} %` : undefined,
+    log.rating !== undefined ? `★ ${log.rating}` : undefined,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  return (
+    <Link href={`/brews/${log.id}`} className="block">
+      <LedgerRow
+        roastLevel={roastLevel}
+        title={label}
+        value={formatGrams(log.actualDoseG)}
+        meta={meta}
+        accent={accent || undefined}
+      />
+    </Link>
   );
 }

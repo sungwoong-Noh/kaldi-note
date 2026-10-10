@@ -7,6 +7,7 @@ import {
   brewLogPage,
   brewLogWithTds,
   grindedRecipe,
+  brewLogWithoutTds,
   kasuyaRecipe,
   me,
 } from "@/test/fixtures";
@@ -556,5 +557,51 @@ describe("BrewsPage — 로그인·에러", () => {
       await screen.findByRole("status", { name: "불러오는 중" }),
     ).toBeInTheDocument();
     expect(screen.queryByText("Kasuya 4:6")).not.toBeInTheDocument();
+  });
+});
+
+describe("내 잔 — 모바일 원장 행", () => {
+  const initialWidth = window.innerWidth;
+
+  beforeEach(() => {
+    window.innerWidth = 390;
+  });
+
+  afterEach(() => {
+    window.innerWidth = initialWidth;
+  });
+
+  it("AC-MYCUPS-08 · 1줄은 레시피명·원두량, 2줄은 날짜·온도·시간 / 수율·별점이다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("Kasuya 4:6")).toBeInTheDocument();
+    expect(screen.getByText("20 g")).toBeInTheDocument();
+    expect(screen.getByText("08.31 월 · 92°C · 3:30")).toBeInTheDocument();
+    expect(screen.getByText("17.6 % · ★ 4")).toBeInTheDocument();
+  });
+
+  it("AC-MYCUPS-14 · 없는 값은 그 조각만 빠진다", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(
+          pageOf([
+            brewLogWithoutTds,
+            { ...brewLogWithoutTds, id: 4, rating: undefined },
+          ]),
+        ),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findAllByText("08.30 일 · 92°C")).toHaveLength(2);
+    expect(screen.getByText("★ 3")).toBeInTheDocument();
+    // 별점도 없는 행은 오른쪽 자리가 비고 `·`가 남지 않는다.
+    expect(screen.queryByText(/^\s*·|·\s*$/)).toBeNull();
+    expect(document.querySelectorAll("[data-ledger-accent]")).toHaveLength(1);
   });
 });

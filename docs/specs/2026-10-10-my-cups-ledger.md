@@ -253,7 +253,7 @@ supersedes:
 
 ## 구현 순서
 
-- [ ] **Task 1: 백엔드 — month·minRating 필터** — Covers: AC-MYCUPS-02, 03, 16, 17, 19, 20
+- [x] **Task 1: 백엔드 — month·minRating 필터** — Covers: AC-MYCUPS-02, 03, 16, 17, 19, 20
 
   ```java
   // BrewLogController.list: @RequestParam(required=false) String month, @RequestParam(required=false) Integer minRating

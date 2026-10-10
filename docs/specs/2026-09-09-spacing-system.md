@@ -1,11 +1,16 @@
 ---
 id: SPACE
 title: 간격·모서리 체계
-status: 구현완료
+status: 대체됨
 plan: docs/archive/plans/2026-09-09-plan-spacing-system.md
 ---
 
 # 간격·모서리 체계 스펙
+
+> ## ★ 2026-10-10 — 전체 대체됨
+>
+> AC 11개가 전부 [ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)(목업이 시각의 정본)으로
+> 대체돼 스펙 전체가 `대체됨`이다. 간격·모서리·그림자는 이제 목업 값을 그대로 쓴다.
 
 > ## ★ 2026-09-17 갱신 — 모서리가 4종이 되고 거터가 24px가 됐다
 >

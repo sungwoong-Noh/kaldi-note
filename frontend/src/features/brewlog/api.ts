@@ -36,15 +36,28 @@ export function fetchBrewLog(
   });
 }
 
+/** 목록 필터. 전부 선택이고 서버에서 AND로 묶인다(docs/specs/2026-10-10-my-cups-ledger.md). */
+export interface BrewLogListFilter {
+  userId?: number;
+  /** `YYYY-MM`, KST */
+  month?: string;
+  /** 1~5, 그 별점 이상 */
+  minRating?: number;
+}
+
 export function fetchBrewLogPage(
   page: number,
   size: number = BREW_LOG_PAGE_SIZE,
   onSessionLost?: () => void,
+  filter: BrewLogListFilter = {},
 ): Promise<BrewLogPage> {
   const query = new URLSearchParams({
     page: String(page),
     size: String(size),
   });
+  for (const [key, value] of Object.entries(filter)) {
+    if (value !== undefined) query.set(key, String(value));
+  }
   return authedRequest(backendUrl(`/api/v1/brew-logs?${query.toString()}`), {
     schema: brewLogPageSchema,
     onSessionLost,

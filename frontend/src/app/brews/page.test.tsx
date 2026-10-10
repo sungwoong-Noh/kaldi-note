@@ -1,21 +1,25 @@
 import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { HttpResponse, delay, http } from "msw";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
   brewLogPage,
   brewLogWithTds,
   grindedRecipe,
   kasuyaRecipe,
+  me,
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
 import BrewsPage from "./page";
 
 const replace = vi.fn();
+let currentSearch = "";
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace, refresh: vi.fn() }),
   usePathname: () => "/brews",
+  useSearchParams: () => new URLSearchParams(currentSearch),
 }));
 
 const BASE = "http://localhost:8080/api/v1";
@@ -36,10 +40,15 @@ function pageOf(
 }
 
 beforeEach(() => {
+  // 「이번 달」이 2026-10이 되도록 오늘을 고정한다(KST 2026-10-10 10:00).
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  vi.setSystemTime(new Date("2026-10-10T01:00:00Z"));
   replace.mockClear();
+  currentSearch = "";
   clearSession();
   setAccessToken("a.b.c");
   server.use(
+    http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
     http.get(`${BASE}/recipes/12`, () =>
       HttpResponse.json({ ...grindedRecipe, id: 12, title: "Kasuya 4:6" }),
     ),
@@ -49,6 +58,91 @@ beforeEach(() => {
       HttpResponse.json({ monthCount: 0 }),
     ),
   );
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+/** 목록 요청의 쿼리를 잡는다. 마지막 요청이 남는다. */
+function captureListQuery(): { params: () => URLSearchParams } {
+  let query = "";
+  server.use(
+    http.get(LIST_URL, ({ request }) => {
+      query = new URL(request.url).search;
+      return HttpResponse.json(pageOf([brewLogWithTds]));
+    }),
+  );
+  return { params: () => new URLSearchParams(query) };
+}
+
+describe("내 잔 — 범위와 필터 (docs/specs/2026-10-10-my-cups-ledger.md)", () => {
+  it("AC-MYCUPS-01 · 목록은 본인 잔만 부른다", async () => {
+    const list = captureListQuery();
+
+    renderWithQuery(<BrewsPage />);
+
+    await waitFor(() => expect(list.params().get("userId")).toBe("11"));
+  });
+
+  it("AC-MYCUPS-04 · 「이번 달」을 누르면 ?filter=month로 바뀐다", async () => {
+    captureListQuery();
+    renderWithQuery(<BrewsPage />);
+
+    await userEvent.click(await screen.findByRole("button", { name: "이번 달" }));
+
+    expect(replace).toHaveBeenCalledWith("/brews?filter=month");
+  });
+
+  it("AC-MYCUPS-04 · ?filter=month면 month=2026-10과 userId를 함께 보낸다", async () => {
+    currentSearch = "filter=month";
+    const list = captureListQuery();
+
+    renderWithQuery(<BrewsPage />);
+
+    await waitFor(() => expect(list.params().get("month")).toBe("2026-10"));
+    expect(list.params().get("userId")).toBe("11");
+    expect(list.params().get("minRating")).toBeNull();
+    expect(
+      await screen.findByRole("button", { name: "이번 달" }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("AC-MYCUPS-05 · 「★ 4 이상」은 ?filter=rated, 「전체」는 쿼리를 지운다", async () => {
+    currentSearch = "filter=month";
+    captureListQuery();
+    renderWithQuery(<BrewsPage />);
+
+    await userEvent.click(await screen.findByRole("button", { name: "★ 4 이상" }));
+    expect(replace).toHaveBeenLastCalledWith("/brews?filter=rated");
+
+    await userEvent.click(screen.getByRole("button", { name: "전체" }));
+    expect(replace).toHaveBeenLastCalledWith("/brews");
+  });
+
+  it("AC-MYCUPS-05 · ?filter=rated면 minRating=4만 보낸다", async () => {
+    currentSearch = "filter=rated";
+    const list = captureListQuery();
+
+    renderWithQuery(<BrewsPage />);
+
+    await waitFor(() => expect(list.params().get("minRating")).toBe("4"));
+    expect(list.params().get("month")).toBeNull();
+  });
+
+  it("AC-MYCUPS-21 · 모르는 filter 값은 전체로 본다", async () => {
+    currentSearch = "filter=xyz";
+    const list = captureListQuery();
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(
+      await screen.findByRole("button", { name: "전체" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(list.params().get("userId")).toBe("11");
+    expect(list.params().get("month")).toBeNull();
+    expect(list.params().get("minRating")).toBeNull();
+  });
 });
 
 describe("BrewsPage", () => {

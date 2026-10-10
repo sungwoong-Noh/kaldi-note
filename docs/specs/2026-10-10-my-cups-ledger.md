@@ -262,7 +262,7 @@ supersedes:
   // BrewLogRepository.findVisible(..., Integer minRating, ...): (:minRating is null or b.rating >= :minRating)
   ```
 
-- [ ] **Task 2: 프론트 API·URL 상태** — Covers: AC-MYCUPS-01, 04, 05, 21
+- [x] **Task 2: 프론트 API·URL 상태** — Covers: AC-MYCUPS-01, 04, 05, 21
 
   ```ts
   // fetchBrewLogPage(page, size, { userId, month, minRating }, onSessionLost)

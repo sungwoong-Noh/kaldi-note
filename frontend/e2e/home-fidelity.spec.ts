@@ -423,3 +423,56 @@ test.describe("홈 정합 — 웹 카드 1440", () => {
     ).toEqual({ fontSize: "17px", mono: true });
   });
 });
+
+test.describe("홈 정합 — 모바일 날짜 목록 390", () => {
+  test("AC-HOMEFIT-13 · 모바일 날짜 목록은 원장 행이다", async ({ page }) => {
+    await open(page, MOBILE, (p) => stubDayLogs(p, 2));
+
+    const rows = page.getByTestId("day-list-row");
+    await expect(rows).toHaveCount(2);
+    const lines = await rows.evaluateAll((els) =>
+      els.map((el) => {
+        const s = getComputedStyle(el);
+        return { top: s.borderTopWidth, bottom: s.borderBottomWidth };
+      }),
+    );
+    expect(lines).toEqual([
+      { top: "1px", bottom: "0px" },
+      { top: "1px", bottom: "1px" },
+    ]);
+
+    const first = rows.first();
+    const style = (el: Element) => {
+      const s = getComputedStyle(el);
+      return { fontSize: s.fontSize, fontWeight: s.fontWeight };
+    };
+    expect(
+      await first
+        .getByText(hoffmannSummary.title, { exact: true })
+        .evaluate(style),
+    ).toEqual({
+      fontSize: "14.5px",
+      fontWeight: "500",
+    });
+    expect(
+      await first.getByText("18:00 · ★ 4", { exact: true }).evaluate(style),
+    ).toMatchObject({
+      fontSize: "11.5px",
+    });
+    expect(
+      await first.getByTestId("day-list-metric").evaluate((el) => {
+        const s = getComputedStyle(el);
+        return {
+          fontSize: s.fontSize,
+          mono: s.fontFamily.includes("IBM Plex Mono"),
+        };
+      }),
+    ).toEqual({ fontSize: "14px", mono: true });
+    expect(await first.locator("[data-roast-dot]").boundingBox()).toMatchObject(
+      {
+        width: 9,
+        height: 9,
+      },
+    );
+  });
+});

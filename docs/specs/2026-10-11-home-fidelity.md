@@ -264,7 +264,7 @@ ADR 0010(목업이 시각의 정본)에 따라 아래 AC는 이 스펙의 값으
 
   `/brews` 표의 보조줄과 같은 조회(`useBeanLabel`·`useBrewers`·레시피 캐시). 관찰은 `DayList`가 고른다.
 
-- [ ] **Task 7: 모바일 날짜 목록 원장 행** — Covers: AC-HOMEFIT-13
+- [x] **Task 7: 모바일 날짜 목록 원장 행** — Covers: AC-HOMEFIT-13
 
 - [ ] **Task 8: e2e·스텁 정합·목업 대조** — Covers: AC-HOMEFIT-22 (+ e2e 부분)
 

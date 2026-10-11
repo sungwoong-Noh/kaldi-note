@@ -155,7 +155,6 @@ export function DayList({
             key={log.id}
             log={log}
             recipeLabel={recipeLabels?.get(log.recipeId)}
-            variant={variant}
           />
         ))}
       </ul>
@@ -164,43 +163,44 @@ export function DayList({
   );
 }
 
+/**
+ * 모바일 원장 행 — 목업 C1. 행마다 위 구분선, 마지막 행은 아래에도 선이 있다
+ * (docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-13).
+ */
 function DayListRow({
   log,
   recipeLabel,
-  variant,
 }: {
   log: BrewLogSummary;
   recipeLabel?: string;
-  variant: "mobile" | "web";
 }) {
   const roastLevel = useRoastLevel(log.beanBatchId, true);
   const metric = representativeMetric(log);
 
   return (
-    <li data-testid="day-list-row">
+    <li
+      data-testid="day-list-row"
+      className="border-t border-divider first:border-divider-strong last:border-b last:border-b-divider-strong"
+    >
       <Link
         href={`/brews/${log.id}`}
-        className="flex min-h-11 items-center gap-2"
+        className="flex min-h-11 items-center gap-[13px] py-3.5"
       >
         <RoastDot roastLevel={roastLevel} />
-        <span className="flex-1 truncate">
-          <span className="block truncate text-body font-medium">
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[14.5px] font-medium">
             {recipeLabel ?? ""}
           </span>
-          <span className="text-caption text-ink-3">
+          <span className="mt-0.5 block text-caption text-ink-3">
             {formatCaption(log.brewedAt, log.rating)}
           </span>
         </span>
-        {metric !== undefined && <span className="text-metric">{metric}</span>}
+        {metric !== undefined && (
+          <span data-testid="day-list-metric" className="font-mono text-[14px]">
+            {metric}
+          </span>
+        )}
       </Link>
-      {variant === "web" && log.overallNote !== undefined && (
-        <p className="text-body-sm italic text-ink-2">{log.overallNote}</p>
-      )}
-      {variant === "web" && log.diagnosis !== undefined && (
-        <p className="border-l-2 border-accent bg-surface px-3 py-2 text-body-sm">
-          {log.diagnosis}
-        </p>
-      )}
     </li>
   );
 }

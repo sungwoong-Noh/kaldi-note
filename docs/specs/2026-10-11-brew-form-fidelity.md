@@ -1,7 +1,7 @@
 ---
 id: BREWFIT
 title: 공용 입력 부품 + 기록 작성·편집 시안 정합 — 섹션 라벨·숫자 셀·원장 필드·맛 도트
-status: 초안
+status: 승인
 milestone: M2
 supersedes:
 ---
@@ -90,7 +90,7 @@ supersedes:
 
 - **Given** 뷰포트 `1280×900`, `/brews/new?recipeId=1`
 - **When** 연다
-- **Then** `기록하기` 버튼이 `banner`(상단 바) 안에 있고 bottom이 `80`px 이하다. `banner` 안에 `취소`도 있다. 그 밖에 이름이 `기록하기`인 버튼은 **0개**다
+- **Then** `기록하기` 버튼이 `banner`(상단 바) 안에 있고 bottom이 `80`px 이하다. `banner` 안에 `취소`도 있다. 그 밖에 이름이 `기록하기`인 버튼은 **0개**이고, 이름이 `기록하기`인 링크(상단 바 CTA)도 **0개**다
 - **검증** e2e
 
 #### AC-BREWFIT-04 · 오른쪽 칼럼 폭과 전환 지점

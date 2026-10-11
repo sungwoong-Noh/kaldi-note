@@ -135,6 +135,7 @@ TDS  [        ]  ← 비움
 - **When** `/brews/42`를 연다
 - **Then** 이름이 `편집`인 링크의 `href`가 `/brews/42/edit`다
 - **검증** 페이지 테스트 `BrewDetailPage.test.tsx`
+- **(일부 대체됨)** 링크 이름은 `수정`이다(목업 W3·B2) — `docs/specs/2026-10-11-brew-detail-fidelity.md` AC-BDETAIL-11·13. 소유자만 보인다는 요점은 그대로다.
 
 #### AC-WEBLOGEDIT-02 · 남의 로그에는 편집도 삭제도 없다
 
@@ -142,6 +143,7 @@ TDS  [        ]  ← 비움
 - **When** `/brews/42`를 연다
 - **Then** 이름이 `편집`인 링크가 없고 이름이 `삭제`인 버튼도 없다
 - **검증** 페이지 테스트 `BrewDetailPage.test.tsx`
+- **(일부 대체됨)** 링크 이름은 `수정`이다(목업 W3·B2) — `docs/specs/2026-10-11-brew-detail-fidelity.md` AC-BDETAIL-11·13. 소유자만 보인다는 요점은 그대로다.
 
 #### AC-WEBLOGEDIT-03 · 내 로그에는 삭제가 그대로 있다
 

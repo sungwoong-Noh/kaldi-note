@@ -9,7 +9,9 @@ import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { RecipeStepList } from "@/features/recipe/components/RecipeStepList";
 import { LedgerField } from "@/components/kit";
+import { TopBarActions } from "@/components/layout/TopBarActions";
 import { useBrewers } from "@/features/gear/queries";
+import { useIsWide } from "@/lib/useIsWide";
 import { useMe } from "@/features/user/queries";
 import {
   formatDuration,
@@ -44,6 +46,7 @@ export function BrewDetail({ id }: { id: number }) {
   const recipe = useRecipeLabel(recipeId, ready, onSessionLost);
   const bean = useBeanLabel(logQuery.data?.beanBatchId, ready, onSessionLost);
   const brewers = useBrewers(onSessionLost);
+  const wide = useIsWide();
 
   const remove = useMutation({
     mutationFn: () => deleteBrewLog(id, onSessionLost),
@@ -86,140 +89,177 @@ export function BrewDetail({ id }: { id: number }) {
   const isMine = me.data !== undefined && log.userId === me.data.id;
   const lead = detailHeadline(log);
 
+  const title = (
+    <div className="flex flex-col">
+      <span className="font-mono text-[10.5px] tracking-[0.14em] text-ink-3 uppercase">
+        {formatKstStamp(log.brewedAt)}
+      </span>
+      {/*
+        화면 제목이다. **`h1`은 언제나 그리고 링크만 조건부로 한다** — 조건부로 사라지면
+        제목 없는 화면이 생기고, 스크린리더 사용자가 「지금 무엇을 보고 있는가」를 제목
+        탐색으로 알 수 없다.
+
+        읽었을 때만 링크다. 못 읽었다는 것은 그 레시피를 볼 권한이 없다는 뜻이라 링크를
+        누르면 403 화면으로 간다. 두 갈래가 같은 크기·굵기를 갖게 해서 폴백일 때 레이아웃이
+        흔들리지 않게 한다.
+      */}
+      <h1 className="mt-[6px] text-page-title font-semibold min-[1100px]:text-[30px]">
+        {recipeId !== undefined && recipe.isReady ? (
+          <Link
+            href={`/recipes/${recipeId}`}
+            className="hit-44 underline-offset-2 hover:underline"
+          >
+            {recipe.label}
+          </Link>
+        ) : (
+          recipe.label
+        )}
+      </h1>
+      {subline !== "" && (
+        <p className="mt-[4px] text-[13.5px] text-ink-3">{subline}</p>
+      )}
+    </div>
+  );
+
+  const gear = log.beanBatchId !== undefined && bean.label !== "" && (
+    <div className="flex flex-col">
+      <LedgerField
+        label="원두"
+        value={bean.label}
+        sub={
+          [
+            bean.roastedAt !== undefined &&
+              `로스팅 ${bean.roastedAt.slice(5, 7)}.${bean.roastedAt.slice(8, 10)}`,
+            log.daysOffRoast !== undefined && `${log.daysOffRoast}일차`,
+          ]
+            .filter(Boolean)
+            .join(" · ") || undefined
+        }
+      />
+    </div>
+  );
+
+  // 레시피를 못 읽으면 그리지 않는다 — 비교할 대상이 없다(AC-STRUCT-13).
+  const comparison = recipe.targets !== undefined && (
+    <RecipeComparison log={log} targets={recipe.targets} />
+  );
+
+  const measured = (
+    <section className="flex flex-col gap-2">
+      <h2 className="text-card-title font-semibold">실측값</h2>
+      <dl className="flex flex-wrap gap-x-3 gap-y-1 text-body">
+        {measures(log)
+          .filter((entry) => entry.label !== lead.label)
+          // 비교표가 그린 항목은 여기서 뺀다 — 같은 값을 두 번 보여주지 않는다.
+          // 비교표를 못 그리는 경우(레시피를 못 읽음)에는 전부 남는다(AC-STRUCT-13).
+          .filter(
+            (entry) =>
+              recipe.targets === undefined || !COMPARED_LABELS.has(entry.label),
+          )
+          .map((entry) => (
+            <Measure
+              key={entry.label}
+              label={entry.label}
+              value={entry.value}
+            />
+          ))}
+      </dl>
+    </section>
+  );
+
+  /*
+    푸어 스텝. **읽기 전용이다** — 푸어링을 바꾸는 것은 새 레시피를 만드는 일이라
+    여기에 편집 진입점을 두지 않는다(스펙의 「범위 밖」 첫 항목).
+
+    조건이 `steps.length`가 아니라 `isReady`인 것이 요점이다. 못 읽는 세 경우
+    (403·404·조회 중)가 한 갈래로 처리된다. 제목 자리에 이미 `비공개 레시피` 같은
+    문구가 떠 있어 이유가 드러나므로, 빈 절을 세워 같은 말을 두 번 하지 않는다.
+  */
+  const steps = recipe.isReady && (
+    <section className="flex flex-col gap-2">
+      <h2 className="text-card-title font-semibold">푸어 스텝</h2>
+      <RecipeStepList steps={recipe.steps} />
+    </section>
+  );
+
+  const memo = log.overallNote !== undefined && (
+    <section className="flex flex-col gap-2">
+      <h2 className="text-card-title font-semibold">메모</h2>
+      <p className="whitespace-pre-wrap text-body">{log.overallNote}</p>
+    </section>
+  );
+
+  /*
+    `PATCH`·`DELETE`는 소유자만 받는다. 남의 로그에 버튼을 두면 눌렀을 때 403이 난다.
+    `me`가 아직 안 왔으면 남의 것으로 본다 — 파괴적 버튼은 늦게 나타나는 편이 안전하다.
+
+    「다시 내리기」는 내 기록이 아니어도 보인다 — 남의 기록을 보고 같은 레시피로
+    내려보는 것이 이 서비스의 쓰임이다(docs/specs/2026-09-17-small-features.md).
+  */
+  const actions = (
+    <>
+      {recipeId !== undefined && (
+        <ButtonLink href={`/brews/new?recipeId=${recipeId}`} variant="primary">
+          다시 내리기
+        </ButtonLink>
+      )}
+      {isMine && (
+        <>
+          <ButtonLink href={`/brews/${id}/edit`}>수정</ButtonLink>
+          <Button onClick={() => setConfirmingDelete(true)}>삭제</Button>
+        </>
+      )}
+    </>
+  );
+
+  const dialog = confirmingDelete && (
+    <DeleteBrewLogDialog
+      deleting={remove.isPending}
+      onConfirm={() => remove.mutate()}
+      onCancel={() => setConfirmingDelete(false)}
+    />
+  );
+
+  if (wide) {
+    // 목업 W3 — 왼쪽 본문(제목·비교표·스텝) + 오른쪽 전체 높이 판(히어로·원두·메모), 동작은 상단 바.
+    return (
+      <Screen wide>
+        <TopBarActions>{actions}</TopBarActions>
+        <div className="flex items-stretch gap-[40px]">
+          <div
+            data-detail-main
+            className="flex min-w-0 flex-1 flex-col gap-[28px]"
+          >
+            {title}
+            {comparison}
+            {measured}
+            {steps}
+          </div>
+          <aside
+            data-detail-aside
+            className="flex w-[360px] shrink-0 flex-col gap-[22px] border-l border-divider bg-surface px-[32px] py-[36px] min-[1280px]:w-[420px] min-[1280px]:px-[40px] min-[1280px]:py-[44px]"
+          >
+            <BrewDetailHero log={log} />
+            {gear}
+            {memo}
+          </aside>
+        </div>
+        {dialog}
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
-      <div className="flex flex-col">
-        <span className="font-mono text-[10.5px] tracking-[0.14em] text-ink-3 uppercase">
-          {formatKstStamp(log.brewedAt)}
-        </span>
-        {/*
-          화면 제목이다. **`h1`은 언제나 그리고 링크만 조건부로 한다** — 조건부로 사라지면
-          제목 없는 화면이 생기고, 스크린리더 사용자가 「지금 무엇을 보고 있는가」를 제목
-          탐색으로 알 수 없다.
-
-          읽었을 때만 링크다. 못 읽었다는 것은 그 레시피를 볼 권한이 없다는 뜻이라 링크를
-          누르면 403 화면으로 간다. 두 갈래가 같은 크기·굵기를 갖게 해서 폴백일 때 레이아웃이
-          흔들리지 않게 한다.
-        */}
-        <h1 className="mt-[6px] text-page-title font-semibold min-[1100px]:text-[30px]">
-          {recipeId !== undefined && recipe.isReady ? (
-            <Link
-              href={`/recipes/${recipeId}`}
-              className="underline-offset-2 hover:underline"
-            >
-              {recipe.label}
-            </Link>
-          ) : (
-            recipe.label
-          )}
-        </h1>
-        {subline !== "" && (
-          <p className="mt-[4px] text-[13.5px] text-ink-3">{subline}</p>
-        )}
-      </div>
-
+      {title}
       <BrewDetailHero log={log} />
-
-      {log.beanBatchId !== undefined && bean.label !== "" && (
-        <div className="flex flex-col">
-          <LedgerField
-            label="원두"
-            value={bean.label}
-            sub={
-              [
-                bean.roastedAt !== undefined &&
-                  `로스팅 ${bean.roastedAt.slice(5, 7)}.${bean.roastedAt.slice(8, 10)}`,
-                log.daysOffRoast !== undefined && `${log.daysOffRoast}일차`,
-              ]
-                .filter(Boolean)
-                .join(" · ") || undefined
-            }
-          />
-        </div>
-      )}
-
-      {/* 레시피를 못 읽으면 그리지 않는다 — 비교할 대상이 없다(AC-STRUCT-13). */}
-      {recipe.targets !== undefined && (
-        <RecipeComparison log={log} targets={recipe.targets} />
-      )}
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-card-title font-semibold">실측값</h2>
-        <dl className="flex flex-wrap gap-x-3 gap-y-1 text-body">
-          {measures(log)
-            .filter((entry) => entry.label !== lead.label)
-            // 비교표가 그린 항목은 여기서 뺀다 — 같은 값을 두 번 보여주지 않는다.
-            // 비교표를 못 그리는 경우(레시피를 못 읽음)에는 전부 남는다(AC-STRUCT-13).
-            .filter(
-              (entry) =>
-                recipe.targets === undefined ||
-                !COMPARED_LABELS.has(entry.label),
-            )
-            .map((entry) => (
-              <Measure
-                key={entry.label}
-                label={entry.label}
-                value={entry.value}
-              />
-            ))}
-        </dl>
-      </section>
-
-      {/*
-        푸어 스텝. **읽기 전용이다** — 푸어링을 바꾸는 것은 새 레시피를 만드는 일이라
-        여기에 편집 진입점을 두지 않는다(스펙의 「범위 밖」 첫 항목).
-
-        조건이 `steps.length`가 아니라 `isReady`인 것이 요점이다. 못 읽는 세 경우
-        (403·404·조회 중)가 한 갈래로 처리된다. 제목 자리에 이미 `비공개 레시피` 같은
-        문구가 떠 있어 이유가 드러나므로, 빈 절을 세워 같은 말을 두 번 하지 않는다.
-      */}
-      {recipe.isReady && (
-        <section className="flex flex-col gap-2">
-          <h2 className="text-card-title font-semibold">푸어 스텝</h2>
-          <RecipeStepList steps={recipe.steps} />
-        </section>
-      )}
-
-      {log.overallNote !== undefined && (
-        <section className="flex flex-col gap-2">
-          <h2 className="text-card-title font-semibold">메모</h2>
-          <p className="whitespace-pre-wrap text-body">{log.overallNote}</p>
-        </section>
-      )}
-
-      {/*
-        `PATCH`·`DELETE`는 소유자만 받는다. 남의 로그에 버튼을 두면 눌렀을 때 403이 난다.
-        `me`가 아직 안 왔으면 남의 것으로 본다 — 파괴적 버튼은 늦게 나타나는 편이 안전하다.
-      */}
-      {/*
-        「다시 내리기」는 내 기록이 아니어도 보인다 — 남의 기록을 보고 같은 레시피로
-        내려보는 것이 이 서비스의 쓰임이다. 편집·삭제만 소유자 전용이다
-        (docs/specs/2026-09-17-small-features.md).
-      */}
-      <div className="flex items-center gap-2 self-start">
-        {recipeId !== undefined && (
-          <ButtonLink
-            href={`/brews/new?recipeId=${recipeId}`}
-            variant="primary"
-          >
-            다시 내리기
-          </ButtonLink>
-        )}
-        {isMine && (
-          <>
-            <ButtonLink href={`/brews/${id}/edit`}>편집</ButtonLink>
-            <Button onClick={() => setConfirmingDelete(true)}>삭제</Button>
-          </>
-        )}
-      </div>
-
-      {confirmingDelete && (
-        <DeleteBrewLogDialog
-          deleting={remove.isPending}
-          onConfirm={() => remove.mutate()}
-          onCancel={() => setConfirmingDelete(false)}
-        />
-      )}
+      {comparison}
+      {measured}
+      {steps}
+      {gear}
+      {memo}
+      <div className="flex items-center gap-2 self-start">{actions}</div>
+      {dialog}
     </Screen>
   );
 }
@@ -274,6 +314,16 @@ function Measure({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Screen({ children }: { children: React.ReactNode }) {
-  return <Shell stack>{children}</Shell>;
+function Screen({
+  wide = false,
+  children,
+}: {
+  wide?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Shell stack wide={wide} className={wide ? "max-w-6xl" : ""}>
+      {children}
+    </Shell>
+  );
 }

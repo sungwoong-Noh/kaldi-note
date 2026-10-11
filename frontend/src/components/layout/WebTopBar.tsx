@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMe } from "@/features/user/queries";
-import { backHref, isActive, isBrewForm, isHidden } from "@/lib/navScreens";
+import {
+  backHref,
+  isActive,
+  isBrewDetail,
+  isBrewForm,
+  isHidden,
+} from "@/lib/navScreens";
 import { Avatar, ButtonLink } from "@/components/ui";
 
 /** 기록 폼의 동작 버튼이 들어올 자리. */
@@ -96,22 +102,27 @@ export function WebTopBar() {
       {brewForm ? (
         <div id={TOPBAR_ACTIONS_ID} className="flex items-center gap-2" />
       ) : (
-        <div className="hidden items-center gap-4 min-[1100px]:flex">
-          {cta && (
-            <ButtonLink href={cta.href} variant="primary">
-              {cta.label}
-            </ButtonLink>
+        <div className="flex items-center gap-4">
+          {isBrewDetail(pathname) && (
+            <div id={TOPBAR_ACTIONS_ID} className="flex items-center gap-2" />
           )}
-          {me.data && (
-            <Link href="/more" aria-label="더보기">
-              <Avatar
-                nickname={me.data.nickname}
-                profileImageUrl={me.data.profileImageUrl}
-                size={34}
-                userId={me.data.id}
-              />
-            </Link>
-          )}
+          <div className="hidden items-center gap-4 min-[1100px]:flex">
+            {cta && (
+              <ButtonLink href={cta.href} variant="primary">
+                {cta.label}
+              </ButtonLink>
+            )}
+            {me.data && (
+              <Link href="/more" aria-label="더보기">
+                <Avatar
+                  nickname={me.data.nickname}
+                  profileImageUrl={me.data.profileImageUrl}
+                  size={34}
+                  userId={me.data.id}
+                />
+              </Link>
+            )}
+          </div>
         </div>
       )}
     </header>

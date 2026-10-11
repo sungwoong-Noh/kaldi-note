@@ -22,6 +22,11 @@ export function isBrewForm(pathname: string): boolean {
   return /^\/brews\/(new|[^/]+\/edit)$/.test(pathname);
 }
 
+/** 기록 상세. 상단 바 오른쪽 자리에 `다시 내리기`·`수정`·`삭제`를 받는다(AC-BDETAIL-11·12). */
+export function isBrewDetail(pathname: string): boolean {
+  return /^\/brews\/\d+$/.test(pathname);
+}
+
 /** 홈은 완전 일치일 때만 켜진다. 접두어로 보면 모든 경로에서 켜진다. */
 export function isActive(href: string, pathname: string): boolean {
   if (href === "/") return pathname === "/";

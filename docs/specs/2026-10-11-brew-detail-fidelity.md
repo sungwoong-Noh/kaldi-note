@@ -236,6 +236,11 @@ supersedes:
 
 - AC-HOMECAL-54(docs/specs/2026-09-19-home-calendar.md)의 **상세** 표기 `2026-09-19` → AC-BDETAIL-04의 `09.19 토 · 08:00` — KST 변환은 그대로(구현 중 발견, 2026-10-11 사람 확인)
 
+- AC-WEBLOGEDIT-01·02(docs/specs/2026-09-02-web-brew-log-edit.md)의 링크 이름 `편집` → `수정`(AC-BDETAIL-11·13). 결정 표 #18에서 정한 것을 구현 중 대체 목록에 추가
+
+- AC-STRUCT-18(docs/specs/2026-09-15-structure.md) → AC-BDETAIL-02 — 구현 중 발견(결정 표 #3의 결과)
+- AC-GRAMMAR-02·09(docs/specs/2026-09-27-web-shell-grammar.md)의 `/brews/2` → AC-BDETAIL-01·02·05 — 구현 중 발견(결정 표 #2의 결과)
+
 나머지 CONSIST·STRUCT·WEBNAME·WEBLOGSTEP·WEBLOGEDIT·SMALL AC는 그대로 유효하다.
 
 ---
@@ -257,7 +262,7 @@ supersedes:
 
   날짜 eyebrow(KST `MM.DD 요일 · HH:mm`), `h1` 링크, 원두·로스팅일·드리퍼 줄(`useBrewSubParts` 재사용).
 
-- [ ] **Task 4: 웹 2컬럼 + 상단 바 동작** — Covers: AC-BDETAIL-01, 11, 20
+- [x] **Task 4: 웹 2컬럼 + 상단 바 동작** — Covers: AC-BDETAIL-01, 11, 20
 
   `useIsWide`로 웹/모바일 중 한쪽만 그린다. `WebTopBar`의 `#topbar-actions` 자리를 `/brews/[id]`에도 둔다(모든 폭).
   동작은 `createPortal` — 기록 폼 `WebActions`를 공용으로 옮겨 쓴다.

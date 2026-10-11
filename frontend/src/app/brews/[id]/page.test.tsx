@@ -248,7 +248,7 @@ describe("BrewDetailPage — 소유 판정", () => {
   it("AC-WEBLOGEDIT-01 · 내 로그 상세에 편집 링크가 있다", async () => {
     await renderDetail();
 
-    expect(await screen.findByRole("link", { name: "편집" })).toHaveAttribute(
+    expect(await screen.findByRole("link", { name: "수정" })).toHaveAttribute(
       "href",
       "/brews/42/edit",
     );
@@ -262,7 +262,7 @@ describe("BrewDetailPage — 소유 판정", () => {
     // 본문이 그려진 뒤에 부재를 본다 — 로딩 중이면 무엇이든 없다
     await screen.findByText("실측값");
     expect(
-      screen.queryByRole("link", { name: "편집" }),
+      screen.queryByRole("link", { name: "수정" }),
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "삭제" }),

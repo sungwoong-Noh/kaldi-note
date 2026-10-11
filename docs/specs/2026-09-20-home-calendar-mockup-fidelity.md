@@ -156,25 +156,25 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 팔로우 레일 간격
 
-#### AC-HOMECAL-102 · 팔로우 레일 아이템 간 gap이 16px다
+#### AC-HOMECAL-102 · 팔로우 레일 아이템 간 gap이 14px다
 
 - **Given** 팔로우 레일(모바일)
 - **When** 아바타 아이템 2개 이상을 렌더한다
-- **Then** 아이템 사이 `gap`이 16px다(목업 14px → 간격 스케일 반올림, `[사용자 결정]`)
+- **Then** 아이템 사이 `gap`이 14px다(목업 값 그대로 — 2026-10-11 AC-HOMEFIT-04로 갱신, ADR 0010)
 - **검증** 컴포넌트 테스트 `FollowRail.test.tsx`
 
-#### AC-HOMECAL-103 · 아바타와 라벨 사이 gap이 8px다
+#### AC-HOMECAL-103 · 아바타와 라벨 사이 gap이 7px다
 
 - **Given** 팔로우 레일 아이템 1개
 - **When** 렌더한다
-- **Then** 아바타와 이름 라벨 사이 `gap`이 8px다(목업 7px → 반올림)
+- **Then** 아바타와 이름 라벨 사이 `gap`이 7px다(목업 값 그대로 — 2026-10-11 AC-HOMEFIT-04로 갱신)
 - **검증** 컴포넌트 테스트 `FollowRail.test.tsx`
 
-#### AC-HOMECAL-104 · 웹 팔로우 레일 선택 pill의 padding이 8px 16px 8px 8px다
+#### AC-HOMECAL-104 · 웹 팔로우 레일 선택 pill의 padding이 6px 14px 6px 6px다
 
 - **Given** 웹 팔로우 레일에서 선택된 pill
 - **When** 렌더한다
-- **Then** `padding`이 상 8px / 우 16px / 하 8px / 좌 8px다(목업 6/14/6/6 → 반올림)
+- **Then** `padding`이 상 6px / 우 14px / 하 6px / 좌 6px다(목업 값 그대로 — 2026-10-11 AC-HOMEFIT-02로 갱신)
 - **검증** 컴포넌트 테스트 `FollowRail.test.tsx`(web variant)
 
 ### 월 네비게이션

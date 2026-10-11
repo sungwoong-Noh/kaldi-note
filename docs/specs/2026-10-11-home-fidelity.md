@@ -249,7 +249,7 @@ ADR 0010(목업이 시각의 정본)에 따라 아래 AC는 이 스펙의 값으
   // <img style={{ width: size, height: size }} className="rounded-full object-cover" onError={() => setFailed(true)} />
   ```
 
-- [ ] **Task 2: 팔로우 레일 — 웹 띠·모바일 50px·「+ 초대」** — Covers: AC-HOMEFIT-01, 02, 03, 04
+- [x] **Task 2: 팔로우 레일 — 웹 띠·모바일 50px·「+ 초대」** — Covers: AC-HOMEFIT-01, 02, 03, 04
 
   웹 레일을 본문 밖(상단 바 바로 아래 전폭)으로 옮긴다. 레이아웃 변경이라 `src/app/page.tsx` 구조를 손댄다.
 

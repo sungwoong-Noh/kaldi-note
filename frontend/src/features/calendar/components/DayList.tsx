@@ -36,6 +36,16 @@ function weekdayEnglishOf(date: string): string {
   return WEEKDAY_EN_FULL[(d.getUTCDay() + 6) % 7];
 }
 
+/**
+ * 그날의 관찰 문구 — TDS가 있는 잔 중 가장 최근(`brewedAt` 최대) 잔의 진단. 카드마다 넣지 않고 1회만
+ * 보여준다(docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-12·17).
+ */
+function observationOf(logs: BrewLogSummary[]): string | undefined {
+  const measured = logs.filter((log) => log.tdsPercent !== undefined);
+  if (measured.length === 0) return undefined;
+  return measured.reduce((a, b) => (b.brewedAt > a.brewedAt ? b : a)).diagnosis;
+}
+
 /** 시각 + 별점(있을 때만). 모바일 원장 행 캡션(AC-HOMECAL-108·109) 전용 — 웹 카드는 별점을
  * 태그 줄에 따로 보여준다(AC-HOMECAL-115). */
 function formatCaption(brewedAt: string, rating: number | undefined): string {
@@ -74,6 +84,7 @@ export function DayList({
   );
 
   if (variant === "web") {
+    const observation = observationOf(logs);
     // 웹 칼럼은 머리가 고정이고 카드 영역만 스크롤한다 — 값은 목업 CW1
     // (docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-10·18).
     return (
@@ -116,6 +127,19 @@ export function DayList({
               </li>
             ))}
           </ul>
+          {observation !== undefined && (
+            <div
+              data-observation
+              className="rounded-r-[10px] border-l-2 border-accent bg-paper px-[18px] py-4"
+            >
+              <p className="mb-1.5 font-mono text-[9.5px] tracking-[0.12em] text-accent uppercase">
+                Observation
+              </p>
+              <p className="text-[13.5px] leading-[1.65] text-ink-2">
+                {observation}
+              </p>
+            </div>
+          )}
           {notice}
         </div>
       </div>

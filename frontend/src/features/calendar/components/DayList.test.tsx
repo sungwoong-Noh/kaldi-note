@@ -39,7 +39,11 @@ describe("DayList", () => {
       brewRatio: 15.6,
     };
     renderWithQuery(
-      <DayList date="2026-09-19" logs={[withYield, withoutYield]} variant="mobile" />,
+      <DayList
+        date="2026-09-19"
+        logs={[withYield, withoutYield]}
+        variant="mobile"
+      />,
     );
 
     expect(screen.getByText("20.4 %")).toBeInTheDocument();
@@ -181,7 +185,9 @@ describe("DayList", () => {
       />,
     );
 
-    const notice = screen.getByText("맞팔로우 상태여서 지연 님의 기록이 보입니다.");
+    const notice = screen.getByText(
+      "맞팔로우 상태여서 지연 님의 기록이 보입니다.",
+    );
     expect(notice).toHaveClass(
       "bg-surface",
       "border-l-2",
@@ -203,7 +209,7 @@ describe("DayList", () => {
     expect(card).toHaveClass("bg-paper", "border", "rounded-surface", "p-6");
   });
 
-  it("AC-HOMECAL-113 · 카드 상단에 레시피명·시각·대표 수치가 있다", () => {
+  it("AC-HOMECAL-113 · AC-HOMEFIT-11 · 카드 상단에 레시피명·캡션·대표 수치가 있다(원두·드리퍼를 못 읽으면 시각만)", () => {
     renderWithQuery(
       <DayList
         date="2026-09-19"
@@ -253,7 +259,12 @@ describe("DayList", () => {
       <DayList
         date="2026-09-19"
         logs={[
-          { ...logA, id: 1, beanBatchId: undefined, overallNote: "산미가 좋았다" },
+          {
+            ...logA,
+            id: 1,
+            beanBatchId: undefined,
+            overallNote: "산미가 좋았다",
+          },
         ]}
         variant="web"
       />,
@@ -266,11 +277,60 @@ describe("DayList", () => {
     renderWithQuery(
       <DayList
         date="2026-09-19"
-        logs={[{ ...logA, id: 1, beanBatchId: undefined, overallNote: undefined }]}
+        logs={[
+          { ...logA, id: 1, beanBatchId: undefined, overallNote: undefined },
+        ]}
         variant="web"
       />,
     );
 
     expect(screen.queryByTestId("day-card-note")).not.toBeInTheDocument();
+  });
+
+  it("AC-HOMEFIT-12 · 진단은 카드 밖 관찰 블록 1개이고 TDS 있는 가장 최근 잔의 것이다", () => {
+    const latest = { ...logA, id: 1, beanBatchId: undefined }; // 09:00Z → 18:00, TDS 있음
+    const morning = {
+      ...logA,
+      id: 2,
+      beanBatchId: undefined,
+      brewedAt: "2026-08-31T00:00:00Z", // 09:00
+      diagnosis: "아침 잔 진단",
+    };
+    const noTds = {
+      ...logA,
+      id: 3,
+      beanBatchId: undefined,
+      brewedAt: "2026-08-31T03:00:00Z", // 12:00
+      tdsPercent: undefined,
+      diagnosis: "TDS 없는 잔 진단",
+    };
+    renderWithQuery(
+      <DayList
+        date="2026-09-19"
+        logs={[morning, latest, noTds]}
+        variant="web"
+      />,
+    );
+
+    for (const card of screen.getAllByTestId("day-card")) {
+      expect(card).not.toHaveTextContent(/진단|추출이 부족합니다/);
+    }
+    const blocks = document.querySelectorAll("[data-observation]");
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0]).toHaveTextContent(logA.diagnosis!);
+  });
+
+  it("AC-HOMEFIT-17 · TDS 없는 날은 관찰 블록이 없다", () => {
+    renderWithQuery(
+      <DayList
+        date="2026-09-19"
+        logs={[
+          { ...logA, id: 1, beanBatchId: undefined, tdsPercent: undefined },
+        ]}
+        variant="web"
+      />,
+    );
+
+    expect(document.querySelector("[data-observation]")).toBeNull();
   });
 });

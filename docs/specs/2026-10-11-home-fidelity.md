@@ -260,7 +260,7 @@ ADR 0010(목업이 시각의 정본)에 따라 아래 AC는 이 스펙의 값으
 
 - [x] **Task 5: 웹 오른쪽 칼럼 — 폭·높이·스크롤·CTA 고정·날짜 머리** — Covers: AC-HOMEFIT-08, 09, 10, 18, 19
 
-- [ ] **Task 6: 웹 카드 캡션·관찰 1회** — Covers: AC-HOMEFIT-11, 12, 15, 16, 17, 21, 23
+- [x] **Task 6: 웹 카드 캡션·관찰 1회** — Covers: AC-HOMEFIT-11, 12, 15, 16, 17, 21, 23
 
   `/brews` 표의 보조줄과 같은 조회(`useBeanLabel`·`useBrewers`·레시피 캐시). 관찰은 `DayList`가 고른다.
 

@@ -1,12 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
 import { LedgerRow } from "@/components/kit";
 import { RoastDot } from "@/components/ui";
-import { useBrewers } from "@/features/gear/queries";
-import { fetchRecipe } from "@/features/recipe/api";
-import { useBeanLabel } from "../useEntityLabels";
+import { useBrewSubParts } from "../useEntityLabels";
 import { useRoastLevel } from "@/features/calendar/useRoastLevel";
 import {
   formatDuration,
@@ -18,12 +15,18 @@ import {
 import { kstToday } from "@/lib/kstDate";
 import type { BrewLogSummary } from "../schema";
 
-const RECIPE_STALE_MS = 5 * 60 * 1000;
-
 /** 웹 표 열 폭(px) — 목업 BW1. 레시피 열이 나머지를 채운다. */
-const COLUMN_WIDTH = { date: 108, dose: 100, temp: 90, time: 90, yield: 100, rating: 70 } as const;
+const COLUMN_WIDTH = {
+  date: 108,
+  dose: 100,
+  temp: 90,
+  time: 90,
+  yield: 100,
+  rating: 70,
+} as const;
 
-const HEAD = "px-[20px] py-[12px] font-mono text-[9.5px] font-normal tracking-[0.1em] text-ink-3 uppercase";
+const HEAD =
+  "px-[20px] py-[12px] font-mono text-[9.5px] font-normal tracking-[0.1em] text-ink-3 uppercase";
 const NUM = "px-[20px] py-[16px] text-right font-mono";
 
 /**
@@ -37,7 +40,6 @@ export function LedgerTable({
   logs: BrewLogSummary[];
   labels: Map<number, string>;
 }) {
-  const brewers = useBrewers();
   const today = kstToday();
   return (
     <div className="overflow-hidden rounded-[10px] border border-divider-strong">
@@ -48,7 +50,10 @@ export function LedgerTable({
           <col style={{ width: COLUMN_WIDTH.dose }} />
           <col style={{ width: COLUMN_WIDTH.temp }} />
           <col style={{ width: COLUMN_WIDTH.time }} />
-          <col className="hidden min-[1024px]:table-column" style={{ width: COLUMN_WIDTH.yield }} />
+          <col
+            className="hidden min-[1024px]:table-column"
+            style={{ width: COLUMN_WIDTH.yield }}
+          />
           <col style={{ width: COLUMN_WIDTH.rating }} />
         </colgroup>
         <thead className="border-b border-divider bg-surface">
@@ -58,7 +63,9 @@ export function LedgerTable({
             <th className={`${HEAD} text-right`}>원두량</th>
             <th className={`${HEAD} text-right`}>온도</th>
             <th className={`${HEAD} text-right`}>시간</th>
-            <th className={`${HEAD} hidden text-right min-[1024px]:table-cell`}>수율</th>
+            <th className={`${HEAD} hidden text-right min-[1024px]:table-cell`}>
+              수율
+            </th>
             <th className={`${HEAD} text-right`}>평가</th>
           </tr>
         </thead>
@@ -68,7 +75,6 @@ export function LedgerTable({
               key={log.id}
               log={log}
               label={labels.get(log.recipeId) ?? ""}
-              brewers={brewers.data}
               today={today}
             />
           ))}
@@ -81,29 +87,15 @@ export function LedgerTable({
 function TableRow({
   log,
   label,
-  brewers,
   today,
 }: {
   log: BrewLogSummary;
   label: string;
-  brewers: { id: number; brand: string; name: string }[] | undefined;
   today: string;
 }) {
   const roastLevel = useRoastLevel(log.beanBatchId, true);
-  const bean = useBeanLabel(log.beanBatchId, log.beanBatchId !== undefined);
   // useRecipeLabels와 같은 키라 캐시를 같이 쓴다 — 요청이 늘지 않는다(AC-MYCUPS-24).
-  const recipe = useQuery({
-    queryKey: ["recipe", log.recipeId],
-    queryFn: () => fetchRecipe(log.recipeId),
-    staleTime: RECIPE_STALE_MS,
-  });
-  const brewer = brewers?.find((item) => item.id === recipe.data?.brewerId);
-  const sub = [
-    log.beanBatchId !== undefined && bean.isReady ? bean.label : undefined,
-    brewer ? `${brewer.brand} ${brewer.name}` : undefined,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const sub = useBrewSubParts(log).join(" · ");
   const { date, weekday } = formatLedgerDate(log.brewedAt, today);
 
   return (
@@ -124,20 +116,33 @@ function TableRow({
               {label}
             </Link>
             {sub && (
-              <div data-ledger-sub className="mt-[3px] truncate text-[12px] text-ink-3">
+              <div
+                data-ledger-sub
+                className="mt-[3px] truncate text-[12px] text-ink-3"
+              >
                 {sub}
               </div>
             )}
           </div>
         </div>
       </td>
-      <td className={`${NUM} text-[14px] font-medium text-ink`}>{formatGrams(log.actualDoseG)}</td>
-      <td className={`${NUM} text-[13px] text-ink-2`}>{formatTemperature(log.actualWaterTempC)}</td>
-      <td className={`${NUM} text-[13px] text-ink-2`}>
-        {log.actualTotalTimeSeconds !== undefined ? formatDuration(log.actualTotalTimeSeconds) : "—"}
+      <td className={`${NUM} text-[14px] font-medium text-ink`}>
+        {formatGrams(log.actualDoseG)}
       </td>
-      <td className={`${NUM} hidden text-[14px] font-medium text-ink min-[1024px]:table-cell`}>
-        {log.extractionYieldPercent !== undefined ? `${log.extractionYieldPercent} %` : "—"}
+      <td className={`${NUM} text-[13px] text-ink-2`}>
+        {formatTemperature(log.actualWaterTempC)}
+      </td>
+      <td className={`${NUM} text-[13px] text-ink-2`}>
+        {log.actualTotalTimeSeconds !== undefined
+          ? formatDuration(log.actualTotalTimeSeconds)
+          : "—"}
+      </td>
+      <td
+        className={`${NUM} hidden text-[14px] font-medium text-ink min-[1024px]:table-cell`}
+      >
+        {log.extractionYieldPercent !== undefined
+          ? `${log.extractionYieldPercent} %`
+          : "—"}
       </td>
       <td className={`${NUM} text-[13px] text-accent`}>
         {log.rating !== undefined ? (
@@ -168,7 +173,11 @@ export function LedgerList({
     <ul>
       {logs.map((log) => (
         <li key={log.id}>
-          <MobileRow log={log} label={labels.get(log.recipeId) ?? ""} today={today} />
+          <MobileRow
+            log={log}
+            label={labels.get(log.recipeId) ?? ""}
+            today={today}
+          />
         </li>
       ))}
     </ul>
@@ -189,12 +198,16 @@ function MobileRow({
   const meta = [
     `${date} ${weekday}`,
     formatTemperatureCompact(log.actualWaterTempC),
-    log.actualTotalTimeSeconds !== undefined ? formatDuration(log.actualTotalTimeSeconds) : undefined,
+    log.actualTotalTimeSeconds !== undefined
+      ? formatDuration(log.actualTotalTimeSeconds)
+      : undefined,
   ]
     .filter(Boolean)
     .join(" · ");
   const accent = [
-    log.extractionYieldPercent !== undefined ? `${log.extractionYieldPercent} %` : undefined,
+    log.extractionYieldPercent !== undefined
+      ? `${log.extractionYieldPercent} %`
+      : undefined,
     log.rating !== undefined ? `★ ${log.rating}` : undefined,
   ]
     .filter(Boolean)

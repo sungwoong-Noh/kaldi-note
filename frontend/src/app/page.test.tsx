@@ -3,7 +3,15 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearSession, setAccessToken } from "@/lib/session";
-import { brewLogPage, grindedRecipe, me } from "@/test/fixtures";
+import {
+  brewLogPage,
+  brewers,
+  fritzRoaster,
+  grindedRecipe,
+  me,
+  yirgacheffeBatch,
+  yirgacheffeProduct,
+} from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
 import HomePage from "./page";
@@ -32,7 +40,9 @@ function calendarResponse(month: string, userId?: number) {
     return {
       month,
       totalCount: 6,
-      days: [{ date: "2026-09-10", count: 1, primaryRecipeName: "Hoffmann V60" }],
+      days: [
+        { date: "2026-09-10", count: 1, primaryRecipeName: "Hoffmann V60" },
+      ],
     };
   }
   return { month, totalCount: 0, days: [] };
@@ -49,7 +59,12 @@ function dayOf(id: number, date: string, userId = 11) {
 }
 
 function pageOf(content: object[]) {
-  return { ...brewLogPage, content, totalElements: content.length, hasNext: false };
+  return {
+    ...brewLogPage,
+    content,
+    totalElements: content.length,
+    hasNext: false,
+  };
 }
 
 beforeEach(() => {
@@ -60,7 +75,9 @@ beforeEach(() => {
 
   server.use(
     http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
-    http.get(`${BASE}/users/me/mutual-follows`, () => HttpResponse.json([지연])),
+    http.get(`${BASE}/users/me/mutual-follows`, () =>
+      HttpResponse.json([지연]),
+    ),
     http.get(`${BASE}/recipes/12`, () =>
       HttpResponse.json({ ...grindedRecipe, id: 12, title: "Kasuya 4:6" }),
     ),
@@ -104,7 +121,9 @@ describe("HomePage", () => {
     expect(
       screen.getByRole("link", { name: "이 레시피로 내렸다" }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "기록하기" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "기록하기" }),
+    ).not.toBeInTheDocument();
   });
 
   it("AC-HOMECAL-27 · 진입하면 오늘이 선택돼 있다", async () => {
@@ -145,7 +164,9 @@ describe("HomePage", () => {
   it("AC-HOMECAL-33 · 이전 달로 넘기면 선택 없음 상태가 된다", async () => {
     await renderHome();
 
-    await userEvent.click(await screen.findByRole("button", { name: "이전 달" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "이전 달" }),
+    );
 
     expect(await screen.findByText("2026.08")).toBeInTheDocument();
     expect(document.querySelectorAll('[aria-current="date"]')).toHaveLength(0);
@@ -161,7 +182,9 @@ describe("HomePage", () => {
 
   it("AC-HOMECAL-38 · 사람을 바꾸면 month는 유지되고 selectedDate는 초기화된다", async () => {
     await renderHome();
-    await userEvent.click(await screen.findByRole("button", { name: "이전 달" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "이전 달" }),
+    );
     await screen.findByText("2026.08");
 
     await userEvent.click(screen.getByRole("tab", { name: /지연/ }));
@@ -196,10 +219,14 @@ describe("HomePage", () => {
     );
     const before = calls.filter((u) => u.includes("month=2026-08")).length;
 
-    await userEvent.click(await screen.findByRole("button", { name: "이전 달" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "이전 달" }),
+    );
     await screen.findByText("2026.08");
 
-    expect(calls.filter((u) => u.includes("month=2026-08"))).toHaveLength(before);
+    expect(calls.filter((u) => u.includes("month=2026-08"))).toHaveLength(
+      before,
+    );
   });
 
   it("AC-HOMECAL-52 · 로딩 중에도 그리드 골격이 유지된다", async () => {
@@ -222,5 +249,58 @@ describe("HomePage", () => {
       expect(dot.style.backgroundColor).toBe("transparent");
     }
     expect(screen.queryByTestId("skeleton")).toBeNull();
+  });
+});
+
+describe("HomePage — 웹 카드 캡션", () => {
+  it("AC-HOMEFIT-23 · 캡션에 새 API를 부르지 않는다", async () => {
+    const paths = new Set<string>();
+    const record = ({ request }: { request: Request }) => {
+      paths.add(new URL(request.url).pathname);
+    };
+    server.events.on("request:start", record);
+    server.use(
+      http.get(`${BASE}/recipes/12`, () =>
+        HttpResponse.json({
+          ...grindedRecipe,
+          id: 12,
+          title: "Kasuya 4:6",
+          brewerId: 2,
+        }),
+      ),
+      http.get(`${BASE}/gear/brewers`, () => HttpResponse.json(brewers)),
+      http.get(`${BASE}/bean-batches/3`, () =>
+        HttpResponse.json(yirgacheffeBatch),
+      ),
+      http.get(`${BASE}/bean-products/:id`, () =>
+        HttpResponse.json(yirgacheffeProduct),
+      ),
+      http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
+    );
+
+    await renderHome();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "9월 5일, 기록 2건" }),
+    );
+    // dayOf의 brewedAt 01:00Z → KST 10:00
+    expect(
+      await screen.findAllByText("프릿츠 예가체프 · Hario V60 02 · 10:00"),
+    ).toHaveLength(2);
+    server.events.removeListener("request:start", record);
+
+    const allowed = [
+      /^\/api\/v1\/users\/me$/,
+      /^\/api\/v1\/users\/me\/mutual-follows$/,
+      /^\/api\/v1\/brew-logs$/,
+      /^\/api\/v1\/brew-logs\/calendar$/,
+      /^\/api\/v1\/recipes\/\d+$/,
+      /^\/api\/v1\/gear\/brewers$/,
+      /^\/api\/v1\/bean-batches\/\d+$/,
+      /^\/api\/v1\/bean-products\/\d+$/,
+      /^\/api\/v1\/roasters$/,
+    ];
+    expect(
+      [...paths].filter((path) => !allowed.some((re) => re.test(path))),
+    ).toEqual([]);
   });
 });

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { brewLogWithTds } from "../src/test/fixtures";
+import { brewLogWithTds, hoffmannSummary } from "../src/test/fixtures";
 import { undersized } from "./hitArea";
 import { installStubs } from "./stubs";
 import { tokenColor } from "./tokenColor";
@@ -385,5 +385,41 @@ test.describe("홈 정합 — 웹 오른쪽 칼럼 1440", () => {
 
     const h = await heights(page);
     expect(Math.abs(h.column - h.calendar)).toBeLessThanOrEqual(1);
+  });
+});
+
+test.describe("홈 정합 — 웹 카드 1440", () => {
+  test("AC-HOMEFIT-11 · 웹 카드 캡션은 원두 · 드리퍼 · 시각이다", async ({
+    page,
+  }) => {
+    await open(page, WEB, (p) => stubDayLogs(p, 1));
+
+    const card = page.getByTestId("day-card");
+    const caption = card.getByText("프릿츠 예가체프 · Hario V60 02 · 18:00", {
+      exact: true,
+    });
+    await expect(caption).toBeVisible();
+    const size = (el: Element) => {
+      const s = getComputedStyle(el);
+      return { fontSize: s.fontSize, fontWeight: s.fontWeight };
+    };
+    expect(await caption.evaluate(size)).toMatchObject({ fontSize: "12px" });
+    expect(
+      await card
+        .getByText(hoffmannSummary.title, { exact: true })
+        .evaluate(size),
+    ).toEqual({
+      fontSize: "15.5px",
+      fontWeight: "600",
+    });
+    expect(
+      await card.getByTestId("day-card-metric").evaluate((el) => {
+        const s = getComputedStyle(el);
+        return {
+          fontSize: s.fontSize,
+          mono: s.fontFamily.includes("IBM Plex Mono"),
+        };
+      }),
+    ).toEqual({ fontSize: "17px", mono: true });
   });
 });

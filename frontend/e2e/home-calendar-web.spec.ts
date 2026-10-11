@@ -285,7 +285,7 @@ test.describe("홈 달력 — 웹", () => {
     await expect(page.getByText("산미가 좋다")).toHaveCount(0);
   });
 
-  test("AC-HOMECAL-77 · diagnosis는 Observation 블록으로 그대로 보인다", async ({
+  test("AC-HOMEFIT-12 · diagnosis는 관찰 블록으로 그대로 보인다", async ({
     page,
   }) => {
     await installStubs(page);

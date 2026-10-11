@@ -1,7 +1,7 @@
 ---
 id: HOMEFIT
 title: 홈 목업 정합 — 01 CW1(웹)·C1(모바일), 레일 띠·오른쪽 칼럼·카드 캡션·관찰 1회
-status: 초안
+status: 승인
 milestone: M2
 supersedes:
 ---

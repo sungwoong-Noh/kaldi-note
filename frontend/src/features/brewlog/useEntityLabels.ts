@@ -2,10 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchBeanProduct, useRoasters } from "@/features/catalog/api";
+import { useBrewers } from "@/features/gear/queries";
 import { fetchBeanBatch } from "@/features/inventory/api";
 import { fetchRecipe } from "@/features/recipe/api";
 import type { RecipeStep } from "@/features/recipe/schema";
 import { beanName, combineSources, entityLabel } from "./entityLabel";
+import type { BrewLogSummary } from "./schema";
 
 /** 화면이 쓰는 것 둘. `isReady`는 「이름을 실제로 읽었는가」로, 링크를 걸어도 되는지 판단에 쓴다. */
 export interface EntityLabel {
@@ -113,4 +115,27 @@ export function useBeanLabel(
     label: entityLabel("bean", source),
     isReady: source.state === "ready",
   };
+}
+
+/**
+ * 기록 보조줄의 조각 — 읽은 원두 이름과 레시피의 드리퍼(`Hario V60 02`). 못 읽은 조각은 빠진다 —
+ * `비공개 원두` 같은 대체 문구를 보조줄에 쓰지 않는다. 레시피는 `useRecipeLabel`과 같은 키라 요청이
+ * 늘지 않는다. 「내 잔」 표와 홈 웹 카드가 같이 쓴다
+ * (docs/specs/2026-10-10-my-cups-ledger.md AC-MYCUPS-15, docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-11).
+ */
+export function useBrewSubParts(log: BrewLogSummary): string[] {
+  const bean = useBeanLabel(log.beanBatchId, log.beanBatchId !== undefined);
+  const recipe = useQuery({
+    queryKey: ["recipe", log.recipeId],
+    queryFn: () => fetchRecipe(log.recipeId),
+    staleTime: NAME_STALE_MS,
+  });
+  const brewers = useBrewers();
+  const brewer = brewers.data?.find(
+    (item) => item.id === recipe.data?.brewerId,
+  );
+  return [
+    log.beanBatchId !== undefined && bean.isReady ? bean.label : undefined,
+    brewer ? `${brewer.brand} ${brewer.name}` : undefined,
+  ].filter((part): part is string => part !== undefined);
 }

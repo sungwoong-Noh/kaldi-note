@@ -149,55 +149,73 @@ export default function HomePage() {
     />
   );
 
+  const rail = (
+    <FollowRail
+      me={me.data}
+      mutuals={mutuals.data ?? []}
+      selectedUserId={effectiveUserId ?? me.data.id}
+      onSelect={handleSelectUser}
+      variant={variant}
+    />
+  );
+
   return (
-    // grow는 두 경우 모두 필요하다 — 2컬럼은 Calendar의 fillHeight 체인이, 1컬럼/모바일은
-    // 아래 day-scroll의 flex-1이 각각 이 높이를 물려받는다.
-    <Shell stack wide={isWeb} grow>
-      <FollowRail
-        me={me.data}
-        mutuals={mutuals.data ?? []}
-        selectedUserId={effectiveUserId ?? me.data.id}
-        onSelect={handleSelectUser}
-        variant={variant}
-      />
+    <>
+      {/* 웹 레일은 본문 밖, 상단 바 바로 아래 전폭 띠다(AC-HOMEFIT-01). */}
+      {isWeb && rail}
+      {/* grow는 두 경우 모두 필요하다 — 2컬럼은 Calendar의 fillHeight 체인이, 1컬럼/모바일은
+          아래 day-scroll의 flex-1이 각각 이 높이를 물려받는다. */}
+      <Shell stack wide={isWeb} grow>
+        {!isWeb && rail}
 
-      {isTwoColumn ? (
-        <div className="flex flex-1 gap-6">
-          <div className="flex flex-1 flex-col">{calendarBlock}</div>
-          <div
-            data-testid="day-column"
-            className="flex w-[420px] shrink-0 flex-col gap-3 overflow-y-auto bg-surface py-4 px-12"
-            style={{ maxHeight: 600 }}
-          >
-            {daySection}
-            <ContextCta
-              isMine={isMine}
-              ownerNickname={ownerNickname}
-              otherUserId={effectiveUserId ?? undefined}
-            />
+        {isTwoColumn ? (
+          <div className="flex flex-1 gap-6">
+            <div data-testid="calendar-area" className="flex flex-1 flex-col">
+              {calendarBlock}
+            </div>
+            {/* 칼럼 높이는 달력이 정한다 — 내용을 absolute로 띄워 카드 수가 높이를 밀지 못하게 하고,
+                넘치는 카드만 안에서 스크롤한다. CTA는 맨 아래 고정이다
+                (docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-08·09·18·19). */}
+            <div
+              data-testid="day-column"
+              className="relative w-[420px] shrink-0 bg-surface px-10"
+            >
+              <div className="absolute inset-x-10 inset-y-0 flex flex-col">
+                <div className="flex min-h-0 flex-1 flex-col pt-8">
+                  {daySection}
+                </div>
+                <div className="flex-none pt-5 pb-7">
+                  <ContextCta
+                    isMine={isMine}
+                    ownerNickname={ownerNickname}
+                    otherUserId={effectiveUserId ?? undefined}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      ) : (
-        <>
-          {calendarBlock}
-          <div
-            data-testid="day-scroll"
-            className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto"
-          >
-            {daySection}
-          </div>
-        </>
-      )}
+        ) : (
+          <>
+            {calendarBlock}
+            <div
+              data-testid="day-scroll"
+              className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto"
+            >
+              {daySection}
+            </div>
+          </>
+        )}
 
-      <ButtonLink
-        href="/recipes"
-        variant="primary"
-        block
-        className="min-[1100px]:hidden"
-      >
-        이 레시피로 내렸다
-      </ButtonLink>
-    </Shell>
+        <ButtonLink
+          href="/recipes"
+          variant="primary"
+          block
+          className="min-[1100px]:hidden"
+        >
+          이 레시피로 내렸다
+        </ButtonLink>
+      </Shell>
+    </>
   );
 }
 

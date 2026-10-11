@@ -36,6 +36,16 @@ function weekdayEnglishOf(date: string): string {
   return WEEKDAY_EN_FULL[(d.getUTCDay() + 6) % 7];
 }
 
+/**
+ * 그날의 관찰 문구 — TDS가 있는 잔 중 가장 최근(`brewedAt` 최대) 잔의 진단. 카드마다 넣지 않고 1회만
+ * 보여준다(docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-12·17).
+ */
+function observationOf(logs: BrewLogSummary[]): string | undefined {
+  const measured = logs.filter((log) => log.tdsPercent !== undefined);
+  if (measured.length === 0) return undefined;
+  return measured.reduce((a, b) => (b.brewedAt > a.brewedAt ? b : a)).diagnosis;
+}
+
 /** 시각 + 별점(있을 때만). 모바일 원장 행 캡션(AC-HOMECAL-108·109) 전용 — 웹 카드는 별점을
  * 태그 줄에 따로 보여준다(AC-HOMECAL-115). */
 function formatCaption(brewedAt: string, rating: number | undefined): string {
@@ -67,94 +77,130 @@ export function DayList({
     ? `${formatDayHeader(date)} ${weekdayOf(date)} · ${ownerNickname} · ${brewCountLabel(logs.length)}`
     : `${formatDayHeader(date)} ${weekdayOf(date)} · ${brewCountLabel(logs.length)}`;
 
-  return (
-    <div data-day-list data-variant={variant}>
-      {variant === "web" ? (
-        <div className="flex items-baseline justify-between">
-          <div>
-            <Eyebrow>
-              {weekdayEnglishOf(date)}
-              {ownerNickname !== undefined ? ` · ${ownerNickname}` : ""}
-            </Eyebrow>
+  const notice = ownerNickname !== undefined && (
+    <p className="rounded-control border-l-2 border-accent bg-surface px-3 py-2 text-body-sm leading-[1.65]">
+      맞팔로우 상태여서 {ownerNickname} 님의 기록이 보입니다.
+    </p>
+  );
+
+  if (variant === "web") {
+    const observation = observationOf(logs);
+    // 웹 칼럼은 머리가 고정이고 카드 영역만 스크롤한다 — 값은 목업 CW1
+    // (docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-10·18).
+    return (
+      <div
+        data-day-list
+        data-variant={variant}
+        className="flex min-h-0 flex-1 flex-col"
+      >
+        <div className="flex flex-none flex-col gap-[7px] pb-[18px]">
+          <Eyebrow>
+            {weekdayEnglishOf(date)}
+            {ownerNickname !== undefined ? ` · ${ownerNickname}` : ""}
+          </Eyebrow>
+          <div className="flex items-baseline justify-between gap-3">
             <p
               data-testid="day-header-date"
-              className="text-page-title font-semibold"
+              className="text-[26px] font-semibold tracking-[-0.025em]"
             >
-              {Number(date.slice(8, 10))}
+              {Number(date.slice(5, 7))}월 {Number(date.slice(8, 10))}일
             </p>
+            <span
+              data-testid="day-header-count"
+              className="font-mono text-[12px] text-ink-3"
+            >
+              {brewCountLabel(logs.length).toLowerCase()}
+            </span>
           </div>
-          <span
-            data-testid="day-header-count"
-            className="text-caption font-mono text-ink-3"
-          >
-            {logs.length}건
-          </span>
         </div>
-      ) : (
-        <p className="text-label text-ink-3">{header}</p>
-      )}
-      <ul className={variant === "web" ? "flex flex-col gap-3" : undefined}>
-        {logs.map((log) =>
-          variant === "web" ? (
-            <li key={log.id}>
-              <DayCard log={log} recipeLabel={recipeLabels?.get(log.recipeId)} />
-            </li>
-          ) : (
-            <DayListRow
-              key={log.id}
-              log={log}
-              recipeLabel={recipeLabels?.get(log.recipeId)}
-              variant={variant}
-            />
-          ),
-        )}
+        <div
+          data-testid="day-cards"
+          className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto"
+        >
+          <ul className="flex flex-col gap-3.5">
+            {logs.map((log) => (
+              <li key={log.id}>
+                <DayCard
+                  log={log}
+                  recipeLabel={recipeLabels?.get(log.recipeId)}
+                />
+              </li>
+            ))}
+          </ul>
+          {observation !== undefined && (
+            <div
+              data-observation
+              className="rounded-r-[10px] border-l-2 border-accent bg-paper px-[18px] py-4"
+            >
+              <p className="mb-1.5 font-mono text-[9.5px] tracking-[0.12em] text-accent uppercase">
+                Observation
+              </p>
+              <p className="text-[13.5px] leading-[1.65] text-ink-2">
+                {observation}
+              </p>
+            </div>
+          )}
+          {notice}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div data-day-list data-variant={variant}>
+      <p className="text-label text-ink-3">{header}</p>
+      <ul>
+        {logs.map((log) => (
+          <DayListRow
+            key={log.id}
+            log={log}
+            recipeLabel={recipeLabels?.get(log.recipeId)}
+          />
+        ))}
       </ul>
-      {ownerNickname !== undefined && (
-        <p className="rounded-control border-l-2 border-accent bg-surface px-3 py-2 text-body-sm leading-[1.65]">
-          맞팔로우 상태여서 {ownerNickname} 님의 기록이 보입니다.
-        </p>
-      )}
+      {notice}
     </div>
   );
 }
 
+/**
+ * 모바일 원장 행 — 목업 C1. 행마다 위 구분선, 마지막 행은 아래에도 선이 있다
+ * (docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-13).
+ */
 function DayListRow({
   log,
   recipeLabel,
-  variant,
 }: {
   log: BrewLogSummary;
   recipeLabel?: string;
-  variant: "mobile" | "web";
 }) {
   const roastLevel = useRoastLevel(log.beanBatchId, true);
   const metric = representativeMetric(log);
 
   return (
-    <li data-testid="day-list-row">
+    <li
+      data-testid="day-list-row"
+      className="border-t border-divider first:border-divider-strong last:border-b last:border-b-divider-strong"
+    >
       <Link
         href={`/brews/${log.id}`}
-        className="flex min-h-11 items-center gap-2"
+        className="flex min-h-11 items-center gap-[13px] py-3.5"
       >
         <RoastDot roastLevel={roastLevel} />
-        <span className="flex-1 truncate">
-          <span className="block truncate text-body font-medium">
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[14.5px] font-medium">
             {recipeLabel ?? ""}
           </span>
-          <span className="text-caption text-ink-3">
+          <span className="mt-0.5 block text-caption text-ink-3">
             {formatCaption(log.brewedAt, log.rating)}
           </span>
         </span>
-        {metric !== undefined && <span className="text-metric">{metric}</span>}
+        {metric !== undefined && (
+          <span data-testid="day-list-metric" className="font-mono text-[14px]">
+            {metric}
+          </span>
+        )}
       </Link>
-      {variant === "web" && log.overallNote !== undefined && (
-        <p className="text-body-sm italic text-ink-2">{log.overallNote}</p>
-      )}
-      {variant === "web" && log.diagnosis !== undefined && (
-        <p className="border-l-2 border-accent bg-surface px-3 py-2 text-body-sm">
-          {log.diagnosis}
-        </p>
-      )}
     </li>
   );
 }

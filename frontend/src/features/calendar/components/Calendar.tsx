@@ -244,7 +244,7 @@ export function Calendar({
                 >
                   <span
                     data-testid="day-number-row"
-                    className={`flex items-center ${isWeb ? "flex-row gap-2" : "flex-col gap-1"}`}
+                    className={`flex items-center ${isWeb ? "flex-row gap-1.5" : "flex-col gap-1"}`}
                   >
                     <span
                       data-testid="day-number"
@@ -274,13 +274,15 @@ export function Calendar({
                       }}
                     />
                   </span>
+                  {/* 요약 줄은 목업 CW1 값이다 — 레시피명 11.5px 한 줄, 「외 N건」 11px
+                      (docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-07). */}
                   {isWeb && info?.primaryRecipeName && (
-                    <span className="w-full truncate px-1 text-left">
+                    <span className="w-full truncate px-1 text-left text-[11.5px] text-ink-2">
                       {info.primaryRecipeName}
                     </span>
                   )}
                   {isWeb && count > 1 && (
-                    <span className="w-full truncate px-1 text-left">
+                    <span className="w-full truncate px-1 text-left text-[11px] text-ink-3">
                       외 {count - 1}건
                     </span>
                   )}

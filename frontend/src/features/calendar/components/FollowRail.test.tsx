@@ -72,28 +72,28 @@ describe("FollowRail", () => {
     expect(unselected.className).not.toContain("bg-ink");
   });
 
-  it("AC-HOMECAL-102 · 아이템 간 gap이 16px(gap-4)다", () => {
+  it("AC-HOMECAL-102 · AC-HOMEFIT-04 · 모바일 아이템 간 gap이 14px다", () => {
     render(
       <FollowRail me={me} mutuals={[지연]} selectedUserId={me.id} onSelect={() => {}} variant="mobile" />,
     );
 
-    expect(screen.getByRole("tablist")).toHaveClass("gap-4");
+    expect(screen.getByRole("tablist")).toHaveClass("gap-[14px]");
   });
 
-  it("AC-HOMECAL-103 · 모바일 아바타-라벨 gap이 8px(gap-2)다", () => {
+  it("AC-HOMECAL-103 · AC-HOMEFIT-04 · 모바일 아바타-라벨 gap이 7px다", () => {
     render(
       <FollowRail me={me} mutuals={[]} selectedUserId={me.id} onSelect={() => {}} variant="mobile" />,
     );
 
-    expect(screen.getByRole("tab", { name: /나/ })).toHaveClass("gap-2");
+    expect(screen.getByRole("tab", { name: /나/ })).toHaveClass("gap-[7px]");
   });
 
-  it("AC-HOMECAL-104 · 웹 선택 pill padding이 8px 16px 8px 8px(py-2 pr-4 pl-2)다", () => {
+  it("AC-HOMECAL-104 · AC-HOMEFIT-02 · 웹 선택 pill padding이 6px 14px 6px 6px다", () => {
     render(
       <FollowRail me={me} mutuals={[]} selectedUserId={me.id} onSelect={() => {}} variant="web" />,
     );
 
     const tab = screen.getByRole("tab", { name: /나/ });
-    expect(tab).toHaveClass("py-2", "pr-4", "pl-2");
+    expect(tab).toHaveClass("py-1.5", "pr-3.5", "pl-1.5");
   });
 });

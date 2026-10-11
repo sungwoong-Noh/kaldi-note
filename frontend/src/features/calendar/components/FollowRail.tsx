@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { PublicProfile } from "@/features/user/queries";
 import { Avatar } from "@/components/ui";
 
@@ -7,7 +8,8 @@ import { Avatar } from "@/components/ui";
  * 하면 갈라진다(docs/specs/2026-09-19-home-calendar.md).
  *
  * <p>모바일은 아바타 위에 2px 링, 웹은 가로 pill로 채운다 — 가로 배치에서는 링이 약해
- * 선택 상태가 읽히지 않는다.
+ * 선택 상태가 읽히지 않는다. 웹은 상단 바 아래 전폭 띠이고, 끝 칸은 「+ 초대」로 내 초대 링크가
+ * 있는 `/more`에 보낸다 — 값은 목업 01 CW1·C1(docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-01~04).
  */
 export function FollowRail({
   me,
@@ -22,26 +24,73 @@ export function FollowRail({
   onSelect: (userId: number) => void;
   variant: "mobile" | "web";
 }) {
+  const web = variant === "web";
   return (
-    <div role="tablist" className="flex gap-4 overflow-x-auto">
-      <RailTab
-        profile={me}
-        label="나"
-        selected={selectedUserId === me.id}
-        onSelect={onSelect}
-        variant={variant}
-      />
-      {mutuals.map((profile) => (
+    <div
+      data-testid="follow-rail"
+      className={
+        web
+          ? "flex shrink-0 items-center gap-[18px] overflow-x-auto border-b border-divider px-12 py-4"
+          : "flex gap-[14px] overflow-x-auto"
+      }
+    >
+      <div
+        role="tablist"
+        className={`flex ${web ? "gap-[18px]" : "gap-[14px]"}`}
+      >
         <RailTab
-          key={profile.id}
-          profile={profile}
-          label={profile.nickname}
-          selected={selectedUserId === profile.id}
+          profile={me}
+          label="나"
+          selected={selectedUserId === me.id}
           onSelect={onSelect}
           variant={variant}
         />
-      ))}
+        {mutuals.map((profile) => (
+          <RailTab
+            key={profile.id}
+            profile={profile}
+            label={profile.nickname}
+            selected={selectedUserId === profile.id}
+            onSelect={onSelect}
+            variant={variant}
+          />
+        ))}
+      </div>
+      {web && (
+        <span
+          aria-hidden="true"
+          className="h-6 w-px shrink-0 bg-divider-strong"
+        />
+      )}
+      <InviteLink variant={variant} />
     </div>
+  );
+}
+
+function InviteLink({ variant }: { variant: "mobile" | "web" }) {
+  if (variant === "web") {
+    return (
+      <Link
+        href="/more"
+        className="flex shrink-0 items-center gap-2.5 py-1.5 pr-3.5 pl-1.5"
+      >
+        <span className="flex size-8 items-center justify-center rounded-full border border-dashed border-border font-mono text-[15px] text-ink-3">
+          +
+        </span>
+        <span className="text-[13.5px] text-ink-3">초대</span>
+      </Link>
+    );
+  }
+  return (
+    <Link
+      href="/more"
+      className="flex shrink-0 flex-col items-center gap-[7px]"
+    >
+      <span className="flex size-[50px] items-center justify-center rounded-full border border-dashed border-border font-mono text-[18px] text-ink-3">
+        +
+      </span>
+      <span className="text-[11.5px] text-ink-3">초대</span>
+    </Link>
   );
 }
 
@@ -65,7 +114,7 @@ function RailTab({
         role="tab"
         aria-selected={selected}
         onClick={() => onSelect(profile.id)}
-        className={`flex shrink-0 items-center gap-2 rounded-control py-2 pr-4 pl-2 ${
+        className={`flex shrink-0 items-center gap-2.5 rounded-full py-1.5 pr-3.5 pl-1.5 ${
           selected ? "bg-ink text-on-ink" : "text-ink-2"
         }`}
       >
@@ -75,7 +124,7 @@ function RailTab({
           size={32}
           userId={profile.id}
         />
-        <span className={`text-body-sm ${selected ? "font-semibold" : ""}`}>
+        <span className={`text-[13.5px] ${selected ? "font-semibold" : ""}`}>
           {label}
         </span>
       </button>
@@ -88,13 +137,11 @@ function RailTab({
       role="tab"
       aria-selected={selected}
       onClick={() => onSelect(profile.id)}
-      className="flex min-w-11 shrink-0 flex-col items-center gap-2"
+      className="flex shrink-0 flex-col items-center gap-[7px]"
     >
-      {/* 원형 링이다. 그 유틸리티 클래스는 Avatar.tsx만 쓰기로 정했다
-          (AC-SPACE-07, docs/specs/2026-09-09-spacing-system.md) — 인라인 스타일로 대신한다. */}
+      {/* 링은 안쪽 외곽선이다 — 목업처럼 50px 안에 그려 라벨을 밀지 않는다(AC-HOMEFIT-04). */}
       <span
-        style={{ borderRadius: "50%" }}
-        className={selected ? "ring-2 ring-ink" : ""}
+        className={`flex rounded-full ${selected ? "outline-2 -outline-offset-2 outline-ink" : ""}`}
       >
         <Avatar
           nickname={profile.nickname}
@@ -103,7 +150,9 @@ function RailTab({
           userId={profile.id}
         />
       </span>
-      <span className={`text-body-sm ${selected ? "font-semibold" : "text-ink-3"}`}>
+      <span
+        className={`text-[11.5px] ${selected ? "font-semibold" : "text-ink-3"}`}
+      >
         {label}
       </span>
     </button>

@@ -1,7 +1,7 @@
 ---
 id: HOMEFIT
 title: 홈 목업 정합 — 01 CW1(웹)·C1(모바일), 레일 띠·오른쪽 칼럼·카드 캡션·관찰 1회
-status: 승인
+status: 구현완료
 milestone: M2
 supersedes:
 ---
@@ -46,7 +46,7 @@ API 변경 없음. 캡션은 기존 조회만 쓴다 — 원두 `useBeanLabel`(�
 ## 인수 조건
 
 > 값은 e2e 스텁 기준이다 — 오늘 `2026-09-19`(KST), 선택 날짜 기록 2건(hoffmann · 원두 `프릿츠 예가체프` ·
-> 드리퍼 `Hario V60 02` · `brewedAt` `…T09:00:00Z` → `18:00`), 달력 `homeCalendar`(2026-09, `7 BREWS`).
+> 드리퍼 `Hario V60 02` · `brewedAt` `…T09:00:00Z` → `18:00`), 달력 `homeCalendar`(2026-09, `9 BREWS`).
 
 ### 기능
 
@@ -84,7 +84,7 @@ API 변경 없음. 캡션은 기존 조회만 쓴다 — 원두 `useBeanLabel`(�
 
 - **Given** 웹·모바일 각각
 - **When** 월 머리를 읽는다
-- **Then** `2026.09`와 `7 BREWS`가 있고 두 요소의 세로 중심 차이가 `4px` 미만이다
+- **Then** `2026.09`와 `9 BREWS`가 있고 두 요소의 세로 중심 차이가 `4px` 미만이다
 - **검증** e2e
 
 #### AC-HOMEFIT-06 · 달 이동 버튼은 32×32 한 겹이다
@@ -230,6 +230,7 @@ ADR 0010(목업이 시각의 정본)에 따라 아래 AC는 이 스펙의 값으
 - AC-HOMECAL-77(카드 안 진단) → AC-HOMEFIT-12 — 동작 변경(카드 밖 1회)
 - AC-HOMECAL-102·103·104(레일 간격·pill padding) → AC-HOMEFIT-02·04 — 값 갱신
 - AC-HOMECAL-105(클릭 영역 44 박스) → AC-HOMEFIT-06 — hit area로
+- AC-HOMECAL-106(안쪽 시각 박스 32) → AC-HOMEFIT-06 — 버튼 자신이 32 한 겹(구현 중 추가)
 - AC-HOMECAL-108·113(캡션 내용) → AC-HOMEFIT-11·13 — 웹 카드 캡션은 원두·드리퍼·시각
 - AC-HOMECAL-118(점 간격 8px) → AC-HOMEFIT-07 — `6px`
 - AC-HOMECAL-122(패딩 48) → AC-HOMEFIT-08 — `40px`
@@ -240,41 +241,9 @@ ADR 0010(목업이 시각의 정본)에 따라 아래 AC는 이 스펙의 값으
 
 ---
 
-## 구현 순서
-
-- [ ] **Task 1: 아바타 고정 박스 + 실패 시 이니셜(#179)** — Covers: AC-HOMEFIT-14, 20
-
-  ```tsx
-  // Avatar: const [failed, setFailed] = useState(false)
-  // <img style={{ width: size, height: size }} className="rounded-full object-cover" onError={() => setFailed(true)} />
-  ```
-
-- [ ] **Task 2: 팔로우 레일 — 웹 띠·모바일 50px·「+ 초대」** — Covers: AC-HOMEFIT-01, 02, 03, 04
-
-  웹 레일을 본문 밖(상단 바 바로 아래 전폭)으로 옮긴다. 레이아웃 변경이라 `src/app/page.tsx` 구조를 손댄다.
-
-- [ ] **Task 3: 월 머리 한 줄 + 달 이동 버튼 한 겹(#172)** — Covers: AC-HOMEFIT-05, 06
-
-- [ ] **Task 4: 웹 달력 칸 요약 줄** — Covers: AC-HOMEFIT-07
-
-- [ ] **Task 5: 웹 오른쪽 칼럼 — 폭·높이·스크롤·CTA 고정·날짜 머리** — Covers: AC-HOMEFIT-08, 09, 10, 18, 19
-
-- [ ] **Task 6: 웹 카드 캡션·관찰 1회** — Covers: AC-HOMEFIT-11, 12, 15, 16, 17, 21, 23
-
-  `/brews` 표의 보조줄과 같은 조회(`useBeanLabel`·`useBrewers`·레시피 캐시). 관찰은 `DayList`가 고른다.
-
-- [ ] **Task 7: 모바일 날짜 목록 원장 행** — Covers: AC-HOMEFIT-13
-
-- [ ] **Task 8: e2e·스텁 정합·목업 대조** — Covers: AC-HOMEFIT-22 (+ e2e 부분)
-
-  `homeCalendar` 픽스처에 `2026-09-19`를 넣어 목록이 있는 날에 점이 찍히게 한다. `e2e/home-fidelity.spec.ts`,
-  `pnpm compare`로 `home-390`·`home-1440` 재생성.
-
----
-
 ## 수동 확인
 
-- [ ] ★ `pnpm compare`의 `home-390`·`home-1440`에서 목업 C1·CW1 대비 「큼」 격차 0건. 비교 이미지를 PR 본문에 첨부한다
+- [x] ★ `pnpm compare`의 `home-390`·`home-1440`에서 목업 C1·CW1 대비 「큼」 격차 0건. 비교 이미지를 PR 본문에 첨부한다
 
 ## 열어둔 결정
 

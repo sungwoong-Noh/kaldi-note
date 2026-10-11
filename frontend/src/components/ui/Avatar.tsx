@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 /**
  * 사진이 없을 때 이니셜 아바타의 배경 톤 3종(AC-HOMECAL-119·120,
  * docs/design/design_handoff_kaldi_note/README.md 「Avatar」). userId 기반이라 같은
@@ -13,7 +17,11 @@ function toneFor(userId: number): string {
   return AVATAR_TONES[userId % AVATAR_TONES.length];
 }
 
-/** 사진이 있으면 사진, 없으면 닉네임 첫 글자로 대체한다. 카카오·구글은 사진이 선택이라 없을 수 있다. */
+/**
+ * 사진이 있으면 사진, 없거나 로드에 실패하면 닉네임 첫 글자로 대체한다. 카카오·구글은 사진이
+ * 선택이라 없을 수 있다. 사진은 style로 크기를 고정한다 — width·height 속성만 두면 CSS가
+ * 덮어써 원이 타원으로 무너진다(#179, AC-HOMEFIT-14·20).
+ */
 export function Avatar({
   nickname,
   profileImageUrl,
@@ -25,15 +33,16 @@ export function Avatar({
   size: number;
   userId: number;
 }) {
-  if (profileImageUrl !== undefined) {
+  const [failed, setFailed] = useState(false);
+  if (profileImageUrl !== undefined && !failed) {
     return (
       // eslint-disable-next-line @next/next/no-img-element -- 카카오·구글 CDN은 next/image 설정 밖이다
       <img
         src={profileImageUrl}
         alt=""
-        width={size}
-        height={size}
-        className="rounded-full"
+        style={{ width: size, height: size, objectFit: "cover" }}
+        className="shrink-0 rounded-full"
+        onError={() => setFailed(true)}
       />
     );
   }

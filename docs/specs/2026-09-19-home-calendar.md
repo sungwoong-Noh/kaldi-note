@@ -783,13 +783,9 @@ CTA            기록하기
 - **Then** 메모 요소가 DOM에 없다 — 빈 줄이 남지 않는다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-77 · diagnosis가 있으면 Observation 블록이 뜬다
-
-- **Given** 뷰포트 폭 `1440px`, 선택 날짜 기록의 `diagnosis`가
-  `"TDS가 없어 추출 수율을 계산할 수 없습니다."`
-- **When** 우측 카드를 본다
-- **Then** 그 문구가 **가공 없이 그대로** 보인다
-- **검증** e2e `home-calendar-web.spec.ts`
+**AC-HOMECAL-77 (대체됨)** · 카드마다 `diagnosis`를 Observation 블록으로 보이던 원래 AC는
+`docs/specs/2026-10-11-home-fidelity.md`의 AC-HOMEFIT-12(진단은 카드 밖 관찰 블록 1개 — TDS가 있는 가장
+최근 잔의 것)가 대체한다. 문구를 가공 없이 보이는 것은 그대로다.
 
 #### AC-HOMECAL-78 · 상단 바에 로고 심볼이 렌더된다
 

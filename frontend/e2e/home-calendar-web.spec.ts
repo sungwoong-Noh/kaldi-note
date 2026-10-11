@@ -32,7 +32,7 @@ test.describe("홈 달력 — 웹", () => {
     expect((await column.boundingBox())?.width).toBe(420);
   });
 
-  test("AC-HOMECAL-122 · 우측 컬럼 padding이 좌우 48px, 배경이 surface다", async ({
+  test("AC-HOMECAL-122 · AC-HOMEFIT-08 · 우측 컬럼 padding이 좌우 40px, 배경이 surface다", async ({
     page,
   }) => {
     await installStubs(page);
@@ -53,8 +53,8 @@ test.describe("홈 달력 — 웹", () => {
       return v;
     });
 
-    expect(style.pl).toBe("48px");
-    expect(style.pr).toBe("48px");
+    expect(style.pl).toBe("40px");
+    expect(style.pr).toBe("40px");
     expect(style.bg).toBe(surface);
   });
 
@@ -93,11 +93,15 @@ test.describe("홈 달력 — 웹", () => {
     const header = page.locator("header");
     await expect(header.getByText("kaldi")).toBeVisible();
     await expect(header.getByRole("link", { name: "홈" })).toBeVisible();
-    await expect(header.getByRole("link", { name: "레시피", exact: true })).toBeVisible();
+    await expect(
+      header.getByRole("link", { name: "레시피", exact: true }),
+    ).toBeVisible();
     await expect(
       header.getByRole("link", { name: "내 잔", exact: true }),
     ).toBeVisible();
-    await expect(header.getByRole("link", { name: "이 레시피로 내렸다" })).toBeVisible();
+    await expect(
+      header.getByRole("link", { name: "이 레시피로 내렸다" }),
+    ).toBeVisible();
     await expect(header.getByRole("link", { name: "더보기" })).toBeVisible();
     await expect(page.locator("nav[aria-label='주요 화면']")).toBeHidden();
   });
@@ -281,7 +285,7 @@ test.describe("홈 달력 — 웹", () => {
     await expect(page.getByText("산미가 좋다")).toHaveCount(0);
   });
 
-  test("AC-HOMECAL-77 · diagnosis는 Observation 블록으로 그대로 보인다", async ({
+  test("AC-HOMEFIT-12 · diagnosis는 관찰 블록으로 그대로 보인다", async ({
     page,
   }) => {
     await installStubs(page);
@@ -480,7 +484,7 @@ test.describe("홈 달력 — 웹", () => {
     // 진입 시 오늘(9/19)이 자동 선택되므로, 다른 날짜를 선택해 오늘을 비선택 상태로 만든다.
     await page.getByRole("button", { name: "9월 5일, 기록 2건" }).click();
 
-    const todayCell = page.getByRole("button", { name: "9월 19일, 기록 없음" });
+    const todayCell = page.getByRole("button", { name: /^9월 19일,/ });
     const numberEl = todayCell.getByTestId("day-number");
 
     const borderWidth = await numberEl.evaluate(

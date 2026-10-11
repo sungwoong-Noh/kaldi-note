@@ -78,6 +78,8 @@
 - **`me` 픽스처의 `profileImageUrl`은 실제 카카오 CDN 주소다.** e2e에서 아바타 크기를 재면 외부 이미지가
   늦게 오거나 실패할 때 `img`가 34px이 아닌 높이로 잡혀 **전체 실행에서만** 깨진다. 아바타를 재는 테스트는
   `page.route((url) => url.hostname.endsWith("kakaocdn.net"), …)`로 이미지를 바꿔 끼운다(`e2e/shell-grammar.spec.ts`).
+- **`page.route`는 나중에 등록한 쪽이 이긴다.** 응답을 덮어쓰려면 `installStubs(page)` **뒤에** 등록한다 — 앞에 두면
+  조용히 기본 스텁이 응답해 테스트가 엉뚱한 값으로 통과·실패한다(`e2e/home-fidelity.spec.ts`의 `open(…, override)`).
 
 ## 셸 스크립트
 

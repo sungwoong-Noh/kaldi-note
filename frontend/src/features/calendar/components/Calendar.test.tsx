@@ -396,7 +396,7 @@ describe("Calendar", () => {
     expect(dot!.style.backgroundColor).toBe("transparent");
   });
 
-  it("AC-HOMECAL-118 · 웹에서 기록 점이 날짜 숫자 오른쪽 8px(gap-2)에 렌더된다", () => {
+  it("AC-HOMECAL-118 · AC-HOMEFIT-07 · 웹에서 기록 점이 날짜 숫자 오른쪽 6px(gap-1.5)에 렌더된다", () => {
     const days = new Map([["2026-09-05", { count: 1 }]]);
     render(
       <Calendar
@@ -410,7 +410,7 @@ describe("Calendar", () => {
 
     const cell = screen.getByRole("button", { name: "9월 5일, 기록 1건" });
     const row = within(cell).getByTestId("day-number-row");
-    expect(row).toHaveClass("flex-row", "gap-2");
+    expect(row).toHaveClass("flex-row", "gap-1.5");
   });
 
   it("AC-HOMECAL-121 · 웹 달력 셀의 콘텐츠가 좌상단 정렬된다", () => {

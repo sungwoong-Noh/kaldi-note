@@ -156,25 +156,25 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 팔로우 레일 간격
 
-#### AC-HOMECAL-102 · 팔로우 레일 아이템 간 gap이 16px다
+#### AC-HOMECAL-102 · 팔로우 레일 아이템 간 gap이 14px다
 
 - **Given** 팔로우 레일(모바일)
 - **When** 아바타 아이템 2개 이상을 렌더한다
-- **Then** 아이템 사이 `gap`이 16px다(목업 14px → 간격 스케일 반올림, `[사용자 결정]`)
+- **Then** 아이템 사이 `gap`이 14px다(목업 값 그대로 — 2026-10-11 AC-HOMEFIT-04로 갱신, ADR 0010)
 - **검증** 컴포넌트 테스트 `FollowRail.test.tsx`
 
-#### AC-HOMECAL-103 · 아바타와 라벨 사이 gap이 8px다
+#### AC-HOMECAL-103 · 아바타와 라벨 사이 gap이 7px다
 
 - **Given** 팔로우 레일 아이템 1개
 - **When** 렌더한다
-- **Then** 아바타와 이름 라벨 사이 `gap`이 8px다(목업 7px → 반올림)
+- **Then** 아바타와 이름 라벨 사이 `gap`이 7px다(목업 값 그대로 — 2026-10-11 AC-HOMEFIT-04로 갱신)
 - **검증** 컴포넌트 테스트 `FollowRail.test.tsx`
 
-#### AC-HOMECAL-104 · 웹 팔로우 레일 선택 pill의 padding이 8px 16px 8px 8px다
+#### AC-HOMECAL-104 · 웹 팔로우 레일 선택 pill의 padding이 6px 14px 6px 6px다
 
 - **Given** 웹 팔로우 레일에서 선택된 pill
 - **When** 렌더한다
-- **Then** `padding`이 상 8px / 우 16px / 하 8px / 좌 8px다(목업 6/14/6/6 → 반올림)
+- **Then** `padding`이 상 6px / 우 14px / 하 6px / 좌 6px다(목업 값 그대로 — 2026-10-11 AC-HOMEFIT-02로 갱신)
 - **검증** 컴포넌트 테스트 `FollowRail.test.tsx`(web variant)
 
 ### 월 네비게이션
@@ -183,15 +183,16 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 - **Given** 월 이동 버튼(‹, ›) 2개
 - **When** 렌더한다
-- **Then** 각 버튼(`<button>`)의 렌더된 `height`·`width`가 44px 이상이다(`AC-TOUCH-01` 유지)
+- **Then** 각 버튼(`<button>`)의 누르는 영역(`hit-44`, `e2e/hitArea.ts` 기준)이 44px 이상이다(`AC-TOUCH-01` 유지 —
+  2026-10-11 AC-HOMEFIT-06으로 갱신: 보이는 박스가 아니라 hit area로 잰다)
 - **검증** 컴포넌트 테스트 `MonthNav.test.tsx` + 기존 `e2e/touch-targets.spec.ts` 재통과
 
 #### AC-HOMECAL-106 · 월 이동 버튼의 시각 박스가 32×32px다
 
-- **Given** 월 이동 버튼 내부 요소
+- **Given** 월 이동 버튼
 - **When** 렌더한다
-- **Then** 버튼 안쪽의 시각적 박스(배경·테두리를 가진 `<span>` 등)의 `height`·`width`가 32px,
-  `border-radius`가 7px다
+- **Then** 버튼 자신의 `height`·`width`가 32px, `border-radius`가 7px다(2026-10-11 AC-HOMEFIT-06으로 갱신 —
+  안쪽 상자를 없애 한 겹이다, #172)
 - **검증** 컴포넌트 테스트 `MonthNav.test.tsx`
 
 #### AC-HOMECAL-107 · 월 라벨이 새 타입 스케일 `month-label`(mono 22px)로 렌더된다
@@ -263,6 +264,9 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 #### AC-HOMECAL-113 · 카드 상단에 roast dot 10px·레시피명·캡션·대표 수치가 배치된다
 
+> **2026-10-11 갱신:** 캡션은 `원두 · 드리퍼 · 시각`(12px), 레시피명은 15.5px로 목업 값이다
+> (AC-HOMEFIT-11 — 「내 잔」 표 보조줄과 같은 조회로 새 API 없이 만든다). 아래 정정은 그 전 기록이다.
+
 > **2026-09-21 구현 확정:** 레시피명 15.5px는 기존 `body`(15px)로, 캡션 12px는 기존
 > `caption`(11.5px)으로 근사한다 — 차이가 0.5~1px라 육안 구분이 어렵다(계획의 제안대로).
 >
@@ -309,7 +313,9 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 웹 기록 점 위치
 
-#### AC-HOMECAL-118 · 웹 달력 셀에서 기록 점이 날짜 숫자 오른쪽 8px 간격에 렌더된다
+#### AC-HOMECAL-118 · 웹 달력 셀에서 기록 점이 날짜 숫자 오른쪽 6px 간격에 렌더된다
+
+> **2026-10-11 갱신:** 목업 원값 6px로 되돌렸다(AC-HOMEFIT-07, ADR 0010 — 목업이 시각의 정본이다).
 
 > **2026-09-21 정정:** 목업 원값은 6px이지만 간격 스케일(4·8·12·16·24·32·48, `docs/conventions/frontend.md`)에
 > 6px가 없다. `|6-4|=2`와 `|6-8|=2`로 동점이라 계획 단계에서 "동점은 올림"으로 8px를 확정했다
@@ -317,7 +323,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 - **Given** 웹(≥760px) 달력 셀에 기록이 있는 날짜
 - **When** 렌더한다
-- **Then** 기록 점이 날짜 숫자 **아래**(모바일 배치)가 아니라 **오른쪽**에 8px `gap`으로
+- **Then** 기록 점이 날짜 숫자 **아래**(모바일 배치)가 아니라 **오른쪽**에 6px `gap`으로
   렌더된다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`(web variant)
 
@@ -353,14 +359,16 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   좌상단이 맞다)
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`(web variant)
 
-#### AC-HOMECAL-122 · 웹 우측 컬럼 컨테이너의 padding이 좌우 48px, 배경이 surface다
+#### AC-HOMECAL-122 · 웹 우측 컬럼 컨테이너의 padding이 좌우 40px, 배경이 surface다
+
+> **2026-10-11 갱신:** 목업 원값 40px로 되돌렸다(AC-HOMEFIT-08, ADR 0010).
 
 > **2026-09-21 구현 확정:** 목업 원값 40px은 간격 스케일(4·8·12·16·24·32·48)에 없다.
 > `|40-24|=16`, `|40-48|=8`로 48px이 더 가깝다.
 
 - **Given** 웹(≥1100px) 2컬럼 레이아웃의 우측 컬럼 컨테이너(`data-testid="day-column"`)
 - **When** 렌더한다
-- **Then** `padding-left`·`padding-right`가 48px(`px-12`)이고 `background-color`가 `surface`
+- **Then** `padding-left`·`padding-right`가 40px(`px-10`)이고 `background-color`가 `surface`
   토큰 값이다(현재 `p-4`로 16px 균등 padding만 적용돼 목업의 "여유로운 판" 느낌이 아니라
   좁은 박스처럼 보인다)
 - **검증** 컴포넌트 테스트 또는 e2e `home-calendar-web.spec.ts`
@@ -375,6 +383,8 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 #### AC-HOMECAL-124 · 웹 우측 컬럼 헤더의 날짜 숫자가 26px 근사값(page-title 27px)·weight 600으로 렌더된다
 
+> **2026-10-11 갱신:** 날짜는 `9월 19일`, 크기는 목업 원값 `26px`·600이다(AC-HOMEFIT-10).
+
 - **Given** 위와 같음
 - **When** 렌더한다
 - **Then** 날짜 숫자(예: `19`)가 기존 타입 스케일 `page-title`(27px, 목업 26px에서 1px
@@ -384,6 +394,8 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   단계 재사용이므로 새 등록 불필요)
 
 #### AC-HOMECAL-125 · 웹 우측 컬럼 헤더 오른쪽에 건수가 mono·caption(11.5px)으로 렌더된다
+
+> **2026-10-11 갱신:** 건수는 `2 brews`(소문자), 크기는 목업 원값 Mono `12px`이다(AC-HOMEFIT-10).
 
 > **2026-09-21 구현 확정:** 목업 12px는 타입 스케일에 없다. 기존 `caption`(11.5px, 차이
 > 0.5px)으로 근사한다 — 새 단계 대신 근사가 이 스펙의 다른 항목(레시피명 15.5→15,

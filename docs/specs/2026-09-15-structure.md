@@ -310,16 +310,7 @@ AC-RECIPESBREWS-63(owner pill)으로 대체되며 함께 없어졌다. 체크박
 `docs/specs/2026-09-25-recipe-drawer-screens.md`가 완전히 대체한다 — 목록 카드는
 AC-RECIPESBREWS-69, 상세 히어로는 AC-RECIPESBREWS-73(Task 6)이 원두량으로 바꿨다.
 
-#### AC-STRUCT-18 · 기록 상세의 대표 수치가 `1:비율`이다
-
-- **Given** `/brews/2`
-- **When** 대표 수치의 텍스트를 읽는다
-- **Then** **`1:15.0`** 형태다
-- **검증** e2e `structure.spec.ts`
-
-> **갱신 (2026-09-25).** 원래 `/brews`(목록 카드)도 함께 검사했으나,
-> `docs/specs/2026-09-25-recipe-drawer-screens.md`의 AC-RECIPESBREWS-77이 목록을 통계 4칸 +
-> 테이블/원장 행으로 바꾸며 대표 수치(히어로) 자체를 없앴다. 상세(`/brews/2`)는 그대로다.
+**AC-STRUCT-18 (대체됨)** · 기록 상세 대표 수치가 `1:비율`이던 원래 AC는 수율 → 비율 → 물 온도 순이 되며 `docs/specs/2026-10-11-brew-detail-fidelity.md`의 AC-BDETAIL-02로 대체됐다.
 
 #### AC-STRUCT-19 · 빈 기록 화면이 레시피로 보낸다
 

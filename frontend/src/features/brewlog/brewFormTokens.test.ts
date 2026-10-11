@@ -7,7 +7,7 @@ const DIR = join("src", "features", "brewlog", "components");
 const LITERAL = /oklch\(|#[0-9a-fA-F]{3,6}\b|rgb\(/g;
 
 describe("기록 폼 — 색", () => {
-  it("AC-BREWFORM-26 · 색은 토큰만 쓴다", () => {
+  it("AC-BREWFORM-26 · AC-BDETAIL-22 · 색은 토큰만 쓴다", () => {
     const found = readdirSync(DIR)
       .filter((name) => name.endsWith(".tsx") && !name.includes(".test."))
       .flatMap((name) =>

@@ -5,12 +5,10 @@ import {
   useEffect,
   useRef,
   useState,
-  useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { createPortal } from "react-dom";
 import { BottomSheet, LedgerField, SectionLabel } from "@/components/kit";
-import { TOPBAR_ACTIONS_ID } from "@/components/layout/WebTopBar";
+import { TopBarActions } from "@/components/layout/TopBarActions";
 import { Button } from "@/components/ui";
 import type { UserGrinder } from "@/features/gear/schema";
 import type { MappedFieldErrors } from "@/lib/fieldErrors";
@@ -231,7 +229,7 @@ function WebForm(props: LayoutProps) {
 
   return (
     <>
-      <WebActions>
+      <TopBarActions>
         <button
           type="button"
           onClick={props.onCancel}
@@ -246,7 +244,7 @@ function WebForm(props: LayoutProps) {
         >
           {props.submitting ? "저장 중…" : props.submitLabel}
         </Button>
-      </WebActions>
+      </TopBarActions>
 
       <div className="flex items-start gap-[40px]">
         <div data-brew-form className="flex min-w-0 flex-1 flex-col gap-[28px]">
@@ -364,21 +362,6 @@ function WebForm(props: LayoutProps) {
       </div>
     </>
   );
-}
-
-/** 웹 상단 바 오른쪽 자리에 넣는다. 자리가 없으면(단위 테스트처럼 상단 바 없이 그릴 때) 제자리에 그린다. */
-function WebActions({ children }: { children: ReactNode }) {
-  const slot = useSyncExternalStore(
-    noopSubscribe,
-    () => document.getElementById(TOPBAR_ACTIONS_ID),
-    () => null,
-  );
-  if (slot !== null) return createPortal(children, slot);
-  return <div className="flex justify-end gap-2">{children}</div>;
-}
-
-function noopSubscribe() {
-  return () => {};
 }
 
 function AddGrinder({ onAdd }: { onAdd?: () => void }) {

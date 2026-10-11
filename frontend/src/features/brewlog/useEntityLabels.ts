@@ -45,6 +45,8 @@ export function useRecipeLabel(
 ): EntityLabel & {
   readonly steps: RecipeStep[];
   readonly targets?: RecipeTargets;
+  /** 레시피의 드리퍼. 기록 상세 원두 줄에 이름으로 붙는다(AC-BDETAIL-04) */
+  readonly brewerId?: number;
 } {
   const recipe = useQuery({
     queryKey: ["recipe", recipeId],
@@ -59,6 +61,7 @@ export function useRecipeLabel(
     label: entityLabel("recipe", source),
     isReady: source.state === "ready",
     steps: data?.steps ?? [],
+    brewerId: data?.brewerId,
     // 스텝과 같은 응답에 들어 있다 — 새 요청이 늘지 않는다.
     targets:
       data === undefined
@@ -85,7 +88,10 @@ export function useBeanLabel(
   beanBatchId: number | undefined,
   enabled: boolean,
   onSessionLost?: () => void,
-): EntityLabel {
+): EntityLabel & {
+  readonly roastedAt?: string;
+  readonly daysOffRoast?: number;
+} {
   const batch = useQuery({
     queryKey: ["inventory", "bean-batch", beanBatchId],
     queryFn: () => fetchBeanBatch(beanBatchId as number, onSessionLost),
@@ -114,6 +120,8 @@ export function useBeanLabel(
   return {
     label: entityLabel("bean", source),
     isReady: source.state === "ready",
+    roastedAt: batch.data?.roastedAt,
+    daysOffRoast: batch.data?.daysOffRoast,
   };
 }
 

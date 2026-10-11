@@ -15,7 +15,8 @@ const WEB = { width: 1280, height: 900 };
 test.describe("수치 굵기", () => {
   test.use({ viewport: WEB });
 
-  for (const path of ["/recipes", "/recipes/12", "/brews/2"]) {
+  // /brews/2는 히어로·비교표가 목업 mono 값(500)을 직접 쓴다 — AC-BDETAIL-02·05가 대체.
+  for (const path of ["/recipes", "/recipes/12"]) {
     test(`AC-GRAMMAR-09 · ${path}의 수치 유틸이 500이다`, async ({ page }) => {
       await installStubs(page);
       await page.goto(path);
@@ -281,7 +282,8 @@ test.describe("본문 폭", () => {
     });
   }
 
-  for (const path of ["/recipes/12", "/brews/2", "/gear/grind-converter"]) {
+  // /brews/2는 웹 2컬럼이 됐다 — docs/specs/2026-10-11-brew-detail-fidelity.md AC-BDETAIL-01이 대체.
+  for (const path of ["/recipes/12", "/gear/grind-converter"]) {
     test(`AC-GRAMMAR-02 · ${path}은 672px 폭을 유지한다`, async ({ page }) => {
       await installStubs(page);
       await page.goto(path);

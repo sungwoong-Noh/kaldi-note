@@ -200,7 +200,12 @@ export function GrinderSelect({
   );
 }
 
-const GRIND_UNIT_LABEL = { CLICK: "클릭", NUMBER: "", MICRON: "μm" } as const;
+/** 레시피 분쇄 단위의 표기 — 기록 폼과 기록 상세 비교표가 같이 쓴다. */
+export const GRIND_UNIT_LABEL = {
+  CLICK: "클릭",
+  NUMBER: "",
+  MICRON: "μm",
+} as const;
 
 /**
  * 고른 그라인더가 레시피와 같은 모델일 때만 레시피의 분쇄도를 기준으로 보인다(AC-BREWFIT-09).

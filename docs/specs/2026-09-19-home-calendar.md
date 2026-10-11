@@ -933,6 +933,7 @@ CTA            기록하기
 - **When** `/brews` 목록과 `/brews/[id]` 상세를 본다
 - **Then** 두 곳 모두 `2026-09-19`를 보여준다 — `2026-09-18`이 아니다
 - **검증** 컴포넌트 테스트 `BrewLogCard.test.tsx`, `BrewDetail.test.tsx`
+- **(일부 대체됨)** 상세 쪽 표기는 `09.19 토 · 08:00`(KST)이다 — `docs/specs/2026-10-11-brew-detail-fidelity.md` AC-BDETAIL-04. KST로 바꾼다는 요점은 그대로다.
 
 ### 에러
 

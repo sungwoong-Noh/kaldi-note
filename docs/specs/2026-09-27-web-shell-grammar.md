@@ -99,6 +99,7 @@ supersedes:
 - **When** `/recipes/12`·`/brews/2`·`/gear/grind-converter`를 각각 연다
 - **Then** `<main>`의 폭이 `672`px 이하다
 - **검증** e2e
+- **(일부 대체됨)** `/brews/2`는 웹 2컬럼이 됐다 — `docs/specs/2026-10-11-brew-detail-fidelity.md` AC-BDETAIL-01. 나머지 두 경로는 그대로다.
 
 #### AC-GRAMMAR-03 · 웹 상단 바는 로고 옆에 내비를 둔다
 
@@ -155,6 +156,7 @@ supersedes:
 - **When** `/recipes`·`/recipes/12`·`/brews/2`에서 `text-metric`·`text-metric-hero`·`text-card-metric` 클래스를 가진 요소를 모두 모은다
 - **Then** 모은 요소가 1개 이상이고, 전부 computed font-weight가 `500`이다
 - **검증** e2e
+- **(일부 대체됨)** `/brews/2`는 히어로·비교표가 목업 mono 값(500)을 직접 쓴다 — `docs/specs/2026-10-11-brew-detail-fidelity.md` AC-BDETAIL-02·05. 나머지 두 경로는 그대로다.
 
 #### AC-GRAMMAR-10 · 모바일 탭 바는 ink + 밑줄로 감전다
 

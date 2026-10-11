@@ -1,0 +1,136 @@
+import { expect, test, type Page } from "@playwright/test";
+import { undersized } from "./hitArea";
+import { installStubs, installSwStubs } from "./stubs";
+
+/** docs/specs/2026-10-11-brew-detail-fidelity.md — 기록 상세 W3·B2 정합. */
+
+const DETAIL = "/brews/2";
+
+async function open(page: Page, width: number, height = 900) {
+  await installSwStubs(page.context());
+  await installStubs(page);
+  await page.setViewportSize({ width, height });
+  await page.goto(DETAIL);
+  await page.locator("[data-lead]").waitFor();
+}
+
+async function box(page: Page, selector: string) {
+  const b = await page.locator(selector).first().boundingBox();
+  if (b === null) throw new Error(`${selector}가 없다`);
+  return b;
+}
+
+test.describe("AC-BDETAIL-01 · 웹은 2컬럼, 모바일은 1컬럼이다", () => {
+  for (const [width, asideWidth] of [
+    [1280, 420],
+    [1100, 360],
+  ] as const) {
+    test(`${width}px — 오른쪽 칼럼 ${asideWidth}px`, async ({ page }) => {
+      await open(page, width);
+      const aside = await box(page, "[data-detail-aside]");
+      const main = await box(page, "[data-detail-main]");
+
+      expect(Math.round(aside.width)).toBe(asideWidth);
+      expect(aside.x).toBeGreaterThan(main.x + main.width - 1);
+    });
+  }
+
+  test("1099px — 오른쪽 칼럼이 없다", async ({ page }) => {
+    await open(page, 1099);
+    await expect(page.locator("[data-detail-aside]")).toHaveCount(0);
+  });
+});
+
+test("AC-BDETAIL-11 · 웹 동작은 상단 바에 있다", async ({ page }) => {
+  await open(page, 1280);
+  const banner = page.getByRole("banner");
+  const main = page.getByRole("main");
+
+  await expect(
+    banner.getByRole("link", { name: "다시 내리기" }),
+  ).toHaveAttribute("href", "/brews/new?recipeId=12");
+  await expect(banner.getByRole("link", { name: "수정" })).toHaveAttribute(
+    "href",
+    "/brews/2/edit",
+  );
+  await expect(banner.getByRole("button", { name: "삭제" })).toBeVisible();
+  await expect(main.getByRole("link", { name: "다시 내리기" })).toHaveCount(0);
+  await expect(main.getByRole("link", { name: "수정" })).toHaveCount(0);
+  await expect(main.getByRole("button", { name: "삭제" })).toHaveCount(0);
+});
+
+test.describe("AC-BDETAIL-20 · 가로 스크롤이 없다", () => {
+  for (const width of [390, 1099, 1100, 1280]) {
+    test(`${width}px`, async ({ page }) => {
+      await open(page, width);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
+});
+
+test("AC-BDETAIL-12 · 모바일 동작은 위 수정, 아래 다시 내리기·삭제다", async ({
+  page,
+}) => {
+  await open(page, 390, 844);
+
+  await expect(
+    page.getByRole("banner").getByRole("link", { name: "수정" }),
+  ).toBeVisible();
+
+  const cta = await page
+    .getByRole("link", { name: "다시 내리기" })
+    .boundingBox();
+  // 「전폭」은 main의 콘텐츠 폭(좌우 패딩을 뺀 폭)이다.
+  const content = await page.getByRole("main").evaluate((el) => {
+    const s = getComputedStyle(el);
+    return (
+      el.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight)
+    );
+  });
+  expect(Math.abs(cta!.width - content)).toBeLessThanOrEqual(1);
+
+  // 화면 밖(아래)이면 간격이 음수가 된다 — 「24 이하」만 보면 그것도 통과해 버린다.
+  const gap = 844 - (cta!.y + cta!.height);
+  expect(gap).toBeGreaterThanOrEqual(0);
+  expect(gap).toBeLessThanOrEqual(24);
+
+  const remove = await page.getByRole("button", { name: "삭제" }).boundingBox();
+  expect(remove!.y).toBeGreaterThan(cta!.y);
+});
+
+test.describe("AC-BDETAIL-21 · 누르는 영역 44×44", () => {
+  for (const width of [390, 1280]) {
+    test(`${width}px`, async ({ page }) => {
+      await open(page, width, 844);
+      const targets = [
+        page.getByRole("link", { name: "다시 내리기" }),
+        page.getByRole("link", { name: "수정" }),
+        page.getByRole("button", { name: "삭제" }),
+      ];
+      const small: string[] = [];
+      for (const target of targets) {
+        await expect(target).toHaveCount(1);
+        small.push(...(await target.evaluateAll(undersized)));
+      }
+      expect(small).toEqual([]);
+
+      // 제목 안 링크는 `undersized`가 글줄 링크로 면제하지만 이 화면에서는 잰다 — 박스와 ::after 중 큰 쪽.
+      const title = await page
+        .getByRole("heading", { level: 1 })
+        .getByRole("link")
+        .evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          const after = getComputedStyle(el, "::after");
+          return {
+            w: Math.max(r.width, parseFloat(after.width) || 0),
+            h: Math.max(r.height, parseFloat(after.height) || 0),
+          };
+        });
+      expect(title.w).toBeGreaterThanOrEqual(44);
+      expect(title.h).toBeGreaterThanOrEqual(44);
+    });
+  }
+});

@@ -1,7 +1,7 @@
 ---
 id: BDETAIL
 title: 기록 상세 목업 정합 — 웹 W3 2컬럼 · 모바일 B2 · 대표 수치 수율
-status: 승인
+status: 구현완료
 milestone: M2
 supersedes:
 ---
@@ -230,61 +230,20 @@ supersedes:
 - AC-CONSIST-09(docs/specs/2026-09-08-screen-consistency.md) → AC-BDETAIL-02 — 상세 대표 수치가 수율 우선
 - AC-CONSIST-10 → AC-BDETAIL-02(c) — 물 온도 승격은 그대로, 위치만 새 히어로
 - AC-CONSIST-11 → AC-BDETAIL-18 — 「실측값」 절이 없어지고, 레시피를 못 읽을 때만 원장 행
-- AC-WEBBREW-40(docs/specs/2026-08-31-web-brew-log.md) → AC-BDETAIL-05·18
 - AC-WEBLOGSTEP-02(docs/specs/2026-09-03-web-brew-log-steps.md) → AC-BDETAIL-01 배치 — 스텝은 비교표 뒤
-- AC-SMALL-05(docs/specs/2026-09-17-small-features.md)의 **웹** 부분 → AC-BDETAIL-05 — 웹 차이 열은 `같습니다.`. 모바일은 AC-BDETAIL-07이 잇는다
+
+- AC-HOMECAL-54(docs/specs/2026-09-19-home-calendar.md)의 **상세** 표기 `2026-09-19` → AC-BDETAIL-04의 `09.19 토 · 08:00` — KST 변환은 그대로(구현 중 발견, 2026-10-11 사람 확인)
+
+- AC-WEBLOGEDIT-01·02(docs/specs/2026-09-02-web-brew-log-edit.md)의 링크 이름 `편집` → `수정`(AC-BDETAIL-11·13). 결정 표 #18에서 정한 것을 구현 중 대체 목록에 추가
+
+- AC-STRUCT-18(docs/specs/2026-09-15-structure.md) → AC-BDETAIL-02 — 구현 중 발견(결정 표 #3의 결과)
+- AC-GRAMMAR-02·09(docs/specs/2026-09-27-web-shell-grammar.md)의 `/brews/2` → AC-BDETAIL-01·02·05 — 구현 중 발견(결정 표 #2의 결과)
+
+- AC-CONSIST-06·07의 `BrewDetail`·`/brews/2` 부분 → AC-BDETAIL-02·05·08·18 — 구현 중 발견(실측값 절이 없어진 결과)
+
+AC-WEBBREW-40(실측값이 서버 값 그대로)은 비교표가 그대로 만족해 **대체하지 않는다**(초안에서 뺐다). AC-SMALL-05도 마찬가지다 — 웹 차이 칸의 `같습니다.`에는 `data-diff-text`가 없어 「차이 문구 요소 0개」가 그대로 성립한다.
 
 나머지 CONSIST·STRUCT·WEBNAME·WEBLOGSTEP·WEBLOGEDIT·SMALL AC는 그대로 유효하다.
-
----
-
-## 구현 순서
-
-각 태스크는 TDD 사이클 하나다(실패 테스트 → 실패 확인 → 최소 구현 → 통과 확인 → 커밋).
-
-- [ ] **Task 1: 분쇄도 차이 문장** — Covers: AC-BDETAIL-06
-
-  `diffPhrase`에 `"grind"` 종류를 더한다(`2 클릭 굵게 갈았습니다.`). 단위 문자열은 호출하는 쪽이 넘긴다.
-
-- [ ] **Task 2: 상세 대표 수치 + 히어로** — Covers: AC-BDETAIL-02, 03, 16
-
-  `headline.ts`에 `detailHeadline(log)`(수율 → 비율 → 물 온도)을 더한다. 카드의 `headline()`은 건드리지 않는다.
-  히어로는 기록 폼 `BrewHero` 웹 모양(eyebrow · 큰 값 · 3열)을 따르되 상세 전용 컴포넌트로 둔다.
-
-- [ ] **Task 3: 제목 영역** — Covers: AC-BDETAIL-04
-
-  날짜 eyebrow(KST `MM.DD 요일 · HH:mm`), `h1` 링크, 원두·로스팅일·드리퍼 줄(`useBrewSubParts` 재사용).
-
-- [ ] **Task 4: 웹 2컬럼 + 상단 바 동작** — Covers: AC-BDETAIL-01, 11, 20
-
-  `useIsWide`로 웹/모바일 중 한쪽만 그린다. `WebTopBar`의 `#topbar-actions` 자리를 `/brews/[id]`에도 둔다(모든 폭).
-  동작은 `createPortal` — 기록 폼 `WebActions`를 공용으로 옮겨 쓴다.
-
-- [ ] **Task 5: 비교표 웹 4열 + 모바일** — Covers: AC-BDETAIL-05, 07, 15
-
-  `RecipeComparison`을 `wide`에 따라 4열 표 / 행 아래 문장으로. 같은 행은 웹에서만 `같습니다.`.
-
-- [ ] **Task 6: 분쇄도 비교 행** — Covers: AC-BDETAIL-13(분쇄도), 14
-
-  내 기록이고 내 그라인더 모델 = 레시피 모델일 때만 비교표에 `분쇄도` 행. `useUserGrinders`는 내 기록일 때만 부른다.
-
-- [ ] **Task 7: 원두·장비 원장 행 + 평가 + 메모** — Covers: AC-BDETAIL-08, 09, 10, 17
-
-  키트 `LedgerField`·`SectionLabel` 재사용. 읽기 전용 점은 키트에 `TasteDots`의 읽기 전용 모양을 더하지 않고
-  상세 안의 작은 컴포넌트로 둔다(버튼이 없어야 한다).
-
-- [ ] **Task 8: 모바일 동작 + 남의 기록** — Covers: AC-BDETAIL-12, 13(동작)
-
-  하단 전폭 `다시 내리기`(sticky, AC-BREWFORM-12와 같은 방식) + `삭제` 텍스트 버튼. 위 `수정`은 상단 바 자리.
-
-- [ ] **Task 9: 실패 경로** — Covers: AC-BDETAIL-18, 19
-
-  레시피를 못 읽으면 비교표 대신 실측값 원장 행 4개.
-
-- [ ] **Task 10: 누르는 영역 + 토큰 + 대체 AC 정리** — Covers: AC-BDETAIL-21, 22
-
-  「대체하는 이전 AC」의 테스트를 옮기고 이전 스펙에 「(대체됨)」 표시. `e2e/screens.ts`·`structure.spec.ts`의
-  `/brews/2` 기대값 갱신.
 
 ---
 

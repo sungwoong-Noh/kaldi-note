@@ -1,4 +1,5 @@
 import { formatDuration, formatGrams, formatTemperature } from "@/lib/format";
+import { SectionLabel } from "@/components/kit";
 import { diffPhrase } from "../diffPhrase";
 import type { RecipeTargets } from "../useEntityLabels";
 import type { BrewLog } from "../schema";
@@ -23,8 +24,26 @@ interface Row {
   readonly phrase: string | null;
 }
 
-function buildRows(log: BrewLog, targets: RecipeTargets): Row[] {
-  return [
+/**
+ * 분쇄도 비교에 필요한 값. **같은 모델일 때만** 부르는 쪽이 넘긴다 — 모델이 다르면 「22 클릭」은
+ * 다른 굵기다(docs/specs/2026-10-11-brew-detail-fidelity.md 「분쇄도 비교」).
+ */
+export interface GrindComparison {
+  readonly target?: number;
+  readonly actual?: number;
+  /** `클릭`·`μm`·없으면 `""` */
+  readonly unit: string;
+}
+
+const withUnit = (value: number, unit: string) =>
+  [String(value), unit].filter(Boolean).join(" ");
+
+function buildRows(
+  log: BrewLog,
+  targets: RecipeTargets,
+  grind: GrindComparison | null,
+): Row[] {
+  const rows: Row[] = [
     {
       label: "원두량",
       target: formatGrams(targets.doseG),
@@ -54,35 +73,135 @@ function buildRows(log: BrewLog, targets: RecipeTargets): Row[] {
         log.actualWaterTempC,
       ),
     },
-    {
-      label: "추출 시간",
-      target:
-        targets.totalTimeSeconds === undefined
-          ? undefined
-          : formatDuration(targets.totalTimeSeconds),
-      actual:
-        log.actualTotalTimeSeconds === undefined
-          ? "—"
-          : formatDuration(log.actualTotalTimeSeconds),
-      differs: targets.totalTimeSeconds !== log.actualTotalTimeSeconds,
-      phrase: diffPhrase(
-        "duration",
-        "추출",
-        targets.totalTimeSeconds,
-        log.actualTotalTimeSeconds,
-      ),
-    },
   ];
+  if (grind !== null) {
+    rows.push({
+      label: "분쇄도",
+      target:
+        grind.target === undefined
+          ? undefined
+          : withUnit(grind.target, grind.unit),
+      actual:
+        grind.actual === undefined ? "—" : withUnit(grind.actual, grind.unit),
+      differs: grind.target !== grind.actual,
+      phrase: diffPhrase("grind", grind.unit, grind.target, grind.actual),
+    });
+  }
+  rows.push({
+    label: "추출 시간",
+    target:
+      targets.totalTimeSeconds === undefined
+        ? undefined
+        : formatDuration(targets.totalTimeSeconds),
+    actual:
+      log.actualTotalTimeSeconds === undefined
+        ? "—"
+        : formatDuration(log.actualTotalTimeSeconds),
+    differs: targets.totalTimeSeconds !== log.actualTotalTimeSeconds,
+    phrase: diffPhrase(
+      "duration",
+      "추출",
+      targets.totalTimeSeconds,
+      log.actualTotalTimeSeconds,
+    ),
+  });
+  return rows;
 }
+
+/** 웹 차이 칸 — 문장, 같으면 `같습니다.`, 기준값이 없으면 `—`(AC-BDETAIL-05·15). */
+function diffCell(row: Row): string {
+  if (row.phrase !== null) return row.phrase;
+  return row.target === undefined ? "—" : "같습니다.";
+}
+
+/** 열 머리. 정렬은 칸마다 붙인다 — 한 문자열에 `text-left`·`text-right`가 같이 있으면 CSS 순서로 갈린다. */
+const HEAD =
+  "py-[10px] font-mono text-[9.5px] font-normal tracking-[0.1em] text-ink-3 uppercase";
 
 export function RecipeComparison({
   log,
   targets,
+  grind = null,
+  wide = false,
 }: {
   log: BrewLog;
   targets: RecipeTargets;
+  grind?: GrindComparison | null;
+  /** ≥1100px — 4열 표(항목·레시피·실제·차이). 좁은 폭은 문장을 행 아래에 붙인다 */
+  wide?: boolean;
 }) {
-  const rows = buildRows(log, targets);
+  const rows = buildRows(log, targets, grind);
+
+  if (wide) {
+    return (
+      <section data-compare className="flex flex-col gap-[10px]">
+        <div className="flex items-baseline justify-between gap-2">
+          <SectionLabel>레시피 / 실제</SectionLabel>
+          <span className="text-[12.5px] text-ink-3">현재 레시피와 비교</span>
+        </div>
+        <table className="w-full table-fixed border-collapse">
+          <colgroup>
+            <col />
+            <col style={{ width: 110 }} />
+            <col style={{ width: 110 }} />
+            <col style={{ width: 230 }} />
+          </colgroup>
+          <thead className="border-b border-divider">
+            <tr>
+              <th scope="col" className={`${HEAD} text-left`}>
+                항목
+              </th>
+              <th scope="col" className={`${HEAD} text-right`}>
+                레시피
+              </th>
+              <th scope="col" className={`${HEAD} text-right`}>
+                실제
+              </th>
+              <th scope="col" className={`${HEAD} text-right`}>
+                차이
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr
+                key={row.label}
+                data-compare-row={row.label}
+                className="border-b border-divider"
+              >
+                <th
+                  scope="row"
+                  data-compare-label
+                  className="py-[14px] text-left text-[14.5px] font-normal text-ink"
+                >
+                  {row.label}
+                </th>
+                <td className="py-[14px] text-right font-mono text-[14px] font-medium text-ink-3">
+                  {row.target ?? "—"}
+                </td>
+                <td
+                  data-diff={row.differs}
+                  className={`py-[14px] text-right font-mono text-[14px] font-medium ${
+                    row.differs ? "text-accent" : "text-ink"
+                  }`}
+                >
+                  {row.actual}
+                </td>
+                <td
+                  data-diff-text={row.phrase !== null ? "" : undefined}
+                  className={`py-[14px] pl-[12px] text-right text-[13px] ${
+                    row.phrase !== null ? "text-accent" : "text-ink-3"
+                  }`}
+                >
+                  {diffCell(row)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    );
+  }
 
   return (
     <section data-compare className="flex flex-col gap-2">
@@ -102,6 +221,7 @@ export function RecipeComparison({
         {rows.map((row) => (
           <div
             key={row.label}
+            data-compare-row={row.label}
             className="flex flex-col gap-1 border-t border-border py-2 text-body"
           >
             <div className="flex items-baseline gap-3">

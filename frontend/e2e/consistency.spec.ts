@@ -26,10 +26,9 @@ test.describe("일관성 — 렌더값", () => {
    * 갱신(2026-09-17): 히어로 판 안의 라벨은 `on-hero-dim`이다 — 어두운 판 위에서
    * `ink-3`는 읽히지 않는다. 판 밖 라벨만 `ink-3`를 지킨다.
    */
-  const META_LABELS = [
-    { path: "/recipes/12", label: "기본 제공" },
-    { path: "/brews/2", label: "분쇄도" },
-  ] as const;
+  // /brews/2는 실측값 메타줄이 없어지고 원장 행 라벨(목업 mono 10.5px)이 됐다 —
+  // docs/specs/2026-10-11-brew-detail-fidelity.md AC-BDETAIL-08·18이 대체.
+  const META_LABELS = [{ path: "/recipes/12", label: "기본 제공" }] as const;
 
   for (const { path, label: labelText } of META_LABELS) {
     test(`AC-CONSIST-07 · ${path}의 메타줄 라벨이 13px ink-3다`, async ({

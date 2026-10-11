@@ -12,7 +12,7 @@ import { formatTemperature } from "@/lib/format";
  * <p>무게 차이만 소수 1자리를 남긴다(`1.0 g`) — 차이는 작은 값이라 `.0`을 떼면 정밀도가
  * 사라져 보인다. 목업 W3의 표기다(docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-17).
  */
-export type DiffKind = "weight" | "temperature" | "duration";
+export type DiffKind = "weight" | "temperature" | "duration" | "grind";
 
 /**
  * 시간 **차이**는 `formatDuration`을 쓰지 않는다.
@@ -40,7 +40,7 @@ function objectParticle(word: string): string {
 }
 
 /**
- * @param subject 무게에만 쓰는 주어("원두"·"물"). 온도·시간은 문장에 주어가 없다.
+ * @param subject 무게는 주어("원두"·"물"), 분쇄도는 단위("클릭"·"μm"·없으면 ""). 온도·시간은 쓰지 않는다.
  * @returns 차이가 없거나 비교할 기준값이 없으면 `null` — 화면은 아무것도 그리지 않는다.
  */
 export function diffPhrase(
@@ -62,6 +62,10 @@ export function diffPhrase(
       return `${formatTemperature(gap)} ${more ? "높게" : "낮게"} 내렸습니다.`;
     case "duration":
       return `${gapDuration(gap)} ${more ? "늦게" : "빨리"} 끝났습니다.`;
+    case "grind":
+      // 설정값이 크면 굵다 — 모든 단위 공통(docs/specs/2026-10-11-brew-detail-fidelity.md 「분쇄 방향」).
+      // 부동소수 차(`3 - 2.5`)의 잡음을 지우려고 소수 2자리에서 다시 숫자로 만든다.
+      return `${[String(Number(gap.toFixed(2))), subject].filter(Boolean).join(" ")} ${more ? "굵게" : "가늘게"} 갈았습니다.`;
   }
 }
 

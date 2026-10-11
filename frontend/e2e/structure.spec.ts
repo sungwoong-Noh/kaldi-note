@@ -53,32 +53,11 @@ test.describe("구조 — 대표 수치", () => {
   // AC-RECIPESBREWS-73)가 둘 다 레시피 서랍 화면 스펙으로 대체하며 완전히 없어졌다
   // (docs/specs/2026-09-25-recipe-drawer-screens.md). 레시피 쪽 대표 수치는 이제 원두량이라
   // "1:비율" 패턴 자체를 검사하지 않는다 — 값 검증은 컴포넌트 테스트가 맡는다.
-
   // "/brews"(목록)는 빠졌다 — AC-RECIPESBREWS-77이 목록을 카드에서 통계 4칸 +
   // 테이블/원장 행으로 바꾸며 대표 수치(히어로) 자체가 없어졌다
   // (docs/specs/2026-09-25-recipe-drawer-screens.md).
-  for (const path of ["/brews/2"]) {
-    test(`AC-STRUCT-18 · ${path}의 대표 수치가 1:비율이다`, async ({
-      page,
-    }) => {
-      await installStubs(page);
-      await page.goto(path);
-      await page.waitForLoadState("networkidle");
-
-      /*
-       * 갱신(2026-09-17): 히어로 도입으로 대표 수치가 `dl > dd`에서 판 위의 값 하나가 됐다.
-       * 라벨은 아이브로우가 판 밖에서 맡으므로 `data-lead`의 텍스트가 곧 값이다.
-       * 목록 카드는 아직 `dd` 구조라 둘 다 받는다.
-       */
-      const lead = page.locator("[data-lead]").first();
-      const dd = lead.locator("dd");
-      const text = (await dd.count()) > 0
-        ? await dd.first().innerText()
-        : await lead.innerText();
-
-      expect(text, path).toMatch(/^1:\d+\.\d$/);
-    });
-  }
+  // AC-STRUCT-18(/brews/2 대표 수치 1:비율)은 상세 대표 수치가 수율 우선이 되며
+  // docs/specs/2026-10-11-brew-detail-fidelity.md AC-BDETAIL-02가 대체했다.
 });
 
 test.describe("구조 — 폼", () => {

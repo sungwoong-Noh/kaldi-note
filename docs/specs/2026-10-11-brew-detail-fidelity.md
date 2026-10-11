@@ -246,7 +246,7 @@ supersedes:
 
   `diffPhrase`에 `"grind"` 종류를 더한다(`2 클릭 굵게 갈았습니다.`). 단위 문자열은 호출하는 쪽이 넘긴다.
 
-- [ ] **Task 2: 상세 대표 수치 + 히어로** — Covers: AC-BDETAIL-02, 03, 16
+- [x] **Task 2: 상세 대표 수치 + 히어로** — Covers: AC-BDETAIL-02, 03, 16
 
   `headline.ts`에 `detailHeadline(log)`(수율 → 비율 → 물 온도)을 더한다. 카드의 `headline()`은 건드리지 않는다.
   히어로는 기록 폼 `BrewHero` 웹 모양(eyebrow · 큰 값 · 3열)을 따르되 상세 전용 컴포넌트로 둔다.

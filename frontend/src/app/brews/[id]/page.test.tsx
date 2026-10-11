@@ -89,31 +89,12 @@ function leadLabel(lead: Element): string | null | undefined {
     ?.textContent;
 }
 
-/** 비율 없는 로그. `JSON.stringify`가 `undefined` 키를 지우므로 응답에서 통째로 빠진다. */
-function withoutRatio() {
-  return http.get(DETAIL_URL, () =>
-    HttpResponse.json({
-      ...brewLogWithTds,
-      id: 42,
-      recipeId: 1,
-      brewRatio: undefined,
-    }),
-  );
-}
-
 /** 실측값 절. `stepSection()`과 같은 방식이다 — 이 파일이 이미 쓰는 패턴. */
 async function measureSection(): Promise<HTMLElement> {
   const heading = await screen.findByText("실측값");
   const section = heading.closest("section");
   expect(section).not.toBeNull();
   return section as HTMLElement;
-}
-
-/** 실측값 절의 라벨. 대표로 올라간 항목은 여기서 빠져 있어야 한다. */
-async function measureLabels(): Promise<(string | null)[]> {
-  return [...(await measureSection()).querySelectorAll("dt")].map(
-    (dt) => dt.textContent,
-  );
 }
 
 describe("BrewDetailPage", () => {
@@ -150,53 +131,6 @@ describe("BrewDetailPage", () => {
     expect(headings[0].className).toContain("text-page-title");
     expect(headings[0].className).toContain("font-semibold");
     expect(headings[0].querySelector("a")).toBeNull();
-  });
-
-  it("AC-CONSIST-09 · 대표 수치가 하나이고 1:15.0이다", async () => {
-    await renderDetail();
-    // `h1`은 Task 4에서 생긴다. 지금 확실히 있는 것을 기다린다.
-    await screen.findByText("실측값");
-
-    const leads = leadElements();
-
-    expect(leads).toHaveLength(1);
-    // 갱신(2026-09-17): 라벨이 sr-only dt에서 보이는 아이브로우가 됐다.
-    expect(leads[0].textContent).toBe("1:15.0");
-    expect(leadLabel(leads[0])).toBe("비율");
-  });
-
-  it("AC-CONSIST-10 · 비율이 없으면 물 온도가 대표로 승격한다", async () => {
-    server.use(withoutRatio());
-
-    await renderDetail();
-    // `h1`은 Task 4에서 생긴다. 지금 확실히 있는 것을 기다린다.
-    await screen.findByText("실측값");
-
-    const leads = leadElements();
-
-    expect(leads).toHaveLength(1);
-    expect(leads[0].textContent).toBe("92 °C");
-    expect(leadLabel(leads[0])).toBe("물 온도");
-  });
-
-  it("AC-CONSIST-11 · 대표로 올린 비율은 실측값에 없다", async () => {
-    await renderDetail();
-
-    const labels = await measureLabels();
-
-    expect(labels).not.toContain("비율");
-    expect(labels).toContain("물 온도");
-  });
-
-  it("AC-CONSIST-11 · 승격된 물 온도도 실측값에서 빠진다", async () => {
-    server.use(withoutRatio());
-
-    await renderDetail();
-
-    const labels = await measureLabels();
-
-    expect(labels).not.toContain("물 온도");
-    expect(labels).not.toContain("비율");
   });
 
   it("AC-CONSIST-06 · 라벨이 폼 어휘를 쓴다", async () => {
@@ -433,24 +367,6 @@ describe("BrewDetailPage — 푸어 스텝", () => {
     expect(items[0]).toHaveTextContent("50 g");
   });
 
-  it("AC-WEBLOGSTEP-02 · 스텝 절은 실측값 뒤, 추출 분석 앞에 온다", async () => {
-    server.use(logWithRecipe12(), recipe12());
-
-    await renderDetail();
-
-    const measured = await screen.findByText("실측값");
-    const steps = await screen.findByText("푸어 스텝");
-    const extraction = screen.getByText("추출 분석");
-    expect(
-      measured.compareDocumentPosition(steps) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    expect(
-      steps.compareDocumentPosition(extraction) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-  });
-
   it("AC-WEBLOGSTEP-06 · 스텝이 없는 레시피면 그 사실이 보인다", async () => {
     server.use(logWithRecipe12(), recipe12([]));
 
@@ -557,5 +473,81 @@ describe("다시 내리기 — docs/specs/2026-09-17-small-features.md", () => {
     // 좋았던 기록을 또 내리려면 지금은 레시피를 다시 찾아 들어가야 한다.
     expect(link.getAttribute("href")).toBe("/brews/new?recipeId=1");
   });
+});
 
+// ── docs/specs/2026-10-11-brew-detail-fidelity.md ───────────────────────────
+
+/** 기록을 덮어쓴다. 값이 `undefined`인 키는 응답에서 빠진다(`non_null`). */
+function logIs(
+  over: Record<string, unknown> = {},
+  base: object = brewLogWithTds,
+) {
+  return http.get(DETAIL_URL, () =>
+    HttpResponse.json({ ...base, id: 42, recipeId: 1, ...over }),
+  );
+}
+
+/** 히어로의 아래 줄 칸(`TDS`·`음료`·`SCA`). 없으면 `null`. */
+function heroCol(label: string): HTMLElement | null {
+  return document.querySelector<HTMLElement>(
+    `[data-hero] [data-hero-col="${label}"]`,
+  );
+}
+
+describe("BrewDetailPage — 대표 수치·히어로", () => {
+  it.each([
+    ["수율이 있으면", {}, brewLogWithTds, "Extraction yield", "17.6 %"],
+    ["TDS가 없으면 비율", {}, brewLogWithoutTds, "Ratio", "1:15.0"],
+    [
+      "비율도 없으면 물 온도",
+      { brewRatio: undefined },
+      brewLogWithoutTds,
+      "물 온도",
+      "92 °C",
+    ],
+  ] as const)(
+    "AC-BDETAIL-02 · 대표 수치 — %s",
+    async (_, over, base, eyebrow, value) => {
+      server.use(logIs(over, base));
+      await renderDetail();
+
+      await waitFor(() => expect(leadElements()).toHaveLength(1));
+      const [lead] = leadElements();
+      expect(lead).toHaveTextContent(value);
+      expect(leadLabel(lead)).toBe(eyebrow);
+    },
+  );
+
+  it("AC-BDETAIL-03 · 히어로 아래 줄은 TDS·음료·SCA다", async () => {
+    await renderDetail();
+    await waitFor(() => expect(heroCol("TDS")).not.toBeNull());
+
+    expect(heroCol("TDS")).toHaveTextContent("1.35 %");
+    expect(heroCol("음료")).toHaveTextContent("260 g");
+    expect(heroCol("SCA")).toHaveTextContent("추출 부족");
+  });
+
+  it("AC-BDETAIL-03 · 두 구간이 다 적정이면 SCA는 「적정」이다", async () => {
+    server.use(logIs({ extractionZone: "IDEAL" }));
+    await renderDetail();
+    await waitFor(() => expect(heroCol("SCA")).not.toBeNull());
+
+    expect(
+      heroCol("SCA")?.querySelector("[data-hero-value]"),
+    ).toHaveTextContent(/^적정$/);
+  });
+
+  it("AC-BDETAIL-16 · TDS가 없으면 TDS·SCA 칸이 없다", async () => {
+    server.use(logIs({}, brewLogWithoutTds));
+    await renderDetail();
+    await waitFor(() => expect(leadElements()).toHaveLength(1));
+
+    expect(heroCol("TDS")).toBeNull();
+    expect(heroCol("SCA")).toBeNull();
+    expect(
+      screen.queryByText(
+        "TDS 측정값이 없어 추출 수율을 계산할 수 없습니다. 비율과 관능 평가로 판단하세요.",
+      ),
+    ).toBeNull();
+  });
 });

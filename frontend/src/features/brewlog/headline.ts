@@ -29,3 +29,22 @@ export function headline(log: HeadlineSource): Headline {
     ? { label: "비율", value: formatRatio(log.brewRatio) }
     : { label: "물 온도", value: formatTemperature(log.actualWaterTempC) };
 }
+
+/**
+ * 기록 상세의 대표 수치 — 수율 → 비율 → 물 온도(docs/specs/2026-10-11-brew-detail-fidelity.md AC-BDETAIL-02).
+ *
+ * <p><b>상세만 수율이 먼저다.</b> 상세는 「얼마나 잘 추출됐나」를 보는 화면이고(목업 W3·B2), 카드는 기록끼리
+ * 나란히 놓아 비교하는 자리라 같은 축(비율)이 낫다. TDS는 없는 게 기본이라(ADR 0004) 비율로 내려간다.
+ */
+export function detailHeadline(
+  log: HeadlineSource & { readonly extractionYieldPercent?: number },
+): Headline {
+  if (log.extractionYieldPercent !== undefined)
+    return {
+      label: "Extraction yield",
+      value: `${log.extractionYieldPercent} %`,
+    };
+  if (log.brewRatio !== undefined)
+    return { label: "Ratio", value: formatRatio(log.brewRatio) };
+  return { label: "물 온도", value: formatTemperature(log.actualWaterTempC) };
+}

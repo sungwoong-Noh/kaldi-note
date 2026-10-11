@@ -195,12 +195,7 @@ plan: docs/archive/plans/2026-09-08-plan-screen-consistency.md
 > **갱신 (2026-09-15).** 대표 수치가 `1:비율`로 통일됐다(`2026-09-15-structure.md`).
 > **(2026-09-25에 다시 원두량으로 바뀌었다 — 위 참조.)**
 
-#### AC-CONSIST-09 · `BrewDetail`의 대표 수치가 정확히 하나이고 `1:15.0`이다
-
-- **Given** `brewRatio: 15`인 브루로그 상세
-- **When** `text-lg`·`font-semibold`·`tabular-nums`를 모두 가진 요소를 센다
-- **Then** 정확히 1개이고, 그 텍스트가 `1:15.0`이며, 그 안의 `dt`는 `sr-only`다
-- **검증** 컴포넌트 테스트 `src/app/brews/[id]/page.test.tsx`
+**AC-CONSIST-09 (대체됨)** · 상세 대표 수치가 비율(`1:15.0`)이던 원래 AC는 수율 → 비율 → 물 온도 순으로 바뀌며 `docs/specs/2026-10-11-brew-detail-fidelity.md`의 AC-BDETAIL-02로 대체됐다.
 
 #### AC-CONSIST-12 · `/brews/{id}`에 `h1`이 정확히 하나다
 
@@ -222,20 +217,9 @@ plan: docs/archive/plans/2026-09-08-plan-screen-consistency.md
 
 ### 경계값
 
-#### AC-CONSIST-10 · `brewRatio`가 없으면 `BrewDetail`의 대표 수치가 물 온도로 승격한다
+**AC-CONSIST-10 (대체됨)** · 비율이 없으면 물 온도로 승격하던 원래 AC는 `docs/specs/2026-10-11-brew-detail-fidelity.md`의 AC-BDETAIL-02(c)가 잇는다.
 
-- **Given** `brewRatio`가 `undefined`이고 `actualWaterTempC: 92`인 브루로그 상세
-- **When** 대표 수치 요소를 읽는다
-- **Then** 정확히 1개이고, 그 텍스트가 `92 °C`다 (표기 갱신 2026-09-27 — `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-06)
-- **검증** 컴포넌트 테스트 `src/app/brews/[id]/page.test.tsx`
-
-#### AC-CONSIST-11 · 대표로 올린 항목은 아래 「실측값」에 없다
-
-- **Given (가)** `brewRatio: 15`인 브루로그 상세
-- **Then (가)** 「실측값」 `<dl>` 안에 `dt` 텍스트 `비율`이 **없고**, `물 온도`는 **있다**
-- **Given (나)** `brewRatio`가 `undefined`이고 `actualWaterTempC: 92`인 브루로그 상세
-- **Then (나)** 「실측값」 `<dl>` 안에 `dt` 텍스트 `물 온도`가 **없다**
-- **검증** 컴포넌트 테스트 `src/app/brews/[id]/page.test.tsx`
+**AC-CONSIST-11 (대체됨)** · 대표 항목을 「실측값」 절에서 빼던 원래 AC는 「실측값」 절이 없어지며 `docs/specs/2026-10-11-brew-detail-fidelity.md`의 AC-BDETAIL-18(레시피를 못 읽을 때만 원장 행)로 대체됐다.
 
 #### AC-CONSIST-13 · 레시피를 못 읽을 때도 `h1`이 정확히 하나다
 

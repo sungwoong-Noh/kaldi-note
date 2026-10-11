@@ -76,12 +76,7 @@ plan: docs/archive/plans/2026-09-03-plan-web-brew-log-steps.md
 - **Then** `푸어 스텝`이라는 제목이 화면에 있고, 목록 항목이 `6`개이며, 첫 항목에 `블룸`과 `50 g`이 보인다 (표기 갱신 2026-09-27 — `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-06)
 - **검증** 화면 테스트 `src/app/brews/[id]/page.test.tsx`
 
-#### AC-WEBLOGSTEP-02 · 스텝 절은 실측값 뒤, 추출 분석 앞에 온다
-
-- **Given** `/brews/42`를 연다. 로그에 `tdsPercent`가 있어 추출 분석 절이 그려진다
-- **When** 세 제목 `실측값`·`푸어 스텝`·`추출 분석`의 문서상 위치를 비교한다
-- **Then** `실측값` → `푸어 스텝` → `추출 분석` 순이다
-- **검증** 화면 테스트 `src/app/brews/[id]/page.test.tsx`
+**AC-WEBLOGSTEP-02 (대체됨)** · 스텝 절이 실측값 뒤·추출 분석 앞에 오던 원래 AC는 실측값 절과 추출 분석 절이 없어지며 `docs/specs/2026-10-11-brew-detail-fidelity.md`의 AC-BDETAIL-01 배치(스텝은 비교표 뒤)로 대체됐다.
 
 #### AC-WEBLOGSTEP-06 · 스텝이 없는 레시피면 그 사실이 보인다
 

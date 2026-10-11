@@ -135,23 +135,28 @@ describe("BrewDetailPage", () => {
 
   it("AC-CONSIST-06 · 라벨이 폼 어휘를 쓴다", async () => {
     await renderDetail();
-    await screen.findByText("실측값");
+    await waitFor(() => expect(leadElements()).toHaveLength(1));
 
-    // 갱신(2026-09-17): 대표 수치의 라벨은 이제 dt가 아니라 아이브로우다.
+    // 원두 이름과 분쇄도 행(내 그라인더)은 따로 도착한다 — 둘 다 그려진 뒤에 본다.
+    await waitFor(() => expect(compareRow("분쇄도")).not.toBeNull());
+    await waitFor(() => expect(ledgerRow("원두")).not.toBeNull());
+    // 갱신(2026-10-11): 비교표 라벨(`data-compare-label`)과 원장 행 라벨로 본다. 상세는 대표 수치가
+    // 수율이면 `비율`을 그리지 않는다 — docs/specs/2026-10-11-brew-detail-fidelity.md AC-BDETAIL-02.
     const labels = [
-      ...document.querySelectorAll("dt"),
+      ...document.querySelectorAll("dt, [data-compare-label]"),
+      ...document.querySelectorAll("[data-kit='ledger-field'] > :first-child"),
       ...document.querySelectorAll("[data-eyebrow]"),
     ].map((el) => el.textContent);
 
-    // 순서가 아니라 어휘를 본다. Task 3에서 `비율`이 대표로 올라가며 자리가 바뀐다.
+    // 순서가 아니라 어휘를 본다.
     expect(labels).toEqual(
       expect.arrayContaining([
         "원두량",
         "물량",
         "물 온도",
         "추출 시간",
-        "비율",
         "분쇄도",
+        "원두",
       ]),
     );
     for (const stale of ["물", "온도", "시간"]) {
@@ -162,9 +167,10 @@ describe("BrewDetailPage", () => {
   it("AC-WEBBREW-40 · AC-GRAMMAR-08 · 실측값이 서버 값 그대로 보인다", async () => {
     await renderDetail();
 
-    expect(await screen.findByText("20 g")).toBeInTheDocument();
-    expect(screen.getByText("300 g")).toBeInTheDocument();
-    expect(screen.getByText("92 °C")).toBeInTheDocument();
+    // 비교표의 레시피·실제 칸에 같은 값이 둘 있을 수 있다 — 서버 값 그대로인지만 본다.
+    expect(await screen.findAllByText("20 g")).not.toHaveLength(0);
+    expect(screen.getAllByText("300 g")).not.toHaveLength(0);
+    expect(screen.getAllByText("92 °C")).not.toHaveLength(0);
   });
 
   it("AC-WEBBREW-41 · TDS가 있으면 추출 분석이 보인다", async () => {
@@ -198,7 +204,7 @@ describe("BrewDetailPage", () => {
 
     await renderDetail();
 
-    expect(await screen.findByText("20 g")).toBeInTheDocument();
+    await waitFor(() => expect(leadElements()).toHaveLength(1));
     expect(screen.queryByText("추출 분석")).not.toBeInTheDocument();
   });
 
@@ -266,7 +272,7 @@ describe("BrewDetailPage — 소유 판정", () => {
     await renderDetail();
 
     // 본문이 그려진 뒤에 부재를 본다 — 로딩 중이면 무엇이든 없다
-    await screen.findByText("실측값");
+    await waitFor(() => expect(leadElements()).toHaveLength(1));
     expect(
       screen.queryByRole("link", { name: "수정" }),
     ).not.toBeInTheDocument();
@@ -441,8 +447,8 @@ describe("BrewDetailPage — 푸어 스텝", () => {
 
     await renderDetail();
 
-    // 로그가 도착한 시점의 화면이다 — 실측값은 있는데 스텝 절은 아직 없어야 한다
-    expect(await screen.findByText("실측값")).toBeInTheDocument();
+    // 로그가 도착한 시점의 화면이다 — 대표 수치는 있는데 스텝 절은 아직 없어야 한다
+    await waitFor(() => expect(leadElements()).toHaveLength(1));
     expect(screen.queryByText("푸어 스텝")).not.toBeInTheDocument();
   });
 
@@ -467,7 +473,7 @@ describe("BrewDetailPage — 푸어 스텝", () => {
 describe("다시 내리기 — docs/specs/2026-09-17-small-features.md", () => {
   it("AC-SMALL-10 · 같은 레시피로 새 기록을 여는 링크가 있다", async () => {
     await renderDetail();
-    await screen.findByText("실측값");
+    await waitFor(() => expect(leadElements()).toHaveLength(1));
 
     const link = screen.getByRole("link", { name: "다시 내리기" });
 
@@ -773,5 +779,63 @@ describe("BrewDetailPage — 남의 기록 동작", () => {
     ).toHaveLength(1);
     expect(screen.queryByRole("link", { name: "수정" })).toBeNull();
     expect(screen.queryByRole("button", { name: "삭제" })).toBeNull();
+  });
+});
+
+describe("BrewDetailPage — 실패 경로", () => {
+  it.each([
+    [403, "FORBIDDEN", "비공개 레시피"],
+    [404, "NOT_FOUND", "삭제된 레시피"],
+  ])(
+    "AC-BDETAIL-18 · 레시피가 %s면 실측값을 원장 행으로 보인다",
+    async (status, code, fallback) => {
+      server.use(
+        http.get(`${BASE}/recipes/1`, () =>
+          HttpResponse.json({ code, message: "읽을 수 없습니다." }, { status }),
+        ),
+      );
+      await renderDetail();
+
+      const h1 = await screen.findByRole("heading", {
+        level: 1,
+        name: fallback,
+      });
+      expect(within(h1).queryByRole("link")).toBeNull();
+      expect(document.querySelector("[data-compare]")).toBeNull();
+      expect(screen.queryByText("푸어 스텝")).toBeNull();
+      for (const [label, value] of [
+        ["원두량", "20 g"],
+        ["물량", "300 g"],
+        ["물 온도", "92 °C"],
+        ["추출 시간", "3:30"],
+      ]) {
+        expect(ledgerRow(label)).toHaveTextContent(value);
+      }
+      expect(
+        screen.getByRole("link", { name: "다시 내리기" }),
+      ).toBeInTheDocument();
+    },
+  );
+
+  it("AC-BDETAIL-19 · 기록이 없으면 오류 화면이다", async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    server.use(
+      http.get(DETAIL_URL, () => {
+        calls += 1;
+        return HttpResponse.json(
+          { code: "NOT_FOUND", message: "기록을 찾을 수 없습니다: 42" },
+          { status: 404 },
+        );
+      }),
+    );
+    await renderDetail();
+
+    expect(
+      await screen.findByText("기록을 찾을 수 없습니다: 42"),
+    ).toBeInTheDocument();
+    const before = calls;
+    await user.click(screen.getByRole("button", { name: "다시 시도" }));
+    await waitFor(() => expect(calls).toBe(before + 1));
   });
 });

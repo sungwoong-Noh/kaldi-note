@@ -230,7 +230,6 @@ supersedes:
 - AC-CONSIST-09(docs/specs/2026-09-08-screen-consistency.md) → AC-BDETAIL-02 — 상세 대표 수치가 수율 우선
 - AC-CONSIST-10 → AC-BDETAIL-02(c) — 물 온도 승격은 그대로, 위치만 새 히어로
 - AC-CONSIST-11 → AC-BDETAIL-18 — 「실측값」 절이 없어지고, 레시피를 못 읽을 때만 원장 행
-- AC-WEBBREW-40(docs/specs/2026-08-31-web-brew-log.md) → AC-BDETAIL-05·18
 - AC-WEBLOGSTEP-02(docs/specs/2026-09-03-web-brew-log-steps.md) → AC-BDETAIL-01 배치 — 스텝은 비교표 뒤
 - AC-SMALL-05(docs/specs/2026-09-17-small-features.md)의 **웹** 부분 → AC-BDETAIL-05 — 웹 차이 열은 `같습니다.`. 모바일은 AC-BDETAIL-07이 잇는다
 
@@ -240,6 +239,10 @@ supersedes:
 
 - AC-STRUCT-18(docs/specs/2026-09-15-structure.md) → AC-BDETAIL-02 — 구현 중 발견(결정 표 #3의 결과)
 - AC-GRAMMAR-02·09(docs/specs/2026-09-27-web-shell-grammar.md)의 `/brews/2` → AC-BDETAIL-01·02·05 — 구현 중 발견(결정 표 #2의 결과)
+
+- AC-CONSIST-06·07의 `BrewDetail`·`/brews/2` 부분 → AC-BDETAIL-02·05·08·18 — 구현 중 발견(실측값 절이 없어진 결과)
+
+AC-WEBBREW-40(실측값이 서버 값 그대로)은 비교표가 그대로 만족해 **대체하지 않는다**(초안에서 뺐다).
 
 나머지 CONSIST·STRUCT·WEBNAME·WEBLOGSTEP·WEBLOGEDIT·SMALL AC는 그대로 유효하다.
 
@@ -284,7 +287,7 @@ supersedes:
 
   하단 전폭 `다시 내리기`(sticky, AC-BREWFORM-12와 같은 방식) + `삭제` 텍스트 버튼. 위 `수정`은 상단 바 자리.
 
-- [ ] **Task 9: 실패 경로** — Covers: AC-BDETAIL-18, 19
+- [x] **Task 9: 실패 경로** — Covers: AC-BDETAIL-18, 19
 
   레시피를 못 읽으면 비교표 대신 실측값 원장 행 4개.
 

@@ -14,15 +14,9 @@ import { useBrewers, useUserGrinders } from "@/features/gear/queries";
 import type { UserGrinder } from "@/features/gear/schema";
 import { useIsWide } from "@/lib/useIsWide";
 import { useMe } from "@/features/user/queries";
-import {
-  formatDuration,
-  formatGrams,
-  formatRatio,
-  formatTemperature,
-} from "@/lib/format";
+import { formatDuration, formatGrams, formatTemperature } from "@/lib/format";
 import { formatKstStamp } from "@/lib/kstDate";
 import { deleteBrewLog, fetchBrewLog } from "../api";
-import { detailHeadline } from "../headline";
 import type { BrewLog } from "../schema";
 import {
   useBeanLabel,
@@ -99,7 +93,6 @@ export function BrewDetail({ id }: { id: number }) {
     .filter(Boolean)
     .join(" · ");
   const isMine = me.data !== undefined && log.userId === me.data.id;
-  const lead = detailHeadline(log);
 
   const title = (
     <div className="flex flex-col">
@@ -209,27 +202,28 @@ export function BrewDetail({ id }: { id: number }) {
     />
   );
 
-  const measured = (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-card-title font-semibold">실측값</h2>
-      <dl className="flex flex-wrap gap-x-3 gap-y-1 text-body">
-        {measures(log)
-          .filter((entry) => entry.label !== lead.label)
-          // 비교표가 그린 항목은 여기서 뺀다 — 같은 값을 두 번 보여주지 않는다.
-          // 비교표를 못 그리는 경우(레시피를 못 읽음)에는 전부 남는다(AC-STRUCT-13).
-          .filter(
-            (entry) =>
-              recipe.targets === undefined || !COMPARED_LABELS.has(entry.label),
-          )
-          .map((entry) => (
-            <Measure
-              key={entry.label}
-              label={entry.label}
-              value={entry.value}
-            />
-          ))}
-      </dl>
-    </section>
+  // 레시피를 못 읽었으면(403·404) 비교표 대신 실측값을 원장 행으로 보인다(AC-BDETAIL-18·AC-STRUCT-13).
+  // 조회 중(`label`이 빈 문자열)에는 그리지 않는다 — 곧 비교표로 바뀌면 깜빡인다.
+  const measured = recipe.targets === undefined && recipe.label !== "" && (
+    <div className="flex flex-col">
+      {[
+        { label: "원두량", value: formatGrams(log.actualDoseG) },
+        { label: "물량", value: formatGrams(log.actualWaterG) },
+        { label: "물 온도", value: formatTemperature(log.actualWaterTempC) },
+        log.actualTotalTimeSeconds !== undefined && {
+          label: "추출 시간",
+          value: formatDuration(log.actualTotalTimeSeconds),
+        },
+      ]
+        .filter((row): row is { label: string; value: string } => Boolean(row))
+        .map((row) => (
+          <LedgerField
+            key={row.label}
+            label={row.label}
+            value={<span className="font-mono">{row.value}</span>}
+          />
+        ))}
+    </div>
   );
 
   /*
@@ -360,56 +354,6 @@ export function BrewDetail({ id }: { id: number }) {
       )}
       {dialog}
     </Screen>
-  );
-}
-
-/**
- * 실측값 항목. **값이 없는 것은 자리째 뺀다** — 빈칸이 줄지어 있으면 측정하지 않은 것이
- * 결함처럼 보인다(「TDS 없이도 앱이 온전히 동작해야 한다」).
- *
- * <p><b>`원두량`이다.</b> 위에 원두 이름 줄이 생겨 `원두`로 두면 같은 라벨이 둘이 된다.
- * 작성·편집 폼의 입력칸 이름도 `원두량`이라 이쪽이 일관된다.
- *
- * <p><b>대표로 올라간 항목은 부르는 쪽에서 뺀다.</b> 「복사」가 아니라 「이동」이다.
- */
-/** 비교표가 담당하는 항목. 실측값 절에서 중복으로 그리지 않는다. */
-const COMPARED_LABELS = new Set(["원두량", "물량", "물 온도", "추출 시간"]);
-
-function measures(log: BrewLog): { label: string; value: string }[] {
-  const entries = [
-    { label: "원두량", value: formatGrams(log.actualDoseG) },
-    { label: "물량", value: formatGrams(log.actualWaterG) },
-    { label: "물 온도", value: formatTemperature(log.actualWaterTempC) },
-    {
-      label: "추출 시간",
-      value:
-        log.actualTotalTimeSeconds !== undefined &&
-        formatDuration(log.actualTotalTimeSeconds),
-    },
-    {
-      label: "비율",
-      value: log.brewRatio !== undefined && formatRatio(log.brewRatio),
-    },
-    {
-      label: "분쇄도",
-      value:
-        log.actualGrindSettingValue !== undefined &&
-        String(log.actualGrindSettingValue),
-    },
-  ];
-
-  return entries.filter(
-    (entry): entry is { label: string; value: string } =>
-      typeof entry.value === "string",
-  );
-}
-
-function Measure({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-1">
-      <dt className="text-body-sm text-ink-3">{label}</dt>
-      <dd>{value}</dd>
-    </div>
   );
 }
 

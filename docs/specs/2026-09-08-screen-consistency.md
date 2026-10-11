@@ -176,6 +176,7 @@ plan: docs/archive/plans/2026-09-08-plan-screen-consistency.md
   `추출 수율` · `내린 날` · `원두`. `원두`·`물`·`온도`·`시간`·`브루 비율`은 `dt`로 존재하지 않는다
 - **검증** 컴포넌트 테스트 `RecipeCard.test.tsx` · `BrewLogCard.test.tsx` ·
   `src/app/recipes/[id]/page.test.tsx` · `src/app/brews/[id]/page.test.tsx`
+- **(일부 대체됨)** `BrewDetail`은 대표 수치가 수율이면 `비율`을 그리지 않고, 라벨은 비교표·원장 행에 있다 — `docs/specs/2026-10-11-brew-detail-fidelity.md` AC-BDETAIL-02·05·08. 다른 화면과 나머지 어휘는 그대로다.
 
 #### AC-CONSIST-07 · 상세 메타줄 라벨의 렌더 크기가 14px, 색이 `--color-muted`다
 
@@ -183,6 +184,7 @@ plan: docs/archive/plans/2026-09-08-plan-screen-consistency.md
 - **When** 메타줄의 `dt` 요소에서 `getComputedStyle`의 `fontSize`와 `color`를 읽는다
 - **Then** `fontSize`가 `14px`이고 `color`가 `--color-muted`의 계산값과 같다
 - **검증** e2e `e2e/consistency.spec.ts`
+- **(일부 대체됨)** `/brews/2`는 실측값 메타줄이 없어지고 원장 행 라벨(목업 mono 10.5px)이 됐다 — `docs/specs/2026-10-11-brew-detail-fidelity.md` AC-BDETAIL-08·18. `/recipes/12`는 그대로다.
 
 > **갱신 (2026-09-15).** `docs/specs/2026-09-15-readability.md`가 글자 5단계를 재배치했다. 라벨 12px이 부엌에서 작았다.
 > **색은 토큰을 가리키므로 이 AC를 바꾸지 않는다** — `--color-muted` 값이 `#545454`로 바뀌어도

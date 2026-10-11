@@ -69,6 +69,14 @@ public class BrewLogService {
 
   private static final Instant NO_DATE_FILTER_END = Instant.parse("9999-12-31T23:59:59Z");
 
+  private static Instant max(Instant a, Instant b) {
+    return a.isAfter(b) ? a : b;
+  }
+
+  private static Instant min(Instant a, Instant b) {
+    return a.isBefore(b) ? a : b;
+  }
+
   private final BrewLogRepository brewLogRepository;
   private final RecipeRepository recipeRepository;
   private final RecipeService recipeService;
@@ -151,13 +159,24 @@ public class BrewLogService {
       Long userId,
       Long beanBatchId,
       LocalDate date,
+      CalendarMonth month,
+      Integer minRating,
       PageParams params) {
-    Instant startInclusive =
-        (date == null) ? NO_DATE_FILTER_START : date.atStartOfDay(CalendarMonth.KST).toInstant();
-    Instant endExclusive =
-        (date == null)
-            ? NO_DATE_FILTER_END
-            : date.plusDays(1).atStartOfDay(CalendarMonth.KST).toInstant();
+    if (minRating != null && (minRating < 1 || minRating > 5)) {
+      throw new BusinessException(
+          ErrorCode.INVALID_REQUEST, "minRating은 1 이상 5 이하여야 합니다: " + minRating);
+    }
+    // date와 month가 둘 다 있으면 두 구간의 교집합이다 — 겹치지 않으면 start ≥ end가 되어 빈 목록이 나온다.
+    Instant startInclusive = NO_DATE_FILTER_START;
+    Instant endExclusive = NO_DATE_FILTER_END;
+    if (date != null) {
+      startInclusive = date.atStartOfDay(CalendarMonth.KST).toInstant();
+      endExclusive = date.plusDays(1).atStartOfDay(CalendarMonth.KST).toInstant();
+    }
+    if (month != null) {
+      startInclusive = max(startInclusive, month.startInclusive());
+      endExclusive = min(endExclusive, month.endExclusive());
+    }
     return PageResponse.from(
         brewLogRepository.findVisible(
             viewerId,
@@ -166,6 +185,7 @@ public class BrewLogService {
             beanBatchId,
             startInclusive,
             endExclusive,
+            minRating == null ? null : BigDecimal.valueOf(minRating),
             params.toPageable(LIST_SORT)),
         log -> BrewLogSummaryResponse.from(log, analyze(log)));
   }

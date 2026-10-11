@@ -1,3 +1,4 @@
+import { toKstDate } from "./kstDate";
 /**
  * 표시 형식을 한곳에 모은다.
  *
@@ -41,4 +42,21 @@ export function formatTemperature(celsius: number): string {
 
 export function formatTemperatureCompact(celsius: number): string {
   return `${trimTrailingZero(celsius)}°C`;
+}
+
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
+
+/**
+ * 원장 날짜 — `08.31` + `월`. 올해(KST)가 아니면 `2025.09.19`처럼 연도를 붙인다
+ * (docs/specs/2026-10-10-my-cups-ledger.md AC-MYCUPS-13). 요일은 웹 표에서 흐리게 그리려고 따로 준다.
+ */
+export function formatLedgerDate(
+  brewedAt: string,
+  kstToday: string,
+): { date: string; weekday: string } {
+  const kst = toKstDate(brewedAt);
+  const [year, month, day] = kst.split("-");
+  const weekday = WEEKDAYS[new Date(`${kst}T00:00:00Z`).getUTCDay()];
+  const sameYear = year === kstToday.slice(0, 4);
+  return { date: sameYear ? `${month}.${day}` : `${year}.${month}.${day}`, weekday };
 }

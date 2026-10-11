@@ -317,7 +317,7 @@ test.describe("유틸 없는 수치 자리", () => {
   // 없는 회차가 생겼다(stubs.ts의 installSwStubs 주석).
   const CASES: [string, string | null, string][] = [
     ["/brews", "table", "20 g"],
-    ["/brews", "table", "92 °C"],
+    // `/brews`의 온도 셀은 목업 BW1대로 mono 400이다 — ADR 0010으로 이 AC에서 뺐다(AC-MYCUPS-09).
     ["/brews/2", "[data-compare]", "30 g"],
     ["/brews/2", "[data-compare]", "20 g"],
     ["/recipes/12", null, "60 g"],

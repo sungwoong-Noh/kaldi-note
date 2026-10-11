@@ -1,6 +1,7 @@
 package com.kaldinote.brewlog.presentation;
 
 import com.kaldinote.brewlog.application.BrewLogService;
+import com.kaldinote.brewlog.domain.CalendarMonth;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCalendarResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogPatchRequest;
@@ -66,9 +67,22 @@ public class BrewLogController {
       @Parameter(description = "그 원두 봉지로 내린 기록만.") @RequestParam(required = false) Long beanBatchId,
       @Parameter(description = "YYYY-MM-DD. KST 기준 그 하루의 기록만.") @RequestParam(required = false)
           String date,
+      @Parameter(description = "YYYY-MM. KST 기준 그 달의 기록만. date와 함께 쓰면 교집합이다.")
+          @RequestParam(required = false)
+          String month,
+      @Parameter(description = "1 이상 5 이하(양끝 포함). 별점이 그 값 이상인 기록만 — 별점 없는 기록은 빠진다.")
+          @RequestParam(required = false)
+          Integer minRating,
       AuthenticatedUser user) {
     return brewLogService.list(
-        user.id(), recipeId, userId, beanBatchId, parseDate(date), PageParams.of(page, size));
+        user.id(),
+        recipeId,
+        userId,
+        beanBatchId,
+        parseDate(date),
+        month == null ? null : CalendarMonth.parse(month),
+        minRating,
+        PageParams.of(page, size));
   }
 
   /** {@code @DateTimeFormat}을 쓰지 않는다 — 그쪽은 타입 변환 실패가 다른 code로 나간다. */

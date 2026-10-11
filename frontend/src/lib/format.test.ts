@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatLedgerDate,
   formatDuration,
   formatGrams,
   formatGramsCompact,
@@ -64,5 +65,25 @@ describe("바뀌지 않는 표기", () => {
   it("AC-GRAMMAR-06 · 비율과 시간은 그대로다", () => {
     expect(formatRatio(15.6)).toBe("1:15.6");
     expect(formatDuration(210)).toBe("3:30");
+  });
+});
+
+describe("formatLedgerDate", () => {
+  it("AC-MYCUPS-13 · 올해 잔은 MM.DD 요일, 다른 해 잔은 YYYY.MM.DD 요일이다", () => {
+    expect(formatLedgerDate("2026-08-31T09:00:00Z", "2026-10-10")).toEqual({
+      date: "08.31",
+      weekday: "월",
+    });
+    expect(formatLedgerDate("2025-09-19T00:00:00Z", "2026-10-10")).toEqual({
+      date: "2025.09.19",
+      weekday: "금",
+    });
+  });
+
+  it("AC-MYCUPS-13 · 날짜는 KST로 센다 — UTC 12-31 15:00은 다음 해 01.01이다", () => {
+    expect(formatLedgerDate("2025-12-31T15:00:00Z", "2026-01-01")).toEqual({
+      date: "01.01",
+      weekday: "목",
+    });
   });
 });

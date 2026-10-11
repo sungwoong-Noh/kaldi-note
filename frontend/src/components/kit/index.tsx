@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import type { RoastLevel } from "@/features/catalog/schema";
 import { RoastDot } from "@/components/ui";
@@ -139,7 +140,8 @@ export function LedgerRow({
 }) {
   return (
     <div className="flex items-start gap-[13px] border-t border-divider-strong py-[15px]">
-      <span className="mt-[5px] flex shrink-0">
+      {/* 점이 없어도 10px 자리를 남긴다 — 제목의 왼쪽 선이 행마다 같아야 한다. */}
+      <span data-ledger-dot className="mt-[5px] flex size-[10px] shrink-0">
         <RoastDot roastLevel={roastLevel} size={10} />
       </span>
       <div className="min-w-0 flex-1">
@@ -149,19 +151,52 @@ export function LedgerRow({
         </div>
         <div className="mt-[5px] flex justify-between gap-[10px] font-mono text-[11.5px]">
           <span className="text-ink-3">{meta}</span>
-          {accent !== undefined && <span className="shrink-0 text-accent">{accent}</span>}
+          {accent !== undefined && (
+            <span data-ledger-accent className="shrink-0 text-accent">
+              {accent}
+            </span>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-/** 통계 타일. BM1 — mono 라벨 + 22px 값. */
-export function StatTile({ label, value }: { label: string; value: string }) {
+/**
+ * 통계 타일. BM1(모바일) — 값 Mono 22px · 패딩 14/16. BW1(웹, `web`) — 값 24px · 패딩 18/20.
+ * `prose`면 값이 Sans 15px다(즐겨 쓴 레시피처럼 글인 값).
+ */
+export function StatTile({
+  label,
+  value,
+  web = false,
+  prose = false,
+}: {
+  label: string;
+  value: string;
+  web?: boolean;
+  prose?: boolean;
+}) {
   return (
-    <div className="flex-1 rounded-[10px] border border-divider bg-surface px-[16px] py-[14px]">
-      <div className="font-mono text-[9.5px] tracking-[0.1em] text-ink-3 uppercase">{label}</div>
-      <div className="mt-[5px] font-mono text-[22px] font-medium text-ink">{value}</div>
+    <div
+      className={cx(
+        "flex-1 rounded-[10px] border border-divider bg-surface",
+        web ? "px-[20px] py-[18px]" : "px-[16px] py-[14px]",
+      )}
+    >
+      <div data-stat-label className="font-mono text-[9.5px] tracking-[0.1em] text-ink-3 uppercase">
+        {label}
+      </div>
+      <div
+        className={cx(
+          "text-ink",
+          prose
+            ? "mt-[8px] text-[15px] font-medium"
+            : cx("font-mono font-medium", web ? "mt-[6px] text-[24px]" : "mt-[5px] text-[22px]"),
+        )}
+      >
+        {value}
+      </div>
     </div>
   );
 }
@@ -230,14 +265,27 @@ export function RecipeCardKit({
   );
 }
 
-/** 하단 전폭 CTA. 높이 52(15px 패딩 + 22 행). */
-export function BottomCta({ children, onClick }: { children: string; onClick?: () => void }) {
+/** 하단 전폭 CTA. 높이 52(15px 패딩 + 22 행). `href`가 있으면 링크로 그린다. */
+export function BottomCta({
+  children,
+  onClick,
+  href,
+}: {
+  children: string;
+  onClick?: () => void;
+  href?: string;
+}) {
+  const className =
+    "block w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-medium text-on-ink";
+  if (href !== undefined) {
+    return (
+      <Link href={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-medium text-on-ink"
-    >
+    <button type="button" onClick={onClick} className={className}>
       {children}
     </button>
   );

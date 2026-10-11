@@ -1,21 +1,30 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { HttpResponse, delay, http } from "msw";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
   brewLogPage,
   brewLogWithTds,
   grindedRecipe,
+  brewLogWithoutTds,
+  brewers,
+  fritzRoaster,
   kasuyaRecipe,
+  me,
+  yirgacheffeBatch,
+  yirgacheffeProduct,
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
 import BrewsPage from "./page";
 
 const replace = vi.fn();
+let currentSearch = "";
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace, refresh: vi.fn() }),
   usePathname: () => "/brews",
+  useSearchParams: () => new URLSearchParams(currentSearch),
 }));
 
 const BASE = "http://localhost:8080/api/v1";
@@ -36,10 +45,15 @@ function pageOf(
 }
 
 beforeEach(() => {
+  // 「이번 달」이 2026-10이 되도록 오늘을 고정한다(KST 2026-10-10 10:00).
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  vi.setSystemTime(new Date("2026-10-10T01:00:00Z"));
   replace.mockClear();
+  currentSearch = "";
   clearSession();
   setAccessToken("a.b.c");
   server.use(
+    http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
     http.get(`${BASE}/recipes/12`, () =>
       HttpResponse.json({ ...grindedRecipe, id: 12, title: "Kasuya 4:6" }),
     ),
@@ -49,6 +63,92 @@ beforeEach(() => {
       HttpResponse.json({ monthCount: 0 }),
     ),
   );
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+/** 목록 요청의 쿼리를 잡는다. 마지막 요청이 남는다. */
+function captureListQuery(): { params: () => URLSearchParams } {
+  let query = "";
+  server.use(
+    http.get(LIST_URL, ({ request }) => {
+      query = new URL(request.url).search;
+      return HttpResponse.json(pageOf([brewLogWithTds]));
+    }),
+  );
+  return { params: () => new URLSearchParams(query) };
+}
+
+describe("내 잔 — 범위와 필터 (docs/specs/2026-10-10-my-cups-ledger.md)", () => {
+  it("AC-MYCUPS-01 · 목록은 본인 잔만 부른다", async () => {
+    const list = captureListQuery();
+
+    renderWithQuery(<BrewsPage />);
+
+    await waitFor(() => expect(list.params().get("userId")).toBe("11"));
+  });
+
+  it("AC-MYCUPS-04 · 「이번 달」을 누르면 ?filter=month로 바뀐다", async () => {
+    captureListQuery();
+    renderWithQuery(<BrewsPage />);
+
+    await userEvent.click(await screen.findByRole("button", { name: "이번 달" }));
+
+    expect(replace).toHaveBeenCalledWith("/brews?filter=month");
+  });
+
+  it("AC-MYCUPS-04 · ?filter=month면 month=2026-10과 userId를 함께 보낸다", async () => {
+    currentSearch = "filter=month";
+    const list = captureListQuery();
+
+    renderWithQuery(<BrewsPage />);
+
+    await waitFor(() => expect(list.params().get("month")).toBe("2026-10"));
+    expect(list.params().get("userId")).toBe("11");
+    expect(list.params().get("minRating")).toBeNull();
+    expect(
+      await screen.findByRole("button", { name: "이번 달" }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("AC-MYCUPS-05 · 「★ 4 이상」은 ?filter=rated, 「전체」는 쿼리를 지운다", async () => {
+    currentSearch = "filter=month";
+    captureListQuery();
+    renderWithQuery(<BrewsPage />);
+
+    await userEvent.click(await screen.findByRole("button", { name: "★ 4 이상" }));
+    expect(replace).toHaveBeenLastCalledWith("/brews?filter=rated");
+
+    await userEvent.click(screen.getByRole("button", { name: "전체" }));
+    expect(replace).toHaveBeenLastCalledWith("/brews");
+  });
+
+  it("AC-MYCUPS-05 · ?filter=rated면 minRating=4만 보낸다", async () => {
+    currentSearch = "filter=rated";
+    const list = captureListQuery();
+
+    renderWithQuery(<BrewsPage />);
+
+    await waitFor(() => expect(list.params().get("minRating")).toBe("4"));
+    expect(list.params().get("month")).toBeNull();
+  });
+
+  it("AC-MYCUPS-21 · 모르는 filter 값은 전체로 본다", async () => {
+    currentSearch = "filter=xyz";
+    const list = captureListQuery();
+
+    renderWithQuery(<BrewsPage />);
+
+    await waitFor(() => expect(list.params().get("userId")).toBe("11"));
+    expect(screen.getByRole("button", { name: "전체" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(list.params().get("month")).toBeNull();
+    expect(list.params().get("minRating")).toBeNull();
+  });
 });
 
 describe("BrewsPage", () => {
@@ -109,7 +209,9 @@ describe("BrewsPage", () => {
     renderWithQuery(<BrewsPage />);
 
     expect(await screen.findByText("아직 기록이 없습니다")).toBeInTheDocument();
-    expect(screen.getByText("0잔")).toBeInTheDocument();
+    // 웹 머리의 개수(`0잔`, AC-MYCUPS-07)와 글자가 같다 — 통계 타일 안에서 찾는다.
+    const monthTile = screen.getByText("이번 달", { selector: "[data-stat-label]" }).parentElement!;
+    expect(within(monthTile).getByText("0잔")).toBeInTheDocument();
     expect(screen.getAllByText("—")).toHaveLength(3);
     expect(screen.getByRole("link", { name: "기록하기" })).toHaveAttribute(
       "href",
@@ -117,7 +219,7 @@ describe("BrewsPage", () => {
     );
   });
 
-  it("AC-WEBBREW-35 · 항목에 날짜·레시피 제목·별점이 있다", async () => {
+  it("AC-WEBBREW-35 · AC-MYCUPS-13 · 항목에 날짜·레시피 제목·별점이 있다", async () => {
     server.use(
       http.get(LIST_URL, () =>
         HttpResponse.json(
@@ -136,7 +238,7 @@ describe("BrewsPage", () => {
     renderWithQuery(<BrewsPage />);
 
     expect(await screen.findByText("Kasuya 4:6")).toBeInTheDocument();
-    expect(screen.getByText("2026-08-31")).toBeInTheDocument();
+    expect(screen.getByText("08.31")).toBeInTheDocument();
     expect(screen.getByText("4.5")).toBeInTheDocument();
   });
 
@@ -190,7 +292,7 @@ describe("BrewsPage", () => {
       await screen.findByRole("columnheader", { name: "날짜" }),
     ).toBeInTheDocument();
     for (const header of [
-      "레시피/원두",
+      "레시피 / 원두",
       "원두량",
       "온도",
       "시간",
@@ -224,7 +326,7 @@ describe("BrewsPage", () => {
     expect(screen.queryByText(/^\d+:\d{2}$/)).not.toBeInTheDocument();
   });
 
-  it("AC-RECIPESBREWS-76 · 통계 카드에 이번 달·평균 별점·최빈 원두량·즐겨 쓴 레시피가 있다", async () => {
+  it("AC-RECIPESBREWS-76 · AC-MYCUPS-10 · 통계 카드에 이번 달·평균 별점·가장 많이 쓴 원두량·즐겨 쓴 레시피가 있다", async () => {
     server.use(
       http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
       http.get(`${BASE}/brew-logs/stats`, () =>
@@ -244,6 +346,86 @@ describe("BrewsPage", () => {
     expect(screen.getByText("★ 3.7")).toBeInTheDocument();
     expect(screen.getByText("16 g")).toBeInTheDocument();
     expect(screen.getByText("케냐 94도 3푸어")).toBeInTheDocument();
+    for (const label of ["이번 달", "평균 별점", "가장 많이 쓴 원두량", "즐겨 쓴 레시피"]) {
+      expect(screen.getByText(label, { selector: "[data-stat-label]" })).toBeInTheDocument();
+    }
+  });
+});
+
+describe("내 잔 — 헤더·통계·빈 결과", () => {
+  const STATS = {
+    monthCount: 9,
+    averageRating: 3.7,
+    favoriteDoseG: 16.0,
+    favoriteRecipeId: 12,
+    favoriteRecipeTitle: "케냐 94도 3푸어",
+  };
+  const initialWidth = window.innerWidth;
+
+  afterEach(() => {
+    window.innerWidth = initialWidth;
+  });
+
+  it("AC-MYCUPS-07 · 웹 헤더는 연도 eyebrow와 알약·개수다", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(pageOf([brewLogWithTds, { ...brewLogWithTds, id: 3 }])),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("My cups · 2026")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "내 잔" })).toBeInTheDocument();
+    expect(await screen.findByText("2잔")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "레시피" })).toBeNull();
+  });
+
+  it("AC-MYCUPS-06 · 모바일 헤더는 개수 eyebrow와 아바타다", async () => {
+    window.innerWidth = 390;
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(pageOf([brewLogWithTds, { ...brewLogWithTds, id: 3 }])),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("My cups · 2")).toBeInTheDocument();
+    expect(screen.queryByText("2잔")).toBeNull();
+    expect(screen.queryByRole("link", { name: "레시피" })).toBeNull();
+  });
+
+  it("AC-MYCUPS-10 · 모바일 통계는 2칸이다", async () => {
+    window.innerWidth = 390;
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+      http.get(`${BASE}/brew-logs/stats`, () => HttpResponse.json(STATS)),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("9잔")).toBeInTheDocument();
+    expect(screen.getByText("★ 3.7")).toBeInTheDocument();
+    expect(screen.queryByText("가장 많이 쓴 원두량")).toBeNull();
+    expect(screen.queryByText("즐겨 쓴 레시피")).toBeNull();
+  });
+
+  it("AC-MYCUPS-18 · 필터 결과 0건이면 안내와 전체 보기가 뜨고 통계는 그대로다", async () => {
+    currentSearch = "filter=rated";
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([]))),
+      http.get(`${BASE}/brew-logs/stats`, () => HttpResponse.json(STATS)),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("조건에 맞는 잔이 없습니다")).toBeInTheDocument();
+    expect(screen.getByText("9잔")).toBeInTheDocument();
+    expect(screen.queryByText("아직 기록이 없습니다")).toBeNull();
+
+    await userEvent.click(screen.getByRole("button", { name: "전체 보기" }));
+    expect(replace).toHaveBeenLastCalledWith("/brews");
   });
 });
 
@@ -379,5 +561,146 @@ describe("BrewsPage — 로그인·에러", () => {
       await screen.findByRole("status", { name: "불러오는 중" }),
     ).toBeInTheDocument();
     expect(screen.queryByText("Kasuya 4:6")).not.toBeInTheDocument();
+  });
+});
+
+describe("내 잔 — 모바일 원장 행", () => {
+  const initialWidth = window.innerWidth;
+
+  beforeEach(() => {
+    window.innerWidth = 390;
+  });
+
+  afterEach(() => {
+    window.innerWidth = initialWidth;
+  });
+
+  it("AC-MYCUPS-08 · 1줄은 레시피명·원두량, 2줄은 날짜·온도·시간 / 수율·별점이다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("Kasuya 4:6")).toBeInTheDocument();
+    expect(screen.getByText("20 g")).toBeInTheDocument();
+    expect(screen.getByText("08.31 월 · 92°C · 3:30")).toBeInTheDocument();
+    expect(screen.getByText("17.6 % · ★ 4")).toBeInTheDocument();
+  });
+
+  it("AC-MYCUPS-14 · 없는 값은 그 조각만 빠진다", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(
+          pageOf([
+            brewLogWithoutTds,
+            { ...brewLogWithoutTds, id: 4, rating: undefined },
+          ]),
+        ),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findAllByText("08.30 일 · 92°C")).toHaveLength(2);
+    expect(screen.getByText("★ 3")).toBeInTheDocument();
+    // 별점도 없는 행은 오른쪽 자리가 비고 `·`가 남지 않는다.
+    expect(screen.queryByText(/^\s*·|·\s*$/)).toBeNull();
+    expect(document.querySelectorAll("[data-ledger-accent]")).toHaveLength(1);
+  });
+
+  it("AC-MYCUPS-11 · 모바일은 목록 아래 전폭 「기록하기」가 /recipes로 간다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByRole("link", { name: "기록하기" })).toHaveAttribute(
+      "href",
+      "/recipes",
+    );
+  });
+});
+
+describe("내 잔 — 웹 하단", () => {
+  it("AC-MYCUPS-11 · 웹 본문에는 「기록하기」가 없다", async () => {
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("Kasuya 4:6")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "기록하기" })).toBeNull();
+  });
+});
+
+describe("내 잔 — 웹 표 보조줄", () => {
+  beforeEach(() => {
+    server.use(
+      http.get(`${BASE}/gear/brewers`, () => HttpResponse.json(brewers)),
+      // grindedRecipe에는 brewerId가 없다 — 보조줄의 드리퍼를 보려고 2(Hario V60 02)를 준다.
+      http.get(`${BASE}/recipes/12`, () =>
+        HttpResponse.json({ ...grindedRecipe, id: 12, title: "Kasuya 4:6", brewerId: 2 }),
+      ),
+      http.get(`${BASE}/bean-batches/3`, () => HttpResponse.json(yirgacheffeBatch)),
+      http.get(`${BASE}/bean-products/:id`, () => HttpResponse.json(yirgacheffeProduct)),
+      http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
+      // 드리퍼도 원두도 없는 경우를 만들려고 brewerId 없는 레시피를 둔다.
+      http.get(`${BASE}/recipes/17`, () =>
+        HttpResponse.json({ ...grindedRecipe, id: 17, title: "드리퍼 없음", brewerId: undefined }),
+      ),
+    );
+  });
+
+  it("AC-MYCUPS-15 · 보조줄은 원두 · 드리퍼, 원두가 없으면 드리퍼만, 둘 다 없으면 없다", async () => {
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(
+          pageOf([
+            { ...brewLogWithTds, id: 2 },
+            { ...brewLogWithTds, id: 5, beanBatchId: undefined },
+            { ...brewLogWithTds, id: 6, beanBatchId: undefined, recipeId: 17 },
+          ]),
+        ),
+      ),
+    );
+
+    renderWithQuery(<BrewsPage />);
+
+    expect(await screen.findByText("프릿츠 예가체프 · Hario V60 02")).toBeInTheDocument();
+    expect(screen.getByText("Hario V60 02")).toBeInTheDocument();
+    expect(await screen.findByText("드리퍼 없음")).toBeInTheDocument();
+    expect(document.querySelectorAll("[data-ledger-sub]")).toHaveLength(2);
+    // 점 자리는 원두가 없어도 비워 둔다 — 제목의 왼쪽 선이 행마다 같다.
+    expect(document.querySelectorAll("[data-ledger-dot]")).toHaveLength(3);
+  });
+
+  it("AC-MYCUPS-24 · 보조줄·점을 위해 새 API를 부르지 않는다", async () => {
+    const paths = new Set<string>();
+    const record = ({ request }: { request: Request }) => {
+      paths.add(new URL(request.url).pathname);
+    };
+    server.events.on("request:start", record);
+    server.use(
+      http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
+    );
+
+    renderWithQuery(<BrewsPage />);
+    expect(await screen.findByText("프릿츠 예가체프 · Hario V60 02")).toBeInTheDocument();
+    server.events.removeListener("request:start", record);
+
+    const allowed = [
+      /^\/api\/v1\/users\/me$/,
+      /^\/api\/v1\/brew-logs$/,
+      /^\/api\/v1\/brew-logs\/stats$/,
+      /^\/api\/v1\/recipes\/\d+$/,
+      /^\/api\/v1\/gear\/brewers$/,
+      /^\/api\/v1\/bean-batches\/\d+$/,
+      /^\/api\/v1\/bean-products\/\d+$/,
+      /^\/api\/v1\/roasters$/,
+    ];
+    expect([...paths].filter((path) => !allowed.some((re) => re.test(path)))).toEqual([]);
   });
 });

@@ -1799,6 +1799,124 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
   }
 
+  // ===== 내 잔 — month·minRating 필터 (docs/specs/2026-10-10-my-cups-ledger.md) =====
+
+  @Test
+  @DisplayName("AC-MYCUPS-02 · month는 KST 그 달의 기록만 남긴다")
+  void month는_KST_그_달로_거른다() throws Exception {
+    User me = newUser("mycups-02");
+    Long recipe = recipeId(tokenOf(me));
+    Long batch = beanBatchId(tokenOf(me), BREWED_AT, 30);
+    Long grinder = userGrinderId(tokenOf(me), c40Id());
+    saveBrewLogAt(me, recipe, batch, grinder, Instant.parse("2026-09-30T14:59:59Z")); // KST 09-30
+    Long first =
+        saveBrewLogAt(
+            me, recipe, batch, grinder, Instant.parse("2026-09-30T15:00:00Z")); // KST 10-01
+    Long last =
+        saveBrewLogAt(
+            me, recipe, batch, grinder, Instant.parse("2026-10-31T14:59:59Z")); // KST 10-31
+    saveBrewLogAt(me, recipe, batch, grinder, Instant.parse("2026-10-31T15:00:00Z")); // KST 11-01
+
+    listBrewLogs(tokenOf(me), "?userId=" + me.getId() + "&month=2026-10")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(2))
+        .andExpect(jsonPath("$.content[0].id").value(last))
+        .andExpect(jsonPath("$.content[1].id").value(first));
+  }
+
+  @Test
+  @DisplayName("AC-MYCUPS-03 · minRating은 그 값 이상만 남기고 별점 없는 기록은 뺀다")
+  void minRating은_이상만_남기고_무별점은_뺀다() throws Exception {
+    User me = newUser("mycups-03");
+    Long recipe = recipeId(tokenOf(me));
+    Long batch = beanBatchId(tokenOf(me), BREWED_AT, 30);
+    Long grinder = userGrinderId(tokenOf(me), c40Id());
+    BigDecimal dose = new BigDecimal("15.0");
+    Long five =
+        saveBrewLogWith(
+            me,
+            recipe,
+            batch,
+            grinder,
+            Instant.parse("2026-10-04T01:00:00Z"),
+            dose,
+            new BigDecimal("5.0"));
+    Long four =
+        saveBrewLogWith(
+            me,
+            recipe,
+            batch,
+            grinder,
+            Instant.parse("2026-10-03T01:00:00Z"),
+            dose,
+            new BigDecimal("4.0"));
+    saveBrewLogWith(
+        me,
+        recipe,
+        batch,
+        grinder,
+        Instant.parse("2026-10-02T01:00:00Z"),
+        dose,
+        new BigDecimal("3.0"));
+    saveBrewLogWith(me, recipe, batch, grinder, Instant.parse("2026-10-01T01:00:00Z"), dose, null);
+
+    listBrewLogs(tokenOf(me), "?minRating=4")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalElements").value(2))
+        .andExpect(jsonPath("$.content[0].id").value(five))
+        .andExpect(jsonPath("$.content[1].id").value(four));
+  }
+
+  @Test
+  @DisplayName("AC-MYCUPS-16 · minRating 1·5와 month 01·12는 허용된다")
+  void 양끝은_허용된다() throws Exception {
+    String token = token("mycups-16");
+
+    for (String query :
+        new String[] {"?minRating=1", "?minRating=5", "?month=2026-01", "?month=2026-12"}) {
+      listBrewLogs(token, query).andExpect(status().isOk());
+    }
+  }
+
+  @Test
+  @DisplayName("AC-MYCUPS-17 · date가 month 밖이면 빈 목록이다")
+  void date가_month_밖이면_빈_목록이다() throws Exception {
+    User me = newUser("mycups-17");
+    Long recipe = recipeId(tokenOf(me));
+    Long batch = beanBatchId(tokenOf(me), BREWED_AT, 30);
+    Long grinder = userGrinderId(tokenOf(me), c40Id());
+    saveBrewLogAt(me, recipe, batch, grinder, Instant.parse("2026-09-30T01:00:00Z")); // KST 09-30
+
+    listBrewLogs(tokenOf(me), "?month=2026-10&date=2026-09-30")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.length()").value(0))
+        .andExpect(jsonPath("$.totalElements").value(0));
+  }
+
+  @Test
+  @DisplayName("AC-MYCUPS-19 · month 형식이 틀리면 400이다")
+  void month_형식이_틀리면_사백이다() throws Exception {
+    String token = token("mycups-19");
+
+    for (String month : new String[] {"2026-13", "2026-1", "202610"}) {
+      listBrewLogs(token, "?month=" + month)
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
+  }
+
+  @Test
+  @DisplayName("AC-MYCUPS-20 · minRating이 범위 밖이거나 정수가 아니면 400이다")
+  void minRating이_틀리면_사백이다() throws Exception {
+    String token = token("mycups-20");
+
+    for (String minRating : new String[] {"0", "6", "abc"}) {
+      listBrewLogs(token, "?minRating=" + minRating)
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
+  }
+
   @Test
   @DisplayName("AC-HOMECAL-73 · 목록 요약 응답에 overallNote가 담긴다")
   void 요약에_메모가_담긴다() throws Exception {

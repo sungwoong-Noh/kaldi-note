@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { brewLogWithTds } from "../src/test/fixtures";
 import { undersized } from "./hitArea";
 import { installStubs } from "./stubs";
 import { tokenColor } from "./tokenColor";
@@ -13,7 +14,12 @@ import { tokenColor } from "./tokenColor";
 const MOBILE = { width: 390, height: 844 } as const;
 const WEB = { width: 1440, height: 900 } as const;
 
-async function open(page: Page, viewport: { width: number; height: number }) {
+async function open(
+  page: Page,
+  viewport: { width: number; height: number },
+  /** 기본 스텁 뒤에 등록할 route — 나중에 등록한 route가 먼저 걸린다. */
+  override?: (page: Page) => Promise<void>,
+) {
   await page.clock.setFixedTime(new Date("2026-09-19T01:00:00Z"));
   await page.setViewportSize(viewport);
   await installStubs(page);
@@ -29,6 +35,7 @@ async function open(page: Page, viewport: { width: number; height: number }) {
         ),
       }),
   );
+  await override?.(page);
   await page.goto("/");
   await expect(page.getByRole("tablist")).toBeVisible();
 }
@@ -252,5 +259,131 @@ test.describe("홈 정합 — 웹 달력 칸 1440", () => {
     const number = await cell.getByTestId("day-number").boundingBox();
     const dot = await cell.locator("[data-record-dot]").boundingBox();
     expect((dot?.x ?? 0) - ((number?.x ?? 0) + (number?.width ?? 0))).toBe(6);
+  });
+});
+
+/** 선택 날짜 기록을 `n`건으로 바꿔 끼운다 — 달력·다른 목록 요청은 기본 스텁으로 넘긴다. */
+async function stubDayLogs(page: Page, n: number) {
+  const content = Array.from({ length: n }, (_, i) => ({
+    ...brewLogWithTds,
+    id: 100 + i,
+  }));
+  await page.route(/\/api\/v1\/brew-logs\?/, (route) => {
+    if (new URL(route.request().url()).pathname !== "/api/v1/brew-logs")
+      return route.fallback();
+    return route.fulfill({
+      json: {
+        content,
+        page: 0,
+        size: 100,
+        totalElements: n,
+        totalPages: 1,
+        hasNext: false,
+      },
+    });
+  });
+}
+
+async function heights(page: Page) {
+  const column = await page.getByTestId("day-column").boundingBox();
+  const calendar = await page.getByTestId("calendar-area").boundingBox();
+  return { column: column?.height ?? 0, calendar: calendar?.height ?? -99 };
+}
+
+test.describe("홈 정합 — 웹 오른쪽 칼럼 1440", () => {
+  test("AC-HOMEFIT-08 · 웹 오른쪽 칼럼은 420px surface이고 달력 높이를 채운다", async ({
+    page,
+  }) => {
+    await open(page, WEB);
+
+    const column = page.getByTestId("day-column");
+    const style = await column.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return {
+        width: s.width,
+        pl: s.paddingLeft,
+        pr: s.paddingRight,
+        bg: s.backgroundColor,
+      };
+    });
+    expect(style).toEqual({
+      width: "420px",
+      pl: "40px",
+      pr: "40px",
+      bg: await tokenColor(page, "surface"),
+    });
+    const h = await heights(page);
+    expect(Math.abs(h.column - h.calendar)).toBeLessThanOrEqual(1);
+  });
+
+  test("AC-HOMEFIT-09 · 「이 날짜로 기록 추가」는 칼럼 맨 아래에 있다", async ({
+    page,
+  }) => {
+    await open(page, WEB);
+
+    const column = await page.getByTestId("day-column").boundingBox();
+    const cta = await page
+      .getByRole("link", { name: "이 날짜로 기록 추가" })
+      .boundingBox();
+    const gap =
+      (column?.y ?? 0) +
+      (column?.height ?? 0) -
+      ((cta?.y ?? 0) + (cta?.height ?? 0));
+    expect(gap).toBeGreaterThanOrEqual(0);
+    expect(gap).toBeLessThanOrEqual(32);
+  });
+
+  test("AC-HOMEFIT-10 · 웹 날짜 머리는 「9월 19일」 26px·600과 「2 brews」 mono 12px다", async ({
+    page,
+  }) => {
+    await open(page, WEB, (p) => stubDayLogs(p, 2));
+
+    const date = page.getByTestId("day-header-date");
+    await expect(date).toHaveText("9월 19일");
+    expect(
+      await date.evaluate((el) => {
+        const s = getComputedStyle(el);
+        return { fontSize: s.fontSize, fontWeight: s.fontWeight };
+      }),
+    ).toEqual({ fontSize: "26px", fontWeight: "600" });
+
+    const count = page.getByTestId("day-header-count");
+    await expect(count).toHaveText("2 brews");
+    expect(await count.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
+      "12px",
+    );
+  });
+
+  test("AC-HOMEFIT-18 · 카드가 넘쳐도 카드 영역만 스크롤된다", async ({
+    page,
+  }) => {
+    await open(page, WEB, (p) => stubDayLogs(p, 5));
+    await expect(page.getByTestId("day-card")).toHaveCount(5);
+
+    const cards = page.getByTestId("day-cards");
+    const scroll = await cards.evaluate((el) => ({
+      sh: el.scrollHeight,
+      ch: el.clientHeight,
+    }));
+    expect(scroll.sh).toBeGreaterThan(scroll.ch);
+    await expect(
+      page.getByRole("link", { name: "이 날짜로 기록 추가" }),
+    ).toBeInViewport();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollHeight),
+    ).toBeLessThanOrEqual(WEB.height);
+  });
+
+  test("AC-HOMEFIT-19 · 6주 달에서도 칼럼 높이가 달력과 같다", async ({
+    page,
+  }) => {
+    await page.clock.setFixedTime(new Date("2026-03-19T01:00:00Z"));
+    await page.setViewportSize(WEB);
+    await installStubs(page);
+    await page.goto("/");
+    await expect(page.getByText("2026.03", { exact: true })).toBeVisible();
+
+    const h = await heights(page);
+    expect(Math.abs(h.column - h.calendar)).toBeLessThanOrEqual(1);
   });
 });

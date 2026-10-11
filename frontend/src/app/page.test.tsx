@@ -125,7 +125,7 @@ describe("HomePage", () => {
     // 갱신(2026-09-21): jsdom 기본 폭(1024px)이 웹 임계값(760px)을 넘어 이 테스트는
     // 원장 행이 아니라 웹 헤더(요일 아이브로우+날짜, AC-HOMECAL-123~125)와 카드를 본다.
     expect(await screen.findByText("SATURDAY")).toBeInTheDocument();
-    expect(screen.getByTestId("day-header-date")).toHaveTextContent("5");
+    expect(screen.getByTestId("day-header-date")).toHaveTextContent("9월 5일");
     expect(screen.getAllByTestId("day-card")).toHaveLength(2);
   });
 

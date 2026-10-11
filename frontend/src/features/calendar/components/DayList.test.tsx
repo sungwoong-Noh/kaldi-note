@@ -140,7 +140,7 @@ describe("DayList", () => {
     expect(screen.getByText("SATURDAY · 지연")).toBeInTheDocument();
   });
 
-  it("AC-HOMECAL-124 · 웹 헤더 날짜가 text-page-title font-semibold다", () => {
+  it("AC-HOMECAL-124 · AC-HOMEFIT-10 · 웹 헤더 날짜가 「9월 19일」 26px·600이다", () => {
     renderWithQuery(
       <DayList
         date="2026-09-19"
@@ -150,11 +150,11 @@ describe("DayList", () => {
     );
 
     const dateEl = screen.getByTestId("day-header-date");
-    expect(dateEl).toHaveTextContent("19");
-    expect(dateEl).toHaveClass("text-page-title", "font-semibold");
+    expect(dateEl).toHaveTextContent(/^9월 19일$/);
+    expect(dateEl).toHaveClass("text-[26px]", "font-semibold");
   });
 
-  it("AC-HOMECAL-125 · 웹 헤더 오른쪽에 mono caption(11.5px) 건수가 있다", () => {
+  it("AC-HOMECAL-125 · AC-HOMEFIT-10 · 웹 헤더 오른쪽에 mono 12px 소문자 「2 brews」가 있다", () => {
     renderWithQuery(
       <DayList
         date="2026-09-19"
@@ -167,8 +167,8 @@ describe("DayList", () => {
     );
 
     const count = screen.getByTestId("day-header-count");
-    expect(count).toHaveTextContent("2건");
-    expect(count).toHaveClass("font-mono", "text-caption");
+    expect(count).toHaveTextContent(/^2 brews$/);
+    expect(count).toHaveClass("font-mono", "text-[12px]");
   });
 
   it("AC-HOMECAL-126 · 관계 문구가 Observation 블록 스타일이다", () => {

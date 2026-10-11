@@ -356,14 +356,16 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   좌상단이 맞다)
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`(web variant)
 
-#### AC-HOMECAL-122 · 웹 우측 컬럼 컨테이너의 padding이 좌우 48px, 배경이 surface다
+#### AC-HOMECAL-122 · 웹 우측 컬럼 컨테이너의 padding이 좌우 40px, 배경이 surface다
+
+> **2026-10-11 갱신:** 목업 원값 40px로 되돌렸다(AC-HOMEFIT-08, ADR 0010).
 
 > **2026-09-21 구현 확정:** 목업 원값 40px은 간격 스케일(4·8·12·16·24·32·48)에 없다.
 > `|40-24|=16`, `|40-48|=8`로 48px이 더 가깝다.
 
 - **Given** 웹(≥1100px) 2컬럼 레이아웃의 우측 컬럼 컨테이너(`data-testid="day-column"`)
 - **When** 렌더한다
-- **Then** `padding-left`·`padding-right`가 48px(`px-12`)이고 `background-color`가 `surface`
+- **Then** `padding-left`·`padding-right`가 40px(`px-10`)이고 `background-color`가 `surface`
   토큰 값이다(현재 `p-4`로 16px 균등 padding만 적용돼 목업의 "여유로운 판" 느낌이 아니라
   좁은 박스처럼 보인다)
 - **검증** 컴포넌트 테스트 또는 e2e `home-calendar-web.spec.ts`
@@ -378,6 +380,8 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 #### AC-HOMECAL-124 · 웹 우측 컬럼 헤더의 날짜 숫자가 26px 근사값(page-title 27px)·weight 600으로 렌더된다
 
+> **2026-10-11 갱신:** 날짜는 `9월 19일`, 크기는 목업 원값 `26px`·600이다(AC-HOMEFIT-10).
+
 - **Given** 위와 같음
 - **When** 렌더한다
 - **Then** 날짜 숫자(예: `19`)가 기존 타입 스케일 `page-title`(27px, 목업 26px에서 1px
@@ -387,6 +391,8 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   단계 재사용이므로 새 등록 불필요)
 
 #### AC-HOMECAL-125 · 웹 우측 컬럼 헤더 오른쪽에 건수가 mono·caption(11.5px)으로 렌더된다
+
+> **2026-10-11 갱신:** 건수는 `2 brews`(소문자), 크기는 목업 원값 Mono `12px`이다(AC-HOMEFIT-10).
 
 > **2026-09-21 구현 확정:** 목업 12px는 타입 스케일에 없다. 기존 `caption`(11.5px, 차이
 > 0.5px)으로 근사한다 — 새 단계 대신 근사가 이 스펙의 다른 항목(레시피명 15.5→15,

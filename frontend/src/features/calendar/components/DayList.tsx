@@ -67,53 +67,75 @@ export function DayList({
     ? `${formatDayHeader(date)} ${weekdayOf(date)} · ${ownerNickname} · ${brewCountLabel(logs.length)}`
     : `${formatDayHeader(date)} ${weekdayOf(date)} · ${brewCountLabel(logs.length)}`;
 
-  return (
-    <div data-day-list data-variant={variant}>
-      {variant === "web" ? (
-        <div className="flex items-baseline justify-between">
-          <div>
-            <Eyebrow>
-              {weekdayEnglishOf(date)}
-              {ownerNickname !== undefined ? ` · ${ownerNickname}` : ""}
-            </Eyebrow>
+  const notice = ownerNickname !== undefined && (
+    <p className="rounded-control border-l-2 border-accent bg-surface px-3 py-2 text-body-sm leading-[1.65]">
+      맞팔로우 상태여서 {ownerNickname} 님의 기록이 보입니다.
+    </p>
+  );
+
+  if (variant === "web") {
+    // 웹 칼럼은 머리가 고정이고 카드 영역만 스크롤한다 — 값은 목업 CW1
+    // (docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-10·18).
+    return (
+      <div
+        data-day-list
+        data-variant={variant}
+        className="flex min-h-0 flex-1 flex-col"
+      >
+        <div className="flex flex-none flex-col gap-[7px] pb-[18px]">
+          <Eyebrow>
+            {weekdayEnglishOf(date)}
+            {ownerNickname !== undefined ? ` · ${ownerNickname}` : ""}
+          </Eyebrow>
+          <div className="flex items-baseline justify-between gap-3">
             <p
               data-testid="day-header-date"
-              className="text-page-title font-semibold"
+              className="text-[26px] font-semibold tracking-[-0.025em]"
             >
-              {Number(date.slice(8, 10))}
+              {Number(date.slice(5, 7))}월 {Number(date.slice(8, 10))}일
             </p>
+            <span
+              data-testid="day-header-count"
+              className="font-mono text-[12px] text-ink-3"
+            >
+              {brewCountLabel(logs.length).toLowerCase()}
+            </span>
           </div>
-          <span
-            data-testid="day-header-count"
-            className="text-caption font-mono text-ink-3"
-          >
-            {logs.length}건
-          </span>
         </div>
-      ) : (
-        <p className="text-label text-ink-3">{header}</p>
-      )}
-      <ul className={variant === "web" ? "flex flex-col gap-3" : undefined}>
-        {logs.map((log) =>
-          variant === "web" ? (
-            <li key={log.id}>
-              <DayCard log={log} recipeLabel={recipeLabels?.get(log.recipeId)} />
-            </li>
-          ) : (
-            <DayListRow
-              key={log.id}
-              log={log}
-              recipeLabel={recipeLabels?.get(log.recipeId)}
-              variant={variant}
-            />
-          ),
-        )}
+        <div
+          data-testid="day-cards"
+          className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto"
+        >
+          <ul className="flex flex-col gap-3.5">
+            {logs.map((log) => (
+              <li key={log.id}>
+                <DayCard
+                  log={log}
+                  recipeLabel={recipeLabels?.get(log.recipeId)}
+                />
+              </li>
+            ))}
+          </ul>
+          {notice}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div data-day-list data-variant={variant}>
+      <p className="text-label text-ink-3">{header}</p>
+      <ul>
+        {logs.map((log) => (
+          <DayListRow
+            key={log.id}
+            log={log}
+            recipeLabel={recipeLabels?.get(log.recipeId)}
+            variant={variant}
+          />
+        ))}
       </ul>
-      {ownerNickname !== undefined && (
-        <p className="rounded-control border-l-2 border-accent bg-surface px-3 py-2 text-body-sm leading-[1.65]">
-          맞팔로우 상태여서 {ownerNickname} 님의 기록이 보입니다.
-        </p>
-      )}
+      {notice}
     </div>
   );
 }

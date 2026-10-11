@@ -198,7 +198,7 @@ for (const [name, viewport] of [
         .getByText("2026.09", { exact: true })
         .boundingBox();
       const count = await page
-        .getByText("7 BREWS", { exact: true })
+        .getByText("9 BREWS", { exact: true })
         .boundingBox();
       const center = (b: typeof month) => (b?.y ?? 0) + (b?.height ?? 0) / 2;
       expect(Math.abs(center(month) - center(count))).toBeLessThan(4);

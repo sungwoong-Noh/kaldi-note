@@ -222,3 +222,35 @@ for (const [name, viewport] of [
     });
   });
 }
+
+test.describe("홈 정합 — 웹 달력 칸 1440", () => {
+  test("AC-HOMEFIT-07 · 웹 달력 칸의 요약 줄은 작다", async ({ page }) => {
+    await open(page, WEB);
+
+    const cell = page.getByRole("button", { name: /^9월 5일/ });
+    const name = cell.getByText("Kasuya 4:6", { exact: true });
+    const more = cell.getByText("외 1건", { exact: true });
+
+    expect(
+      await name.evaluate((el) => {
+        const s = getComputedStyle(el);
+        return {
+          fontSize: s.fontSize,
+          whiteSpace: s.whiteSpace,
+          textOverflow: s.textOverflow,
+        };
+      }),
+    ).toEqual({
+      fontSize: "11.5px",
+      whiteSpace: "nowrap",
+      textOverflow: "ellipsis",
+    });
+    expect(await more.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
+      "11px",
+    );
+
+    const number = await cell.getByTestId("day-number").boundingBox();
+    const dot = await cell.locator("[data-record-dot]").boundingBox();
+    expect((dot?.x ?? 0) - ((number?.x ?? 0) + (number?.width ?? 0))).toBe(6);
+  });
+});

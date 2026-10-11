@@ -256,7 +256,7 @@ ADR 0010(목업이 시각의 정본)에 따라 아래 AC는 이 스펙의 값으
 
 - [x] **Task 3: 월 머리 한 줄 + 달 이동 버튼 한 겹(#172)** — Covers: AC-HOMEFIT-05, 06
 
-- [ ] **Task 4: 웹 달력 칸 요약 줄** — Covers: AC-HOMEFIT-07
+- [x] **Task 4: 웹 달력 칸 요약 줄** — Covers: AC-HOMEFIT-07
 
 - [ ] **Task 5: 웹 오른쪽 칼럼 — 폭·높이·스크롤·CTA 고정·날짜 머리** — Covers: AC-HOMEFIT-08, 09, 10, 18, 19
 

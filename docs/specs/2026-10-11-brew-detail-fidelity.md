@@ -242,7 +242,7 @@ supersedes:
 
 각 태스크는 TDD 사이클 하나다(실패 테스트 → 실패 확인 → 최소 구현 → 통과 확인 → 커밋).
 
-- [ ] **Task 1: 분쇄도 차이 문장** — Covers: AC-BDETAIL-06
+- [x] **Task 1: 분쇄도 차이 문장** — Covers: AC-BDETAIL-06
 
   `diffPhrase`에 `"grind"` 종류를 더한다(`2 클릭 굵게 갈았습니다.`). 단위 문자열은 호출하는 쪽이 넘긴다.
 

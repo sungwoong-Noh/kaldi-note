@@ -62,4 +62,13 @@ describe("diffPhrase", () => {
     expect(diffPhrase("weight", "원두", 30, 31)).toContain("원두를");
     expect(diffPhrase("weight", "물", 500, 501)).toContain("물을");
   });
+
+  it("AC-BDETAIL-06 · 분쇄도 차이는 단위 수와 굵기로 말한다", () => {
+    // 설정값이 크면 굵다 — 모든 단위 공통(docs/specs/2026-10-11-brew-detail-fidelity.md).
+    expect(diffPhrase("grind", "클릭", 22, 24)).toBe("2 클릭 굵게 갈았습니다.");
+    expect(diffPhrase("grind", "클릭", 22, 20)).toBe("2 클릭 가늘게 갈았습니다.");
+    expect(diffPhrase("grind", "클릭", 22, 22)).toBeNull();
+    expect(diffPhrase("grind", "μm", 600, 660)).toBe("60 μm 굵게 갈았습니다.");
+    expect(diffPhrase("grind", "", 3, 2.5)).toBe("0.5 가늘게 갈았습니다.");
+  });
 });

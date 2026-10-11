@@ -1,7 +1,7 @@
 ---
 id: BDETAIL
 title: 기록 상세 목업 정합 — 웹 W3 2컬럼 · 모바일 B2 · 대표 수치 수율
-status: 초안
+status: 승인
 milestone: M2
 supersedes:
 ---

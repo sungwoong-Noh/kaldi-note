@@ -288,7 +288,7 @@ test.describe("홈 달력 — 모바일 선택/오늘 표시", () => {
     // 진입 시 오늘(9/19)이 자동 선택되므로, 다른 날짜를 선택해 오늘을 비선택 상태로 만든다.
     await page.getByRole("button", { name: "9월 5일, 기록 2건" }).click();
 
-    const todayCell = page.getByRole("button", { name: "9월 19일, 기록 없음" });
+    const todayCell = page.getByRole("button", { name: /^9월 19일,/ });
     const numberEl = todayCell.getByTestId("day-number");
 
     const borderWidth = await numberEl.evaluate(
@@ -384,6 +384,8 @@ test.describe("홈 달력 — 모바일 스크롤 고정", () => {
     });
     await page.goto("/");
     await page.getByRole("button", { name: "9월 2일, 기록 1건" }).click();
+    // 새 날짜의 목록이 다 그려진 뒤에 잰다 — 응답 전이면 영역이 비어 scrollHeight가 작다.
+    await expect(page.getByTestId("day-list-row")).toHaveCount(10);
 
     const viewport = page.viewportSize();
     const dayScroll = page.getByTestId("day-scroll");

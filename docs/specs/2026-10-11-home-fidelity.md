@@ -266,7 +266,7 @@ ADR 0010(목업이 시각의 정본)에 따라 아래 AC는 이 스펙의 값으
 
 - [x] **Task 7: 모바일 날짜 목록 원장 행** — Covers: AC-HOMEFIT-13
 
-- [ ] **Task 8: e2e·스텁 정합·목업 대조** — Covers: AC-HOMEFIT-22 (+ e2e 부분)
+- [x] **Task 8: e2e·스텁 정합·목업 대조** — Covers: AC-HOMEFIT-22 (+ e2e 부분)
 
   `homeCalendar` 픽스처에 `2026-09-19`를 넣어 목록이 있는 날에 점이 찍히게 한다. `e2e/home-fidelity.spec.ts`,
   `pnpm compare`로 `home-390`·`home-1440` 재생성.

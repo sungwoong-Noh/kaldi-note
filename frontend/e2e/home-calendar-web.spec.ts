@@ -484,7 +484,7 @@ test.describe("홈 달력 — 웹", () => {
     // 진입 시 오늘(9/19)이 자동 선택되므로, 다른 날짜를 선택해 오늘을 비선택 상태로 만든다.
     await page.getByRole("button", { name: "9월 5일, 기록 2건" }).click();
 
-    const todayCell = page.getByRole("button", { name: "9월 19일, 기록 없음" });
+    const todayCell = page.getByRole("button", { name: /^9월 19일,/ });
     const numberEl = todayCell.getByTestId("day-number");
 
     const borderWidth = await numberEl.evaluate(

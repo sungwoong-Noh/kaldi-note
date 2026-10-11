@@ -716,6 +716,9 @@ export const homeCalendar = {
     { date: "2026-09-02", count: 1, primaryRecipeName: "Hoffmann V60" },
     { date: "2026-09-05", count: 2, primaryRecipeName: "Kasuya 4:6" },
     { date: "2026-09-12", count: 4, primaryRecipeName: "Kasuya 4:6" },
+    // 오늘(2026-09-19)은 날짜 목록 스텁(brewLogPage 2건)이 있는 날이다 — 점도 찍혀야 맞는다.
+    // totalCount는 AC-HOMEFIT-05의 리터럴(`7 BREWS`)을 지키려고 그대로 둔다.
+    { date: "2026-09-19", count: 2, primaryRecipeName: "James Hoffmann Ultimate V60" },
   ],
 };
 

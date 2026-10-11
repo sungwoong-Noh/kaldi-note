@@ -476,3 +476,16 @@ test.describe("홈 정합 — 모바일 날짜 목록 390", () => {
     );
   });
 });
+
+for (const [name, viewport] of [
+  ["웹 1440", WEB],
+  ["모바일 390", MOBILE],
+] as const) {
+  test(`AC-HOMEFIT-22 · ${name}에 가로 스크롤이 없다`, async ({ page }) => {
+    await open(page, viewport);
+
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(viewport.width);
+  });
+}

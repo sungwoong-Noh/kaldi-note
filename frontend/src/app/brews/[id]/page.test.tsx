@@ -660,3 +660,105 @@ describe("BrewDetailPage — 비교표", () => {
     expect(compareRow("분쇄도")).toBeNull();
   });
 });
+
+/** 라벨이 `label`인 원장 행. 없으면 `null`. */
+function ledgerRow(label: string): HTMLElement | null {
+  return (
+    [
+      ...document.querySelectorAll<HTMLElement>("[data-kit='ledger-field']"),
+    ].find((row) => row.firstElementChild?.textContent === label) ?? null
+  );
+}
+
+describe("BrewDetailPage — 원두·장비·평가·메모", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("AC-BDETAIL-08 · 원두·장비는 원장 행이다", async () => {
+    await renderDetail();
+    // 원두 이름·레시피 단위·내 그라인더가 각각 다른 응답이라 최종 글자를 기다린다.
+    await waitFor(() =>
+      expect(ledgerRow("분쇄도")).toHaveTextContent("집 · 22 클릭"),
+    );
+    await waitFor(() =>
+      expect(ledgerRow("원두")).toHaveTextContent("프릿츠 예가체프"),
+    );
+
+    expect(ledgerRow("원두")).toHaveTextContent("로스팅 08.28 · 3일차");
+  });
+
+  it("AC-BDETAIL-08 · 레시피에 단위가 없으면 숫자만 붙인다", async () => {
+    server.use(recipe1({ grindSettingUnit: undefined }));
+    await renderDetail();
+    await waitFor(() =>
+      expect(ledgerRow("분쇄도")).toHaveTextContent("집 · 22"),
+    );
+
+    expect(ledgerRow("분쇄도")).not.toHaveTextContent("클릭");
+  });
+
+  it("AC-BDETAIL-13 · 남의 기록의 분쇄도 행에는 그라인더 이름이 없다", async () => {
+    server.use(logIs({ userId: 99 }));
+    await renderDetail();
+    await waitFor(() =>
+      expect(ledgerRow("분쇄도")).toHaveTextContent("22 클릭"),
+    );
+
+    expect(ledgerRow("분쇄도")).not.toHaveTextContent("집");
+  });
+
+  it("AC-BDETAIL-09 · 웹 평가는 별점과 읽기 전용 점이다", async () => {
+    await renderDetail();
+    const rating = await screen.findByText("★ 4");
+    const section = rating.closest("section")!;
+
+    expect(
+      within(section)
+        .getAllByRole("img")
+        .map((img) => img.getAttribute("aria-label")),
+    ).toEqual(["산미 4", "단맛 3", "바디 3", "쓴맛 2", "여운 4"]);
+    expect(within(section).queryAllByRole("button")).toHaveLength(0);
+  });
+
+  it("AC-BDETAIL-09 · 모바일 평가는 한 줄이다", async () => {
+    mockViewportWidth(390);
+    await renderDetail();
+
+    expect(await screen.findByText("★ 4")).toBeInTheDocument();
+    expect(
+      screen.getByText("산미 4 · 단맛 3 · 바디 3 · 쓴맛 2 · 여운 4"),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-BDETAIL-10 · 메모는 인용으로 보인다", async () => {
+    await renderDetail();
+    await waitFor(() =>
+      expect(document.querySelector("[data-detail-note]")).not.toBeNull(),
+    );
+
+    expect(document.querySelector("[data-detail-note]")?.textContent).toBe(
+      "“산미가 좋다”",
+    );
+  });
+
+  it("AC-BDETAIL-17 · 없는 값의 블록은 그리지 않는다", async () => {
+    server.use(
+      logIs({
+        rating: undefined,
+        acidity: undefined,
+        sweetness: undefined,
+        body: undefined,
+        bitterness: undefined,
+        aftertaste: undefined,
+        overallNote: undefined,
+        beanBatchId: undefined,
+      }),
+    );
+    await renderDetail();
+    await waitFor(() => expect(leadElements()).toHaveLength(1));
+
+    expect(screen.queryByText(/★/)).toBeNull();
+    expect(screen.queryAllByRole("img", { name: /^산미 / })).toHaveLength(0);
+    expect(document.querySelector("[data-detail-note]")).toBeNull();
+    expect(ledgerRow("원두")).toBeNull();
+  });
+});

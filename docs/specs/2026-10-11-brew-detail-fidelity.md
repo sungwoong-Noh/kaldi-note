@@ -275,7 +275,7 @@ supersedes:
 
   내 기록이고 내 그라인더 모델 = 레시피 모델일 때만 비교표에 `분쇄도` 행. `useUserGrinders`는 내 기록일 때만 부른다.
 
-- [ ] **Task 7: 원두·장비 원장 행 + 평가 + 메모** — Covers: AC-BDETAIL-08, 09, 10, 17
+- [x] **Task 7: 원두·장비 원장 행 + 평가 + 메모** — Covers: AC-BDETAIL-08, 09, 10, 17
 
   키트 `LedgerField`·`SectionLabel` 재사용. 읽기 전용 점은 키트에 `TasteDots`의 읽기 전용 모양을 더하지 않고
   상세 안의 작은 컴포넌트로 둔다(버튼이 없어야 한다).

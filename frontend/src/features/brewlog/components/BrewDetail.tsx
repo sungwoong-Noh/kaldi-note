@@ -8,7 +8,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { RecipeStepList } from "@/features/recipe/components/RecipeStepList";
-import { LedgerField } from "@/components/kit";
+import { LedgerField, SectionLabel } from "@/components/kit";
 import { TopBarActions } from "@/components/layout/TopBarActions";
 import { useBrewers, useUserGrinders } from "@/features/gear/queries";
 import type { UserGrinder } from "@/features/gear/schema";
@@ -133,22 +133,70 @@ export function BrewDetail({ id }: { id: number }) {
     </div>
   );
 
-  const gear = log.beanBatchId !== undefined && bean.label !== "" && (
+  const grinder = isMine
+    ? myGrinders.data?.find((g) => g.id === log.userGrinderId)
+    : undefined;
+  const grindUnit =
+    recipe.targets?.grindSettingUnit === undefined
+      ? ""
+      : GRIND_UNIT_LABEL[recipe.targets.grindSettingUnit];
+  const showBean = log.beanBatchId !== undefined && bean.label !== "";
+  const gear = (showBean || log.actualGrindSettingValue !== undefined) && (
     <div className="flex flex-col">
-      <LedgerField
-        label="원두"
-        value={bean.label}
-        sub={
-          [
-            bean.roastedAt !== undefined &&
-              `로스팅 ${bean.roastedAt.slice(5, 7)}.${bean.roastedAt.slice(8, 10)}`,
-            log.daysOffRoast !== undefined && `${log.daysOffRoast}일차`,
+      {showBean && (
+        <LedgerField
+          label="원두"
+          value={bean.label}
+          sub={
+            [
+              bean.roastedAt !== undefined &&
+                `로스팅 ${bean.roastedAt.slice(5, 7)}.${bean.roastedAt.slice(8, 10)}`,
+              log.daysOffRoast !== undefined && `${log.daysOffRoast}일차`,
+            ]
+              .filter(Boolean)
+              .join(" · ") || undefined
+          }
+        />
+      )}
+      {log.actualGrindSettingValue !== undefined && (
+        // 남의 기록이면 그라인더 이름을 모른다 — 내 그라인더 목록만 읽을 수 있다(AC-BDETAIL-13).
+        <LedgerField
+          label="분쇄도"
+          value={[
+            grinder && (grinder.nickname ?? grinder.grinderModelName),
+            [String(log.actualGrindSettingValue), grindUnit]
+              .filter(Boolean)
+              .join(" "),
           ]
             .filter(Boolean)
-            .join(" · ") || undefined
-        }
-      />
+            .join(" · ")}
+        />
+      )}
     </div>
+  );
+
+  const axes = TASTE_AXES.flatMap(({ key, label }) =>
+    log[key] === undefined ? [] : [{ label, value: log[key] }],
+  );
+  const rating = (log.rating !== undefined || axes.length > 0) && (
+    <section className="flex flex-col gap-[10px]">
+      <SectionLabel>평가</SectionLabel>
+      {log.rating !== undefined && (
+        <span className="text-[18px] text-accent">★ {log.rating}</span>
+      )}
+      {axes.length > 0 &&
+        (wide ? (
+          <div className="flex flex-col">
+            {axes.map((axis) => (
+              <TasteReading key={axis.label} {...axis} />
+            ))}
+          </div>
+        ) : (
+          <p className="font-mono text-[12.5px] text-ink-2">
+            {axes.map((axis) => `${axis.label} ${axis.value}`).join(" · ")}
+          </p>
+        ))}
+    </section>
   );
 
   // 레시피를 못 읽으면 그리지 않는다 — 비교할 대상이 없다(AC-STRUCT-13).
@@ -200,10 +248,12 @@ export function BrewDetail({ id }: { id: number }) {
   );
 
   const memo = log.overallNote !== undefined && (
-    <section className="flex flex-col gap-2">
-      <h2 className="text-card-title font-semibold">메모</h2>
-      <p className="whitespace-pre-wrap text-body">{log.overallNote}</p>
-    </section>
+    <p
+      data-detail-note
+      className="text-[14.5px] leading-[1.7] whitespace-pre-wrap text-ink-2 italic"
+    >
+      “{log.overallNote}”
+    </p>
   );
 
   /*
@@ -258,6 +308,7 @@ export function BrewDetail({ id }: { id: number }) {
           >
             <BrewDetailHero log={log} />
             {gear}
+            {rating}
             {memo}
           </aside>
         </div>
@@ -274,6 +325,7 @@ export function BrewDetail({ id }: { id: number }) {
       {measured}
       {steps}
       {gear}
+      {rating}
       {memo}
       <div className="flex items-center gap-2 self-start">{actions}</div>
       {dialog}
@@ -370,4 +422,39 @@ function grindComparison(
         ? ""
         : GRIND_UNIT_LABEL[targets.grindSettingUnit],
   };
+}
+
+const TASTE_AXES = [
+  { key: "acidity", label: "산미" },
+  { key: "sweetness", label: "단맛" },
+  { key: "body", label: "바디" },
+  { key: "bitterness", label: "쓴맛" },
+  { key: "aftertaste", label: "여운" },
+] as const;
+
+/**
+ * 읽기 전용 맛 점 — 기록 폼 `TasteDots`와 같은 모양이지만 버튼이 아니다(AC-BDETAIL-09). 상세에서 점을
+ * 누를 수 있으면 바뀔 것처럼 보인다.
+ */
+function TasteReading({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="grid min-h-[36px] grid-cols-[40px_minmax(0,1fr)_16px] items-center gap-[12px]">
+      <span className="text-[13.5px] text-ink-2">{label}</span>
+      <span
+        role="img"
+        aria-label={`${label} ${value}`}
+        className="flex gap-[6px]"
+      >
+        {[1, 2, 3, 4, 5].map((score) => (
+          <span
+            key={score}
+            className={`size-[22px] rounded-full ${score <= value ? "bg-accent" : "bg-divider"}`}
+          />
+        ))}
+      </span>
+      <span className="text-right font-mono text-[12px] text-ink-3">
+        {value}
+      </span>
+    </div>
+  );
 }

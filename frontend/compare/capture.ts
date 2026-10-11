@@ -15,6 +15,12 @@ import { installStubs } from "../e2e/stubs";
 const DESIGN = resolve(__dirname, "../../docs/design/kaldi-note-design");
 const OUT = resolve(__dirname, "../compare-out");
 
+/**
+ * 「오늘」. 스텁 픽스처가 2026-09에 몰려 있어 실제 날짜로 찍으면 홈 달력이 빈 달이 된다.
+ * e2e(home-calendar)와 같은 값이고, 목업 CW1도 09.19를 선택한 상태다.
+ */
+const TODAY = new Date("2026-09-19T01:00:00Z");
+
 const VIEWPORT = {
   390: { width: 390, height: 844 },
   1440: { width: 1440, height: 900 },
@@ -163,6 +169,7 @@ for (const pair of PAIRS) {
     const width = Number(w) as 390 | 1440;
     test(`${pair.path} · ${width}`, async ({ page }) => {
       test.setTimeout(60_000);
+      await page.clock.setFixedTime(TODAY);
       await installStubs(page);
       await page.setViewportSize(VIEWPORT[width]);
       await page.goto(pair.path);

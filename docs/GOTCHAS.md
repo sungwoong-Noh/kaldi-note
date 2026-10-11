@@ -28,6 +28,9 @@
   `check-docs.sh`가 경로로 읽어 CI에서 실패한다(로컬 `check-spec-coverage.sh`는 못 잡는다).
   일부 AC 대체는 본문 「대체하는 이전 AC」 섹션에 쓰고, 푸시 전 `./scripts/check-docs.sh`도 돌린다.
 
+- **스펙의 AC를 전부 대체하면 그 스펙은 `status: 대체됨`으로 바꾼다.** 「구현완료」인데 `#### AC-` 헤딩이
+  0개면 `check-spec-coverage.sh`가 실패한다(2026-10-10 spacing-system). 마지막 줄만 보지 말고 종료 코드를 본다.
+
 - **CI 워크플로는 경로 필터가 있어 PR마다 다 돌지 않는다.** 프론트만 바뀌면 `backend.yml` run이 아예
   생기지 않는다 — `gh run list`로 「run이 생길 때까지」 기다리는 루프는 영원히 돈다(실제로 6시간 돌았다).
   기다릴 때는 `gh pr checks --watch`처럼 **PR에 실제로 붙은 체크**만 본다.
@@ -47,6 +50,13 @@
 - **Tailwind의 `hidden`(`display:none`)은 접근성 트리에서 서브트리를 통째로 뺀다.** 숨겨진
   요소는 `getByRole` 계열 쿼리와 충돌하지 않는다 — 반대로 "진짜 숨겨졌는지"를 확인하려면
   텍스트가 안 보인다는 것보다 **트리에서 빠졌는지**를 확인해야 한다.
+- **행 전체 링크(`after:absolute after:inset-0`)가 덮은 칸은 Playwright `click()`이 「intercepts pointer
+  events」로 30초 재시도하다 실패한다.** 링크가 클릭을 받는 게 의도대로다 — 좌표를 `page.mouse.click`으로
+  누른다. `tr`에 `relative`가 없으면 마지막 행의 `::after`가 표 전체를 덮으니 둘째 행 이동도 함께 단언한다.
+- **`locator.evaluateAll(fn)`의 `fn`은 소스만 브라우저로 넘어간다** — 바깥 상수·함수를 참조하면 안 된다.
+  공용 판정은 `e2e/hitArea.ts`처럼 자급자족 함수로 둔다.
+- **e2e·`pnpm compare`의 홈 달력은 「오늘」을 고정해야 한다** — 스텁 픽스처가 2026-09에 몰려 있어 실제
+  날짜로 찍으면 빈 달이 된다. `page.clock.setFixedTime(new Date("2026-09-19T01:00:00Z"))`.
 - **문구를 바꿀 때 다른 요소 문구의 부분 문자열이 되면 Playwright strict-mode 충돌이 난다.**
   예: "레시피"가 들어간 CTA 문구를 새로 넣었더니 기존 "레시피" 네비게이션 링크와 겹쳐 여러
   e2e가 한꺼번에 깨졌다. `getByText`/`getByRole`에 `exact: true`를 쓴다.

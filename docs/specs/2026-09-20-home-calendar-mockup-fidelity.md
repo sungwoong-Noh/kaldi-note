@@ -183,15 +183,16 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 - **Given** 월 이동 버튼(‹, ›) 2개
 - **When** 렌더한다
-- **Then** 각 버튼(`<button>`)의 렌더된 `height`·`width`가 44px 이상이다(`AC-TOUCH-01` 유지)
+- **Then** 각 버튼(`<button>`)의 누르는 영역(`hit-44`, `e2e/hitArea.ts` 기준)이 44px 이상이다(`AC-TOUCH-01` 유지 —
+  2026-10-11 AC-HOMEFIT-06으로 갱신: 보이는 박스가 아니라 hit area로 잰다)
 - **검증** 컴포넌트 테스트 `MonthNav.test.tsx` + 기존 `e2e/touch-targets.spec.ts` 재통과
 
 #### AC-HOMECAL-106 · 월 이동 버튼의 시각 박스가 32×32px다
 
-- **Given** 월 이동 버튼 내부 요소
+- **Given** 월 이동 버튼
 - **When** 렌더한다
-- **Then** 버튼 안쪽의 시각적 박스(배경·테두리를 가진 `<span>` 등)의 `height`·`width`가 32px,
-  `border-radius`가 7px다
+- **Then** 버튼 자신의 `height`·`width`가 32px, `border-radius`가 7px다(2026-10-11 AC-HOMEFIT-06으로 갱신 —
+  안쪽 상자를 없애 한 겹이다, #172)
 - **검증** 컴포넌트 테스트 `MonthNav.test.tsx`
 
 #### AC-HOMECAL-107 · 월 라벨이 새 타입 스케일 `month-label`(mono 22px)로 렌더된다

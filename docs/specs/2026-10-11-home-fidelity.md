@@ -230,6 +230,7 @@ ADR 0010(목업이 시각의 정본)에 따라 아래 AC는 이 스펙의 값으
 - AC-HOMECAL-77(카드 안 진단) → AC-HOMEFIT-12 — 동작 변경(카드 밖 1회)
 - AC-HOMECAL-102·103·104(레일 간격·pill padding) → AC-HOMEFIT-02·04 — 값 갱신
 - AC-HOMECAL-105(클릭 영역 44 박스) → AC-HOMEFIT-06 — hit area로
+- AC-HOMECAL-106(안쪽 시각 박스 32) → AC-HOMEFIT-06 — 버튼 자신이 32 한 겹(구현 중 추가)
 - AC-HOMECAL-108·113(캡션 내용) → AC-HOMEFIT-11·13 — 웹 카드 캡션은 원두·드리퍼·시각
 - AC-HOMECAL-118(점 간격 8px) → AC-HOMEFIT-07 — `6px`
 - AC-HOMECAL-122(패딩 48) → AC-HOMEFIT-08 — `40px`
@@ -253,7 +254,7 @@ ADR 0010(목업이 시각의 정본)에 따라 아래 AC는 이 스펙의 값으
 
   웹 레일을 본문 밖(상단 바 바로 아래 전폭)으로 옮긴다. 레이아웃 변경이라 `src/app/page.tsx` 구조를 손댄다.
 
-- [ ] **Task 3: 월 머리 한 줄 + 달 이동 버튼 한 겹(#172)** — Covers: AC-HOMEFIT-05, 06
+- [x] **Task 3: 월 머리 한 줄 + 달 이동 버튼 한 겹(#172)** — Covers: AC-HOMEFIT-05, 06
 
 - [ ] **Task 4: 웹 달력 칸 요약 줄** — Covers: AC-HOMEFIT-07
 

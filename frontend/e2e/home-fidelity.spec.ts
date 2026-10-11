@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { undersized } from "./hitArea";
 import { installStubs } from "./stubs";
 import { tokenColor } from "./tokenColor";
 
@@ -177,3 +178,47 @@ test.describe("홈 정합 — 팔로우 레일 모바일 390", () => {
     expect((b?.x ?? 0) - ((a?.x ?? 0) + (a?.width ?? 0))).toBe(14);
   });
 });
+
+for (const [name, viewport] of [
+  ["웹 1440", WEB],
+  ["모바일 390", MOBILE],
+] as const) {
+  test.describe(`홈 정합 — 월 머리 ${name}`, () => {
+    test("AC-HOMEFIT-05 · 월 머리는 한 줄이다", async ({ page }) => {
+      await open(page, viewport);
+
+      const month = await page
+        .getByText("2026.09", { exact: true })
+        .boundingBox();
+      const count = await page
+        .getByText("7 BREWS", { exact: true })
+        .boundingBox();
+      const center = (b: typeof month) => (b?.y ?? 0) + (b?.height ?? 0) / 2;
+      expect(Math.abs(center(month) - center(count))).toBeLessThan(4);
+    });
+
+    test("AC-HOMEFIT-06 · 달 이동 버튼은 32×32 한 겹이다", async ({ page }) => {
+      await open(page, viewport);
+
+      const prev = page.getByRole("button", { name: "이전 달" });
+      expect(await prev.boundingBox()).toMatchObject({ width: 32, height: 32 });
+      const style = await prev.evaluate((el) => {
+        const s = getComputedStyle(el);
+        const borderedChildren = [...el.querySelectorAll("*")].filter(
+          (child) => getComputedStyle(child).borderTopStyle !== "none",
+        ).length;
+        return {
+          border: s.borderTopWidth,
+          radius: s.borderTopLeftRadius,
+          borderedChildren,
+        };
+      });
+      expect(style).toEqual({
+        border: "1px",
+        radius: "7px",
+        borderedChildren: 0,
+      });
+      expect(await prev.evaluateAll(undersized)).toEqual([]);
+    });
+  });
+}

@@ -762,3 +762,16 @@ describe("BrewDetailPage — 원두·장비·평가·메모", () => {
     expect(ledgerRow("원두")).toBeNull();
   });
 });
+
+describe("BrewDetailPage — 남의 기록 동작", () => {
+  it("AC-BDETAIL-13 · 남의 기록은 다시 내리기만 있다", async () => {
+    server.use(logIs({ userId: 99 }));
+    await renderDetail();
+
+    expect(
+      await screen.findAllByRole("link", { name: "다시 내리기" }),
+    ).toHaveLength(1);
+    expect(screen.queryByRole("link", { name: "수정" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "삭제" })).toBeNull();
+  });
+});

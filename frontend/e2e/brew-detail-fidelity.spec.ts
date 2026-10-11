@@ -69,3 +69,33 @@ test.describe("AC-BDETAIL-20 · 가로 스크롤이 없다", () => {
     });
   }
 });
+
+test("AC-BDETAIL-12 · 모바일 동작은 위 수정, 아래 다시 내리기·삭제다", async ({
+  page,
+}) => {
+  await open(page, 390, 844);
+
+  await expect(
+    page.getByRole("banner").getByRole("link", { name: "수정" }),
+  ).toBeVisible();
+
+  const cta = await page
+    .getByRole("link", { name: "다시 내리기" })
+    .boundingBox();
+  // 「전폭」은 main의 콘텐츠 폭(좌우 패딩을 뺀 폭)이다.
+  const content = await page.getByRole("main").evaluate((el) => {
+    const s = getComputedStyle(el);
+    return (
+      el.clientWidth - parseFloat(s.paddingLeft) - parseFloat(s.paddingRight)
+    );
+  });
+  expect(Math.abs(cta!.width - content)).toBeLessThanOrEqual(1);
+
+  // 화면 밖(아래)이면 간격이 음수가 된다 — 「24 이하」만 보면 그것도 통과해 버린다.
+  const gap = 844 - (cta!.y + cta!.height);
+  expect(gap).toBeGreaterThanOrEqual(0);
+  expect(gap).toBeLessThanOrEqual(24);
+
+  const remove = await page.getByRole("button", { name: "삭제" }).boundingBox();
+  expect(remove!.y).toBeGreaterThan(cta!.y);
+});

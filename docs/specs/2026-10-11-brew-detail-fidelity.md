@@ -280,7 +280,7 @@ supersedes:
   키트 `LedgerField`·`SectionLabel` 재사용. 읽기 전용 점은 키트에 `TasteDots`의 읽기 전용 모양을 더하지 않고
   상세 안의 작은 컴포넌트로 둔다(버튼이 없어야 한다).
 
-- [ ] **Task 8: 모바일 동작 + 남의 기록** — Covers: AC-BDETAIL-12, 13(동작)
+- [x] **Task 8: 모바일 동작 + 남의 기록** — Covers: AC-BDETAIL-12, 13(동작)
 
   하단 전폭 `다시 내리기`(sticky, AC-BREWFORM-12와 같은 방식) + `삭제` 텍스트 버튼. 위 `수정`은 상단 바 자리.
 

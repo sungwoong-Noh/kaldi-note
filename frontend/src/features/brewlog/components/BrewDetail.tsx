@@ -327,7 +327,37 @@ export function BrewDetail({ id }: { id: number }) {
       {gear}
       {rating}
       {memo}
-      <div className="flex items-center gap-2 self-start">{actions}</div>
+      {/* 목업 B2 — 위 `수정`(상단 바 자리), 아래 전폭 `다시 내리기`(흐름 안 sticky) + `삭제`(AC-BDETAIL-12). */}
+      {isMine && (
+        <TopBarActions>
+          <Link
+            href={`/brews/${id}/edit`}
+            className="hit-44 flex items-center text-[14.5px] font-medium text-accent"
+          >
+            수정
+          </Link>
+        </TopBarActions>
+      )}
+      {recipeId !== undefined && (
+        <div className="sticky bottom-0 z-10 -mx-6 border-t border-divider bg-paper px-6 py-3">
+          <ButtonLink
+            href={`/brews/new?recipeId=${recipeId}`}
+            variant="primary"
+            className="w-full"
+          >
+            다시 내리기
+          </ButtonLink>
+        </div>
+      )}
+      {isMine && (
+        <button
+          type="button"
+          onClick={() => setConfirmingDelete(true)}
+          className="hit-44 self-center text-[13.5px] text-ink-3"
+        >
+          삭제
+        </button>
+      )}
       {dialog}
     </Screen>
   );

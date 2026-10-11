@@ -234,6 +234,8 @@ supersedes:
 - AC-WEBLOGSTEP-02(docs/specs/2026-09-03-web-brew-log-steps.md) → AC-BDETAIL-01 배치 — 스텝은 비교표 뒤
 - AC-SMALL-05(docs/specs/2026-09-17-small-features.md)의 **웹** 부분 → AC-BDETAIL-05 — 웹 차이 열은 `같습니다.`. 모바일은 AC-BDETAIL-07이 잇는다
 
+- AC-HOMECAL-54(docs/specs/2026-09-19-home-calendar.md)의 **상세** 표기 `2026-09-19` → AC-BDETAIL-04의 `09.19 토 · 08:00` — KST 변환은 그대로(구현 중 발견, 2026-10-11 사람 확인)
+
 나머지 CONSIST·STRUCT·WEBNAME·WEBLOGSTEP·WEBLOGEDIT·SMALL AC는 그대로 유효하다.
 
 ---
@@ -251,7 +253,7 @@ supersedes:
   `headline.ts`에 `detailHeadline(log)`(수율 → 비율 → 물 온도)을 더한다. 카드의 `headline()`은 건드리지 않는다.
   히어로는 기록 폼 `BrewHero` 웹 모양(eyebrow · 큰 값 · 3열)을 따르되 상세 전용 컴포넌트로 둔다.
 
-- [ ] **Task 3: 제목 영역** — Covers: AC-BDETAIL-04
+- [x] **Task 3: 제목 영역** — Covers: AC-BDETAIL-04
 
   날짜 eyebrow(KST `MM.DD 요일 · HH:mm`), `h1` 링크, 원두·로스팅일·드리퍼 줄(`useBrewSubParts` 재사용).
 

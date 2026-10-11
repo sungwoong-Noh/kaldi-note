@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Recipe } from "@/features/recipe/schema";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
+  brewers,
   brewLogWithoutTds,
   brewLogWithTds,
   fritzRoaster,
@@ -70,6 +71,7 @@ beforeEach(() => {
       HttpResponse.json(yirgacheffeProduct),
     ),
     http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
+    http.get(`${BASE}/gear/brewers`, () => HttpResponse.json(brewers)),
   );
 });
 
@@ -87,14 +89,6 @@ function leadElements(): Element[] {
 function leadLabel(lead: Element): string | null | undefined {
   return lead.closest("[data-hero]")?.querySelector("[data-eyebrow]")
     ?.textContent;
-}
-
-/** 실측값 절. `stepSection()`과 같은 방식이다 — 이 파일이 이미 쓰는 패턴. */
-async function measureSection(): Promise<HTMLElement> {
-  const heading = await screen.findByText("실측값");
-  const section = heading.closest("section");
-  expect(section).not.toBeNull();
-  return section as HTMLElement;
 }
 
 describe("BrewDetailPage", () => {
@@ -459,7 +453,8 @@ describe("BrewDetailPage — 푸어 스텝", () => {
 
     await renderDetail();
 
-    expect(await screen.findByText("2026-09-19")).toBeInTheDocument();
+    // 상세 부분은 AC-BDETAIL-04의 eyebrow 형식으로 본다 — UTC 09-18 23시가 KST 09-19 08시다.
+    expect(await screen.findByText("09.19 토 · 08:00")).toBeInTheDocument();
   });
 });
 
@@ -549,5 +544,26 @@ describe("BrewDetailPage — 대표 수치·히어로", () => {
         "TDS 측정값이 없어 추출 수율을 계산할 수 없습니다. 비율과 관능 평가로 판단하세요.",
       ),
     ).toBeNull();
+  });
+});
+
+describe("BrewDetailPage — 제목 영역", () => {
+  it("AC-BDETAIL-04 · 제목 영역은 날짜·레시피·원두 줄이다", async () => {
+    server.use(
+      logIs({ recipeId: 12 }),
+      http.get(`${BASE}/recipes/12`, () => HttpResponse.json(kasuyaRecipe)),
+    );
+    await renderDetail();
+
+    const h1 = await screen.findByRole("heading", { level: 1 });
+    const link = await within(h1).findByRole("link", {
+      name: "Tetsu Kasuya 4:6 Method",
+    });
+    expect(link).toHaveAttribute("href", "/recipes/12");
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.getByText("08.31 월 · 18:00")).toBeInTheDocument();
+    expect(
+      await screen.findByText("프릿츠 예가체프 · 로스팅 08.28 · Hario V60 02"),
+    ).toBeInTheDocument();
   });
 });

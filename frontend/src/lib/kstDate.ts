@@ -8,8 +8,22 @@ const KST_OFFSET_MINUTES = 540;
 
 /** `2026-09-18T23:00:00Z` → `2026-09-19` */
 export function toKstDate(iso: string): string {
-  const shifted = new Date(new Date(iso).getTime() + KST_OFFSET_MINUTES * 60_000);
+  const shifted = new Date(
+    new Date(iso).getTime() + KST_OFFSET_MINUTES * 60_000,
+  );
   return shifted.toISOString().slice(0, 10);
+}
+
+const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
+
+/** `2026-08-31T09:00:00Z` → `08.31 월 · 18:00` — 기록 상세 eyebrow(docs/specs/2026-10-11-brew-detail-fidelity.md AC-BDETAIL-04). */
+export function formatKstStamp(iso: string): string {
+  const shifted = new Date(
+    new Date(iso).getTime() + KST_OFFSET_MINUTES * 60_000,
+  );
+  const [, month, day] = shifted.toISOString().slice(0, 10).split("-");
+  const time = shifted.toISOString().slice(11, 16);
+  return `${month}.${day} ${WEEKDAYS[shifted.getUTCDay()]} · ${time}`;
 }
 
 /** KST 기준 오늘 날짜. `YYYY-MM-DD`. */

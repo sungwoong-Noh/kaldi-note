@@ -8,6 +8,8 @@ import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { RecipeStepList } from "@/features/recipe/components/RecipeStepList";
+import { LedgerField } from "@/components/kit";
+import { useBrewers } from "@/features/gear/queries";
 import { useMe } from "@/features/user/queries";
 import {
   formatDuration,
@@ -15,7 +17,7 @@ import {
   formatRatio,
   formatTemperature,
 } from "@/lib/format";
-import { toKstDate } from "@/lib/kstDate";
+import { formatKstStamp } from "@/lib/kstDate";
 import { deleteBrewLog, fetchBrewLog } from "../api";
 import { detailHeadline } from "../headline";
 import type { BrewLog } from "../schema";
@@ -41,6 +43,7 @@ export function BrewDetail({ id }: { id: number }) {
   const recipeId = logQuery.data?.recipeId;
   const recipe = useRecipeLabel(recipeId, ready, onSessionLost);
   const bean = useBeanLabel(logQuery.data?.beanBatchId, ready, onSessionLost);
+  const brewers = useBrewers(onSessionLost);
 
   const remove = useMutation({
     mutationFn: () => deleteBrewLog(id, onSessionLost),
@@ -70,54 +73,70 @@ export function BrewDetail({ id }: { id: number }) {
   }
 
   const log = logQuery.data;
+  // `프릿츠 예가체프 · 로스팅 08.28 · Hario V60 02` — 못 읽은 조각은 뺀다(대체 문구를 줄에 쓰지 않는다).
+  const brewer = brewers.data?.find((item) => item.id === recipe.brewerId);
+  const subline = [
+    bean.isReady && bean.label,
+    bean.roastedAt !== undefined &&
+      `로스팅 ${bean.roastedAt.slice(5, 7)}.${bean.roastedAt.slice(8, 10)}`,
+    brewer !== undefined && `${brewer.brand} ${brewer.name}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   const isMine = me.data !== undefined && log.userId === me.data.id;
   const lead = detailHeadline(log);
 
   return (
     <Screen>
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <p className="text-body text-ink-3">{toKstDate(log.brewedAt)}</p>
-          {/*
-            화면 제목이다. **`h1`은 언제나 그리고 링크만 조건부로 한다** — 조건부로 사라지면
-            제목 없는 화면이 생기고, 스크린리더 사용자가 「지금 무엇을 보고 있는가」를 제목
-            탐색으로 알 수 없다.
+      <div className="flex flex-col">
+        <span className="font-mono text-[10.5px] tracking-[0.14em] text-ink-3 uppercase">
+          {formatKstStamp(log.brewedAt)}
+        </span>
+        {/*
+          화면 제목이다. **`h1`은 언제나 그리고 링크만 조건부로 한다** — 조건부로 사라지면
+          제목 없는 화면이 생기고, 스크린리더 사용자가 「지금 무엇을 보고 있는가」를 제목
+          탐색으로 알 수 없다.
 
-            읽었을 때만 링크다. 못 읽었다는 것은 그 레시피를 볼 권한이 없다는 뜻이라 링크를
-            누르면 403 화면으로 간다. 두 갈래가 같은 크기·굵기를 갖게 해서 폴백일 때 레이아웃이
-            흔들리지 않게 한다.
-          */}
-          <h1 className="text-page-title font-semibold">
-            {recipeId !== undefined && recipe.isReady ? (
-              <Link
-                href={`/recipes/${recipeId}`}
-                className="underline-offset-2 hover:underline"
-              >
-                {recipe.label}
-              </Link>
-            ) : (
-              recipe.label
-            )}
-          </h1>
-          {bean.label !== "" && (
-            <dl className="flex items-center gap-1 text-body text-ink-3">
-              <dt>원두</dt>
-              <dd>{bean.label}</dd>
-            </dl>
+          읽었을 때만 링크다. 못 읽었다는 것은 그 레시피를 볼 권한이 없다는 뜻이라 링크를
+          누르면 403 화면으로 간다. 두 갈래가 같은 크기·굵기를 갖게 해서 폴백일 때 레이아웃이
+          흔들리지 않게 한다.
+        */}
+        <h1 className="mt-[6px] text-page-title font-semibold min-[1100px]:text-[30px]">
+          {recipeId !== undefined && recipe.isReady ? (
+            <Link
+              href={`/recipes/${recipeId}`}
+              className="underline-offset-2 hover:underline"
+            >
+              {recipe.label}
+            </Link>
+          ) : (
+            recipe.label
           )}
-        </div>
-        {log.rating !== undefined && (
-          <span className="shrink-0 text-body">
-            <span aria-hidden>★</span> {log.rating}
-          </span>
+        </h1>
+        {subline !== "" && (
+          <p className="mt-[4px] text-[13.5px] text-ink-3">{subline}</p>
         )}
       </div>
 
-      {/*
-        대표 수치는 히어로 판 위에 올린다 — docs/specs/2026-09-17-screen-reskin.md
-        아이브로우가 라벨 역할을 하므로 sr-only dt가 따로 필요없다.
-      */}
       <BrewDetailHero log={log} />
+
+      {log.beanBatchId !== undefined && bean.label !== "" && (
+        <div className="flex flex-col">
+          <LedgerField
+            label="원두"
+            value={bean.label}
+            sub={
+              [
+                bean.roastedAt !== undefined &&
+                  `로스팅 ${bean.roastedAt.slice(5, 7)}.${bean.roastedAt.slice(8, 10)}`,
+                log.daysOffRoast !== undefined && `${log.daysOffRoast}일차`,
+              ]
+                .filter(Boolean)
+                .join(" · ") || undefined
+            }
+          />
+        </div>
+      )}
 
       {/* 레시피를 못 읽으면 그리지 않는다 — 비교할 대상이 없다(AC-STRUCT-13). */}
       {recipe.targets !== undefined && (

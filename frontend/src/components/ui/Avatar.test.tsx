@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Avatar } from "./Avatar";
 
@@ -47,5 +47,40 @@ describe("Avatar", () => {
       />,
     );
     expect(container.querySelector("img")).not.toBeNull();
+  });
+
+  it.each([32, 36, 50])(
+    "AC-HOMEFIT-14 · 사진은 %ipx 고정 박스이고 object-fit이 cover다",
+    (size) => {
+      const { container } = render(
+        <Avatar
+          nickname="A"
+          profileImageUrl="https://example.com/a.png"
+          size={size}
+          userId={1}
+        />,
+      );
+      const img = container.querySelector("img");
+      expect(img).toHaveStyle({
+        width: `${size}px`,
+        height: `${size}px`,
+        objectFit: "cover",
+      });
+    },
+  );
+
+  it("AC-HOMEFIT-20 · 사진 로드가 실패하면 같은 크기의 이니셜 원으로 바뀐다", () => {
+    const { container } = render(
+      <Avatar
+        nickname="Bean"
+        profileImageUrl="https://example.com/broken.png"
+        size={50}
+        userId={1}
+      />,
+    );
+    fireEvent.error(container.querySelector("img")!);
+
+    expect(container.querySelector("img")).toBeNull();
+    expect(screen.getByText("B")).toHaveStyle({ width: "50px", height: "50px" });
   });
 });

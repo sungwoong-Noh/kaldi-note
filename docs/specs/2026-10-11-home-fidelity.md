@@ -242,7 +242,7 @@ ADR 0010(목업이 시각의 정본)에 따라 아래 AC는 이 스펙의 값으
 
 ## 구현 순서
 
-- [ ] **Task 1: 아바타 고정 박스 + 실패 시 이니셜(#179)** — Covers: AC-HOMEFIT-14, 20
+- [x] **Task 1: 아바타 고정 박스 + 실패 시 이니셜(#179)** — Covers: AC-HOMEFIT-14, 20
 
   ```tsx
   // Avatar: const [failed, setFailed] = useState(false)

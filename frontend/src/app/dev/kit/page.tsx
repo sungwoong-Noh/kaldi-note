@@ -3,15 +3,19 @@ import type { ReactNode } from "react";
 import {
   BottomCta,
   BottomSheet,
+  LedgerField,
   LedgerRow,
+  NumberCell,
   PageHeader,
   PillFilter,
   RecipeCardKit,
   RoastLabel,
   Segmented,
+  SectionLabel,
   SheetLabel,
   StatTile,
   Tag,
+  TasteDots,
   TempChip,
 } from "@/components/kit";
 import { Avatar } from "@/components/ui";
@@ -30,7 +34,9 @@ export const metadata: Metadata = {
 function Part({ name, children }: { name: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-[16px] rounded-[4px] border border-border bg-paper px-[24px] py-[22px]">
-      <h2 className="font-mono text-[11px] tracking-[0.12em] text-ink-3 uppercase">{name}</h2>
+      <h2 className="font-mono text-[11px] tracking-[0.12em] text-ink-3 uppercase">
+        {name}
+      </h2>
       {children}
     </section>
   );
@@ -51,10 +57,15 @@ export default function KitPage() {
   return (
     <main className="mx-auto flex w-full max-w-[1080px] flex-col gap-[32px] px-[16px] pt-[56px] pb-[120px] min-[1100px]:px-[32px]">
       <header className="flex flex-col gap-[12px] border-b border-border pb-[36px]">
-        <span className="font-mono text-[11px] tracking-[0.14em] text-ink-3 uppercase">dev · kit</span>
-        <h1 className="text-[40px] leading-[1.15] font-semibold tracking-[-0.025em] text-ink">부품 키트</h1>
+        <span className="font-mono text-[11px] tracking-[0.14em] text-ink-3 uppercase">
+          dev · kit
+        </span>
+        <h1 className="text-[40px] leading-[1.15] font-semibold tracking-[-0.025em] text-ink">
+          부품 키트
+        </h1>
         <p className="max-w-[64ch] text-[16.5px] leading-[1.7] text-ink-2">
-          목업 CSS 값 그대로 옮긴 공용 부품입니다. 색만 가장 가까운 토큰을 씁니다.
+          목업 CSS 값 그대로 옮긴 공용 부품입니다. 색만 가장 가까운 토큰을
+          씁니다.
         </p>
       </header>
 
@@ -134,6 +145,57 @@ export default function KitPage() {
 
         <Part name="Bottom CTA · full width">
           <BottomCta>새 레시피</BottomCta>
+        </Part>
+
+        <Part name="Section label · number cell">
+          <div className="flex flex-col gap-[10px]">
+            <SectionLabel>수치</SectionLabel>
+            <div className="grid grid-cols-2 gap-[10px]">
+              <NumberCell
+                label="원두"
+                accessibleName="원두량"
+                unit="g"
+                defaultValue="30.5"
+              />
+              <NumberCell
+                label="물"
+                accessibleName="물량"
+                unit="g"
+                defaultValue="500.0"
+              />
+              <NumberCell
+                label="추출 시간"
+                accessibleName="추출 시간"
+                inputMode="text"
+                defaultValue="3:45"
+              />
+            </div>
+          </div>
+        </Part>
+
+        <Part name="Ledger field">
+          <div>
+            <LedgerField
+              label="원두"
+              value="프릿츠 · 예가체프"
+              sub="로스팅 09.21 · 7일차"
+              action="변경"
+            />
+            <LedgerField
+              label="그라인더"
+              value="Comandante · C40"
+              action="변경"
+            />
+            <LedgerField label="분쇄도" value="24 클릭" sub="레시피 22 클릭" />
+          </div>
+        </Part>
+
+        <Part name="Taste dots">
+          <div className="flex flex-col">
+            <TasteDots label="산미" value={4} />
+            <TasteDots label="단맛" value={3} />
+            <TasteDots label="바디" value={null} />
+          </div>
         </Part>
 
         <Part name="Bottom sheet">

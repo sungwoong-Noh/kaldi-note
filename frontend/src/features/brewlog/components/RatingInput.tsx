@@ -9,31 +9,37 @@ const STARS = [1, 2, 3, 4, 5];
  * 읽기 화면은 `4.5` 같은 값도 그대로 표시한다.
  *
  * <p>같은 별을 다시 누르면 해제된다 — 잘못 눌렀을 때 되돌릴 방법이 없으면 저장할 수밖에 없다.
+ *
+ * <p>시안 `.stars` — 웹 22px, 모바일 원장 행 안 18px. 보이는 칸은 작고 누르는 영역은 `hit-44`다.
  */
 export function RatingInput({
   value,
   onChange,
+  compact = false,
 }: {
   value: number | null;
   onChange: (value: number | null) => void;
+  compact?: boolean;
 }) {
   return (
-    <div className="flex items-center gap-1">
-      <span className="w-20 shrink-0 text-body text-ink-3">별점</span>
-      {STARS.map((star) => (
-        <button
-          key={star}
-          type="button"
-          aria-label={`별점 ${star}`}
-          aria-pressed={value !== null && star <= value}
-          onClick={() => onChange(value === star ? null : star)}
-          className="inline-flex size-11 shrink-0 items-center justify-center text-[22px] leading-none"
-        >
-          <span aria-hidden="true">
-            {value !== null && star <= value ? "★" : "☆"}
-          </span>
-        </button>
-      ))}
+    <div className="flex items-center gap-[6px]">
+      {STARS.map((star) => {
+        const on = value !== null && star <= value;
+        return (
+          <button
+            key={star}
+            type="button"
+            aria-label={`별점 ${star}`}
+            aria-pressed={on}
+            onClick={() => onChange(value === star ? null : star)}
+            className={`hit-44 inline-flex shrink-0 items-center justify-center leading-none ${
+              compact ? "size-[22px] text-[18px]" : "size-[28px] text-[22px]"
+            } ${on ? "text-accent" : "text-divider-strong"}`}
+          >
+            <span aria-hidden="true">★</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

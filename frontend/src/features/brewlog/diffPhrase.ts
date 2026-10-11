@@ -64,3 +64,34 @@ export function diffPhrase(
       return `${gapDuration(gap)} ${more ? "늦게" : "빨리"} 끝났습니다.`;
   }
 }
+
+/**
+ * 레시피 기준값과 실측값의 차이 문장을 원두 → 물 → 온도 → 시간 순으로. 같거나 비교할 값이 없는 것은 빠진다.
+ * 기록 폼이 저장 전에 미리 보여준다(docs/specs/2026-10-11-brew-form-fidelity.md AC-BREWFIT-08).
+ */
+export function diffPhrases(
+  target: {
+    doseG?: number;
+    waterG?: number;
+    waterTempC?: number;
+    totalTimeSeconds?: number;
+  },
+  actual: {
+    doseG?: number;
+    waterG?: number;
+    waterTempC?: number;
+    totalTimeSeconds?: number;
+  },
+): string[] {
+  return [
+    diffPhrase("weight", "원두", target.doseG, actual.doseG),
+    diffPhrase("weight", "물", target.waterG, actual.waterG),
+    diffPhrase("temperature", "물", target.waterTempC, actual.waterTempC),
+    diffPhrase(
+      "duration",
+      "추출",
+      target.totalTimeSeconds,
+      actual.totalTimeSeconds,
+    ),
+  ].filter((phrase) => phrase !== null);
+}

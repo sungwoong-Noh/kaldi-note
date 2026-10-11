@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
   brewLogWithTds,
@@ -13,6 +13,7 @@ import {
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
+import { mockViewportWidth } from "@/test/viewport";
 import BrewEditPage from "./page";
 
 const push = vi.fn();
@@ -49,8 +50,15 @@ function baseHandlers() {
   ];
 }
 
-/** `레시피`·`원두` 항목의 값 칸. `dt`와 같은 `div` 안에 `dd`가 있다. */
+/**
+ * `레시피`·`원두` 항목. 원두는 원장 행이고(같은 글자의 숫자 칸 라벨 `원두`가 따로 있다), 레시피는 웹
+ * 제목 아래 줄이다(숨긴 라벨 `레시피`와 같은 `div`).
+ */
 function fieldValue(term: string): HTMLElement {
+  const ledger = [
+    ...document.querySelectorAll<HTMLElement>("[data-kit='ledger-field']"),
+  ].find((el) => el.firstElementChild?.textContent === term);
+  if (ledger !== undefined) return ledger;
   const row = screen.getByText(term).closest("div");
   if (row === null) throw new Error(`${term} 항목을 찾지 못했다`);
   return row;
@@ -90,10 +98,10 @@ describe("BrewEditPage", () => {
   it("AC-WEBLOGEDIT-04 · 저장된 값이 채워진 채로 열린다", async () => {
     await renderEditPage();
 
-    expect(await screen.findByLabelText("원두량")).toHaveValue(20);
-    expect(screen.getByLabelText("물량")).toHaveValue(300);
-    expect(screen.getByLabelText("물 온도")).toHaveValue(92);
-    expect(screen.getByLabelText("TDS")).toHaveValue(1.35);
+    expect(await screen.findByLabelText("원두량")).toHaveValue("20");
+    expect(screen.getByLabelText("물량")).toHaveValue("300");
+    expect(screen.getByLabelText("물 온도")).toHaveValue("92");
+    expect(screen.getByLabelText("TDS")).toHaveValue("1.35");
   });
 
   it("AC-BREWFORM-06 · 편집 화면은 저장된 초를 m:ss로 채운다", async () => {
@@ -381,5 +389,57 @@ describe("BrewEditPage — 나가기 확인", () => {
     );
 
     expect(push).toHaveBeenCalledWith("/brews/42");
+  });
+});
+
+// ── docs/specs/2026-10-11-brew-form-fidelity.md ─────────────────────────────
+
+describe("BrewEditPage — 시안 정합", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("AC-BREWFIT-18 · 웹 편집 화면은 제목이 기록 편집이고 취소·저장만 있다", async () => {
+    await renderEditPage();
+    await screen.findByLabelText("원두량");
+
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "기록 편집",
+    );
+    expect(screen.getByRole("button", { name: "취소" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "저장" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "기록하기" })).toBeNull();
+  });
+
+  it("AC-BREWFIT-18 · 모바일 편집 화면은 상단과 하단 둘 다 저장이다", async () => {
+    mockViewportWidth(390);
+    await renderEditPage();
+    await screen.findByLabelText("원두량");
+
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      "기록 편집",
+    );
+    expect(screen.getAllByRole("button", { name: "저장" })).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: "기록하기" })).toBeNull();
+  });
+
+  it("AC-BREWFIT-20 · 원본 레시피가 없으면 기준 표시도 없다", async () => {
+    server.use(
+      http.get(`${BASE}/recipes/12`, () =>
+        HttpResponse.json(
+          { code: "NOT_FOUND", message: "레시피를 찾을 수 없습니다." },
+          { status: 404 },
+        ),
+      ),
+    );
+
+    await renderEditPage();
+    await screen.findByLabelText("원두량");
+    const hero = document.querySelector<HTMLElement>("[data-hero]")!;
+    await waitFor(() =>
+      expect(fieldValue("레시피")).not.toHaveTextContent("불러오는 중"),
+    );
+
+    expect(within(hero).queryAllByText(/^레시피 /)).toHaveLength(0);
+    expect(document.querySelector("[data-recipe-diff]")).toBeNull();
+    expect(within(hero).getByText("1:15.0")).toBeInTheDocument();
   });
 });

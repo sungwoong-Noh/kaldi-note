@@ -13,13 +13,8 @@ async function delayMe(page: Page, ms: number) {
 
 const TAB_PAGES = ["/recipes", "/brews", "/more"];
 
-const EXCLUDED_PAGES = [
-  "/login",
-  "/recipes/new",
-  "/brews/new?recipeId=12",
-  "/recipes/12/edit",
-  "/brews/2/edit",
-];
+// 기록 작성·편집(`/brews/new`·`/brews/2/edit`)은 ≥1100px에서 상단 바를 띄운다 — AC-BREWFIT-03이 대체했다.
+const EXCLUDED_PAGES = ["/login", "/recipes/new", "/recipes/12/edit"];
 
 test.describe("웹 헤더 롤아웃", () => {
   // 상세·도구 화면은 `<1100px`에서 로고 대신 「뒤로」다 — AC-WEBHDR-01의 그 부분은
@@ -45,7 +40,9 @@ test.describe("웹 헤더 롤아웃", () => {
 
     const header = page.locator("header");
     await expect(header.getByRole("link", { name: "홈" })).toBeHidden();
-    await expect(header.getByRole("link", { name: "이 레시피로 내렸다" })).toBeHidden();
+    await expect(
+      header.getByRole("link", { name: "이 레시피로 내렸다" }),
+    ).toBeHidden();
     await expect(header.getByRole("link", { name: "더보기" })).toBeHidden();
   });
 
@@ -58,7 +55,9 @@ test.describe("웹 헤더 롤아웃", () => {
 
     const header = page.locator("header");
     await expect(header.getByRole("link", { name: "홈" })).toBeVisible();
-    await expect(header.getByRole("link", { name: "레시피", exact: true })).toBeVisible();
+    await expect(
+      header.getByRole("link", { name: "레시피", exact: true }),
+    ).toBeVisible();
     await expect(
       header.getByRole("link", { name: "내 잔", exact: true }),
     ).toBeVisible();
@@ -78,10 +77,9 @@ test.describe("웹 헤더 롤아웃", () => {
     await page.goto("/recipes");
 
     const header = page.locator("header");
-    await expect(header.getByRole("link", { name: "레시피", exact: true })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
+    await expect(
+      header.getByRole("link", { name: "레시피", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
     await expect(header.getByRole("link", { name: "홈" })).not.toHaveAttribute(
       "aria-current",
     );
@@ -117,7 +115,9 @@ test.describe("웹 헤더 롤아웃", () => {
 
     const header = page.locator("header");
     await expect(header.locator("svg")).toBeVisible();
-    await expect(header.getByRole("link", { name: "레시피", exact: true })).toBeHidden();
+    await expect(
+      header.getByRole("link", { name: "레시피", exact: true }),
+    ).toBeHidden();
   });
 
   for (const path of EXCLUDED_PAGES) {

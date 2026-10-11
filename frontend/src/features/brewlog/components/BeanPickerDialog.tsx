@@ -103,7 +103,7 @@ export function beanName(
 }
 
 /** `로스팅 09.10 · 2일차 · 남은 200 g`. 경과일은 서버가 계산해 준다 — 없으면 뺀다. */
-function batchCaption(batch: BeanBatch): string {
+export function batchCaption(batch: BeanBatch): string {
   const [, month, day] = batch.roastedAt.split("-");
   return [
     `로스팅 ${month}.${day}`,

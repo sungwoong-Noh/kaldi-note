@@ -14,6 +14,14 @@ export function isHidden(pathname: string): boolean {
   );
 }
 
+/**
+ * 기록 작성·편집. 탭바는 감추지만 `≥1100px`에서는 상단 바를 띄우고 오른쪽에 폼의 `취소`·`기록하기`를
+ * 받는다(docs/specs/2026-10-11-brew-form-fidelity.md AC-BREWFIT-03 — AC-WEBHDR-10의 이 두 경로를 대체).
+ */
+export function isBrewForm(pathname: string): boolean {
+  return /^\/brews\/(new|[^/]+\/edit)$/.test(pathname);
+}
+
 /** 홈은 완전 일치일 때만 켜진다. 접두어로 보면 모든 경로에서 켜진다. */
 export function isActive(href: string, pathname: string): boolean {
   if (href === "/") return pathname === "/";

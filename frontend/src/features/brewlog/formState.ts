@@ -35,8 +35,6 @@ export type BrewLogFormState = {
   tdsPercent: number | null;
   rating: number | null;
   overallNote: string;
-  /** `맛 자세히`를 펼쳤는가. 접힌 채로 저장하면 5축을 요청에 담지 않는다 */
-  sensoryExpanded: boolean;
   acidity: number | null;
   sweetness: number | null;
   body: number | null;
@@ -96,7 +94,6 @@ export function initialFormState(
     tdsPercent: null,
     rating: null,
     overallNote: "",
-    sensoryExpanded: false,
     acidity: null,
     sweetness: null,
     body: null,
@@ -130,13 +127,6 @@ export function formStateFromLog(log: BrewLog): BrewLogEditState {
     tdsPercent: log.tdsPercent ?? null,
     rating: log.rating ?? null,
     overallNote: log.overallNote ?? "",
-    // 하나라도 값이 있으면 펼쳐서 연다. 접힌 채로 열면 넣어둔 평가가 보이지 않는다.
-    sensoryExpanded:
-      log.acidity !== undefined ||
-      log.sweetness !== undefined ||
-      log.body !== undefined ||
-      log.bitterness !== undefined ||
-      log.aftertaste !== undefined,
     acidity: log.acidity ?? null,
     sweetness: log.sweetness ?? null,
     body: log.body ?? null,
@@ -179,19 +169,9 @@ function omitEmpty<T extends object>(entries: [string, unknown][]): T {
 /**
  * 폼 상태를 요청 본문으로 만든다.
  *
- * <p><b>5축은 펼쳤을 때만 담는다.</b> 접어둔 채 저장하면 사용자가 평가한 적이 없다는 뜻이다.
+ * <p>5축은 고른 축만 담는다 — 고르지 않은 축은 `null`이라 빠진다(AC-BREWFIT-15·21).
  */
 export function toRequestBody(state: BrewLogFormState): BrewLogRequestBody {
-  const sensory = state.sensoryExpanded
-    ? [
-        ["acidity", state.acidity] as [string, unknown],
-        ["sweetness", state.sweetness] as [string, unknown],
-        ["body", state.body] as [string, unknown],
-        ["bitterness", state.bitterness] as [string, unknown],
-        ["aftertaste", state.aftertaste] as [string, unknown],
-      ]
-    : [];
-
   return omitEmpty<BrewLogRequestBody>([
     ["recipeId", state.recipeId],
     ["beanBatchId", state.beanBatchId],
@@ -208,7 +188,11 @@ export function toRequestBody(state: BrewLogFormState): BrewLogRequestBody {
     ["rating", state.rating],
     ["overallNote", state.overallNote],
     ["visibility", state.visibility],
-    ...sensory,
+    ["acidity", state.acidity],
+    ["sweetness", state.sweetness],
+    ["body", state.body],
+    ["bitterness", state.bitterness],
+    ["aftertaste", state.aftertaste],
   ]);
 }
 
@@ -216,7 +200,7 @@ export type BrewLogPatchBody = Partial<
   Omit<BrewLogRequestBody, "recipeId" | "beanBatchId">
 > & { visibility?: BrewLogEditState["visibility"] };
 
-/** 요청에 실을 수 있는 필드. `recipeId`·`beanBatchId`·`sensoryExpanded`는 없다. */
+/** 요청에 실을 수 있는 필드. `recipeId`·`beanBatchId`는 없다. */
 const PATCHABLE = [
   "brewedAt",
   "userGrinderId",

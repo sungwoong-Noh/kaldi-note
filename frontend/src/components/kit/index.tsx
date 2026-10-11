@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { InputHTMLAttributes, ReactNode } from "react";
 import type { RoastLevel } from "@/features/catalog/schema";
 import { RoastDot } from "@/components/ui";
 
@@ -99,7 +99,11 @@ export function PillFilter<T extends string>({
   label: string;
 }) {
   return (
-    <div role="group" aria-label={label} className="flex gap-[7px] min-[1100px]:gap-[10px]">
+    <div
+      role="group"
+      aria-label={label}
+      className="flex gap-[7px] min-[1100px]:gap-[10px]"
+    >
       {options.map((option) => {
         const active = option.value === value;
         return (
@@ -146,8 +150,12 @@ export function LedgerRow({
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-[10px]">
-          <span className="truncate text-[15px] font-medium text-ink">{title}</span>
-          <span className="shrink-0 font-mono text-[14px] font-medium text-ink">{value}</span>
+          <span className="truncate text-[15px] font-medium text-ink">
+            {title}
+          </span>
+          <span className="shrink-0 font-mono text-[14px] font-medium text-ink">
+            {value}
+          </span>
         </div>
         <div className="mt-[5px] flex justify-between gap-[10px] font-mono text-[11.5px]">
           <span className="text-ink-3">{meta}</span>
@@ -184,7 +192,10 @@ export function StatTile({
         web ? "px-[20px] py-[18px]" : "px-[16px] py-[14px]",
       )}
     >
-      <div data-stat-label className="font-mono text-[9.5px] tracking-[0.1em] text-ink-3 uppercase">
+      <div
+        data-stat-label
+        className="font-mono text-[9.5px] tracking-[0.1em] text-ink-3 uppercase"
+      >
         {label}
       </div>
       <div
@@ -192,7 +203,10 @@ export function StatTile({
           "text-ink",
           prose
             ? "mt-[8px] text-[15px] font-medium"
-            : cx("font-mono font-medium", web ? "mt-[6px] text-[24px]" : "mt-[5px] text-[22px]"),
+            : cx(
+                "font-mono font-medium",
+                web ? "mt-[6px] text-[24px]" : "mt-[5px] text-[22px]",
+              ),
         )}
       >
         {value}
@@ -211,7 +225,13 @@ export function TempChip({ children }: { children: string }) {
 }
 
 /** 배전도 점 + 라벨. */
-export function RoastLabel({ roastLevel, label }: { roastLevel: RoastLevel; label: string }) {
+export function RoastLabel({
+  roastLevel,
+  label,
+}: {
+  roastLevel: RoastLevel;
+  label: string;
+}) {
   return (
     <span className="flex items-center gap-[6px]">
       <RoastDot roastLevel={roastLevel} />
@@ -221,7 +241,13 @@ export function RoastLabel({ roastLevel, label }: { roastLevel: RoastLevel; labe
 }
 
 /** 작은 mono 태그. `accent`면 내가 만든 것(accent-wash). */
-export function Tag({ children, accent = false }: { children: string; accent?: boolean }) {
+export function Tag({
+  children,
+  accent = false,
+}: {
+  children: string;
+  accent?: boolean;
+}) {
   return (
     <span
       className={cx(
@@ -250,7 +276,9 @@ export function RecipeCardKit({
 }) {
   return (
     <article className="flex flex-col gap-[13px] rounded-[12px] border border-border px-[18px] py-[17px]">
-      <h3 className="text-[17px] font-semibold tracking-[-0.015em] text-ink">{title}</h3>
+      <h3 className="text-[17px] font-semibold tracking-[-0.015em] text-ink">
+        {title}
+      </h3>
       <div className="flex items-end justify-between gap-[12px]">
         <span className="font-mono text-[36px] leading-none font-medium tracking-[-0.04em] text-ink">
           {dose}
@@ -260,7 +288,9 @@ export function RecipeCardKit({
           <RoastLabel roastLevel={roast.level} label={roast.label} />
         </span>
       </div>
-      <div className="flex items-center gap-[9px] border-t border-sunken pt-[12px]">{footer}</div>
+      <div className="flex items-center gap-[9px] border-t border-sunken pt-[12px]">
+        {footer}
+      </div>
     </article>
   );
 }
@@ -311,7 +341,9 @@ export function BottomSheet({
         <span className="h-[4px] w-[40px] rounded-full bg-border" />
       </div>
       <div className="flex items-baseline justify-between">
-        <h2 className="text-[19px] font-semibold tracking-[-0.02em] text-ink">{title}</h2>
+        <h2 className="text-[19px] font-semibold tracking-[-0.02em] text-ink">
+          {title}
+        </h2>
         {action}
       </div>
       {children}
@@ -322,6 +354,138 @@ export function BottomSheet({
 /** 바텀시트 안의 소제목(mono 대문자). */
 export function SheetLabel({ children }: { children: string }) {
   return (
-    <span className="font-mono text-[10px] tracking-[0.12em] text-ink-3 uppercase">{children}</span>
+    <span className="font-mono text-[10px] tracking-[0.12em] text-ink-3 uppercase">
+      {children}
+    </span>
+  );
+}
+
+/** 폼 섹션 제목. mono 작은 라벨 — 기록 폼 시안 `.label`. */
+export function SectionLabel({ children }: { children: string }) {
+  return (
+    <span
+      data-kit="section-label"
+      className="font-mono text-[10.5px] tracking-[0.06em] text-ink-3"
+    >
+      {children}
+    </span>
+  );
+}
+
+/**
+ * 라벨이 칸 안에 있는 숫자 입력 — 시안 `.cell`. 보이는 라벨(`원두`)과 접근 이름(`원두량`)이 다를 수 있다.
+ * 나머지 props는 `<input>`에 그대로 간다(`inputMode`도 덮어쓸 수 있다 — 시간 칸은 `:`가 필요하다).
+ */
+export function NumberCell({
+  label,
+  accessibleName,
+  unit,
+  ...input
+}: {
+  label: string;
+  accessibleName: string;
+  unit?: string;
+} & InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <label
+      data-kit="number-cell"
+      className="flex min-h-[52px] items-center justify-between gap-[8px] rounded-[7px] border border-border bg-paper px-[14px] py-[12px] has-[[aria-invalid=true]]:border-danger"
+    >
+      <span className="text-[13.5px] whitespace-nowrap text-ink-3">
+        {label}
+      </span>
+      <span className="flex min-w-0 items-baseline">
+        <input
+          type="text"
+          aria-label={accessibleName}
+          inputMode="decimal"
+          className="w-full min-w-0 bg-transparent text-right font-mono text-[16px] font-medium text-ink tabular-nums outline-none"
+          {...input}
+        />
+        {unit !== undefined && (
+          <span className="ml-[4px] font-mono text-[11px] text-ink-3">
+            {unit}
+          </span>
+        )}
+      </span>
+    </label>
+  );
+}
+
+/**
+ * 원장 필드 — 시안 `.row`. 라벨 76px · 값(아래 보조줄) · 동작. 위 hairline, 마지막만 아래 hairline.
+ * `invalid`면 `data-invalid`가 붙는다(시트를 닫은 뒤에도 어느 묶음이 틀렸는지 남긴다).
+ */
+export function LedgerField({
+  label,
+  value,
+  sub,
+  action,
+  invalid = false,
+}: {
+  label: string;
+  value: ReactNode;
+  sub?: ReactNode;
+  action?: ReactNode;
+  invalid?: boolean;
+}) {
+  return (
+    <div
+      data-kit="ledger-field"
+      data-invalid={invalid ? "" : undefined}
+      className="grid min-h-[48px] grid-cols-[76px_minmax(0,1fr)_auto] items-center gap-[12px] border-t border-divider py-[12px] last:border-b data-invalid:border-l-2 data-invalid:border-l-danger data-invalid:pl-[8px]"
+    >
+      <span className="font-mono text-[10.5px] tracking-[0.06em] text-ink-3">
+        {label}
+      </span>
+      <span className="flex min-w-0 flex-col gap-[1px] text-[15px] text-ink">
+        <span className="truncate">{value}</span>
+        {sub !== undefined && (
+          <small className="font-mono text-[11.5px] text-ink-3">{sub}</small>
+        )}
+      </span>
+      <span className="text-[13.5px] text-ink-3">{action}</span>
+    </div>
+  );
+}
+
+/**
+ * 맛 도트 — 축 이름 · 지름 22px 점 5개 · 숫자. 고른 값 이하의 점이 켜진다.
+ * 같은 점을 다시 누르면 지운다(평가하지 않은 축은 요청에 담지 않으므로 되돌릴 길이 있어야 한다).
+ */
+export function TasteDots({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  onChange?: (value: number | null) => void;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label={label}
+      data-kit="taste-dots"
+      className="grid min-h-[36px] grid-cols-[40px_minmax(0,1fr)_16px] items-center gap-[12px]"
+    >
+      <span className="text-[13.5px] text-ink-2">{label}</span>
+      <span className="flex gap-[6px]">
+        {[1, 2, 3, 4, 5].map((score) => (
+          <button
+            key={score}
+            type="button"
+            aria-label={`${label} ${score}`}
+            aria-pressed={value === score}
+            data-on={value !== null && score <= value ? "" : undefined}
+            onClick={() => onChange?.(value === score ? null : score)}
+            className="hit-44 size-[22px] shrink-0 rounded-full bg-divider data-on:bg-accent"
+          />
+        ))}
+      </span>
+      <span className="text-right font-mono text-[12px] text-ink-3">
+        {value ?? ""}
+      </span>
+    </div>
   );
 }

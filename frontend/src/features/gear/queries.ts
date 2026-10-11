@@ -57,9 +57,10 @@ export function useGrinders(onSessionLost?: () => void) {
  *
  * <p>마스터 데이터와 달리 <b>`staleTime`을 두지 않는다</b> — 모달로 새로 등록하면 곧바로 다시 읽어야 선택란에 나타난다.
  */
-export function useUserGrinders(onSessionLost?: () => void) {
+export function useUserGrinders(onSessionLost?: () => void, enabled = true) {
   return useQuery({
     queryKey: ["gear", "user-grinders"],
+    enabled,
     queryFn: () =>
       authedRequest(backendUrl("/api/v1/gear/user-grinders"), {
         schema: userGrinderListSchema,

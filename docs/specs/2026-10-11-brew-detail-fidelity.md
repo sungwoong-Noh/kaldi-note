@@ -267,11 +267,11 @@ supersedes:
   `useIsWide`로 웹/모바일 중 한쪽만 그린다. `WebTopBar`의 `#topbar-actions` 자리를 `/brews/[id]`에도 둔다(모든 폭).
   동작은 `createPortal` — 기록 폼 `WebActions`를 공용으로 옮겨 쓴다.
 
-- [ ] **Task 5: 비교표 웹 4열 + 모바일** — Covers: AC-BDETAIL-05, 07, 15
+- [x] **Task 5: 비교표 웹 4열 + 모바일** — Covers: AC-BDETAIL-05, 07, 15
 
   `RecipeComparison`을 `wide`에 따라 4열 표 / 행 아래 문장으로. 같은 행은 웹에서만 `같습니다.`.
 
-- [ ] **Task 6: 분쇄도 비교 행** — Covers: AC-BDETAIL-13(분쇄도), 14
+- [x] **Task 6: 분쇄도 비교 행** — Covers: AC-BDETAIL-13(분쇄도), 14
 
   내 기록이고 내 그라인더 모델 = 레시피 모델일 때만 비교표에 `분쇄도` 행. `useUserGrinders`는 내 기록일 때만 부른다.
 

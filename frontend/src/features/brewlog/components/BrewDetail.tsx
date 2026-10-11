@@ -10,7 +10,8 @@ import { useRequireSession } from "@/features/auth/useRequireSession";
 import { RecipeStepList } from "@/features/recipe/components/RecipeStepList";
 import { LedgerField } from "@/components/kit";
 import { TopBarActions } from "@/components/layout/TopBarActions";
-import { useBrewers } from "@/features/gear/queries";
+import { useBrewers, useUserGrinders } from "@/features/gear/queries";
+import type { UserGrinder } from "@/features/gear/schema";
 import { useIsWide } from "@/lib/useIsWide";
 import { useMe } from "@/features/user/queries";
 import {
@@ -23,8 +24,13 @@ import { formatKstStamp } from "@/lib/kstDate";
 import { deleteBrewLog, fetchBrewLog } from "../api";
 import { detailHeadline } from "../headline";
 import type { BrewLog } from "../schema";
-import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
-import { RecipeComparison } from "./RecipeComparison";
+import {
+  useBeanLabel,
+  useRecipeLabel,
+  type RecipeTargets,
+} from "../useEntityLabels";
+import { GRIND_UNIT_LABEL } from "./brewFormFields";
+import { RecipeComparison, type GrindComparison } from "./RecipeComparison";
 import { DeleteBrewLogDialog } from "./DeleteBrewLogDialog";
 import { BrewDetailHero } from "./BrewDetailHero";
 import { Button, ButtonLink, Shell } from "@/components/ui";
@@ -47,6 +53,12 @@ export function BrewDetail({ id }: { id: number }) {
   const bean = useBeanLabel(logQuery.data?.beanBatchId, ready, onSessionLost);
   const brewers = useBrewers(onSessionLost);
   const wide = useIsWide();
+  // 분쇄도 비교에 내 그라인더 모델이 필요하다. 남의 기록이면 부르지 않는다(남의 그라인더는 읽을 수 없다).
+  const mine =
+    me.data !== undefined &&
+    logQuery.data !== undefined &&
+    logQuery.data.userId === me.data.id;
+  const myGrinders = useUserGrinders(onSessionLost, mine);
 
   const remove = useMutation({
     mutationFn: () => deleteBrewLog(id, onSessionLost),
@@ -141,7 +153,12 @@ export function BrewDetail({ id }: { id: number }) {
 
   // 레시피를 못 읽으면 그리지 않는다 — 비교할 대상이 없다(AC-STRUCT-13).
   const comparison = recipe.targets !== undefined && (
-    <RecipeComparison log={log} targets={recipe.targets} />
+    <RecipeComparison
+      log={log}
+      targets={recipe.targets}
+      grind={grindComparison(log, recipe.targets, myGrinders.data, isMine)}
+      wide={wide}
+    />
   );
 
   const measured = (
@@ -326,4 +343,31 @@ function Screen({
       {children}
     </Shell>
   );
+}
+
+/**
+ * 비교표 분쇄도 행 — 내 기록이고 내 그라인더 모델 = 레시피 모델일 때만(AC-BDETAIL-05·13·14).
+ * 단위는 레시피 단위를 따른다.
+ */
+function grindComparison(
+  log: BrewLog,
+  targets: RecipeTargets,
+  myGrinders: UserGrinder[] | undefined,
+  isMine: boolean,
+): GrindComparison | null {
+  if (!isMine || targets.grinderModelId === undefined) return null;
+  const grinder = myGrinders?.find((g) => g.id === log.userGrinderId);
+  if (
+    grinder === undefined ||
+    grinder.grinderModelId !== targets.grinderModelId
+  )
+    return null;
+  return {
+    target: targets.grindSettingValue,
+    actual: log.actualGrindSettingValue,
+    unit:
+      targets.grindSettingUnit === undefined
+        ? ""
+        : GRIND_UNIT_LABEL[targets.grindSettingUnit],
+  };
 }

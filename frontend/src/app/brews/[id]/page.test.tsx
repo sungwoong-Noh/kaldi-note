@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, delay, http } from "msw";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Recipe } from "@/features/recipe/schema";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
@@ -11,11 +11,13 @@ import {
   fritzRoaster,
   grindedRecipe,
   kasuyaRecipe,
+  myComandante,
   yirgacheffeBatch,
   yirgacheffeProduct,
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
+import { mockViewportWidth } from "@/test/viewport";
 import BrewDetailPage from "./page";
 
 const push = vi.fn();
@@ -72,6 +74,10 @@ beforeEach(() => {
     ),
     http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
     http.get(`${BASE}/gear/brewers`, () => HttpResponse.json(brewers)),
+    // 내 기록일 때만 부른다 — 분쇄도 비교에 내 그라인더 모델이 필요하다(AC-BDETAIL-13·14).
+    http.get(`${BASE}/gear/user-grinders`, () =>
+      HttpResponse.json([myComandante]),
+    ),
   );
 });
 
@@ -565,5 +571,92 @@ describe("BrewDetailPage — 제목 영역", () => {
     expect(
       await screen.findByText("프릿츠 예가체프 · 로스팅 08.28 · Hario V60 02"),
     ).toBeInTheDocument();
+  });
+});
+
+/** 비교표의 한 행. 없으면 `null`. */
+function compareRow(label: string): HTMLElement | null {
+  return document.querySelector<HTMLElement>(
+    `[data-compare] [data-compare-row="${label}"]`,
+  );
+}
+
+function recipe1(over: Record<string, unknown>) {
+  const recipe: Record<string, unknown> = {
+    ...grindedRecipe,
+    id: 1,
+    title: "Kasuya 4:6",
+    ...over,
+  };
+  for (const [key, value] of Object.entries(over)) {
+    if (value === undefined) delete recipe[key];
+  }
+  return http.get(`${BASE}/recipes/1`, () => HttpResponse.json(recipe));
+}
+
+describe("BrewDetailPage — 비교표", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("AC-BDETAIL-05 · 웹 비교표는 4열이고 같으면 「같습니다.」다", async () => {
+    server.use(logIs({ actualDoseG: 21.0 }));
+    await renderDetail();
+    await waitFor(() => expect(compareRow("분쇄도")).not.toBeNull());
+
+    const table = document.querySelector<HTMLElement>("[data-compare]")!;
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((th) => th.textContent),
+    ).toEqual(["항목", "레시피", "실제", "차이"]);
+    expect(
+      [...table.querySelectorAll("[data-compare-row]")].map((row) =>
+        row.getAttribute("data-compare-row"),
+      ),
+    ).toEqual(["원두량", "물량", "물 온도", "분쇄도", "추출 시간"]);
+
+    const dose = within(compareRow("원두량")!);
+    expect(dose.getByText("20 g")).toBeInTheDocument();
+    expect(dose.getByText("21 g")).toBeInTheDocument();
+    expect(dose.getByText("원두를 1.0 g 더 썼습니다.")).toBeInTheDocument();
+    expect(
+      within(compareRow("물량")!).getByText("같습니다."),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-BDETAIL-07 · 모바일 비교표는 문장을 행 아래에 붙이고 같으면 비운다", async () => {
+    mockViewportWidth(390);
+    server.use(logIs({ actualDoseG: 21.0 }));
+    await renderDetail();
+
+    expect(
+      await screen.findByText("원두를 1.0 g 더 썼습니다."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "차이" })).toBeNull();
+    expect(screen.queryAllByText("같습니다.")).toHaveLength(0);
+  });
+
+  it("AC-BDETAIL-15 · 기준값이 없으면 대시다", async () => {
+    server.use(recipe1({ waterTempC: undefined }));
+    await renderDetail();
+    await waitFor(() => expect(compareRow("물 온도")).not.toBeNull());
+
+    const cells = within(compareRow("물 온도")!).getAllByRole("cell");
+    expect(cells.map((cell) => cell.textContent)).toEqual(["—", "92 °C", "—"]);
+  });
+
+  it("AC-BDETAIL-13 · 남의 기록은 비교표에 분쇄도 행이 없다", async () => {
+    server.use(logIs({ userId: 99 }));
+    await renderDetail();
+    await waitFor(() => expect(compareRow("원두량")).not.toBeNull());
+
+    expect(compareRow("분쇄도")).toBeNull();
+  });
+
+  it("AC-BDETAIL-14 · 모델이 다르면 분쇄도 비교가 없다", async () => {
+    server.use(recipe1({ grinderModelId: 5 }));
+    await renderDetail();
+    await waitFor(() => expect(compareRow("원두량")).not.toBeNull());
+
+    expect(compareRow("분쇄도")).toBeNull();
   });
 });

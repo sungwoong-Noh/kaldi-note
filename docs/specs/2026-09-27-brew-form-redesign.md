@@ -51,12 +51,7 @@ supersedes:
 
 ### 기능
 
-#### AC-BREWFORM-01 · 폭에 따라 미리보기 위치와 너비가 바뀐다
-
-- **Given** `/brews/new?recipeId=1`이 열려 있다
-- **When** 뷰포트 폭을 `1280` / `1100` / `900` / `390`px로 둔다
-- **Then** `1280`: 히어로가 폼 오른쪽, 너비 `420`px / `1100`: 폼 오른쪽, 너비 `360`px / `900`·`390`: 히어로의 top이 첫 입력칸의 top보다 작다(폼 위)
-- **검증** e2e
+**AC-BREWFORM-01 (대체됨)** · 폭에 따른 히어로 위치·너비를 보던 원래 AC는 전환 지점이 1024 → 1100으로 바뀌며 `docs/specs/2026-10-11-brew-form-fidelity.md`의 AC-BREWFIT-04로 대체됐다.
 
 #### AC-BREWFORM-02 · 히어로가 실측 비율을 실시간으로 보여준다
 
@@ -65,19 +60,9 @@ supersedes:
 - **Then** 히어로 비율이 `1:15.6`이다. `원두량`을 비우면 `1:—`, `0`이면 `1:—`
 - **검증** 페이지 테스트
 
-#### AC-BREWFORM-03 · 히어로 아래 줄은 레시피 기준값이다
+**AC-BREWFORM-03 (대체됨)** · 히어로의 레시피 제목·기준값 한 줄을 보던 원래 AC는, 웹은 열마다 기준 표시(AC-BREWFIT-06), 모바일은 히어로 기준값 줄(AC-BREWFIT-10)로 갈라지며 `docs/specs/2026-10-11-brew-form-fidelity.md`로 대체됐다. 레시피 제목은 웹 제목 아래 줄과 모바일 원장 `레시피` 행으로 옮겼다.
 
-- **Given** 레시피 `doseG=16.0`, `waterG=250.0`, `waterTempC=92.0`, `totalTimeSeconds=210`
-- **When** 작성 화면을 연다
-- **Then** 히어로에 레시피 제목과 `16g → 250g · 92°C · 3:30`이 보인다(표기 갱신 2026-09-27 — `docs/specs/2026-09-27-web-shell-grammar.md` AC-GRAMMAR-07). `waterTempC`·`totalTimeSeconds`가 없으면 그 조각과 앞의 ` · `가 빠진다
-- **검증** 페이지 테스트
-
-#### AC-BREWFORM-04 · 값이 다 있으면 수율이 보인다
-
-- **Given** `원두량 15`, `음료 중량 225`, `TDS 1.38`
-- **When** 입력을 마친다
-- **Then** 히어로에 `수율 20.7 %`가 보인다. `TDS`를 비우면 수율 대신 `TDS가 없으면 수율을 계산할 수 없습니다.`가 보인다
-- **검증** 페이지 테스트
+**AC-BREWFORM-04 (대체됨)** · 히어로의 수율 문장을 보던 원래 AC는, 웹은 `수율 —` 열(AC-BREWFIT-07), 모바일은 원장 `결과` 행 보조줄(AC-BREWFIT-19)로 `docs/specs/2026-10-11-brew-form-fidelity.md`에서 대체됐다.
 
 #### AC-BREWFORM-05 · 시간은 m:ss로 넣고 초로 보낸다
 
@@ -121,12 +106,7 @@ supersedes:
 - **Then** `나만 보기`·`맞팔로우 친구`·`전체` 3개 `radio`가 있고 `나만 보기`가 선택돼 있다. 본문 `visibility`는 각각 `"PRIVATE"` / `"PUBLIC"`. 편집 화면도 같은 3분할에 저장된 값이 선택돼 있다
 - **검증** 작성·편집 페이지 테스트
 
-#### AC-BREWFORM-11 · 5축은 1~5 버튼으로 고르고 다시 누르면 해제된다
-
-- **Given** `맛 자세히`를 눌러 펼쳤다
-- **When** `산미`의 `4`를 누른다 / 한 번 더 누른다
-- **Then** `산미 4` 버튼이 `aria-pressed="true"`이고 `산미`의 `1`~`4`에 채움 표시가 있으며 저장 시 `acidity: 4` / 두 번째 뒤에는 다섯 버튼 모두 `aria-pressed="false"`이고 본문에 `acidity` 키가 없다
-- **검증** 페이지 테스트
+**AC-BREWFORM-11 (대체됨)** · 1~5 숫자 버튼을 보던 원래 AC는 맛 도트로 바뀌며 `docs/specs/2026-10-11-brew-form-fidelity.md`의 AC-BREWFIT-14로 대체됐다(접근 이름·`aria-pressed`·키 규칙은 같다).
 
 #### AC-BREWFORM-12 · 모바일에서 기록하기가 하단에 고정된다
 
@@ -172,12 +152,7 @@ supersedes:
 - **Then** (a) 확인 없이 `/recipes/1`로 이동 / (b) `저장하지 않고 나갈까요?` 다이얼로그가 닫히고 `원두량` 값이 유지된다 / (c) `/recipes/1`로 이동. 편집 화면은 이동 대상이 `/brews/42`
 - **검증** 작성·편집 페이지 테스트
 
-#### AC-BREWFORM-18 · 5축은 접힌 채로 시작하고 펼치기 전엔 키가 없다
-
-- **Given** 작성 화면
-- **When** `맛 자세히`를 누르지 않고 저장
-- **Then** 5축 버튼이 보이지 않고, 본문에 `acidity`·`sweetness`·`body`·`bitterness`·`aftertaste` 키가 없다
-- **검증** 페이지 테스트
+**AC-BREWFORM-18 (대체됨)** · 5축이 접힌 채 시작하던 원래 AC는 웹은 늘 펼치고 모바일은 `맛` 시트로 바뀌며 `docs/specs/2026-10-11-brew-form-fidelity.md`의 AC-BREWFIT-15로 대체됐다.
 
 ### 실패
 
@@ -225,12 +200,7 @@ supersedes:
 - **Then** `document.documentElement.scrollWidth <= innerWidth`
 - **검증** e2e
 
-#### AC-BREWFORM-25 · 별점·5축·공개 범위 버튼은 44×44 이상
-
-- **Given** 뷰포트 `390`px, `맛 자세히`를 펼쳤다
-- **When** 별 5개·5축 버튼 25개·공개 범위 3개의 bounding box를 잰다
-- **Then** 모두 너비·높이 `>= 44`px
-- **검증** e2e
+**AC-BREWFORM-25 (대체됨)** · 별점·5축·공개 범위 버튼 크기를 보던 원래 AC는 대상이 늘고 보이는 크기와 누르는 영역이 갈리며(ADR 0010) `docs/specs/2026-10-11-brew-form-fidelity.md`의 AC-BREWFIT-25로 대체됐다.
 
 #### AC-BREWFORM-26 · 색은 토큰만 쓴다
 

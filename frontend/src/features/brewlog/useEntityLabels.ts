@@ -30,6 +30,10 @@ export interface RecipeTargets {
   readonly waterG: number;
   readonly waterTempC?: number;
   readonly totalTimeSeconds?: number;
+  /** 분쇄도 기준 표시는 같은 모델일 때만 낸다(AC-BREWFIT-09) */
+  readonly grinderModelId?: number;
+  readonly grindSettingValue?: number;
+  readonly grindSettingUnit?: "CLICK" | "NUMBER" | "MICRON";
 }
 
 export function useRecipeLabel(
@@ -62,6 +66,9 @@ export function useRecipeLabel(
             waterG: data.waterG,
             waterTempC: data.waterTempC,
             totalTimeSeconds: data.totalTimeSeconds,
+            grinderModelId: data.grinderModelId,
+            grindSettingValue: data.grindSettingValue,
+            grindSettingUnit: data.grindSettingUnit,
           },
   };
 }

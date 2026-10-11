@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMe } from "@/features/user/queries";
-import { backHref, isActive, isHidden } from "@/lib/navScreens";
+import { backHref, isActive, isBrewForm, isHidden } from "@/lib/navScreens";
 import { Avatar, ButtonLink } from "@/components/ui";
+
+/** 기록 폼의 동작 버튼이 들어올 자리. */
+export const TOPBAR_ACTIONS_ID = "topbar-actions";
 
 const NAV_LINKS = [
   { href: "/", label: "홈" },
@@ -39,7 +42,8 @@ export function WebTopBar() {
   const pathname = usePathname();
   const me = useMe();
 
-  if (isHidden(pathname)) return null;
+  const brewForm = isBrewForm(pathname);
+  if (isHidden(pathname) && !brewForm) return null;
 
   // 상세·도구 화면은 `<1100px`에서 로고 대신 「뒤로」다. 목업의 뒤로 바에는 밑줄이 없다
   // (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-12).
@@ -52,7 +56,7 @@ export function WebTopBar() {
   // 스케일에 없어 `gap-6`(24) + `ml-4`(16)로 만든다.
   return (
     <header
-      className={`flex items-center justify-between gap-6 border-border bg-paper px-6 py-3 min-[1100px]:px-12 min-[1100px]:py-4 ${back ? "min-[1100px]:border-b" : "border-b"}`}
+      className={`${brewForm ? "hidden min-[1100px]:flex" : "flex"} items-center justify-between gap-6 border-border bg-paper px-6 py-3 min-[1100px]:px-12 min-[1100px]:py-4 ${back ? "min-[1100px]:border-b" : "border-b"}`}
     >
       {back && (
         <Link
@@ -88,23 +92,28 @@ export function WebTopBar() {
           })}
         </nav>
       </div>
-      <div className="hidden items-center gap-4 min-[1100px]:flex">
-        {cta && (
-          <ButtonLink href={cta.href} variant="primary">
-            {cta.label}
-          </ButtonLink>
-        )}
-        {me.data && (
-          <Link href="/more" aria-label="더보기">
-            <Avatar
-              nickname={me.data.nickname}
-              profileImageUrl={me.data.profileImageUrl}
-              size={34}
-              userId={me.data.id}
-            />
-          </Link>
-        )}
-      </div>
+      {/* 기록 폼이 `createPortal`로 `취소`·`기록하기`를 넣는 자리(AC-BREWFIT-03). */}
+      {brewForm ? (
+        <div id={TOPBAR_ACTIONS_ID} className="flex items-center gap-2" />
+      ) : (
+        <div className="hidden items-center gap-4 min-[1100px]:flex">
+          {cta && (
+            <ButtonLink href={cta.href} variant="primary">
+              {cta.label}
+            </ButtonLink>
+          )}
+          {me.data && (
+            <Link href="/more" aria-label="더보기">
+              <Avatar
+                nickname={me.data.nickname}
+                profileImageUrl={me.data.profileImageUrl}
+                size={34}
+                userId={me.data.id}
+              />
+            </Link>
+          )}
+        </div>
+      )}
     </header>
   );
 }

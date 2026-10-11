@@ -23,15 +23,9 @@ import {
 } from "../formState";
 import type { BrewLog } from "../schema";
 import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
-import {
-  BrewFormLayout,
-  FORM_SHELL_CLASS,
-  FormActions,
-  LeaveConfirmDialog,
-} from "./BrewFormLayout";
-import { BrewHero } from "./BrewHero";
-import { BrewLogFields } from "./BrewLogFields";
-import { Button, Shell } from "@/components/ui";
+import { BrewForm } from "./BrewForm";
+import { FORM_SHELL_CLASS, LeaveConfirmDialog } from "./BrewFormLayout";
+import { Shell } from "@/components/ui";
 
 /** 스펙이 정한 문구다. 값을 바꾸거나 기록을 지우는 것 말고는 길이 없다. */
 const CLEAR_MESSAGE = "값을 지울 수 없습니다. 고치거나 기록을 삭제하세요";
@@ -71,7 +65,7 @@ export function BrewLogEditor({ id }: { id: number }) {
   }
 
   return (
-    <Screen>
+    <Screen heading={false}>
       <Fields
         log={log.data}
         grinders={grinders.data}
@@ -147,94 +141,66 @@ function Fields({
     save.mutate();
   }
 
-  // `BrewLogFields`는 공유 필드만 아는 좁은 시그니처를 요구한다. `visibility`는
-  // 이 화면에만 있으므로 아래 select가 따로 쓴다.
   const setField = <K extends keyof BrewLogFormState>(
     key: K,
     value: BrewLogFormState[K],
   ) => setState((prev) => ({ ...prev, [key]: value }));
 
   return (
-    <BrewFormLayout
-      hero={
-        <BrewHero
-          title={recipe.label}
-          targets={recipe.targets}
-          doseG={state.actualDoseG}
-          waterG={state.actualWaterG}
-          beverageWeightG={state.beverageWeightG}
-          tdsPercent={state.tdsPercent}
-        />
+    <BrewForm
+      mode="edit"
+      state={state}
+      onChange={setField}
+      grinders={grinders}
+      fieldErrors={fieldErrors}
+      footer={
+        save.error !== null && (
+          <div
+            role="alert"
+            className="flex flex-col gap-1 text-body text-danger"
+          >
+            <p>{errorMessageOf(save.error)}</p>
+            {fieldErrors.unmapped.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+        )
+      }
+      // 레시피와 원두는 PATCH DTO에 없어 서버가 무시한다. 값만 보여준다(AC-WEBLOGEDIT-06).
+      recipeTitle={recipe.label}
+      targets={recipe.targets}
+      bean={state.beanBatchId === null ? null : { label: bean.label }}
+      submitLabel="저장"
+      submitting={save.isPending}
+      submitDisabled={cleared.length > 0 || invalidTimes.length > 0}
+      onSubmit={submit}
+      onCancel={() =>
+        isDirty(initial, state)
+          ? setConfirmingLeave(true)
+          : router.push(`/brews/${log.id}`)
       }
     >
-      <BrewLogFields
-        state={state}
-        grinders={grinders}
-        fieldErrors={fieldErrors}
-        onChange={setField}
-        beanSlot={
-          // 레시피와 원두는 PATCH DTO에 없어 서버가 무시한다. 값만 보여준다.
-          // id 숫자로 보여주면 무엇으로 내렸는지 화면만 봐서는 알 수 없어 이름을 따로 읽는다.
-          <dl className="flex flex-wrap gap-x-4 text-body">
-            <div className="flex items-center gap-1">
-              <dt className="text-ink-3">레시피</dt>
-              <dd>{recipe.label}</dd>
-            </div>
-            {state.beanBatchId !== null && (
-              <div className="flex items-center gap-1">
-                <dt className="text-ink-3">원두</dt>
-                <dd>{bean.label}</dd>
-              </div>
-            )}
-          </dl>
-        }
-      />
-
-      {save.error !== null && (
-        <div role="alert" className="flex flex-col gap-1 text-body text-danger">
-          <p>{errorMessageOf(save.error)}</p>
-          {fieldErrors.unmapped.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
-        </div>
-      )}
-
-      <FormActions>
-        <Button
-          disabled={
-            save.isPending || cleared.length > 0 || invalidTimes.length > 0
-          }
-          className="max-[759px]:flex-1"
-          onClick={submit}
-          variant="primary"
-        >
-          저장
-        </Button>
-        <Button
-          onClick={() =>
-            isDirty(initial, state)
-              ? setConfirmingLeave(true)
-              : router.push(`/brews/${log.id}`)
-          }
-        >
-          취소
-        </Button>
-      </FormActions>
-
       {confirmingLeave && (
         <LeaveConfirmDialog
           onLeave={() => router.push(`/brews/${log.id}`)}
           onStay={() => setConfirmingLeave(false)}
         />
       )}
-    </BrewFormLayout>
+    </BrewForm>
   );
 }
 
-function Screen({ children }: { children: React.ReactNode }) {
+/** 폼이 뜨면 제목은 폼이 그린다. 로딩·오류 화면만 여기서 그린다. */
+function Screen({
+  heading = true,
+  children,
+}: {
+  heading?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <Shell stack wide className={FORM_SHELL_CLASS}>
-      <h1 className="text-page-title font-semibold">기록 편집</h1>
+      {heading && <h1 className="text-page-title font-semibold">기록 편집</h1>}
       {children}
     </Shell>
   );

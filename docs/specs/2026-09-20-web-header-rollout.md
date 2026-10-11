@@ -125,6 +125,8 @@ plan: docs/archive/plans/2026-09-20-plan-web-header-rollout.md
 - **When** `/login`·`/recipes/new`·`/brews/new?recipeId=12`·`/recipes/12/edit`·`/brews/2/edit`를 각각 연다
 - **Then** 각 화면에 `header` 요소가 없다
 - **검증** e2e `web-header-rollout.spec.ts`
+- **(일부 대체됨)** `/brews/new?recipeId=12`·`/brews/2/edit`는 `≥1100px`에서 상단 바에 `취소`·`기록하기`를 둔다 —
+  `docs/specs/2026-10-11-brew-form-fidelity.md` AC-BREWFIT-03. 나머지 세 경로는 그대로다.
 
 ### 에러
 

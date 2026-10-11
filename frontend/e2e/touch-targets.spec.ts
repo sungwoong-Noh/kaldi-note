@@ -93,9 +93,7 @@ test.describe("터치 타깃 — 스윕", () => {
       await page.goto(path);
       await page.waitForLoadState("networkidle");
 
-      expect(await page.locator(TARGETS).evaluateAll(undersized)).toEqual(
-        [],
-      );
+      expect(await page.locator(TARGETS).evaluateAll(undersized)).toEqual([]);
     });
 
     test(`AC-TOUCH-12 · ${path}에 가로 스크롤이 없다`, async ({ page }) => {
@@ -110,7 +108,6 @@ test.describe("터치 타깃 — 스윕", () => {
       expect(width).toBeLessThanOrEqual(360);
     });
   }
-
 });
 
 /**
@@ -123,8 +120,11 @@ test("AC-TOUCH-01 · /dev/kit의 작은 컨트롤도 누르는 영역이 44×44 
   await installStubs(page);
   await page.goto("/dev/kit");
 
-  const small = page.getByRole("radio").or(page.locator("button[aria-pressed]"));
-  await expect(small).toHaveCount(5);
+  const small = page
+    .getByRole("radio")
+    .or(page.locator("button[aria-pressed]"));
+  // 세그먼트 2 + 알약 3 + 맛 도트 15(docs/specs/2026-10-11-brew-form-fidelity.md)
+  await expect(small).toHaveCount(20);
   const boxes = await small.evaluateAll((els) =>
     els.map((el) => el.getBoundingClientRect().height),
   );
@@ -148,7 +148,8 @@ test.describe("터치 타깃 — 다이얼로그", () => {
     },
     {
       path: "/brews/new?recipeId=12",
-      open: ["+ 그라인더 등록"],
+      // 모바일에서 그라인더 등록은 `장비` 시트 안에 있다(AC-BREWFIT-12).
+      open: ["장비 변경", "+ 그라인더 등록"],
       what: "UserGrinderDialog",
     },
     // /recipes/12는 hoffmann이고 ownerUserId가 없어 삭제 버튼이 없다. /recipes/3이 내 것이다.
@@ -164,9 +165,7 @@ test.describe("터치 타깃 — 다이얼로그", () => {
         await page.getByRole("button", { name }).click();
       }
 
-      expect(await page.locator(TARGETS).evaluateAll(undersized)).toEqual(
-        [],
-      );
+      expect(await page.locator(TARGETS).evaluateAll(undersized)).toEqual([]);
     });
   }
 });

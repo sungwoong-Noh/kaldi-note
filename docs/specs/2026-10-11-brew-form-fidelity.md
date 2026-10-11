@@ -1,7 +1,7 @@
 ---
 id: BREWFIT
 title: 공용 입력 부품 + 기록 작성·편집 시안 정합 — 섹션 라벨·숫자 셀·원장 필드·맛 도트
-status: 승인
+status: 구현완료
 milestone: M2
 supersedes:
 ---
@@ -280,76 +280,10 @@ supersedes:
 - AC-BREWFORM-11 → AC-BREWFIT-14 — 1~5 숫자 버튼 → 맛 도트(접근 이름·`aria-pressed`·키 규칙은 같다)
 - AC-BREWFORM-18 → AC-BREWFIT-15 — 웹은 늘 펼침
 - AC-BREWFORM-25 → AC-BREWFIT-25 — 대상 목록 확장, 시각 크기와 누르는 영역 분리(ADR 0010)
+- AC-BREWFORM-03·04의 **모바일** 부분 → AC-BREWFIT-10·19 — 레시피 제목은 원장 `레시피` 행, 수율은 `결과` 행 보조줄(구현 중 발견해 추가)
+- AC-WEBHDR-10(docs/specs/2026-09-20-web-header-rollout.md)의 `/brews/new`·`/brews/2/edit` → AC-BREWFIT-03 — 상단 바가 생긴다(구현 중 발견, 2026-10-11 사람 확인)
 
 나머지 BREWFORM·WEBBREW·WEBLOGEDIT·ERRFOCUS AC는 그대로 유효하다.
-
----
-
-## 구현 순서
-
-각 태스크는 TDD 사이클 하나다(실패 테스트 → 실패 확인 → 최소 구현 → 통과 확인 → 커밋).
-
-- [x] **Task 1: 키트 부품 4종** — Covers: AC-BREWFIT-01, 02, 27
-
-  `src/components/kit/index.tsx`에 `SectionLabel`·`NumberCell`·`LedgerField`·`TasteDots`를 시안 CSS 값 그대로
-  추가하고 `/dev/kit`에 하나씩 놓는다. 숫자 입력은 기존 `NumberField`의 파싱을 옮긴다(새로 짜지 않는다).
-
-  ```tsx
-  export function NumberCell({ label, accessibleName, unit, ...input }: {...}) {
-    return (
-      <label data-kit="number-cell" className="flex min-h-[52px] items-center justify-between gap-2 rounded-[7px] border border-border bg-paper px-[14px] py-[12px]">
-        <span className="text-[13.5px] whitespace-nowrap text-ink-3">{label}</span>
-        <span className="flex items-baseline">
-          <input aria-label={accessibleName} inputMode="decimal" className="w-full bg-transparent text-right font-mono text-[16px] font-medium" {...input} />
-          {unit && <span className="ml-1 font-mono text-[11px] text-ink-3">{unit}</span>}
-        </span>
-      </label>
-    );
-  }
-  ```
-
-- [ ] **Task 2: 웹 폼 2열 + 숫자 셀·원장 필드 적용** — Covers: AC-BREWFIT-04, 05, 09, 26
-
-  `BrewLogFields`의 섹션 제목을 `SectionLabel`로, 숫자를 `NumberCell` 2열로, 원두·그라인더·분쇄도를 `LedgerField`로.
-  `BrewFormLayout` 전환 지점을 `min-[1100px]`로. 분쇄도 기준 표시는 `useRecipeLabel`의 targets에 `grinderModelId`·
-  `grindSettingValue`·`grindSettingUnit`을 더해 비교한다.
-
-- [ ] **Task 3: 웹 히어로 3열 + 다른 점 블록** — Covers: AC-BREWFIT-06, 07, 08, 20
-
-  `BrewHero`를 웹/모바일 두 모양으로. 다른 점은 `diffPhrase`를 그대로 부르고 폼 상태를 넘긴다(`RecipeComparison`의
-  `buildRows`에서 문장 부분만 함수로 빼서 공유).
-
-- [ ] **Task 4: 웹 상단 바 동작** — Covers: AC-BREWFIT-03, 18(웹)
-
-  `WebTopBar`에 동작 자리(`#topbar-actions`)를 두고 폼이 `createPortal`로 `취소`·`기록하기`를 넣는다. ≥1100에서
-  `FormActions`(하단 줄)를 그리지 않는다.
-
-- [ ] **Task 5: 맛 도트** — Covers: AC-BREWFIT-14, 15(웹), 21
-
-  `BrewLogFields`의 `TasteScale`을 `TasteDots`로 바꾸고 웹에서 접기를 없앤다. 별점 22px.
-
-- [ ] **Task 6: 모바일 원장 + 히어로 칩** — Covers: AC-BREWFIT-10, 11, 16, 19
-
-  <1100에서 히어로 안 `NumberCell`(칩 모양) 2개 + `LedgerField` 8행 + `Segmented`. 공개 범위 라벨은 3개 모두
-  한 줄(`whitespace-nowrap`).
-
-- [ ] **Task 7: 묶음 시트** — Covers: AC-BREWFIT-12, 13, 15(모바일)
-
-  기존 `BottomSheet` + 딤. 시트는 폼 상태를 직접 바꾼다(되돌리기 없음). Esc·딤 클릭·`완료`가 같은 `close`.
-
-- [ ] **Task 8: 모바일 상단 줄 + 하단 CTA** — Covers: AC-BREWFIT-17, 18(모바일)
-
-  폼 라우트의 <1100에서 `WebTopBar`의 「뒤로」 대신 폼의 `취소 / 새 기록 / 저장` 줄. 두 버튼은 같은 `submit`.
-
-- [ ] **Task 9: 모바일 오류 경로** — Covers: AC-BREWFIT-22, 23, 24
-
-  첫 오류 필드 → 그 필드가 속한 시트 id 표(위 「묶음 시트 구성」)로 시트를 열고 포커스. ERRFOCUS의 포커스 함수를
-  시트가 열린 뒤 부른다.
-
-- [ ] **Task 10: 누르는 영역 스윕 + 대체 AC 정리** — Covers: AC-BREWFIT-25
-
-  `e2e/touch-targets.spec.ts` 측정 함수로 대상 목록을 잰다. 「대체하는 이전 AC」의 테스트를 옮기고 BREWFORM 스펙에
-  「(대체됨)」 표시.
 
 ---
 

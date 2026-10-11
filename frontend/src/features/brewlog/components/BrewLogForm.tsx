@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
@@ -10,12 +10,10 @@ import { useBeanProducts, useRoasters } from "@/features/catalog/api";
 import { useUserGrinders } from "@/features/gear/queries";
 import type { UserGrinder } from "@/features/gear/schema";
 import { useBeanBatches } from "@/features/inventory/api";
-import type { BeanBatch } from "@/features/inventory/schema";
 import { fetchRecipe } from "@/features/recipe/api";
 import type { Recipe } from "@/features/recipe/schema";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
-import { focusFirstInvalidField } from "@/lib/focusFirstError";
 import { createBrewLog } from "../api";
 import {
   initialFormState,
@@ -27,17 +25,11 @@ import {
   type BrewLogFormState,
 } from "../formState";
 import { BeanBatchDialog } from "./BeanBatchDialog";
-import { BeanPickerDialog, beanName } from "./BeanPickerDialog";
-import {
-  BrewFormLayout,
-  FORM_SHELL_CLASS,
-  FormActions,
-  LeaveConfirmDialog,
-} from "./BrewFormLayout";
-import { BrewHero } from "./BrewHero";
-import { BrewLogFields } from "./BrewLogFields";
+import { BeanPickerDialog, batchCaption, beanName } from "./BeanPickerDialog";
+import { BrewForm } from "./BrewForm";
+import { FORM_SHELL_CLASS, LeaveConfirmDialog } from "./BrewFormLayout";
 import { UserGrinderDialog } from "./UserGrinderDialog";
-import { Button, ButtonLink, Shell } from "@/components/ui";
+import { ButtonLink, Shell } from "@/components/ui";
 
 /**
  * 로그 작성 화면.
@@ -93,7 +85,7 @@ function LoadedBrewLogForm({ recipeId }: { recipeId: number }) {
   }
 
   return (
-    <Screen>
+    <Screen heading={false}>
       <Fields
         recipe={recipe.data}
         grinders={grinders.data}
@@ -159,13 +151,6 @@ function Fields({
     timeChecked ? invalidTimeFields(state) : [],
   );
 
-  const formRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (save.error || blockedAttempts > 0)
-      focusFirstInvalidField(formRef.current);
-  }, [save.error, blockedAttempts]);
-
   function submit() {
     setTimeChecked(true);
     if (invalidTimeFields(state).length > 0) {
@@ -180,71 +165,41 @@ function Fields({
     value: BrewLogFormState[K],
   ) => setState((prev) => ({ ...prev, [key]: value }));
 
-  // `내린 시각`과 `그라인더` 사이에 들어간다. 편집 화면은 여기에 잠긴 원두 표시를 넣는다.
   const chosen = (batches.data ?? []).find((b) => b.id === state.beanBatchId);
-  const beanSlot = (
-    <fieldset className="flex min-w-0 flex-col gap-2">
-      <legend className="text-card-title font-semibold">원두</legend>
-      <div className="flex min-h-11 items-center justify-between gap-3 text-body">
-        <span className={chosen ? "" : "text-ink-3"}>
-          {chosen
-            ? batchLabel(chosen, products.data ?? [], roasters.data ?? [])
-            : "고르지 않음"}
-        </span>
-        <Button aria-label="원두 변경" onClick={() => setBeanDialog("pick")}>
-          변경
-        </Button>
-      </div>
-    </fieldset>
-  );
 
   return (
-    <BrewFormLayout
-      formRef={formRef}
+    <BrewForm
+      mode="create"
+      state={state}
+      onChange={set}
+      grinders={grinders}
+      onAddGrinder={() => setAddingGrinder(true)}
+      fieldErrors={fieldErrors}
+      sectionWarning={sectionWarning}
       generalError={
         save.error && sectionWarning === null ? save.error.message : null
       }
-      hero={
-        <BrewHero
-          title={recipe.title}
-          targets={recipe}
-          doseG={state.actualDoseG}
-          waterG={state.actualWaterG}
-          beverageWeightG={state.beverageWeightG}
-          tdsPercent={state.tdsPercent}
-        />
+      recipeTitle={recipe.title}
+      targets={recipe}
+      bean={
+        chosen
+          ? {
+              label: beanName(chosen, products.data ?? [], roasters.data ?? []),
+              sub: batchCaption(chosen),
+            }
+          : null
       }
+      onChangeBean={() => setBeanDialog("pick")}
+      submitLabel="기록하기"
+      submitting={save.isPending}
+      onSubmit={submit}
+      onCancel={() =>
+        isDirty(initial, state)
+          ? setConfirmingLeave(true)
+          : router.push(`/recipes/${recipe.id}`)
+      }
+      focusKeys={[save.error, blockedAttempts]}
     >
-      <BrewLogFields
-        state={state}
-        grinders={grinders}
-        fieldErrors={fieldErrors}
-        onChange={set}
-        onAddGrinder={() => setAddingGrinder(true)}
-        beanSlot={beanSlot}
-        sectionWarning={sectionWarning}
-      />
-
-      <FormActions>
-        <Button
-          disabled={save.isPending}
-          className="max-[759px]:flex-1"
-          onClick={submit}
-          variant="primary"
-        >
-          {save.isPending ? "저장 중…" : "기록하기"}
-        </Button>
-        <Button
-          onClick={() =>
-            isDirty(initial, state)
-              ? setConfirmingLeave(true)
-              : router.push(`/recipes/${recipe.id}`)
-          }
-        >
-          취소
-        </Button>
-      </FormActions>
-
       {confirmingLeave && (
         <LeaveConfirmDialog
           onLeave={() => router.push(`/recipes/${recipe.id}`)}
@@ -294,30 +249,23 @@ function Fields({
           onSessionLost={onSessionLost}
         />
       )}
-    </BrewFormLayout>
+    </BrewForm>
   );
 }
 
-/**
- * `프릿츠 예가체프 · 3일차`.
- *
- * <p>재고 응답은 `beanProductId`만, 제품 응답은 `roasterId`만 준다. 이름을 보여주려면 세 목록을 조합해야 한다.
- * 아직 도착하지 않은 목록이 있으면 있는 것만으로 만든다 — 빈 선택지보다는 낫다.
- */
-function batchLabel(
-  batch: BeanBatch,
-  products: { id: number; name: string; roasterId: number }[],
-  roasters: { id: number; name: string }[],
-): string {
-  const age =
-    batch.daysOffRoast === undefined ? null : `${batch.daysOffRoast}일차`;
-  return [beanName(batch, products, roasters), age].filter(Boolean).join(" · ");
-}
-
-function Screen({ children }: { children: React.ReactNode }) {
+/** 폼이 뜨면 제목은 폼이 그린다(웹·모바일 모양이 다르다). 로딩·오류·안내 화면만 여기서 그린다. */
+function Screen({
+  heading = true,
+  children,
+}: {
+  heading?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <Shell stack wide className={FORM_SHELL_CLASS}>
-      <h1 className="text-page-title font-semibold">이 레시피로 내렸다</h1>
+      {heading && (
+        <h1 className="text-page-title font-semibold">이 레시피로 내렸다</h1>
+      )}
       {children}
     </Shell>
   );

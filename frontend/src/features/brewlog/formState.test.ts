@@ -65,12 +65,6 @@ describe("initialFormState", () => {
     expect(state.userGrinderId).toBeNull();
     expect(state.actualGrindSettingValue).toBeNull();
   });
-
-  it("5축 평가는 접힌 채로 시작한다", () => {
-    const state = initialFormState(grindedRecipe, []);
-
-    expect(state.sensoryExpanded).toBe(false);
-  });
 });
 
 describe("toRequestBody", () => {
@@ -105,22 +99,9 @@ describe("toRequestBody", () => {
     expect(body).not.toHaveProperty("actualTotalTimeSeconds");
   });
 
-  it("펼치지 않은 5축은 값이 있어도 빠진다", () => {
+  it("5축은 고른 것만 담는다", () => {
     const body = toRequestBody({
       ...filled,
-      sensoryExpanded: false,
-      acidity: 4,
-      sweetness: 3,
-    });
-
-    expect(body).not.toHaveProperty("acidity");
-    expect(body).not.toHaveProperty("sweetness");
-  });
-
-  it("펼친 5축은 고른 것만 담는다", () => {
-    const body = toRequestBody({
-      ...filled,
-      sensoryExpanded: true,
       acidity: 4,
       sweetness: 3,
     });
@@ -230,22 +211,6 @@ describe("formStateFromLog", () => {
 
     // 로컬 시각이라 실행 환경의 오프셋을 탄다 — 형식만 본다
     expect(state.brewedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
-  });
-
-  it("5축이 하나라도 있으면 펼친 상태로 연다", () => {
-    const state = formStateFromLog(
-      brewLogSchema.parse({ ...brewLogWithTds, acidity: 4 }),
-    );
-
-    expect(state.sensoryExpanded).toBe(true);
-  });
-
-  it("5축이 하나도 없으면 접은 상태로 연다", () => {
-    const state = formStateFromLog(
-      logWithout("acidity", "sweetness", "body", "bitterness", "aftertaste"),
-    );
-
-    expect(state.sensoryExpanded).toBe(false);
   });
 
   it("없는 키는 null이 된다", () => {

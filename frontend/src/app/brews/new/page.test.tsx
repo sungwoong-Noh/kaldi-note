@@ -14,6 +14,7 @@ import {
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
+import { mockViewportWidth } from "@/test/viewport";
 import BrewNewPage from "./page";
 
 const push = vi.fn();
@@ -92,15 +93,25 @@ beforeEach(() => {
 afterEach(() => {
   // 되돌리지 않으면 뒤 테스트가 멈춘 시간을 물려받는다.
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
+
+/** 라벨이 `label`인 원장 행. */
+function ledgerRow(label: string): HTMLElement {
+  const row = [
+    ...document.querySelectorAll<HTMLElement>("[data-kit='ledger-field']"),
+  ].find((el) => el.firstElementChild?.textContent === label);
+  if (row === undefined) throw new Error(`${label} 원장 행이 없다`);
+  return row;
+}
 
 describe("BrewNewPage", () => {
   it("AC-WEBBREW-11 · 레시피의 원두량·물량·물온도가 미리 채워진다", async () => {
     await renderNewPage();
 
-    expect(await screen.findByLabelText("원두량")).toHaveValue(20);
-    expect(screen.getByLabelText("물량")).toHaveValue(300);
-    expect(screen.getByLabelText("물 온도")).toHaveValue(92);
+    expect(await screen.findByLabelText("원두량")).toHaveValue("20");
+    expect(screen.getByLabelText("물량")).toHaveValue("300");
+    expect(screen.getByLabelText("물 온도")).toHaveValue("92");
   });
 
   it("AC-WEBBREW-12 · 추출 시간은 빈칸으로 시작한다", async () => {
@@ -159,7 +170,7 @@ describe("BrewNewPage", () => {
   it("AC-WEBBREW-17 · 레시피의 분쇄도 설정값이 복사된다", async () => {
     await renderNewPage();
 
-    expect(await screen.findByLabelText("분쇄도 값")).toHaveValue(22);
+    expect(await screen.findByLabelText("분쇄도 값")).toHaveValue("22");
   });
 
   it("AC-WEBBREW-01 · 등록된 그라인더가 없으면 그 사실을 알린다", async () => {
@@ -275,7 +286,10 @@ describe("BrewNewPage", () => {
     );
 
     expect(screen.queryByRole("dialog", { name: "원두 고르기" })).toBeNull();
-    expect(screen.getByText("프릿츠 예가체프 · 7일차")).toBeInTheDocument();
+    // 원장 행 — 값 `프릿츠 예가체프`, 보조줄에 로스팅일·경과일(docs/specs/2026-10-11-brew-form-fidelity.md)
+    const beanRow = ledgerRow("원두");
+    expect(beanRow).toHaveTextContent("프릿츠 예가체프");
+    expect(beanRow).toHaveTextContent("로스팅 09.05 · 7일차");
 
     await user.click(screen.getByRole("button", { name: "기록하기" }));
     await waitFor(() => expect(captured.body?.beanBatchId).toBe(9));
@@ -322,7 +336,7 @@ describe("BrewNewPage", () => {
     await registerBeanViaPicker(user);
 
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-    expect(screen.getByLabelText("원두량")).toHaveValue(21);
+    expect(screen.getByLabelText("원두량")).toHaveValue("21");
     await user.click(screen.getByRole("button", { name: "기록하기" }));
     await waitFor(() => expect(captured.body?.beanBatchId).toBe(11));
   });
@@ -352,7 +366,7 @@ describe("BrewNewPage", () => {
     await user.click(screen.getByRole("button", { name: "등록" }));
 
     await screen.findByLabelText("그라인더");
-    expect(screen.getByLabelText("원두량")).toHaveValue(21);
+    expect(screen.getByLabelText("원두량")).toHaveValue("21");
   });
 
   it("AC-WEBBREW-25 · 원두를 모달에서 등록해도 작성 중인 값이 남는다", async () => {
@@ -536,7 +550,9 @@ describe("BrewNewPage — 저장과 평가", () => {
     expect(captured.body?.rating).toBe(4);
   });
 
-  it("AC-WEBBREW-28 · 5축은 접혀 있다", async () => {
+  // 모바일에서만 접힌다 — 웹은 늘 펼침(AC-BREWFIT-15).
+  it("AC-WEBBREW-28 · 5축은 접혀 있다(모바일)", async () => {
+    mockViewportWidth(390);
     await renderNewPage();
 
     expect(
@@ -552,56 +568,6 @@ describe("BrewNewPage — 저장과 평가", () => {
     await renderNewPage();
     await user.click(await screen.findByRole("button", { name: "기록하기" }));
 
-    await waitFor(() => expect(captured.body).not.toBeNull());
-    for (const key of [
-      "acidity",
-      "sweetness",
-      "body",
-      "bitterness",
-      "aftertaste",
-    ]) {
-      expect(captured.body).not.toHaveProperty(key);
-    }
-  });
-
-  it("AC-BREWFORM-11 · 5축은 1~5 버튼으로 고르고 다시 누르면 해제된다", async () => {
-    const user = userEvent.setup();
-    const captured = captureCreate();
-
-    await renderNewPage();
-    await user.click(await screen.findByRole("button", { name: "맛 자세히" }));
-    const acidity = within(screen.getByRole("group", { name: "산미" }));
-    const four = acidity.getByRole("button", { name: "산미 4" });
-
-    await user.click(four);
-    expect(four).toHaveAttribute("aria-pressed", "true");
-    expect(
-      acidity
-        .getAllByRole("button")
-        .map((button) => button.hasAttribute("data-filled")),
-    ).toEqual([true, true, true, true, false]);
-
-    await user.click(four);
-    for (const button of acidity.getAllByRole("button")) {
-      expect(button).toHaveAttribute("aria-pressed", "false");
-    }
-
-    await user.click(acidity.getByRole("button", { name: "산미 3" }));
-    await user.click(screen.getByRole("button", { name: "기록하기" }));
-    await waitFor(() => expect(captured.body).not.toBeNull());
-    expect(captured.body?.acidity).toBe(3);
-    expect(captured.body).not.toHaveProperty("body");
-  });
-
-  it("AC-BREWFORM-18 · 5축은 접힌 채로 시작하고 펼치기 전엔 키가 없다", async () => {
-    const user = userEvent.setup();
-    const captured = captureCreate();
-
-    await renderNewPage();
-    await screen.findByRole("button", { name: "맛 자세히" });
-    expect(screen.queryByRole("button", { name: "산미 1" })).toBeNull();
-
-    await user.click(screen.getByRole("button", { name: "기록하기" }));
     await waitFor(() => expect(captured.body).not.toBeNull());
     for (const key of [
       "acidity",
@@ -638,8 +604,8 @@ describe("BrewNewPage — 드로다운·음료 중량·TDS", () => {
     await renderNewPage();
 
     expect(await screen.findByLabelText("드로다운 시간")).toHaveValue("");
-    expect(screen.getByLabelText("음료 중량")).toHaveValue(null);
-    expect(screen.getByLabelText("TDS")).toHaveValue(null);
+    expect(screen.getByLabelText("음료 중량")).toHaveValue("");
+    expect(screen.getByLabelText("TDS")).toHaveValue("");
   });
 
   it("AC-WEBSHELL-19 · 채운 값이 저장 본문에 담긴다", async () => {
@@ -847,42 +813,6 @@ describe("BrewNewPage — 히어로", () => {
     await user.type(dose, "0");
     expect((await hero()).getByText("1:—")).toBeInTheDocument();
   });
-
-  it("AC-BREWFORM-03 · AC-GRAMMAR-08 · 히어로 아래 줄은 레시피 기준값이다", async () => {
-    await renderNewPage();
-    const h = await hero();
-
-    expect(h.getByText("분쇄도 있는 레시피")).toBeInTheDocument();
-    expect(h.getByText("20g → 300g · 92°C · 3:30")).toBeInTheDocument();
-  });
-
-  it("AC-BREWFORM-03 · 온도·시간이 없는 레시피는 그 조각이 빠진다", async () => {
-    const recipe: Record<string, unknown> = { ...grindedRecipe, id: 1 };
-    delete recipe.waterTempC;
-    delete recipe.totalTimeSeconds;
-    server.use(http.get(`${BASE}/recipes/1`, () => HttpResponse.json(recipe)));
-
-    await renderNewPage();
-
-    expect((await hero()).getByText("20g → 300g")).toBeInTheDocument();
-  });
-
-  it("AC-BREWFORM-04 · 값이 다 있으면 수율이 보인다", async () => {
-    const user = userEvent.setup();
-    await renderNewPage();
-    const dose = await screen.findByLabelText("원두량");
-
-    await user.clear(dose);
-    await user.type(dose, "15");
-    await user.type(screen.getByLabelText("음료 중량"), "225");
-    await user.type(screen.getByLabelText("TDS"), "1.38");
-    expect((await hero()).getByText("수율 20.7 %")).toBeInTheDocument();
-
-    await user.clear(screen.getByLabelText("TDS"));
-    expect(
-      (await hero()).getByText("TDS가 없으면 수율을 계산할 수 없습니다."),
-    ).toBeInTheDocument();
-  });
 });
 
 describe("BrewNewPage — 공개 범위", () => {
@@ -969,7 +899,7 @@ describe("BrewNewPage — 상태", () => {
     await user.click(confirm.getByRole("button", { name: "계속 편집" }));
 
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(screen.getByLabelText("원두량")).toHaveValue(21);
+    expect(screen.getByLabelText("원두량")).toHaveValue("21");
     expect(push).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole("button", { name: "취소" }));
@@ -1042,7 +972,7 @@ describe("BrewNewPage — 상태", () => {
       const group = screen.getByRole("group", { name: section });
       const warning = await within(group).findByText(message);
       expect(warning.closest("[data-warning]")).not.toBeNull();
-      expect(screen.getByLabelText("원두량")).toHaveValue(21);
+      expect(screen.getByLabelText("원두량")).toHaveValue("21");
     },
   );
 
@@ -1070,7 +1000,7 @@ describe("BrewNewPage — 상태", () => {
         general.compareDocumentPosition(firstInput) &
           Node.DOCUMENT_POSITION_FOLLOWING,
       ).toBeTruthy();
-      expect(screen.getByLabelText("원두량")).toHaveValue(20);
+      expect(screen.getByLabelText("원두량")).toHaveValue("20");
     },
   );
 
@@ -1094,4 +1024,402 @@ describe("BrewNewPage — 상태", () => {
 
     await waitFor(() => expect(calls).toBe(before + 1));
   });
+});
+
+// ── docs/specs/2026-10-11-brew-form-fidelity.md ─────────────────────────────
+
+function recipeWith(over: Record<string, unknown>) {
+  const recipe: Record<string, unknown> = { ...grindedRecipe, id: 1, ...over };
+  for (const [key, value] of Object.entries(over)) {
+    if (value === undefined) delete recipe[key];
+  }
+  server.use(http.get(`${BASE}/recipes/1`, () => HttpResponse.json(recipe)));
+}
+
+/** 웹 히어로의 열(`원두`·`물`·`시간`·`수율`·`TDS`·`음료`). */
+function heroCol(label: string): HTMLElement {
+  const col = document.querySelector<HTMLElement>(
+    `[data-hero] [data-hero-col="${label}"]`,
+  );
+  if (col === null) throw new Error(`히어로 ${label} 열이 없다`);
+  return col;
+}
+
+async function retype(
+  user: ReturnType<typeof userEvent.setup>,
+  input: HTMLElement,
+  text: string,
+) {
+  await user.clear(input);
+  if (text !== "") await user.type(input, text);
+}
+
+describe("BrewNewPage — 웹 히어로·다른 점", () => {
+  it("AC-BREWFIT-06 · 웹 히어로는 실측 3열 아래에 레시피 값을 흐리게 보인다", async () => {
+    const user = userEvent.setup();
+    recipeWith({ doseG: 15.0, waterG: 250.0, totalTimeSeconds: 210 });
+
+    await renderNewPage();
+    await retype(user, await screen.findByLabelText("원두량"), "16");
+    await retype(user, screen.getByLabelText("물량"), "250");
+    await retype(user, screen.getByLabelText("추출 시간"), "3:45");
+
+    const hero = document.querySelector<HTMLElement>("[data-hero]")!;
+    expect(within(hero).getByText("1:15.6")).toBeInTheDocument();
+    for (const [label, value, reference] of [
+      ["원두", "16 g", "레시피 15"],
+      ["물", "250 g", "레시피 250"],
+      ["시간", "3:45", "레시피 3:30"],
+    ]) {
+      const col = within(heroCol(label));
+      expect(col.getByText(value)).toBeInTheDocument();
+      expect(col.getByText(reference)).toBeInTheDocument();
+    }
+  });
+
+  it("AC-BREWFIT-06 · 레시피에 시간이 없으면 시간 열의 기준 표시가 없다", async () => {
+    recipeWith({ doseG: 15.0, waterG: 250.0, totalTimeSeconds: undefined });
+
+    await renderNewPage();
+    await screen.findByLabelText("원두량");
+
+    expect(heroCol("시간").querySelector("[data-hero-reference]")).toBeNull();
+    expect(
+      heroCol("원두").querySelector("[data-hero-reference]"),
+    ).not.toBeNull();
+  });
+
+  it("AC-BREWFIT-07 · 웹 히어로 둘째 줄은 수율·TDS·음료다", async () => {
+    const user = userEvent.setup();
+    await renderNewPage();
+    await retype(user, await screen.findByLabelText("원두량"), "15");
+    await user.type(screen.getByLabelText("음료 중량"), "225");
+    await user.type(screen.getByLabelText("TDS"), "1.38");
+
+    expect(within(heroCol("수율")).getByText("20.7 %")).toBeInTheDocument();
+    expect(within(heroCol("TDS")).getByText("1.38 %")).toBeInTheDocument();
+    expect(within(heroCol("음료")).getByText("225 g")).toBeInTheDocument();
+
+    await user.clear(screen.getByLabelText("TDS"));
+    expect(within(heroCol("수율")).getByText("—")).toBeInTheDocument();
+    expect(within(heroCol("TDS")).getByText("—")).toBeInTheDocument();
+    expect(within(heroCol("음료")).getByText("225 g")).toBeInTheDocument();
+    expect(
+      screen.queryByText("TDS가 없으면 수율을 계산할 수 없습니다."),
+    ).toBeNull();
+  });
+
+  it("AC-BREWFIT-08 · 웹은 레시피와 다른 점을 저장 전에 미리 보여준다", async () => {
+    const user = userEvent.setup();
+    recipeWith({ doseG: 30.0, waterTempC: 93.0 });
+
+    await renderNewPage();
+    await retype(user, await screen.findByLabelText("원두량"), "31");
+    await retype(user, screen.getByLabelText("물 온도"), "96");
+
+    const block = document.querySelector<HTMLElement>("[data-recipe-diff]");
+    expect(block).not.toBeNull();
+    const text = block!.textContent ?? "";
+    expect(text).toContain("원두를 1.0 g 더 썼습니다");
+    expect(text).toContain("3 °C 높게 내렸습니다");
+    expect(text.indexOf("원두를")).toBeLessThan(text.indexOf("3 °C"));
+
+    await retype(user, screen.getByLabelText("원두량"), "30");
+    await retype(user, screen.getByLabelText("물 온도"), "93");
+    expect(document.querySelector("[data-recipe-diff]")).toBeNull();
+  });
+
+  it("AC-BREWFIT-09 · 분쇄도 기준 표시는 같은 모델·단위일 때만", async () => {
+    const user = userEvent.setup();
+    recipeWith({
+      grinderModelId: 5,
+      grindSettingValue: 22,
+      grindSettingUnit: "CLICK",
+    });
+    server.use(
+      userGrindersReturn(
+        { ...myComandante, id: 5, grinderModelId: 5 },
+        { ...myComandante, id: 6, grinderModelId: 6, nickname: "사무실" },
+      ),
+    );
+
+    await renderNewPage();
+    await screen.findByLabelText("원두량");
+    expect(ledgerRow("분쇄도")).toHaveTextContent("레시피 22 클릭");
+
+    await user.selectOptions(screen.getByLabelText("그라인더"), "6");
+    expect(ledgerRow("분쇄도")).not.toHaveTextContent("레시피 22 클릭");
+  });
+
+  it("AC-BREWFIT-14 · 맛 도트는 고르고 같은 점을 다시 누르면 지운다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    const acidity = within(await screen.findByRole("group", { name: "산미" }));
+    const four = acidity.getByRole("button", { name: "산미 4" });
+
+    await user.click(four);
+    expect(four).toHaveAttribute("aria-pressed", "true");
+    expect(
+      acidity.getAllByRole("button").map((dot) => dot.hasAttribute("data-on")),
+    ).toEqual([true, true, true, true, false]);
+    expect(acidity.getByText("4")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    await waitFor(() => expect(captured.body?.acidity).toBe(4));
+
+    await user.click(four);
+    for (const dot of acidity.getAllByRole("button")) {
+      expect(dot).toHaveAttribute("aria-pressed", "false");
+    }
+    expect(acidity.queryByText(/^[1-5]$/)).toBeNull();
+    captured.body = null;
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    expect(captured.body).not.toHaveProperty("acidity");
+  });
+
+  it("AC-BREWFIT-15 · 웹은 5축이 늘 펼쳐져 있다", async () => {
+    await renderNewPage();
+    await screen.findByLabelText("원두량");
+
+    expect(
+      screen.getAllByRole("button", {
+        name: /^(산미|단맛|바디|쓴맛|여운) [1-5]$/,
+      }),
+    ).toHaveLength(25);
+    expect(screen.queryByRole("button", { name: "맛 자세히" })).toBeNull();
+  });
+
+  it("AC-BREWFIT-21 · 한 축만 골라도 그 축만 보낸다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+
+    await renderNewPage();
+    await user.click(await screen.findByRole("button", { name: "여운 1" }));
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    expect(captured.body?.aftertaste).toBe(1);
+    for (const key of ["acidity", "sweetness", "body", "bitterness"]) {
+      expect(captured.body).not.toHaveProperty(key);
+    }
+  });
+});
+
+describe("BrewNewPage — 모바일 원장·시트", () => {
+  beforeEach(() => mockViewportWidth(390));
+
+  /** 원장 행의 동작 버튼(`변경`·`맛 자세히`)을 누른다. */
+  async function openRow(
+    user: ReturnType<typeof userEvent.setup>,
+    label: string,
+  ) {
+    await screen.findByLabelText("원두량");
+    await user.click(
+      within(ledgerRow(label)).getByRole("button", {
+        name: label === "평가" ? "맛 자세히" : `${label} 변경`,
+      }),
+    );
+    return within(
+      await screen.findByRole("dialog", {
+        name: label === "평가" ? "맛" : label,
+      }),
+    );
+  }
+
+  it("AC-BREWFIT-10 · 모바일 히어로 안에서 원두량·물량을 고친다", async () => {
+    const user = userEvent.setup();
+    recipeWith({ doseG: 15.0, waterG: 250.0 });
+
+    await renderNewPage();
+    const dose = await screen.findByLabelText("원두량");
+    const hero = document.querySelector<HTMLElement>("[data-hero]")!;
+    expect(hero.contains(dose)).toBe(true);
+    expect(hero.contains(screen.getByLabelText("물량"))).toBe(true);
+
+    await retype(user, dose, "16");
+    expect(within(hero).getByText("1:15.6")).toBeInTheDocument();
+    expect(within(hero).getByText(/^15g → 250g/)).toBeInTheDocument();
+  });
+
+  it("AC-BREWFIT-11 · 모바일 원장 행 순서와 「변경」", async () => {
+    await renderNewPage();
+    await screen.findByLabelText("원두량");
+
+    const rows = [
+      ...document.querySelectorAll<HTMLElement>("[data-kit='ledger-field']"),
+    ];
+    expect(rows.map((row) => row.firstElementChild?.textContent)).toEqual([
+      "레시피",
+      "내린 시각",
+      "원두",
+      "온도·시간",
+      "장비",
+      "결과",
+      "평가",
+      "메모",
+    ]);
+    expect(within(rows[0]).queryAllByRole("button")).toHaveLength(0);
+    for (const row of rows.slice(1)) {
+      const label = row.firstElementChild?.textContent;
+      const action = label === "평가" ? "맛 자세히" : "변경";
+      expect(
+        within(row)
+          .getAllByRole("button")
+          .some((b) => b.textContent === action),
+      ).toBe(true);
+    }
+  });
+
+  it("AC-BREWFIT-12 · 행을 누르면 그 묶음만 담은 시트가 뜬다", async () => {
+    const user = userEvent.setup();
+    await renderNewPage();
+
+    const sheet = await openRow(user, "온도·시간");
+    expect(sheet.getAllByRole("textbox")).toHaveLength(3);
+    await retype(user, sheet.getByLabelText("물 온도"), "96");
+    await user.type(sheet.getByLabelText("추출 시간"), "3:45");
+    await user.type(sheet.getByLabelText("드로다운 시간"), "0:40");
+    await user.click(sheet.getByRole("button", { name: "완료" }));
+
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(ledgerRow("온도·시간")).toHaveTextContent("96 °C · 3:45");
+    expect(ledgerRow("온도·시간")).toHaveTextContent("드로다운 0:40");
+  });
+
+  it.each(["완료", "Escape", "딤"])(
+    "AC-BREWFIT-13 · 시트를 %s로 닫아도 값이 남는다",
+    async (how) => {
+      const user = userEvent.setup();
+      const captured = captureCreate();
+      await renderNewPage();
+
+      const sheet = await openRow(user, "결과");
+      await user.type(sheet.getByLabelText("음료 중량"), "225");
+      if (how === "완료")
+        await user.click(sheet.getByRole("button", { name: "완료" }));
+      if (how === "Escape") await user.keyboard("{Escape}");
+      if (how === "딤")
+        await user.click(
+          document.querySelector<HTMLElement>("[data-sheet-dim]")!,
+        );
+
+      expect(screen.queryByRole("dialog")).toBeNull();
+      expect(ledgerRow("결과")).toHaveTextContent("225 g · TDS —");
+      await user.click(screen.getByRole("button", { name: "기록하기" }));
+      await waitFor(() => expect(captured.body?.beverageWeightG).toBe(225));
+    },
+  );
+
+  it("AC-BREWFIT-15 · 모바일은 5축이 시트 안에 있다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+    await renderNewPage();
+    await screen.findByLabelText("원두량");
+
+    expect(
+      screen.queryAllByRole("button", { name: /^산미 [1-5]$/ }),
+    ).toHaveLength(0);
+    const sheet = await openRow(user, "평가");
+    expect(
+      sheet.getAllByRole("button", {
+        name: /^(산미|단맛|바디|쓴맛|여운) [1-5]$/,
+      }),
+    ).toHaveLength(25);
+
+    await user.click(sheet.getByRole("button", { name: "완료" }));
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    await waitFor(() => expect(captured.body).not.toBeNull());
+    for (const key of [
+      "acidity",
+      "sweetness",
+      "body",
+      "bitterness",
+      "aftertaste",
+    ]) {
+      expect(captured.body).not.toHaveProperty(key);
+    }
+  });
+
+  it("AC-BREWFIT-19 · 빈 값은 대시다", async () => {
+    recipeWith({ waterTempC: undefined });
+    await renderNewPage();
+    await screen.findByLabelText("원두량");
+
+    const temp = ledgerRow("온도·시간");
+    expect(temp).toHaveTextContent("— · —");
+    expect(temp).toHaveTextContent("드로다운 —");
+    const result = ledgerRow("결과");
+    expect(result).toHaveTextContent("— · TDS —");
+    expect(result).toHaveTextContent("수율 —");
+  });
+
+  it("AC-BREWFIT-22 · 모바일 필드 오류는 그 시트를 열고 포커스를 옮긴다", async () => {
+    const user = userEvent.setup();
+    captureCreate(badRequest("actualWaterTempC", "100 이하여야 합니다"));
+    await renderNewPage();
+    await screen.findByLabelText("원두량");
+
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+    const sheet = within(
+      await screen.findByRole("dialog", { name: "온도·시간" }),
+    );
+    const temp = sheet.getByLabelText("물 온도");
+    await waitFor(() => expect(document.activeElement).toBe(temp));
+    expect(
+      document.getElementById(temp.getAttribute("aria-describedby") ?? ""),
+    ).toHaveTextContent("100 이하여야 합니다");
+
+    await user.click(sheet.getByRole("button", { name: "완료" }));
+    expect(ledgerRow("온도·시간")).toHaveAttribute("data-invalid");
+  });
+
+  it("AC-BREWFIT-23 · 모바일 시간 형식 오류도 같은 길이다", async () => {
+    const user = userEvent.setup();
+    const captured = captureCreate();
+    await renderNewPage();
+
+    const sheet = await openRow(user, "온도·시간");
+    await user.type(sheet.getByLabelText("추출 시간"), "3:60");
+    await user.click(sheet.getByRole("button", { name: "완료" }));
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+    const reopened = within(
+      await screen.findByRole("dialog", { name: "온도·시간" }),
+    );
+    const total = reopened.getByLabelText("추출 시간");
+    await waitFor(() => expect(document.activeElement).toBe(total));
+    expect(
+      reopened.getByText("0:00 형식으로 입력해 주세요."),
+    ).toBeInTheDocument();
+    expect(captured.body).toBeNull();
+  });
+
+  it.each([
+    [
+      "GRIND_SETTING_OUT_OF_RANGE",
+      "이 그라인더에서 쓸 수 없는 설정값입니다.",
+      "장비",
+    ],
+    ["INVALID_BREW_MEASUREMENT", "추출 측정값이 올바르지 않습니다.", "결과"],
+  ])(
+    "AC-BREWFIT-24 · 모바일 %s 경고는 %s 행 바로 위에 붙는다",
+    async (code, message, row) => {
+      const user = userEvent.setup();
+      captureCreate(serverError(400, code, message));
+      await renderNewPage();
+      await retype(user, await screen.findByLabelText("원두량"), "21");
+
+      await user.click(screen.getByRole("button", { name: "기록하기" }));
+
+      const warning = (await screen.findByText(message)).closest<HTMLElement>(
+        "[data-warning]",
+      );
+      expect(warning).not.toBeNull();
+      expect(ledgerRow(row).previousElementSibling).toBe(warning);
+      expect(screen.getByLabelText("원두량")).toHaveValue("21");
+    },
+  );
 });

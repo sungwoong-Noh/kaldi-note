@@ -53,7 +53,6 @@ test.describe("구조 — 대표 수치", () => {
   // AC-RECIPESBREWS-73)가 둘 다 레시피 서랍 화면 스펙으로 대체하며 완전히 없어졌다
   // (docs/specs/2026-09-25-recipe-drawer-screens.md). 레시피 쪽 대표 수치는 이제 원두량이라
   // "1:비율" 패턴 자체를 검사하지 않는다 — 값 검증은 컴포넌트 테스트가 맡는다.
-
   // "/brews"(목록)는 빠졌다 — AC-RECIPESBREWS-77이 목록을 카드에서 통계 4칸 +
   // 테이블/원장 행으로 바꾸며 대표 수치(히어로) 자체가 없어졌다
   // (docs/specs/2026-09-25-recipe-drawer-screens.md).

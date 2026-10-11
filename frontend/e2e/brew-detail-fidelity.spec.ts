@@ -45,10 +45,9 @@ test("AC-BDETAIL-11 · 웹 동작은 상단 바에 있다", async ({ page }) => 
   const banner = page.getByRole("banner");
   const main = page.getByRole("main");
 
-  await expect(banner.getByRole("link", { name: "다시 내리기" })).toHaveAttribute(
-    "href",
-    "/brews/new?recipeId=12",
-  );
+  await expect(
+    banner.getByRole("link", { name: "다시 내리기" }),
+  ).toHaveAttribute("href", "/brews/new?recipeId=12");
   await expect(banner.getByRole("link", { name: "수정" })).toHaveAttribute(
     "href",
     "/brews/2/edit",

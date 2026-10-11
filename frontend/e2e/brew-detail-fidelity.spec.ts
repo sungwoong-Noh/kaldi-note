@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { undersized } from "./hitArea";
 import { installStubs, installSwStubs } from "./stubs";
 
 /** docs/specs/2026-10-11-brew-detail-fidelity.md — 기록 상세 W3·B2 정합. */
@@ -98,4 +99,38 @@ test("AC-BDETAIL-12 · 모바일 동작은 위 수정, 아래 다시 내리기·
 
   const remove = await page.getByRole("button", { name: "삭제" }).boundingBox();
   expect(remove!.y).toBeGreaterThan(cta!.y);
+});
+
+test.describe("AC-BDETAIL-21 · 누르는 영역 44×44", () => {
+  for (const width of [390, 1280]) {
+    test(`${width}px`, async ({ page }) => {
+      await open(page, width, 844);
+      const targets = [
+        page.getByRole("link", { name: "다시 내리기" }),
+        page.getByRole("link", { name: "수정" }),
+        page.getByRole("button", { name: "삭제" }),
+      ];
+      const small: string[] = [];
+      for (const target of targets) {
+        await expect(target).toHaveCount(1);
+        small.push(...(await target.evaluateAll(undersized)));
+      }
+      expect(small).toEqual([]);
+
+      // 제목 안 링크는 `undersized`가 글줄 링크로 면제하지만 이 화면에서는 잰다 — 박스와 ::after 중 큰 쪽.
+      const title = await page
+        .getByRole("heading", { level: 1 })
+        .getByRole("link")
+        .evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          const after = getComputedStyle(el, "::after");
+          return {
+            w: Math.max(r.width, parseFloat(after.width) || 0),
+            h: Math.max(r.height, parseFloat(after.height) || 0),
+          };
+        });
+      expect(title.w).toBeGreaterThanOrEqual(44);
+      expect(title.h).toBeGreaterThanOrEqual(44);
+    });
+  }
 });

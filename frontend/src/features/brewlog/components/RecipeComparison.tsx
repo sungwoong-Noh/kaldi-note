@@ -114,8 +114,9 @@ function diffCell(row: Row): string {
   return row.target === undefined ? "—" : "같습니다.";
 }
 
+/** 열 머리. 정렬은 칸마다 붙인다 — 한 문자열에 `text-left`·`text-right`가 같이 있으면 CSS 순서로 갈린다. */
 const HEAD =
-  "py-[10px] text-right font-mono text-[9.5px] font-normal tracking-[0.1em] text-ink-3 uppercase";
+  "py-[10px] font-mono text-[9.5px] font-normal tracking-[0.1em] text-ink-3 uppercase";
 
 export function RecipeComparison({
   log,
@@ -150,13 +151,13 @@ export function RecipeComparison({
               <th scope="col" className={`${HEAD} text-left`}>
                 항목
               </th>
-              <th scope="col" className={HEAD}>
+              <th scope="col" className={`${HEAD} text-right`}>
                 레시피
               </th>
-              <th scope="col" className={HEAD}>
+              <th scope="col" className={`${HEAD} text-right`}>
                 실제
               </th>
-              <th scope="col" className={HEAD}>
+              <th scope="col" className={`${HEAD} text-right`}>
                 차이
               </th>
             </tr>

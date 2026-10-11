@@ -289,7 +289,7 @@ supersedes:
 
 각 태스크는 TDD 사이클 하나다(실패 테스트 → 실패 확인 → 최소 구현 → 통과 확인 → 커밋).
 
-- [ ] **Task 1: 키트 부품 4종** — Covers: AC-BREWFIT-01, 02, 27
+- [x] **Task 1: 키트 부품 4종** — Covers: AC-BREWFIT-01, 02, 27
 
   `src/components/kit/index.tsx`에 `SectionLabel`·`NumberCell`·`LedgerField`·`TasteDots`를 시안 CSS 값 그대로
   추가하고 `/dev/kit`에 하나씩 놓는다. 숫자 입력은 기존 `NumberField`의 파싱을 옮긴다(새로 짜지 않는다).

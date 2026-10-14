@@ -1,7 +1,7 @@
 ---
 id: CRAWL
 title: 원두 크롤러 — 구매처 사이트에서 원두 카탈로그 수집
-status: 승인
+status: 구현중
 milestone:
 supersedes:
 ---
@@ -457,7 +457,7 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 
 ## 수동 확인
 
-- [ ] ★ 로컬 실제 사이트 실행: `docker compose up -d` → `bootRun` → 로컬 유저 ADMIN 승격 →
+- [x] ★ 로컬 실제 사이트 실행 (2026-10-14 확인 — momos created 21 → 재실행 created 0/updated 21, DB 21행 일치, 실행 중 POST 409 / unspecialty created 72 → 재실행 created 0/updated 72, skipped 0): `docker compose up -d` → `bootRun` → 로컬 유저 ADMIN 승격 →
   `POST /api/v1/admin/crawl-sources/momos/runs` → `GET /crawl-runs/{id}`가 `SUCCEEDED`가 될 때까지
   폴링 → `SELECT count(*) FROM bean_products WHERE created_by_user_id IS NULL`이 `created`와 같다 →
   한 번 더 실행하면 `created=0` → `unspecialty`도 같은 순서로, 실행 중에 POST를 한 번 더 보내 `409` 확인

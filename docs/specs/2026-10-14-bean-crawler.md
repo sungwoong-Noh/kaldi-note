@@ -138,6 +138,9 @@ API에 화면만 붙이면 되도록** 설계한다.
 }
 ```
 
+null인 필드(`lastRun`, `finishedAt`, `errorMessage`)는 전역 `default-property-inclusion: non_null` 설정에 따라 응답에서
+빠진다. 위 예시의 `null`은 「없음」을 뜻한다.
+
 신설 `ErrorCode`: `CRAWL_SOURCE_NOT_FOUND`(404), `CRAWL_ALREADY_RUNNING`(409), `CRAWL_RUN_NOT_FOUND`(404).
 skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 
@@ -242,7 +245,7 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 
 - **Given** `crawl_runs`가 비어 있다
 - **When** ADMIN이 `GET /api/v1/admin/crawl-sources`
-- **Then** HTTP `200`, 길이 `2`, key `momos`·`unspecialty`, 둘 다 `lastRun=null`
+- **Then** HTTP `200`, 길이 `2`, key `momos`·`unspecialty`, 둘 다 `lastRun`이 없다(null — 전역 `non_null` 설정으로 응답에서 빠진다)
 - **검증** API 테스트 `CrawlAdminControllerTest`
 
 #### AC-CRAWL-21 · 실행을 시작하면 202, 끝나면 SUCCEEDED
@@ -410,7 +413,7 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
   V18 `crawl_runs`, `CrawlRun` 엔티티, `CrawlRunService.start(key, userId)`(executor·sleeper·`RestClient`
   주입), 중복 실행 거부, `ApplicationReadyEvent` 리스너.
 
-- [ ] **Task 6: 관리 API** — Covers: AC-CRAWL-20~22, 30~32, 36
+- [x] **Task 6: 관리 API** — Covers: AC-CRAWL-20~22, 30~32, 36
   `CrawlAdminController`, `ErrorCode` 3개, `docs/contracts/2026-10-14-bean-crawler.json`.
 
 - [ ] **Task 7: 프론트 null 수용** — Covers: AC-CRAWL-42, 43

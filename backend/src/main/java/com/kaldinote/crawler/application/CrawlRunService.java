@@ -4,6 +4,8 @@ import com.kaldinote.catalog.application.BeanImportService;
 import com.kaldinote.catalog.application.ImportResult;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
+import com.kaldinote.common.response.PageParams;
+import com.kaldinote.common.response.PageResponse;
 import com.kaldinote.crawler.domain.BeanSource;
 import com.kaldinote.crawler.domain.CrawlRun;
 import com.kaldinote.crawler.domain.CrawlRunStatus;
@@ -25,6 +27,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 /**
@@ -59,12 +64,35 @@ public class CrawlRunService {
     this.sleeper = sleeper;
   }
 
-  public List<BeanSource> sources() {
-    return sources;
+  public List<CrawlSourceResponse> sources() {
+    return sources.stream()
+        .map(
+            s ->
+                new CrawlSourceResponse(
+                    s.key(),
+                    s.name(),
+                    s.listUrl().toString(),
+                    runRepository
+                        .findFirstBySourceOrderByStartedAtDesc(s.key())
+                        .map(CrawlSourceResponse.LastRun::from)
+                        .orElse(null)))
+        .toList();
   }
 
-  public Optional<CrawlRun> lastRun(String key) {
-    return runRepository.findFirstBySourceOrderByStartedAtDesc(key);
+  public PageResponse<CrawlRunResponse> runs(String source, PageParams params) {
+    Pageable pageable = params.toPageable(Sort.unsorted());
+    Page<CrawlRun> page =
+        source == null
+            ? runRepository.findAllByOrderByStartedAtDesc(pageable)
+            : runRepository.findBySourceOrderByStartedAtDesc(source, pageable);
+    return PageResponse.from(page, CrawlRunResponse::from);
+  }
+
+  public CrawlRunResponse run(Long id) {
+    return runRepository
+        .findById(id)
+        .map(CrawlRunResponse::from)
+        .orElseThrow(() -> new BusinessException(ErrorCode.CRAWL_RUN_NOT_FOUND));
   }
 
   public CrawlRunResponse start(String key, Long userId) {

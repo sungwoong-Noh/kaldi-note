@@ -38,7 +38,7 @@ public class BeanProduct extends BaseTimeEntity {
   private BeanMix beanMix;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "roast_level", nullable = false, length = 20)
+  @Column(name = "roast_level", length = 20)
   private RoastLevel roastLevel;
 
   @Column(name = "roast_level_agtron")

@@ -378,12 +378,12 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 
 ## 구현 순서
 
-- [ ] **Task 1: 픽스처 저장** — Covers: (AC-01~05의 입력)
+- [x] **Task 1: 픽스처 저장** — Covers: (AC-01~05의 입력)
   `curl -A "kaldi-note-crawler/1.0"`로 `momos-list.html`, `momos-4938.html`, `unspecialty-sitemap.xml`,
   `unspecialty-920.html`, `unspecialty-211.html`을 `backend/src/test/resources/fixtures/crawler/`에 저장.
   목록 개수를 다시 세어 AC-01(21)·AC-03(132)과 다르면 스펙을 먼저 고친다.
 
-- [ ] **Task 2: V17 + roast_level nullable** — Covers: AC-CRAWL-41
+- [x] **Task 2: V17 + roast_level nullable** — Covers: AC-CRAWL-41
 
   ```sql
   ALTER TABLE bean_products ALTER COLUMN roast_level DROP NOT NULL;

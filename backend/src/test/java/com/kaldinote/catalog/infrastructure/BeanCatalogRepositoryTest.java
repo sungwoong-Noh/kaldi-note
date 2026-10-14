@@ -15,6 +15,7 @@ import com.kaldinote.user.infrastructure.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,27 @@ class BeanCatalogRepositoryTest extends AbstractIntegrationTest {
 
   private Long roasterId() {
     return roasterRepository.save(Roaster.createByUser("프릳츠커피컴퍼니", "KR", null, userId())).getId();
+  }
+
+  @Test
+  @DisplayName("AC-CRAWL-41 · 배전도 없는 상품을 저장할 수 있다")
+  void 배전도_없는_상품을_저장할_수_있다() {
+    BeanProduct saved =
+        beanProductRepository.saveAndFlush(
+            BeanProduct.createByUser(
+                roasterId(),
+                "에콰도르 산 어거스틴",
+                BeanMix.SINGLE_ORIGIN,
+                null,
+                null,
+                null,
+                false,
+                null,
+                null,
+                null));
+
+    assertThat(beanProductRepository.findById(saved.getId()).orElseThrow().getRoastLevel())
+        .isNull();
   }
 
   @Test

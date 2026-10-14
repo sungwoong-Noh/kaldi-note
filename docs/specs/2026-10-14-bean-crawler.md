@@ -390,7 +390,7 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
   ```
   `BeanProduct.roastLevel`의 `nullable=false` 제거, 응답 DTO는 그대로 null 통과.
 
-- [ ] **Task 3: 파서** — Covers: AC-CRAWL-01~05
+- [x] **Task 3: 파서** — Covers: AC-CRAWL-01~05
   jsoup 추가. `crawler.domain.CrawledBean` / `CrawledOrigin` record, `BeanSource` 인터페이스.
 
   ```java

@@ -401,7 +401,7 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
   }
   ```
 
-- [ ] **Task 4: 가져오기** — Covers: AC-CRAWL-10~19
+- [x] **Task 4: 가져오기** — Covers: AC-CRAWL-10~19
   `catalog.application.BeanImportService.importBean(CrawledBean) → ImportResult(CREATED|UPDATED|SKIPPED, reason, unmapped)`.
   `BeanCatalogService.buildOrigins`의 블렌드 검증은 쓰지 않고 `BeanOrigin.of`를 직접 쓴다. 상품 단위
   `@Transactional`.

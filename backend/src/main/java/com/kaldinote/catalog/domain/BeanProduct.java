@@ -113,6 +113,45 @@ public class BeanProduct extends BaseTimeEntity {
         createdByUserId);
   }
 
+  /** 크롤러가 가져온 상품. {@code createdByUserId}가 null이라 다음 수집 때 갱신할 수 있다. */
+  public static BeanProduct createByCrawler(
+      Long roasterId,
+      String name,
+      BeanMix beanMix,
+      RoastLevel roastLevel,
+      Short roastLevelAgtron,
+      String productUrl,
+      String description) {
+    return new BeanProduct(
+        roasterId,
+        name,
+        beanMix,
+        roastLevel,
+        roastLevelAgtron,
+        null,
+        false,
+        productUrl,
+        description,
+        null);
+  }
+
+  public boolean isCrawled() {
+    return createdByUserId == null;
+  }
+
+  public void updateFromCrawl(
+      BeanMix beanMix,
+      RoastLevel roastLevel,
+      Short roastLevelAgtron,
+      String productUrl,
+      String description) {
+    this.beanMix = beanMix;
+    this.roastLevel = roastLevel;
+    this.roastLevelAgtron = roastLevelAgtron;
+    this.productUrl = productUrl;
+    this.description = description;
+  }
+
   public void attachOrigins(List<BeanOrigin> newOrigins) {
     newOrigins.forEach(o -> o.assignTo(this));
     this.origins.clear();

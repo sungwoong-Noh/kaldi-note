@@ -61,9 +61,9 @@ public class MomosSource implements BeanSource {
       if ("Product".equals(node.path("@type").asString(""))) {
         String name = node.path("name").asString("").strip();
         String cupNotes = blankToNull(node.path("description").asString(""));
-        List<CrawledOrigin> origins =
-            BlendNames.isBlend(name) ? List.of() : List.of(decompose(name, names));
-        return Optional.of(new CrawledBean(ROASTER, name, url.toString(), null, cupNotes, origins));
+        return Optional.of(
+            new CrawledBean(
+                ROASTER, name, url.toString(), null, cupNotes, List.of(decompose(name, names))));
       }
     }
     return Optional.empty();

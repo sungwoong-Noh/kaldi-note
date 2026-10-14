@@ -77,16 +77,14 @@ public class UnspecialtySource implements BeanSource {
     }
 
     List<CrawledOrigin> origins =
-        BlendNames.isBlend(name)
-            ? List.of()
-            : List.of(
-                new CrawledOrigin(
-                    spec(specs, "국가"),
-                    spec(specs, "지역"),
-                    spec(specs, "농장"),
-                    spec(specs, "고도"),
-                    spec(specs, "품종"),
-                    spec(specs, "가공방식")));
+        List.of(
+            new CrawledOrigin(
+                spec(specs, "국가"),
+                spec(specs, "지역"),
+                spec(specs, "농장"),
+                spec(specs, "고도"),
+                spec(specs, "품종"),
+                spec(specs, "가공방식")));
     return Optional.of(
         new CrawledBean(
             m.group(1).strip(),

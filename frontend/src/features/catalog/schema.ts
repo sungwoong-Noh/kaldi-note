@@ -27,13 +27,10 @@ export const beanProductSchema = z.object({
   roasterId: z.number(),
   name: z.string(),
   beanMix: z.enum(["SINGLE_ORIGIN", "BLEND"]),
-  roastLevel: z.enum([
-    "LIGHT",
-    "MEDIUM_LIGHT",
-    "MEDIUM",
-    "MEDIUM_DARK",
-    "DARK",
-  ]),
+  /** 크롤러가 가져온 원두는 배전도를 모를 수 있다 — 실제 응답에서는 키가 빠진다(AC-CRAWL-42·45). */
+  roastLevel: z
+    .enum(["LIGHT", "MEDIUM_LIGHT", "MEDIUM", "MEDIUM_DARK", "DARK"])
+    .nullish(),
   decaf: z.boolean(),
   verified: z.boolean(),
   origins: z.array(beanOriginSchema).default([]),
@@ -45,4 +42,4 @@ export const beanProductListSchema = z.array(beanProductSchema);
 
 export type Roaster = z.infer<typeof roasterSchema>;
 export type BeanProduct = z.infer<typeof beanProductSchema>;
-export type RoastLevel = BeanProduct["roastLevel"];
+export type RoastLevel = NonNullable<BeanProduct["roastLevel"]>;

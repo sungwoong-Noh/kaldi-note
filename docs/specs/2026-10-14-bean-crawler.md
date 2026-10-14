@@ -437,7 +437,7 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 
 - [x] **Task 6.5: 응답 DTO null 처리** — Covers: AC-CRAWL-44 (구현 중 추가)
 
-- [ ] **Task 7: 프론트 null 수용** — Covers: AC-CRAWL-42, 43, 45
+- [x] **Task 7: 프론트 null 수용** — Covers: AC-CRAWL-42, 43, 45
   `features/catalog/schema.ts`의 `roastLevel`에 `.nullish()`, `RoastDot`은 `roastLevel == null`이면 `null` 반환.
   타입 오류가 나는 호출부(`useRoastLevel` 등)는 `?? undefined`로 맞춘다.
 

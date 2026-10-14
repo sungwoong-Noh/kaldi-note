@@ -20,4 +20,9 @@ describe("RoastDot", () => {
     const { container } = render(<RoastDot />);
     expect(container.querySelector("[data-roast-dot]")).toBeNull();
   });
+
+  it("AC-CRAWL-43 · roastLevel이 null이면 아무것도 렌더하지 않는다", () => {
+    const { container } = render(<RoastDot roastLevel={null} />);
+    expect(container.querySelector("[data-roast-dot]")).toBeNull();
+  });
 });

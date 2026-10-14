@@ -32,5 +32,5 @@ export function useRoastLevel(
     enabled: enabled && productId !== undefined,
   });
 
-  return product.data?.roastLevel;
+  return product.data?.roastLevel ?? undefined;
 }

@@ -406,7 +406,7 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
   `BeanCatalogService.buildOrigins`의 블렌드 검증은 쓰지 않고 `BeanOrigin.of`를 직접 쓴다. 상품 단위
   `@Transactional`.
 
-- [ ] **Task 5: 실행** — Covers: AC-CRAWL-23, 34, 35, 40
+- [x] **Task 5: 실행** — Covers: AC-CRAWL-23, 34, 35, 40
   V18 `crawl_runs`, `CrawlRun` 엔티티, `CrawlRunService.start(key, userId)`(executor·sleeper·`RestClient`
   주입), 중복 실행 거부, `ApplicationReadyEvent` 리스너.
 

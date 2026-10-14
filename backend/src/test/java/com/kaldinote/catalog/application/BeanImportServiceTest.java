@@ -110,6 +110,17 @@ class BeanImportServiceTest extends AbstractIntegrationTest {
   }
 
   @Test
+  @DisplayName("AC-CRAWL-46 · Agtron이 소수면 배전도는 그대로, Agtron은 정수로 반올림한다")
+  void Agtron_소수는_반올림하고_배전도는_매핑한다() {
+    ImportResult result =
+        service.importBean(bean(NAME, "Medium light #74.6", origin(null, null, null)));
+
+    assertThat(saved(NAME).getRoastLevel()).isEqualTo(RoastLevel.MEDIUM_LIGHT);
+    assertThat(saved(NAME).getRoastLevelAgtron()).isEqualTo((short) 75);
+    assertThat(result.unmapped()).isEmpty();
+  }
+
+  @Test
   @DisplayName("AC-CRAWL-14 · 배전도 원문이 없으면 null로 들어간다")
   void 배전도_원문이_없으면_null이다() {
     ImportResult result = service.importBean(bean(NAME, null, origin(null, null, null)));

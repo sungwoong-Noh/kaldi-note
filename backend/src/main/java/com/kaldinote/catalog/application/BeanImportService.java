@@ -17,6 +17,7 @@ import com.kaldinote.crawler.domain.CrawledBean;
 import com.kaldinote.crawler.domain.CrawledOrigin;
 import com.kaldinote.crawler.domain.MasterNames;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -37,7 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class BeanImportService {
 
-  private static final Pattern ROAST = Pattern.compile("^(.*?)\\s*(?:#\\s*(\\d+))?$");
+  private static final Pattern ROAST = Pattern.compile("^(.*?)\\s*(?:#\\s*(\\d+(?:\\.\\d+)?))?$");
   private static final Pattern ALTITUDE_ONE = Pattern.compile("^(\\d+)\\s*m$");
   private static final Pattern ALTITUDE_RANGE = Pattern.compile("^(\\d+)\\s*[-–~]\\s*(\\d+)\\s*m$");
   private static final Map<String, RoastLevel> ROAST_WORDS =
@@ -85,7 +86,11 @@ public class BeanImportService {
       Matcher m = ROAST.matcher(bean.roastLevelRaw().strip());
       m.matches(); // 패턴이 모든 문자열과 맞는다
       roastLevel = ROAST_WORDS.get(m.group(1).toLowerCase(Locale.ROOT).replaceAll("\\s+", " "));
-      agtron = m.group(2) == null ? null : Short.valueOf(m.group(2));
+      // roast_level_agtron은 SMALLINT — 소수(#74.6)는 정수로 반올림한다(AC-CRAWL-46)
+      agtron =
+          m.group(2) == null
+              ? null
+              : new BigDecimal(m.group(2)).setScale(0, RoundingMode.HALF_UP).shortValueExact();
       if (roastLevel == null) {
         unmapped.add(new Unmapped("roastLevel", bean.roastLevelRaw()));
       }

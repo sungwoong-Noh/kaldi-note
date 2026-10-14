@@ -279,6 +279,16 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 - **Then** `roast_level=MEDIUM_LIGHT`, `roast_level_agtron=null`
 - **검증** 통합 테스트 `BeanImportServiceTest`
 
+#### AC-CRAWL-46 · Agtron이 소수면 배전도는 그대로, Agtron은 정수로 반올림한다
+
+> 구현 중 추가(2026-10-14). 언스페셜티 실제 수집에서 `Medium light #74.6` 같은 소수 Agtron 7건이 단계 단어까지
+> 통째로 매핑에 실패했다. `roast_level_agtron`은 SMALLINT라 HALF_UP으로 정수화한다.
+
+- **Given** `roastLevelRaw="Medium light #74.6"`
+- **When** 가져오기
+- **Then** `roast_level=MEDIUM_LIGHT`, `roast_level_agtron=75`, unmapped 없음
+- **검증** 통합 테스트 `BeanImportServiceTest`
+
 #### AC-CRAWL-14 · 배전도 원문이 없으면 null로 들어간다
 
 - **Given** `roastLevelRaw=null` (모모스)
@@ -436,6 +446,8 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
   `CrawlAdminController`, `ErrorCode` 3개, `docs/contracts/2026-10-14-bean-crawler.json`.
 
 - [x] **Task 6.5: 응답 DTO null 처리** — Covers: AC-CRAWL-44 (구현 중 추가)
+
+- [x] **Task 7.5: 소수 Agtron** — Covers: AC-CRAWL-46 (구현 중 추가)
 
 - [x] **Task 7: 프론트 null 수용** — Covers: AC-CRAWL-42, 43, 45
   `features/catalog/schema.ts`의 `roastLevel`에 `.nullish()`, `RoastDot`은 `roastLevel == null`이면 `null` 반환.

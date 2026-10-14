@@ -364,11 +364,30 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 - **Then** 예외 없이 저장된다
 - **검증** 리포지토리 테스트 `BeanProductRepositoryTest`
 
+#### AC-CRAWL-44 · 배전도 없는 상품도 단건·목록 조회가 200이다
+
+> 구현 중 추가(2026-10-14). 로컬 실제 수집 뒤 `GET /api/v1/bean-products/{id}`가 500이었다 —
+> `BeanProductResponse.from`이 `getRoastLevel().name()`을 불렀다. 목록 API도 같은 경로라 원두 고르기가 통째로 깨진다.
+
+- **Given** 배전도 원문 없이 가져온 상품(모모스)
+- **When** `GET /api/v1/bean-products`, `GET /api/v1/bean-products/{id}`
+- **Then** 둘 다 HTTP `200`. 단건 응답에 `roastLevel` 필드가 없다(전역 `non_null`)
+- **검증** API 테스트 `BeanControllerTest`
+
 #### AC-CRAWL-42 · 프론트 스키마가 `roastLevel: null`을 받는다
 
 - **Given** `roastLevel: null`인 원두 상품 응답
 - **When** `beanProductSchema.parse`
 - **Then** 예외 없이 `roastLevel === null`
+- **검증** 단위 테스트 `frontend/src/features/catalog/schema.test.ts`
+
+#### AC-CRAWL-45 · 프론트 스키마가 `roastLevel`이 없는 실제 응답을 받는다
+
+> 구현 중 추가(2026-10-14). 백엔드는 null 필드를 빼고 보내므로 실제 응답은 `null`이 아니라 필드 없음이다.
+
+- **Given** 로컬 실제 수집 뒤 `GET /api/v1/bean-products/{id}`에서 뜬 응답(`roastLevel` 필드 없음)
+- **When** `beanProductSchema.parse`
+- **Then** 예외 없이 `roastLevel === undefined`
 - **검증** 단위 테스트 `frontend/src/features/catalog/schema.test.ts`
 
 #### AC-CRAWL-43 · `RoastDot`은 null이면 아무것도 그리지 않는다
@@ -391,7 +410,7 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
   ```sql
   ALTER TABLE bean_products ALTER COLUMN roast_level DROP NOT NULL;
   ```
-  `BeanProduct.roastLevel`의 `nullable=false` 제거, 응답 DTO는 그대로 null 통과.
+  `BeanProduct.roastLevel`의 `nullable=false` 제거. (응답 DTO가 `.name()`을 불러 NPE가 났다 — Task 6.5)
 
 - [x] **Task 3: 파서** — Covers: AC-CRAWL-01~05
   jsoup 추가. `crawler.domain.CrawledBean` / `CrawledOrigin` record, `BeanSource` 인터페이스.
@@ -416,8 +435,10 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 - [x] **Task 6: 관리 API** — Covers: AC-CRAWL-20~22, 30~32, 36
   `CrawlAdminController`, `ErrorCode` 3개, `docs/contracts/2026-10-14-bean-crawler.json`.
 
-- [ ] **Task 7: 프론트 null 수용** — Covers: AC-CRAWL-42, 43
-  `features/catalog/schema.ts`의 `roastLevel`에 `.nullable()`, `RoastDot`은 `roastLevel == null`이면 `null` 반환.
+- [x] **Task 6.5: 응답 DTO null 처리** — Covers: AC-CRAWL-44 (구현 중 추가)
+
+- [ ] **Task 7: 프론트 null 수용** — Covers: AC-CRAWL-42, 43, 45
+  `features/catalog/schema.ts`의 `roastLevel`에 `.nullish()`, `RoastDot`은 `roastLevel == null`이면 `null` 반환.
   타입 오류가 나는 호출부(`useRoastLevel` 등)는 `?? undefined`로 맞춘다.
 
 ---

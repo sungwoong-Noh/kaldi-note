@@ -1,0 +1,217 @@
+{
+  "id": 4,
+  "source": "unspecialty",
+  "status": "SUCCEEDED",
+  "startedAt": "2026-10-14T11:54:22.363234Z",
+  "finishedAt": "2026-10-14T11:57:10.064140Z",
+  "created": 0,
+  "updated": 72,
+  "skipped": [],
+  "unmapped": [
+    {
+      "name": "[가치커피] 콜롬비아 엘 디비소 옴블리곤 내추럴",
+      "field": "variety",
+      "raw": "Ombligon"
+    },
+    {
+      "name": "[가치커피] 콜롬비아 엘 디비소 옴블리곤 내추럴",
+      "field": "process",
+      "raw": "Natural (Aerobic+Anaerobic Thermal Shock)"
+    },
+    {
+      "name": "[토치커피] 에티오피아 구지 바데이 74110, 74112 허니",
+      "field": "variety",
+      "raw": "74110, 74112"
+    },
+    {
+      "name": "[토치커피] 에티오피아 구지 바데이 74110, 74112 허니",
+      "field": "process",
+      "raw": "Honey"
+    },
+    {
+      "name": "[토치커피] 에티오피아 두완초 74158 내추럴",
+      "field": "variety",
+      "raw": "74158"
+    },
+    {
+      "name": "[말릭커피] 에티오피아 반코 타라투 더블 퍼먼테이션 워시드",
+      "field": "variety",
+      "raw": "74110, 74112"
+    },
+    {
+      "name": "[말릭커피] 에티오피아 반코 타라투 더블 퍼먼테이션 워시드",
+      "field": "process",
+      "raw": "Double Fermentation Washed"
+    },
+    {
+      "name": "[가치커피] 콜롬비아 로스 파티오스 '펑키 체리' 무산소 워시드",
+      "field": "variety",
+      "raw": "Castillo, Caturra"
+    },
+    {
+      "name": "[가치커피] 콜롬비아 로스 파티오스 '펑키 체리' 무산소 워시드",
+      "field": "process",
+      "raw": "Co-Fermented Anaerobic Washed 가향"
+    },
+    {
+      "name": "[가치커피] 페루 엘 세로 옐로 카투라 워시드",
+      "field": "variety",
+      "raw": "Yellow Caturra"
+    },
+    {
+      "name": "[아이덴티티 커피랩] 콜롬비아 엑셀소 마운틴 워터 디카페인",
+      "field": "variety",
+      "raw": "Typica, Caturra, Castillo"
+    },
+    {
+      "name": "[아이덴티티 커피랩] 콜롬비아 엑셀소 마운틴 워터 디카페인",
+      "field": "process",
+      "raw": "Washed, Mountain Water Process"
+    },
+    {
+      "name": "[고로커피 로스터스] 콜롬비아 수프리모 마운틴 워터 디카페인",
+      "field": "variety",
+      "raw": "Typica, Bourbon, Caturra"
+    },
+    {
+      "name": "[고로커피 로스터스] 콜롬비아 수프리모 마운틴 워터 디카페인",
+      "field": "process",
+      "raw": "Mountain Water Decaffeinated"
+    },
+    {
+      "name": "[클라리멘토] 콜롬비아 후일라 피탈리토 슈가케인 디카페인",
+      "field": "variety",
+      "raw": "Various (mixed varieties)"
+    },
+    {
+      "name": "[클라리멘토] 콜롬비아 후일라 피탈리토 슈가케인 디카페인",
+      "field": "process",
+      "raw": "Sugar Cane EA Decaffeinated"
+    },
+    {
+      "name": "[커피화 로스터스] 콜롬비아 후일라 엑셀소 슈가케인 EA 디카페인",
+      "field": "variety",
+      "raw": "Bourbon, Caturra, Typica"
+    },
+    {
+      "name": "[커피화 로스터스] 콜롬비아 후일라 엑셀소 슈가케인 EA 디카페인",
+      "field": "process",
+      "raw": "Sugarcane(EA) Decaffeinated"
+    },
+    {
+      "name": "[커피화 로스터스] 에티오피아 구지 샤키소 타데 GG 쿠루메 내추럴 마운틴 워터 디카페인",
+      "field": "variety",
+      "raw": "Kurume"
+    },
+    {
+      "name": "[커피화 로스터스] 에티오피아 구지 샤키소 타데 GG 쿠루메 내추럴 마운틴 워터 디카페인",
+      "field": "process",
+      "raw": "Natural, Mountain Water Decaffeinated"
+    },
+    {
+      "name": "[무우수 커피 로스터스] 에티오피아 구지 샤키소 타데 GG 쿠루메 내추럴 마운틴 워터 디카페인",
+      "field": "variety",
+      "raw": "Kurume"
+    },
+    {
+      "name": "[무우수 커피 로스터스] 에티오피아 구지 샤키소 타데 GG 쿠루메 내추럴 마운틴 워터 디카페인",
+      "field": "process",
+      "raw": "Natural, Mountain Water Decaffeinated"
+    },
+    {
+      "name": "[커피화 로스터스] 에티오피아 시다마 아르베고나 휴레 74158 내추럴",
+      "field": "variety",
+      "raw": "74158"
+    },
+    {
+      "name": "[커피화 로스터스] 에티오피아 구지 우라비스트 에얼룸 워시드",
+      "field": "variety",
+      "raw": "Heirloom"
+    },
+    {
+      "name": "[코스피어] 온두라스 엘 라우렐 파라이네마 워시드 Lot.2",
+      "field": "variety",
+      "raw": "Parainema"
+    },
+    {
+      "name": "[코스피어] 에티오피아 할로 베리티 내추럴 디카페인",
+      "field": "variety",
+      "raw": "Heirloom"
+    },
+    {
+      "name": "[코스피어] 에티오피아 할로 베리티 내추럴 디카페인",
+      "field": "process",
+      "raw": "Natural, Mountain Water Process (Decaffeinated)"
+    },
+    {
+      "name": "[말릭커피] 에티오피아 구지 샤키소 타데 GG 쿠루메 내추럴 마운틴 워터 디카페인",
+      "field": "variety",
+      "raw": "Kurume"
+    },
+    {
+      "name": "[말릭커피] 에티오피아 구지 샤키소 타데 GG 쿠루메 내추럴 마운틴 워터 디카페인",
+      "field": "process",
+      "raw": "Natural, Mountain Water Decaffeinated"
+    },
+    {
+      "name": "[가치커피] 에티오피아 게뎁 단체 합타무 페카두 워시드",
+      "field": "variety",
+      "raw": "74110, 74112"
+    },
+    {
+      "name": "[가치커피] 에티오피아 시다마 벤사 보데 바샤 베켈레 내추럴",
+      "field": "variety",
+      "raw": "74110, 74158, 74112"
+    },
+    {
+      "name": "[존스몰 로스터리] 콜롬비아 CGLE 세로 아줄 게이샤 하이브리드 워시드",
+      "field": "process",
+      "raw": "Hybrid Washed"
+    },
+    {
+      "name": "[인버트커피랩] 에티오피아 게뎁 방코 고티티 워시드 랏.1",
+      "field": "variety",
+      "raw": "Heirloom"
+    },
+    {
+      "name": "[코스피어] 코스타리카 엘사르 데 사르세로 산타 루시아 밀레니오 내추럴",
+      "field": "variety",
+      "raw": "Milenio"
+    },
+    {
+      "name": "[토치커피] 에콰도르 루그마파타 L1 워시드",
+      "field": "variety",
+      "raw": "L1"
+    },
+    {
+      "name": "[커피화 로스터스] 콜롬비아 핀카 로스 노갈레스 카투라 애너로빅 워시드 마운틴 워터 디카페인",
+      "field": "process",
+      "raw": "Anaerobic Washed & Mountain Water Decaffeinated"
+    },
+    {
+      "name": "[커피화 로스터스] 콜롬비아 나리뇨 벨라비스타 게이샤 맥주 효모 & 모스토 무산소 발효",
+      "field": "process",
+      "raw": "Beer Yeast & Mosto Anaerobic"
+    },
+    {
+      "name": "[커피화 로스터스] 에티오피아 게샤 빌리지 수르마 155 게샤 1931 내추럴",
+      "field": "variety",
+      "raw": "Gesha 1931"
+    },
+    {
+      "name": "[무우수 커피 로스터스] 콜롬비아 라 레세르바 치로소 애너로빅 허니",
+      "field": "variety",
+      "raw": "Chiroso"
+    },
+    {
+      "name": "[무우수 커피 로스터스] 콜롬비아 라 레세르바 치로소 애너로빅 허니",
+      "field": "process",
+      "raw": "Anaerobic Honey (with Lemon Leaves) 가향"
+    },
+    {
+      "name": "[무우수 커피 로스터스] 에티오피아 카라모 시다마 부라 아게나 워시드",
+      "field": "variety",
+      "raw": "74158"
+    }
+  ]
+}

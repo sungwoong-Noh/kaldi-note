@@ -3,7 +3,7 @@ import type { CrawlRun, CrawlRunPage, CrawlSource } from "../schema";
 import { StatusTag } from "./StatusTag";
 
 const COLS =
-  "grid grid-cols-[44px_108px_1fr_108px_52px_44px_44px_52px_52px] items-center gap-3 px-5";
+  "grid grid-cols-[44px_108px_1fr_108px_52px_44px_44px_52px_52px] items-center gap-2 px-5";
 
 export function RunTable({
   data,

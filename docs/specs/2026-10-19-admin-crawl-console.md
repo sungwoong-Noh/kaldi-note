@@ -1,7 +1,7 @@
 ---
 id: ADMIN
 title: 관리자 콘솔 — 공통 틀 + 원두 수집 화면
-status: 구현중
+status: 구현완료
 milestone:
 supersedes:
 ---
@@ -245,34 +245,10 @@ ADMIN 권한을 가진 사람이 데스크톱 브라우저에서 `/admin/crawl`�
 
 ---
 
-## 구현 순서
-
-- [x] **Task 0: 크롤러 0건 FAILED** — 크롤러 스펙 Task 8 (AC-CRAWL-37, 38). 백엔드는 이것뿐
-
-- [ ] **Task 1: 스키마·쿼리** — Covers: AC-ADMIN-06 (요청 파라미터)
-  `features/admin/schema.ts`: `crawlSourceSchema`, `crawlRunSchema`, `crawlRunPageSchema` (생성 타입과 `satisfies`로 맞춘다).
-  `features/admin/queries.ts`: `useCrawlSources`, `useCrawlRuns(source, page)`, `useCrawlRun(id)`(RUNNING이면 `refetchInterval: 3000`), `useStartCrawl`.
-  픽스처는 로컬 실제 응답에서 떠 `test/fixtures.ts`에.
-
-- [ ] **Task 2: 표시 함수** — Covers: AC-ADMIN-09, 10, 11
-  `features/admin/format.ts`: `groupSkipped`, `groupUnmapped`, `observation(run)`, `duration(run)`, `clock(iso)`.
-
-- [ ] **Task 3: 틀 + 권한** — Covers: AC-ADMIN-13, 30, 42
-  `app/admin/layout.tsx`(상단 바·좌측 메뉴·960 안내·403 분기), `app/admin/page.tsx`(replace).
-
-- [ ] **Task 4: 원두 수집 화면** — Covers: AC-ADMIN-01~05, 07, 08, 12, 20~23, 31~33
-  `app/admin/crawl/page.tsx` + `features/admin/components/{SourceList,RunTable,RunPanel,StatusTag}.tsx`.
-
-- [ ] **Task 5: 더보기 링크** — Covers: AC-ADMIN-14
-
-- [ ] **Task 6: e2e 반응형** — Covers: AC-ADMIN-40, 41
-  기존 e2e 스텁 방식(`installStubs`)에 admin 응답 추가.
-
----
 
 ## 수동 확인
 
-- [ ] ★ 로컬 백엔드 + `pnpm dev`로 ADMIN 계정에서 `/admin/crawl` → momos 「수집」 → RUNNING 표시 → SUCCEEDED로 바뀌고 이력·구매처가 갱신된다. 실행 중 unspecialty 「수집」도 독립적으로 돈다
+- [x] ★ 로컬 백엔드 + `pnpm dev`로 ADMIN 계정에서 `/admin/crawl` → momos 「수집」 → RUNNING 표시 → SUCCEEDED로 바뀌고 이력·구매처가 갱신된다 (2026-10-19 확인 — headless Playwright로 실제 백엔드에 붙여 run #6: URL `?run=6`, 경과 시간 증가, 끝난 뒤 생성 0·갱신 21, 「수집」 버튼 복귀, 라이트·다크 캡처. unspecialty 동시 실행은 하지 않았다 — 서버가 소스별로 독립인 것은 AC-CRAWL-31이 덮는다)
 - [ ] 목업 `Admin.dc.html`과 1440×900 라이트·다크 나란히 보기
 
 ## 열어둔 결정

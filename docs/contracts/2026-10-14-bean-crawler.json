@@ -1,0 +1,152 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "원두 크롤러 — 구매처 사이트에서 원두 카탈로그 수집", "version": "1.0.0" },
+  "paths": {
+    "/api/v1/admin/crawl-sources": {
+      "get": {
+        "operationId": "sources",
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/CrawlSource" } }
+              }
+            }
+          },
+          "401": { "description": "인증 없음" },
+          "403": { "description": "ADMIN 아님" }
+        }
+      }
+    },
+    "/api/v1/admin/crawl-sources/{key}/runs": {
+      "post": {
+        "operationId": "start",
+        "parameters": [
+          { "name": "key", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "202": {
+            "description": "시작됨 — status는 항상 RUNNING",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/CrawlRun" } }
+            }
+          },
+          "401": { "description": "인증 없음" },
+          "403": { "description": "ADMIN 아님" },
+          "404": { "description": "등록되지 않은 key — code CRAWL_SOURCE_NOT_FOUND" },
+          "409": { "description": "같은 key가 실행 중 — code CRAWL_ALREADY_RUNNING" }
+        }
+      }
+    },
+    "/api/v1/admin/crawl-runs": {
+      "get": {
+        "operationId": "runs",
+        "parameters": [
+          { "name": "source", "in": "query", "required": false, "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "integer" } },
+          { "name": "size", "in": "query", "required": false, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공 — startedAt 내림차순",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PageOfCrawlRun" } }
+            }
+          },
+          "400": { "description": "page·size 범위 위반 — code INVALID_REQUEST" },
+          "401": { "description": "인증 없음" },
+          "403": { "description": "ADMIN 아님" }
+        }
+      }
+    },
+    "/api/v1/admin/crawl-runs/{id}": {
+      "get": {
+        "operationId": "run",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/CrawlRun" } }
+            }
+          },
+          "401": { "description": "인증 없음" },
+          "403": { "description": "ADMIN 아님" },
+          "404": { "description": "없는 실행 — code CRAWL_RUN_NOT_FOUND" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CrawlSource": {
+        "type": "object",
+        "properties": {
+          "key": { "type": "string" },
+          "name": { "type": "string" },
+          "listUrl": { "type": "string" },
+          "lastRun": { "$ref": "#/components/schemas/CrawlRunBrief" }
+        },
+        "required": ["key", "name", "listUrl"]
+      },
+      "CrawlRunBrief": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "status": { "type": "string", "enum": ["RUNNING", "SUCCEEDED", "FAILED", "INTERRUPTED"] },
+          "startedAt": { "type": "string" },
+          "finishedAt": { "type": "string" }
+        },
+        "required": ["id", "status", "startedAt"]
+      },
+      "CrawlRun": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "source": { "type": "string" },
+          "status": { "type": "string", "enum": ["RUNNING", "SUCCEEDED", "FAILED", "INTERRUPTED"] },
+          "startedAt": { "type": "string" },
+          "finishedAt": { "type": "string" },
+          "created": { "type": "integer" },
+          "updated": { "type": "integer" },
+          "skipped": { "type": "array", "items": { "$ref": "#/components/schemas/SkippedItem" } },
+          "unmapped": { "type": "array", "items": { "$ref": "#/components/schemas/UnmappedItem" } },
+          "errorMessage": { "type": "string" }
+        },
+        "required": ["id", "source", "status", "startedAt", "created", "updated", "skipped", "unmapped"]
+      },
+      "SkippedItem": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "reason": { "type": "string", "enum": ["USER_OWNED", "FETCH_FAILED", "PARSE_FAILED"] }
+        },
+        "required": ["name", "reason"]
+      },
+      "UnmappedItem": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "field": { "type": "string", "enum": ["roastLevel", "variety", "process"] },
+          "raw": { "type": "string" }
+        },
+        "required": ["name", "field", "raw"]
+      },
+      "PageOfCrawlRun": {
+        "type": "object",
+        "properties": {
+          "content": { "type": "array", "items": { "$ref": "#/components/schemas/CrawlRun" } },
+          "page": { "type": "integer" },
+          "size": { "type": "integer" },
+          "totalElements": { "type": "integer" },
+          "totalPages": { "type": "integer" },
+          "hasNext": { "type": "boolean" }
+        },
+        "required": ["content", "page", "size", "totalElements", "totalPages", "hasNext"]
+      }
+    }
+  }
+}

@@ -47,4 +47,11 @@ public class Roaster extends BaseTimeEntity {
   public static Roaster createByUser(String name, String country, String website, Long userId) {
     return new Roaster(name, country, website, userId);
   }
+
+  /** 크롤러가 처음 본 로스터. 사용자가 만든 것과 구분된다. */
+  public static Roaster createBySystem(String name) {
+    Roaster roaster = new Roaster(name, null, null, null);
+    roaster.isSystem = true;
+    return roaster;
+  }
 }

@@ -25,7 +25,7 @@ public record BeanProductResponse(
         p.getRoasterId(),
         p.getName(),
         p.getBeanMix().name(),
-        p.getRoastLevel().name(),
+        p.getRoastLevel() == null ? null : p.getRoastLevel().name(),
         p.getRoastLevelAgtron(),
         p.getRoastLevelCustom(),
         p.isDecaf(),

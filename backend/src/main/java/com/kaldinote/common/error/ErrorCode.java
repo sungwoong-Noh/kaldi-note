@@ -41,7 +41,12 @@ public enum ErrorCode {
   // 원두 카탈로그 — docs/specs/2026-08-16-bean-inventory.md
   BEAN_MIX_ORIGIN_MISMATCH(HttpStatus.BAD_REQUEST, "beanMix와 origins 개수가 맞지 않습니다."),
   BEAN_ORIGIN_RATIO_MISMATCH(HttpStatus.BAD_REQUEST, "블렌드 산지의 ratioPercent 합계가 100이 아닙니다."),
-  BEAN_BATCH_REMAINING_INVALID(HttpStatus.BAD_REQUEST, "remainingG가 0 미만이거나 weightG를 초과합니다.");
+  BEAN_BATCH_REMAINING_INVALID(HttpStatus.BAD_REQUEST, "remainingG가 0 미만이거나 weightG를 초과합니다."),
+
+  // 원두 크롤러
+  CRAWL_SOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "등록되지 않은 수집 대상입니다."),
+  CRAWL_ALREADY_RUNNING(HttpStatus.CONFLICT, "이 수집 대상은 이미 실행 중입니다."),
+  CRAWL_RUN_NOT_FOUND(HttpStatus.NOT_FOUND, "수집 실행 기록을 찾을 수 없습니다.");
 
   private final HttpStatus status;
   private final String defaultMessage;

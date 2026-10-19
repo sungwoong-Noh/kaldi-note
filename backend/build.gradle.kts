@@ -40,6 +40,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-restclient")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0")
 	implementation("org.flywaydb:flyway-database-postgresql")
+	implementation("org.jsoup:jsoup:1.23.2")
 	implementation("com.oracle.oci.sdk:oci-java-sdk-objectstorage:3.80.3")
 	implementation("com.oracle.oci.sdk:oci-java-sdk-common-httpclient-jersey3:3.80.3")
 	compileOnly("org.projectlombok:lombok")

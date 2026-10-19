@@ -565,6 +565,32 @@ export const yirgacheffeProduct = {
   createdAt: "2026-08-31T11:05:30.223889Z",
 };
 
+/**
+ * 크롤러가 가져온 모모스 원두 — 배전도를 모른다. 2026-10-14 로컬 `GET /api/v1/bean-products/22`에서 떴다.
+ * `roastLevel` 키 자체가 없다(백엔드 `non_null`).
+ */
+export const crawledMomosProduct = {
+  id: 22,
+  roasterId: 6,
+  name: "원두 에콰도르 산 어거스틴 파카마라 내추럴",
+  beanMix: "SINGLE_ORIGIN",
+  decaf: false,
+  productUrl: "https://momos.co.kr/Product_CoffeeBeans/?idx=4938",
+  description: "적포도, 블랙커런트, 건 무화과, 발효차, 와인같은",
+  verified: false,
+  origins: [
+    {
+      id: 24,
+      country: "에콰도르",
+      farm: "산 어거스틴",
+      varietyId: 8,
+      processId: 2,
+      ratioPercent: 100.0,
+    },
+  ],
+  createdAt: "2026-10-14T11:46:20.016370Z",
+};
+
 /** `daysOffRoast`·`degassingStatus`는 서버가 조회 시점에 계산해서 준다. */
 export const yirgacheffeBatch = {
   id: 3,

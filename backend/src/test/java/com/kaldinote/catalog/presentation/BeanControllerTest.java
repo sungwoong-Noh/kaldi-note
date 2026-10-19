@@ -7,8 +7,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
+import com.kaldinote.catalog.application.BeanImportService;
+import com.kaldinote.crawler.domain.CrawledBean;
+import com.kaldinote.crawler.domain.CrawledOrigin;
 import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.UserRepository;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +26,7 @@ class BeanControllerTest extends AbstractIntegrationTest {
 
   @Autowired private JwtTokenProvider tokenProvider;
   @Autowired private UserRepository userRepository;
+  @Autowired private BeanImportService beanImportService;
 
   private Long userIdRef;
 
@@ -987,5 +992,37 @@ class BeanControllerTest extends AbstractIntegrationTest {
                 .header(HttpHeaders.AUTHORIZATION, token))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-CRAWL-44 · 배전도 없는 상품도 단건·목록 조회가 200이다")
+  void 배전도_없는_상품도_조회된다() throws Exception {
+    String token = token();
+    beanImportService.importBean(
+        new CrawledBean(
+            "모모스커피",
+            "원두 에콰도르 산 어거스틴 파카마라 내추럴",
+            "https://momos.co.kr/Product_CoffeeBeans/?idx=4938",
+            null,
+            "적포도, 블랙커런트",
+            List.of(new CrawledOrigin("에콰도르", null, "산 어거스틴", null, "파카마라", "내추럴"))));
+
+    String list =
+        mockMvc
+            .perform(get("/api/v1/bean-products").header(HttpHeaders.AUTHORIZATION, token))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    long id =
+        Long.parseLong(
+            list.replaceAll("(?s).*\\{\"id\":(\\d+),[^{]*\"name\":\"원두 에콰도르 산 어거스틴.*", "$1"));
+
+    mockMvc
+        .perform(get("/api/v1/bean-products/" + id).header(HttpHeaders.AUTHORIZATION, token))
+        .andExpect(status().isOk())
+        // 전역 non_null — 배전도가 없으면 필드가 빠진다
+        .andExpect(jsonPath("$.roastLevel").doesNotExist())
+        .andExpect(jsonPath("$.name").value("원두 에콰도르 산 어거스틴 파카마라 내추럴"));
   }
 }

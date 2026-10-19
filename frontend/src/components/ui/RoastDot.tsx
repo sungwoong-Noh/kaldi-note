@@ -13,7 +13,7 @@ const ROAST_COLOR: Record<RoastLevel, string> = {
 };
 
 /**
- * 원두를 연결하지 않은 기록은 아무것도 렌더하지 않는다(AC-HOMECAL-76).
+ * 원두를 연결하지 않은 기록(AC-HOMECAL-76)과 배전도를 모르는 원두(AC-CRAWL-43)는 아무것도 렌더하지 않는다.
  *
  * @param size 기본 9px(모바일 원장 행). 웹 카드는 10px를 쓴다(AC-HOMECAL-113).
  */
@@ -21,10 +21,10 @@ export function RoastDot({
   roastLevel,
   size = 9,
 }: {
-  roastLevel?: RoastLevel;
+  roastLevel?: RoastLevel | null;
   size?: number;
 }) {
-  if (roastLevel === undefined) return null;
+  if (roastLevel == null) return null;
 
   return (
     <span

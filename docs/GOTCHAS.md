@@ -96,3 +96,5 @@
 - **Testcontainers 재사용 컨테이너는 항상 빈 DB에 Flyway 전체를 한 번에 적용한다.** "마이그레이션
   이전 행"을 넣고 이후 버전이 그걸 백필하는 시나리오를 테스트로 재현할 방법이 없다 — 컬럼을
   지정하지 않고 INSERT해 DEFAULT가 적용되는지, 또는 최종 제약조건이 걸렸는지로 대신 검증한다.
+- **응답 JSON은 `default-property-inclusion: non_null`이라 null 필드가 키째 빠진다.** 테스트는 `jsonPath(...).doesNotExist()`,
+  프론트 zod는 `.optional()`(또는 null도 받아야 하면 `.nullish()`)로 받는다 — `isEmpty()`·`.nullable()`은 실제 응답에서 깨진다.

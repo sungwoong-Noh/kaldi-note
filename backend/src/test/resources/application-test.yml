@@ -16,6 +16,10 @@ logging:
     org.hibernate.SQL: warn
 
 kaldi:
+  # 원두 크롤러 — 테스트에서는 호출 스레드에서 바로 돌고 요청 사이에 자지 않는다.
+  crawler:
+    async: false
+    sleep: false
   jwt:
     secret: local-development-only-secret-key-32bytes-minimum
   oauth:

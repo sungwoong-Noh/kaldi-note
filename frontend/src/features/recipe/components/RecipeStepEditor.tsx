@@ -86,7 +86,7 @@ export function RecipeStepEditor({
                   onChange={(e) =>
                     update(index, { stepType: e.target.value as StepType })
                   }
-                  className="min-w-0 appearance-none select-chevron pr-12 inline-flex size-11 items-center justify-center rounded-control border border-border text-body"
+                  className="h-11 shrink-0 appearance-none select-chevron rounded-control border border-border pr-10 pl-3 text-body"
                 >
                   {Object.entries(STEP_TYPE_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -177,9 +177,7 @@ export function RecipeStepEditor({
         })}
       </ol>
 
-      <Button
-        disabled={atLimit}
-        onClick={() => onChange(appendStep(steps))}>
+      <Button disabled={atLimit} onClick={() => onChange(appendStep(steps))}>
         스텝 추가
       </Button>
     </section>
@@ -242,7 +240,10 @@ function NumberField({
         <label htmlFor>로 두면 레시피 전체의 "물량" 입력과 라벨 텍스트가 겹쳐
         어느 쪽을 가리키는지 사람도 스크린리더도 알 수 없다.
       */}
-      <span aria-hidden="true" className="text-body text-ink-3">
+      <span
+        aria-hidden="true"
+        className="shrink-0 text-body whitespace-nowrap text-ink-3"
+      >
         {label.replace(/^스텝 \d+ /, "")}
       </span>
       <input
@@ -256,8 +257,14 @@ function NumberField({
         }
         className={controlClass("w-20 text-body")}
       />
-      <span className="text-body text-ink-3">{suffix}</span>
-      {hint && <span className="text-body text-ink-3">{hint}</span>}
+      <span className="shrink-0 text-body whitespace-nowrap text-ink-3">
+        {suffix}
+      </span>
+      {hint && (
+        <span className="shrink-0 text-body whitespace-nowrap text-ink-3">
+          {hint}
+        </span>
+      )}
     </span>
   );
 }

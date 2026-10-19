@@ -111,6 +111,25 @@ test.describe("터치 타깃 — 스윕", () => {
 });
 
 /**
+ * 웹 폭에서만 보이는 요소(상단 바 내비 등)는 360 스윕이 밟지 못한다(#183). ADR 0010의 44×44는
+ * 폭과 무관하다.
+ */
+test.describe("터치 타깃 — 웹 1440 스윕", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+  for (const { path } of SCREENS) {
+    test(`AC-TOUCH-13 · 1440px ${path}의 모든 타깃이 44×44 이상이다`, async ({
+      page,
+    }) => {
+      await installStubs(page);
+      await page.goto(path);
+      await page.waitForLoadState("networkidle");
+
+      expect(await page.locator(TARGETS).evaluateAll(undersized)).toEqual([]);
+    });
+  }
+});
+
+/**
  * 부품 키트의 세그먼트·알약은 보이는 높이가 36px 안팎이다(목업 값). `hit-44`가 누르는 영역을
  * 채우므로 통과해야 한다 — 측정이 의사 요소를 보는지가 여기서 갈린다(docs/decisions/0010).
  */

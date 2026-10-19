@@ -86,6 +86,16 @@ export default function MorePage() {
             분쇄도 환산기
           </Link>
         </li>
+        {me.data.role === "ADMIN" && (
+          <li>
+            <Link
+              href="/admin"
+              className="flex min-h-11 min-w-11 items-center justify-center block py-3 text-body underline-offset-4 hover:underline"
+            >
+              관리자
+            </Link>
+          </li>
+        )}
       </ul>
 
       <ThemeToggle />

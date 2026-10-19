@@ -55,6 +55,8 @@ export function DoseRangeFilter({
       <input
         type="range"
         aria-label="원두량 최소"
+        // 브라우저 기본 파랑(#0075ff) 대신 accent 토큰 — 필터 모양 자체는 #166(목업 RW2 pill)에서 바꾼다.
+        className="accent-accent"
         min={DOSE_MIN}
         max={DOSE_MAX}
         value={draftMin}
@@ -74,6 +76,7 @@ export function DoseRangeFilter({
       <input
         type="range"
         aria-label="원두량 최대"
+        className="accent-accent"
         min={DOSE_MIN}
         max={DOSE_MAX}
         value={draftMax}

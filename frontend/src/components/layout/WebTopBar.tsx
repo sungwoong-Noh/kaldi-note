@@ -90,7 +90,8 @@ export function WebTopBar() {
                 key={link.href}
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={active ? "font-medium text-ink" : "text-ink-3"}
+                // 보이는 크기는 목업대로, 누르는 영역만 44×44로 넓힌다(ADR 0010, AC-TOUCH-13).
+                className={`hit-44 ${active ? "font-medium text-ink" : "text-ink-3"}`}
               >
                 {link.label}
               </Link>
@@ -113,7 +114,7 @@ export function WebTopBar() {
               </ButtonLink>
             )}
             {me.data && (
-              <Link href="/more" aria-label="더보기">
+              <Link href="/more" aria-label="더보기" className="hit-44 flex">
                 <Avatar
                   nickname={me.data.nickname}
                   profileImageUrl={me.data.profileImageUrl}

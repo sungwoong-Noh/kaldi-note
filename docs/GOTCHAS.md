@@ -13,15 +13,13 @@
 
 ## Git / PR
 
-- **PR을 머지하면 로컬 `git branch --show-current`가 자동으로 `main`으로 바뀐다.** 이걸
-  놓치고 다음 버그 수정을 그대로 `main`에 직접 커밋한 적이 두 번 있다. **머지 직후에는 반드시
-  새 브랜치를 만들고 `git branch --show-current`로 확인한 뒤 작업을 시작한다.**
+- **PR을 머지하면 로컬 브랜치가 자동으로 `main`으로 바뀐다** — 그대로 `main`에 커밋한 적이 두 번 있다.
+  머지 직후에는 새 브랜치를 만들고 `git branch --show-current`로 확인한 뒤 시작한다.
 - **`gh pr merge`가 "fast-forward 실패"로 보여도 서버 쪽 머지는 이미 성공했을 수 있다.**
   로컬 `main`에 그 사이 다른 커밋이 쌓였을 때 이렇게 보인다. `git fetch` + `git rebase
   origin/main`으로 정리하면 된다 — 머지가 실패한 게 아니라 로컬이 뒤처진 것이다.
 - **`pnpm format`·`prettier --write <디렉터리>`는 무관한 파일까지 재포맷한다** — 저장소가 prettier 기준으로
   완전히 정리돼 있지 않다. 고친 파일만 경로로 지정하고, 커밋 전 `git status`로 의도 밖 변경을 걷어낸다.
-
 - **스펙 frontmatter `supersedes:`는 스펙 경로 하나만 받는다.** AC 단위 대체 목록을 넣으면
   `check-docs.sh`가 경로로 읽어 CI에서 실패한다(로컬 `check-spec-coverage.sh`는 못 잡는다).
   일부 AC 대체는 본문 「대체하는 이전 AC」 섹션에 쓰고, 푸시 전 `./scripts/check-docs.sh`도 돌린다.
@@ -40,6 +38,8 @@
   `뷰포트 높이 - 아래끝`이 음수라 `<= N`을 만족한다. `>= 0`도 함께 단언하고, 구현 뒤에 쓴 레이아웃
   e2e는 해당 CSS를 빼고 실제로 실패하는지 한 번 확인한다.
 
+- **브랜치를 바꾸면 `.next/dev/types`에 이전 브랜치의 라우트 타입이 남아 `pnpm typecheck`와 e2e의 `next build`가
+  「Cannot find module …/page.js」로 깨진다.** 코드 문제가 아니다 — `rm -rf .next` 후 다시 돌린다.
 - **jsdom 기본 폭(1024px)이 이 프로젝트의 웹/모바일 임계값(760px)보다 넓다.** "모바일" 의도로
   짠 유닛 테스트가 실은 웹 컴포넌트 경로를 타고 있을 수 있다. `useIsWide`(기록 폼)는 jsdom에 `matchMedia`가
   없어 **웹**으로 판정한다 — 모바일 경로는 `mockViewportWidth(390)`(`src/test/viewport.ts`) + `vi.unstubAllGlobals()`.

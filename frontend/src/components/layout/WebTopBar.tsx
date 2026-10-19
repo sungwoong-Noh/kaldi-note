@@ -129,7 +129,7 @@ export function WebTopBar() {
   );
 }
 
-function LogoSymbol() {
+export function LogoSymbol() {
   return (
     <svg
       viewBox="0 0 26 26"

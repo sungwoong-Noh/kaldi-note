@@ -5,7 +5,14 @@
  * <p>`BottomNav`와 `WebTopBar`가 같은 기준을 공유한다
  * (docs/specs/2026-09-20-web-header-rollout.md).
  */
-const HIDDEN_PREFIXES = ["/login", "/auth", "/recipes/new", "/brews/new"];
+const HIDDEN_PREFIXES = [
+  "/login",
+  "/auth",
+  "/recipes/new",
+  "/brews/new",
+  // 관리자 콘솔은 자기 상단 바·좌측 메뉴를 그린다(docs/specs/2026-10-19-admin-crawl-console.md).
+  "/admin",
+];
 
 export function isHidden(pathname: string): boolean {
   return (

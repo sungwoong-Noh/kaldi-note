@@ -19,6 +19,11 @@ export function useCrawlSources(onSessionLost?: () => void) {
         schema: z.array(crawlSourceSchema),
         onSessionLost,
       }),
+    // 패널을 열지 않은 실행도 끝나면 버튼이 풀려야 한다.
+    refetchInterval: (query) =>
+      query.state.data?.some((s) => s.lastRun?.status === "RUNNING")
+        ? POLL_MS
+        : false,
   });
 }
 
@@ -36,6 +41,11 @@ export function useCrawlRuns(
         schema: crawlRunPageSchema,
         onSessionLost,
       }),
+    placeholderData: (previous) => previous,
+    refetchInterval: (query) =>
+      query.state.data?.content.some((r) => r.status === "RUNNING")
+        ? POLL_MS
+        : false,
   });
 }
 

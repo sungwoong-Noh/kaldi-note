@@ -1,0 +1,25 @@
+:root{
+  /* 4pt spacing */
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-6:24px;--space-8:32px;--space-12:48px;
+
+  /* radius */
+  --radius-tag:3px;
+  --radius-panel:4px;
+  --radius-btn-sm:6px;
+  --radius-btn:7px;
+  --radius-btn-lg:8px;
+  --radius-segment:8px;
+  --radius-card:10px;
+  --radius-card-lg:12px;
+  --radius-hero:14px;
+  --radius-full:999px;
+
+  /* no shadows — layering is 1px border + surface lightness only */
+  --shadow-none:none;
+  --focus-ring:0 0 0 3px var(--kn-accent-focus);
+
+  /* layout */
+  --tabbar-height:58px;
+  --hit-min:44px;
+  --screen-gutter:24px;
+}

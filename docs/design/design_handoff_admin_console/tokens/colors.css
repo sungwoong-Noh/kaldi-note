@@ -1,0 +1,78 @@
+/* kaldi·note — "Clean Ledger". Warm-tinted neutrals (hue 60–85, chroma ≤ 0.015) + one espresso accent. */
+:root{
+  /* light — surface */
+  --kn-paper:oklch(0.99 0.004 85);
+  --kn-surface:oklch(0.97 0.006 85);
+  --kn-canvas:oklch(0.96 0.006 82);
+  --kn-sunken:oklch(0.93 0.008 80);
+  --kn-border:oklch(0.88 0.008 75);
+  --kn-border-strong:oklch(0.85 0.008 75);
+  --kn-border-card:oklch(0.87 0.008 75);
+  --kn-divider:oklch(0.92 0.008 78);
+  --kn-divider-row:oklch(0.89 0.008 78);
+  --kn-border-dashed:oklch(0.82 0.01 75);
+  /* light — ink */
+  --kn-ink:oklch(0.22 0.015 60);
+  --kn-ink-hover:oklch(0.15 0.015 60);
+  --kn-ink-2:oklch(0.38 0.015 60);
+  --kn-ink-body:oklch(0.42 0.015 60);
+  --kn-ink-muted:oklch(0.45 0.015 60);
+  --kn-ink-3:oklch(0.55 0.02 70);
+  --kn-ink-label:oklch(0.58 0.02 70);
+  --kn-ink-unit:oklch(0.6 0.02 70);
+  --kn-ink-disabled:oklch(0.65 0.015 65);
+  --kn-on-ink:oklch(0.97 0.004 85);
+  /* light — accent (espresso) */
+  --kn-accent:oklch(0.42 0.06 45);
+  --kn-accent-hover:oklch(0.28 0.04 45);
+  --kn-accent-ink:oklch(0.38 0.06 45);
+  --kn-accent-soft:oklch(0.62 0.05 50);
+  --kn-accent-wash:oklch(0.95 0.02 50);
+  --kn-accent-focus:oklch(0.42 0.06 45 / 0.12);
+  --kn-symbol:oklch(0.3 0.04 50);
+  --kn-avatar-warm:oklch(0.88 0.02 60);
+  --kn-avatar-warm-ink:oklch(0.35 0.04 50);
+  --kn-avatar-neutral:oklch(0.88 0.008 80);
+
+  /* dark — same structure, lightness inverted */
+  --kn-dark-paper:oklch(0.17 0.008 60);
+  --kn-dark-surface:oklch(0.21 0.009 60);
+  --kn-dark-border:oklch(0.29 0.01 60);
+  --kn-dark-border-card:oklch(0.3 0.01 60);
+  --kn-dark-divider:oklch(0.28 0.01 60);
+  --kn-dark-ink:oklch(0.95 0.005 85);
+  --kn-dark-ink-3:oklch(0.68 0.01 70);
+  --kn-dark-accent:oklch(0.72 0.07 55);
+  --kn-dark-symbol:oklch(0.88 0.03 70);
+
+  /* hero card (ink plate) */
+  --kn-hero-bg:oklch(0.22 0.015 60);
+  --kn-hero-label:oklch(0.72 0.05 55);
+  --kn-hero-sub:oklch(0.72 0.015 70);
+  --kn-hero-quote:oklch(0.82 0.01 78);
+  --kn-hero-rule:oklch(0.34 0.015 60);
+
+  /* roast dots — hue/chroma fixed, lightness varies */
+  --kn-roast-light:#c9a184;
+  --kn-roast-medium-light:#b98a6b;
+  --kn-roast-medium:#a87556;
+  --kn-roast-medium-dark:#8a5c42;
+  --kn-roast-dark:#63432f;
+
+  /* semantic aliases */
+  --surface-page:var(--kn-canvas);
+  --surface-card:var(--kn-paper);
+  --surface-raised:var(--kn-surface);
+  --surface-sunken:var(--kn-sunken);
+  --text-strong:var(--kn-ink);
+  --text-body:var(--kn-ink-2);
+  --text-muted:var(--kn-ink-3);
+  --text-label:var(--kn-ink-label);
+  --text-accent:var(--kn-accent);
+  --border-default:var(--kn-border);
+  --border-input:var(--kn-border-strong);
+  --border-subtle:var(--kn-divider);
+  --action-primary:var(--kn-ink);
+  --action-primary-hover:var(--kn-ink-hover);
+  --action-on-primary:var(--kn-on-ink);
+}

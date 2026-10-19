@@ -1,7 +1,7 @@
 ---
 id: ADMIN
 title: 관리자 콘솔 — 공통 틀 + 원두 수집 화면
-status: 초안
+status: 구현중
 milestone:
 supersedes:
 ---
@@ -247,7 +247,7 @@ ADMIN 권한을 가진 사람이 데스크톱 브라우저에서 `/admin/crawl`�
 
 ## 구현 순서
 
-- [ ] **Task 0: 크롤러 0건 FAILED** — 크롤러 스펙 Task 8 (AC-CRAWL-37, 38). 백엔드는 이것뿐
+- [x] **Task 0: 크롤러 0건 FAILED** — 크롤러 스펙 Task 8 (AC-CRAWL-37, 38). 백엔드는 이것뿐
 
 - [ ] **Task 1: 스키마·쿼리** — Covers: AC-ADMIN-06 (요청 파라미터)
   `features/admin/schema.ts`: `crawlSourceSchema`, `crawlRunSchema`, `crawlRunPageSchema` (생성 타입과 `satisfies`로 맞춘다).

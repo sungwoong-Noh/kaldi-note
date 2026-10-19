@@ -361,8 +361,8 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 
 #### AC-CRAWL-38 · 원두로 인식한 상품이 하나도 없으면 FAILED (2026-10-19 추가)
 
-- **Given** 목록에 상세 2개, 둘 다 `parseDetail`이 `Optional.empty()` (스펙 표 클래스가 바뀌면 전부 「원두 아님」이 된다)
-- **When** `unspecialty` 실행
+- **Given** 목록에 상세 2개, 둘 다 `parseDetail`이 `Optional.empty()` (언스페셜티는 스펙 표 클래스가 바뀌면 전부 「원두 아님」이 된다)
+- **When** `momos` 실행 (상세 본문에 JSON-LD Product가 없다)
 - **Then** `status=FAILED`, `errorMessage="원두로 인식한 상품이 없습니다 (상품 2개)"`, `created=0`
 - **검증** 통합 테스트 `CrawlRunServiceTest`
 - 판정은 `created + updated + skipped 수 == 0`이다. 상세가 전부 `FETCH_FAILED`면 skipped가 남으므로 SUCCEEDED다.
@@ -464,7 +464,7 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 
 - [x] **Task 7.5: 소수 Agtron** — Covers: AC-CRAWL-46 (구현 중 추가)
 
-- [ ] **Task 8: 수집 0건이면 FAILED** — Covers: AC-CRAWL-37, 38 (2026-10-19, 관리자 화면 스펙과 같은 PR)
+- [x] **Task 8: 수집 0건이면 FAILED** — Covers: AC-CRAWL-37, 38 (2026-10-19, 관리자 화면 스펙과 같은 PR)
   `CrawlRunService.crawl`에서 목록이 비면 즉시 `fail`, 루프 뒤 `created+updated+skipped == 0`이면 `fail`.
 
 - [x] **Task 7: 프론트 null 수용** — Covers: AC-CRAWL-42, 43, 45

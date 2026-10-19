@@ -20,7 +20,6 @@
   origin/main`으로 정리하면 된다 — 머지가 실패한 게 아니라 로컬이 뒤처진 것이다.
 - **`pnpm format`·`prettier --write <디렉터리>`는 무관한 파일까지 재포맷한다** — 저장소가 prettier 기준으로
   완전히 정리돼 있지 않다. 고친 파일만 경로로 지정하고, 커밋 전 `git status`로 의도 밖 변경을 걷어낸다.
-
 - **스펙 frontmatter `supersedes:`는 스펙 경로 하나만 받는다.** AC 단위 대체 목록을 넣으면
   `check-docs.sh`가 경로로 읽어 CI에서 실패한다(로컬 `check-spec-coverage.sh`는 못 잡는다).
   일부 AC 대체는 본문 「대체하는 이전 AC」 섹션에 쓰고, 푸시 전 `./scripts/check-docs.sh`도 돌린다.

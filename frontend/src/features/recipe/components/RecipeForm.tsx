@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { errorMessageOf } from "@/components/ErrorState";
 import {
   LedgerField,
@@ -18,7 +12,11 @@ import {
 import { TopBarActions } from "@/components/layout/TopBarActions";
 import { LeaveConfirmDialog } from "@/components/LeaveConfirmDialog";
 import { Button, SELECT_EXTRA } from "@/components/ui";
-import { useBrewFilters, useBrewers, useGrinders } from "@/features/gear/queries";
+import {
+  useBrewFilters,
+  useBrewers,
+  useGrinders,
+} from "@/features/gear/queries";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
 import { focusFirstInvalidField } from "@/lib/focusFirstError";
@@ -47,6 +45,8 @@ type Props = {
   micronEstimated?: number;
   /** 담아온 레시피의 원본 배너(M3). 폼 맨 위에 그린다. */
   banner?: ReactNode;
+  /** 원본 원두량. 히어로 아래 「원본 15.0 g」(M3). */
+  originDoseG?: number;
   submitting: boolean;
   error: unknown;
   onSubmit: (body: RecipeRequestBody) => void;
@@ -172,7 +172,8 @@ export function RecipeForm(props: Props) {
     clientErrors[field as FieldKey] ?? serverErrors.byField[field];
 
   const clientErrorCount = Object.keys(clientErrors).length;
-  const submitLabel = props.mode === "create" ? "레시피 저장" : "변경 사항 저장";
+  const submitLabel =
+    props.mode === "create" ? "레시피 저장" : "변경 사항 저장";
   const title = props.mode === "create" ? "새 레시피" : "레시피 수정";
 
   const view: ViewProps = {
@@ -761,6 +762,11 @@ function RatioHero(view: ViewProps) {
       >
         {ratioLabel(state.doseG, state.waterG)}
       </span>
+      {view.originDoseG !== undefined && (
+        <span className="font-mono text-[12px] text-on-hero-dim">
+          원본 {view.originDoseG.toFixed(1)} g
+        </span>
+      )}
       {wide ? (
         <div className="flex border-t border-hero-line pt-[14px]">
           <HeroValue

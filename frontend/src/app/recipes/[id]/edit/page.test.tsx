@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { setAccessToken } from "@/lib/session";
 import { renderWithQuery } from "@/test/render";
 import { server } from "@/test/msw-server";
-import { comandanteC40, hoffmann } from "@/test/fixtures";
+import { comandanteC40, hoffmann, me } from "@/test/fixtures";
 import RecipeEditPage from "./page";
 
 const push = vi.fn();
@@ -23,6 +23,8 @@ const mine = { ...hoffmann, ownerUserId: 7, sourceType: "USER" as const };
 function baseHandlers() {
   return [
     http.get(`${BASE}/recipes/2`, () => HttpResponse.json(mine)),
+    // 편집 화면은 소유자만 연다 — 나는 `mine`의 주인(7)이다.
+    http.get(`${BASE}/users/me`, () => HttpResponse.json({ ...me, id: 7 })),
     http.get(`${BASE}/gear/brewers`, () =>
       HttpResponse.json([
         { id: 2, brand: "Hario", name: "V60 02", type: "CONE", isSystem: true },
@@ -217,5 +219,100 @@ describe("RecipeEditPage 상태", () => {
     ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "다시 시도" }));
     await waitFor(() => expect(calls).toBe(2));
+  });
+});
+
+describe("RecipeEditPage 원본 · 소유자", () => {
+  const forked = {
+    ...mine,
+    parentRecipeId: 3,
+    sourceAuthorName: "지연",
+  };
+  const original = {
+    ...hoffmann,
+    id: 3,
+    title: "아침에 마시는 밝은 워시드",
+    doseG: 15.0,
+  };
+
+  it("AC-RECIPEEDIT-08 · 담아온 레시피 편집에 원본 배너와 원본 원두량이 붙는다", async () => {
+    server.use(
+      http.get(`${BASE}/recipes/2`, () => HttpResponse.json(forked)),
+      http.get(`${BASE}/recipes/3`, () => HttpResponse.json(original)),
+    );
+
+    await renderEditPage();
+
+    expect(
+      await screen.findByText("지연 님의 레시피 · 아침에 마시는 밝은 워시드"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("원본")).toBeInTheDocument();
+    expect(await screen.findByText("원본 15.0 g")).toBeInTheDocument();
+  });
+
+  it("AC-RECIPEEDIT-09 · 원본을 읽지 못하면 작성자만 남는다", async () => {
+    server.use(
+      http.get(`${BASE}/recipes/2`, () => HttpResponse.json(forked)),
+      http.get(`${BASE}/recipes/3`, () =>
+        HttpResponse.json(
+          { code: "FORBIDDEN", message: "볼 수 없는 레시피입니다." },
+          { status: 403 },
+        ),
+      ),
+    );
+
+    await renderEditPage();
+
+    expect(await screen.findByText("지연 님의 레시피")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByText(/^원본 .* g$/)).not.toBeInTheDocument(),
+    );
+    expect(screen.getByLabelText("제목")).toBeInTheDocument();
+  });
+
+  it("AC-RECIPEEDIT-23 · 내 것이 아닌 레시피(CURATED)는 폼 대신 담아서 편집을 안내한다", async () => {
+    const user = userEvent.setup();
+    let forkCalls = 0;
+    server.use(
+      http.get(`${BASE}/recipes/2`, () =>
+        HttpResponse.json({
+          ...hoffmann,
+          ownerUserId: undefined,
+          sourceType: "CURATED",
+        }),
+      ),
+      http.post(`${BASE}/recipes/2/fork`, () => {
+        forkCalls += 1;
+        return HttpResponse.json({ ...mine, id: 40 }, { status: 201 });
+      }),
+    );
+
+    await renderEditPage();
+
+    expect(
+      await screen.findByText("내 레시피만 편집할 수 있습니다."),
+    ).toBeInTheDocument();
+    expect(screen.queryAllByRole("textbox")).toHaveLength(0);
+
+    await user.click(screen.getByRole("button", { name: "담아서 편집" }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/recipes/40/edit"));
+    expect(forkCalls).toBe(1);
+  });
+
+  it("AC-RECIPEEDIT-23 · 다른 사람 소유 레시피도 같은 안내", async () => {
+    server.use(
+      http.get(`${BASE}/recipes/2`, () =>
+        HttpResponse.json({ ...mine, ownerUserId: 2 }),
+      ),
+    );
+
+    await renderEditPage();
+
+    expect(
+      await screen.findByText("내 레시피만 편집할 수 있습니다."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "레시피로 돌아가기" }),
+    ).toHaveAttribute("href", "/recipes/2");
   });
 });

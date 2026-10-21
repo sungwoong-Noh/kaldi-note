@@ -500,23 +500,22 @@ function BasicSection({ state, patch, errorOf, wide }: ViewProps) {
       </div>
 
       <div className="flex flex-col gap-[4px]">
-        <label className="relative flex">
-          <textarea
-            aria-label="설명"
-            rows={2}
-            maxLength={2000}
-            value={state.description}
-            onChange={(e) => patch({ description: e.target.value })}
-            className="min-h-[62px] w-full rounded-[7px] border border-border bg-paper px-[14px] pt-[12px] pb-[24px] text-[14px] leading-[1.6] text-ink-2 outline-none aria-invalid:border-danger"
-            {...invalidProps("recipe-description-error", descriptionError)}
-          />
-          <span
-            data-testid="description-counter"
-            className={`pointer-events-none absolute right-[12px] bottom-[8px] font-mono text-[11px] ${atLimit ? "text-accent" : "text-ink-3"}`}
-          >
-            {state.description.length} / 2000
-          </span>
-        </label>
+        <textarea
+          aria-label="설명"
+          rows={2}
+          maxLength={2000}
+          value={state.description}
+          onChange={(e) => patch({ description: e.target.value })}
+          className="min-h-[62px] w-full rounded-[7px] border border-border bg-paper px-[14px] py-[12px] text-[14px] leading-[1.6] text-ink-2 outline-none aria-invalid:border-danger"
+          {...invalidProps("recipe-description-error", descriptionError)}
+        />
+        {/* 칸 안에 두면 세 줄을 넘는 설명과 겹친다 — 칸 밖 오른쪽 아래에 둔다. */}
+        <span
+          data-testid="description-counter"
+          className={`self-end font-mono text-[11px] ${atLimit ? "text-accent" : "text-ink-3"}`}
+        >
+          {state.description.length} / 2000
+        </span>
         <FieldError id="recipe-description-error" message={descriptionError} />
       </div>
 

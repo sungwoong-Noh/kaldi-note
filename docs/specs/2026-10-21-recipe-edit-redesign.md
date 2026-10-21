@@ -1,7 +1,7 @@
 ---
 id: RECIPEEDIT
 title: 레시피 작성·편집 리디자인 — 목업 03 정합
-status: 승인
+status: 구현중
 milestone: M2.5
 supersedes:
 ---
@@ -426,20 +426,20 @@ HOT·MEDIUM으로 채운다 — ICE·약배전 레시피를 편집 저장하면 
 
 ### PR ① 폼 본문 (`feat/recipe-edit-form`)
 
-- [ ] **Task 1: 폼 상태에 온도·배전도** — Covers: AC-RECIPEEDIT-02, 03
+- [x] **Task 1: 폼 상태에 온도·배전도** — Covers: AC-RECIPEEDIT-02, 03
   `RecipeFormState`에 `temperatureType`·`recommendedRoastLevel`, `fromRecipe`·`toRequestBody`·`emptyFormState`.
-- [ ] **Task 2: 미리보기 순수 함수** — Covers: AC-RECIPEEDIT-01, 06, 07
+- [x] **Task 2: 미리보기 순수 함수** — Covers: AC-RECIPEEDIT-01, 06, 07
   `features/recipe/preview.ts` — `ratioLabel`, `waterObservation`, `timelineBars`. 단위 테스트 먼저.
-- [ ] **Task 3: 클라이언트 검증** — Covers: AC-RECIPEEDIT-30
+- [x] **Task 3: 클라이언트 검증** — Covers: AC-RECIPEEDIT-30
   `validateRecipeForm(state)` → 필드별 문구, `focusFirstError` 재사용.
-- [ ] **Task 4: 폼 레이아웃 재구성** — Covers: AC-RECIPEEDIT-01, 04, 05, 10, 20, 21
+- [x] **Task 4: 폼 레이아웃 재구성** — Covers: AC-RECIPEEDIT-01, 04, 05, 10, 20, 21
   히어로(칩) · 기본(제목·설명·공개 세그먼트) · 수치(원두·물·온도·총 시간 + HOT/ICE·배전도) · 장비 원장 행 · 분쇄도 세그먼트 +
   R5 문구. `GrindSettingField`의 실시간 환산 제거, WEBEDIT-25~29 테스트 정리.
-- [ ] **Task 5: 미리보기 컬럼과 반응형** — Covers: AC-RECIPEEDIT-06, 07, 80, 81
-- [ ] **Task 6: 저장 위치·상태(S4~S7)** — Covers: AC-RECIPEEDIT-10, 22, 31, 32, 33, 82
-- [ ] **Task 7: 원본 배너** — Covers: AC-RECIPEEDIT-08, 09
-- [ ] **Task 8: 내 것 아님(#174)** — Covers: AC-RECIPEEDIT-23
-- [ ] **Task 9: e2e·터치 타깃·대체 표시** — Covers: AC-RECIPEEDIT-80 ~ 83, 이전 스펙 「(대체됨)」 표시
+- [x] **Task 5: 미리보기 컬럼과 반응형** — Covers: AC-RECIPEEDIT-06, 07, 80, 81
+- [x] **Task 6: 저장 위치·상태(S4~S7)** — Covers: AC-RECIPEEDIT-10, 22, 31, 32, 33, 82
+- [x] **Task 7: 원본 배너** — Covers: AC-RECIPEEDIT-08, 09
+- [x] **Task 8: 내 것 아님(#174)** — Covers: AC-RECIPEEDIT-23
+- [x] **Task 9: e2e·터치 타깃·대체 표시** — Covers: AC-RECIPEEDIT-80 ~ 83, 이전 스펙 「(대체됨)」 표시
 
 ### PR ② 스텝 편집 (① 머지 후 새 브랜치)
 
@@ -453,9 +453,9 @@ HOT·MEDIUM으로 채운다 — ICE·약배전 레시피를 편집 저장하면 
 
 ## 수동 확인
 
-- [ ] ★ 실제 백엔드로 새 레시피 저장 → 상세에서 값 확인 (PR ①)
-- [ ] ★ ICE·약배전 레시피를 편집 저장한 뒤 값이 유지된다 (PR ①)
-- [ ] ★ 담은 레시피 편집에 원본 배너 (PR ①)
+- [x] ★ 실제 백엔드로 새 레시피 저장 → 상세에서 값 확인 (PR ①)
+- [x] ★ ICE·약배전 레시피를 편집 저장한 뒤 값이 유지된다 (PR ①)
+- [x] ★ 담은 레시피 편집에 원본 배너 (PR ①)
 - [ ] ★ 390px에서 스텝 시트로 스텝 1개 추가·수정·삭제 후 저장 (PR ②)
 - [ ] 목업 03 W · M1 · M2 · M3과 나란히 대조(1440 · 390, 라이트·다크) — 비차단, 격차는 갈래 B 이슈로
 

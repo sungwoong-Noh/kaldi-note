@@ -105,7 +105,7 @@ describe("RecipeNewPage", () => {
 
     renderWithQuery(<RecipeNewPage />);
     await fillMinimum(user);
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/recipes/1"));
     expect(body).toEqual({
@@ -132,7 +132,7 @@ describe("RecipeNewPage", () => {
 
     renderWithQuery(<RecipeNewPage />);
     await fillMinimum(user);
-    const save = screen.getByRole("button", { name: "저장" });
+    const save = screen.getByRole("button", { name: "레시피 저장" });
     await user.click(save);
 
     expect(save).toBeDisabled();
@@ -157,7 +157,7 @@ describe("RecipeNewPage", () => {
     // 스텝 하나를 넣고 물량은 비워둔다 — 합계 0 vs 총 물량 250이라 어긋난다.
     await user.click(screen.getByRole("button", { name: "스텝 추가" }));
 
-    const save = screen.getByRole("button", { name: "저장" });
+    const save = screen.getByRole("button", { name: "레시피 저장" });
     expect(save).toBeEnabled();
     await user.click(save);
 
@@ -176,7 +176,7 @@ describe("RecipeNewPage", () => {
 
     renderWithQuery(<RecipeNewPage />);
     await fillMinimum(user);
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
     const waterInput = await screen.findByLabelText("물량");
     const describedBy = waterInput.getAttribute("aria-describedby");
@@ -206,7 +206,7 @@ describe("RecipeNewPage", () => {
     for (let i = 0; i < 3; i += 1) {
       await user.click(screen.getByRole("button", { name: "스텝 추가" }));
     }
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
     const thirdStep = await screen.findByRole("listitem", { name: "스텝 3" });
     expect(thirdStep).toHaveTextContent("붓는 스텝은 물량이 0보다 커야 합니다");
@@ -226,7 +226,7 @@ describe("RecipeNewPage", () => {
 
     renderWithQuery(<RecipeNewPage />);
     await fillMinimum(user);
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
     expect(
       await screen.findByText("unknownField: 알 수 없는 값입니다"),
@@ -245,13 +245,13 @@ describe("RecipeNewPage", () => {
 
     renderWithQuery(<RecipeNewPage />);
     await fillMinimum(user);
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
     expect(
       await screen.findByText("스텝 물량 합계가 총 물량과 다릅니다."),
     ).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "저장" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "레시피 저장" })).toBeEnabled();
   });
 
   it("AC-WEBEDIT-36 · 변경한 뒤에는 새로고침을 경고한다", async () => {

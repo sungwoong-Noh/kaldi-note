@@ -62,8 +62,8 @@ describe("RecipeEditPage", () => {
     expect(await screen.findByLabelText("제목")).toHaveValue(
       "James Hoffmann Ultimate V60",
     );
-    expect(screen.getByLabelText("원두량")).toHaveValue(30);
-    expect(screen.getByLabelText("물량")).toHaveValue(500);
+    expect(screen.getByLabelText("원두량")).toHaveValue("30");
+    expect(screen.getByLabelText("물량")).toHaveValue("500");
     expect(
       screen.getAllByRole("listitem", { name: /^스텝 \d+$/ }),
     ).toHaveLength(hoffmann.steps.length);
@@ -85,7 +85,7 @@ describe("RecipeEditPage", () => {
         name: `스텝 ${hoffmann.steps.length} 삭제`,
       }),
     );
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await user.click(screen.getByRole("button", { name: "변경 사항 저장" }));
 
     await waitFor(() => expect(body).not.toBeNull());
     expect(body!.steps).toHaveLength(hoffmann.steps.length - 1);

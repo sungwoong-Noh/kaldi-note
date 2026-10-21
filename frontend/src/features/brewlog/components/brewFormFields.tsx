@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
-import { NumberCell, TasteDots } from "@/components/kit";
+import { NumberCell, TasteDots, useNumberText } from "@/components/kit";
 import { SELECT_EXTRA } from "@/components/ui";
 import type { UserGrinder } from "@/features/gear/schema";
 import type { MappedFieldErrors } from "@/lib/fieldErrors";
@@ -52,33 +51,6 @@ function FieldError({ field, message }: { field: string; message?: string }) {
       {message}
     </span>
   );
-}
-
-/** 빈칸은 `null`, 숫자가 아니면 `null`. */
-function parseNumber(text: string): number | null {
-  if (text === "") return null;
-  const value = Number(text);
-  return Number.isFinite(value) ? value : null;
-}
-
-/**
- * 숫자 입력의 글자. `type="text"`라 `30.`처럼 입력 중인 글자를 상태 숫자로 되돌리면 소수점을 칠 수 없다 —
- * 입력한 글자를 따로 들고, 바깥 값이 그 글자와 다를 때만(다른 곳에서 바뀌었을 때) 바깥 값을 보인다.
- */
-function useNumberText(
-  value: number | null,
-  onChange: (value: number | null) => void,
-) {
-  const [text, setText] = useState(value === null ? "" : String(value));
-  return {
-    value:
-      parseNumber(text) === value ? text : value === null ? "" : String(value),
-    onChange: (e: ChangeEvent<HTMLInputElement>) => {
-      const next = e.target.value.trim();
-      setText(next);
-      onChange(parseNumber(next));
-    },
-  };
 }
 
 export function NumField({

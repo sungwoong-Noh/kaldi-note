@@ -27,15 +27,17 @@ export default function RecipeNewPage() {
 
   if (!ready) {
     return (
-      <Screen>
+      <Shell stack>
         <LoadingState />
-      </Screen>
+      </Shell>
     );
   }
 
+  // 제목은 폼이 그린다(웹·모바일 모양이 다르다).
   return (
-    <Screen>
+    <Shell wide>
       <RecipeForm
+        mode="create"
         initial={emptyFormState()}
         submitting={create.isPending}
         error={create.error}
@@ -43,15 +45,6 @@ export default function RecipeNewPage() {
         onCancel={() => router.push("/recipes")}
         onSessionLost={onSessionLost}
       />
-    </Screen>
-  );
-}
-
-function Screen({ children }: { children: React.ReactNode }) {
-  return (
-    <Shell stack>
-      <h1 className="text-page-title font-semibold">새 레시피</h1>
-      {children}
     </Shell>
   );
 }

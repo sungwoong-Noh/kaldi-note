@@ -332,23 +332,9 @@ pill · `scope=DRAWER&owner=MINE`)이 대체한다.
 
 ### 물량 합계 표시
 
-#### AC-WEBEDIT-22 · 합계가 모자라면 부족량을 보여준다
+**AC-WEBEDIT-22 (대체됨)** · 「합계가 모자라면 부족량을 보여준다」였던 원래 AC는 부족량 문구가 미리보기 Observation 문장으로 바뀌며 AC-RECIPEEDIT-06으로 대체됐다.
 
-- **Given** `물량`이 `300`이고 붓는 스텝들의 물량 합이 `240`이다
-- **When** 화면을 확인한다
-- **Then** `240 g / 300 g`과 `60 g 부족합니다`가 보인다
-- **검증** 컴포넌트 테스트 `RecipeStepEditor.test.tsx`
-
-> **표기 갱신 (2026-09-27).** 수치 표기가 목업에 맞춰 바뀌었다 — [`2026-09-27-web-shell-grammar.md`](2026-09-27-web-shell-grammar.md) AC-GRAMMAR-06. 위 값은 갱신한 값이다.
-
-#### AC-WEBEDIT-23 · 합계가 맞으면 부족·초과 문구가 없다
-
-- **Given** `물량`이 `300`이고 붓는 스텝들의 물량 합이 `300`이다
-- **When** 화면을 확인한다
-- **Then** `300 g / 300 g`이 보이고, `부족합니다`·`초과합니다`를 포함한 문구가 없다
-- **검증** 컴포넌트 테스트 `RecipeStepEditor.test.tsx`
-
-> **표기 갱신 (2026-09-27).** 수치 표기가 목업에 맞춰 바뀌었다 — [`2026-09-27-web-shell-grammar.md`](2026-09-27-web-shell-grammar.md) AC-GRAMMAR-06. 위 값은 갱신한 값이다.
+**AC-WEBEDIT-23 (대체됨)** · 「합계가 맞으면 부족·초과 문구가 없다」였던 원래 AC는 합계가 맞을 때의 표시가 Observation 「…총 물량과 같습니다.」로 바뀌며 AC-RECIPEEDIT-06으로 대체됐다.
 
 #### AC-WEBEDIT-24 · 합계가 달라도 저장은 서버로 나간다
 
@@ -359,40 +345,15 @@ pill · `scope=DRAWER&owner=MINE`)이 대체한다.
 
 ### 분쇄도 미리보기
 
-#### AC-WEBEDIT-25 · 셋이 채워지면 같은 그라인더로 환산을 부른다
+**AC-WEBEDIT-25 (대체됨)** · 「셋이 채워지면 같은 그라인더로 환산을 부른다」였던 원래 AC는 입력 중 실시간 환산이 없어지며(R5) AC-RECIPEEDIT-05로 대체됐다.
 
-- **Given** `/recipes/new`가 열려 있고 `GET /gear/grinders`가 id `1`인 Comandante C40 MK4를 반환한다
-- **When** `그라인더`에서 그것을 고르고 `분쇄도 단위`를 `클릭`, `분쇄도 값`을 `22`로 넣는다
-- **Then** `POST /api/v1/gear/grind-conversions`가 `{ "sourceGrinderModelId": 1, "sourceSetting": 22, "targetGrinderModelId": 1 }`로 호출되고, `micron: 660` 응답 후 화면에 `약 660 µm`이 보인다
-- **검증** 컴포넌트 테스트 `GrindSettingField.test.tsx`
+**AC-WEBEDIT-26 (대체됨)** · 「환산값에는 추정치라는 표기가 함께 붙는다」였던 원래 AC는 입력 중 실시간 환산이 없어지며(R5) AC-RECIPEEDIT-05로 대체됐다 — 저장된 값의 「약 … µm · 추정치」 표기는 그대로 남는다.
 
-#### AC-WEBEDIT-26 · 환산값에는 추정치라는 표기가 함께 붙는다
+**AC-WEBEDIT-27 (대체됨)** · 「무단계 그라인더는 안내만 하고 저장을 막지 않는다」였던 원래 AC는 입력 중 실시간 환산이 없어지며(R5) AC-RECIPEEDIT-05로 대체됐다 — 무단계 그라인더도 저장 시 서버가 판정한다.
 
-- **Given** `AC-WEBEDIT-25`와 같은 상태에서 환산이 성공했다
-- **When** 화면을 확인한다
-- **Then** 마이크론 표시 영역에 `추정치`가 포함돼 있다
-- **검증** 컴포넌트 테스트 `GrindSettingField.test.tsx`
+**AC-WEBEDIT-28 (대체됨)** · 「범위 밖 설정값은 서버 문구로 경고하고 저장을 막지 않는다」였던 원래 AC는 입력 중 실시간 환산이 없어지며(R5) AC-RECIPEEDIT-05로 대체됐다 — 범위 밖 값은 저장 시 서버 `GRIND_SETTING_OUT_OF_RANGE`가 분쇄도 필드에 붙는다.
 
-#### AC-WEBEDIT-27 · 무단계 그라인더는 안내만 하고 저장을 막지 않는다
-
-- **Given** `POST /api/v1/gear/grind-conversions`가 `422`와 `{ code: "GRIND_NOT_CONVERTIBLE", message: "..." }`를 반환한다
-- **When** 그라인더·단위·값을 채운다
-- **Then** `이 그라인더는 환산 정보가 없습니다`가 보이고 `저장` 버튼이 `disabled`가 아니다
-- **검증** 컴포넌트 테스트 `GrindSettingField.test.tsx`
-
-#### AC-WEBEDIT-28 · 범위 밖 설정값은 서버 문구로 경고하고 저장을 막지 않는다
-
-- **Given** `POST /api/v1/gear/grind-conversions`가 `400`과 `{ code: "GRIND_SETTING_OUT_OF_RANGE", message: "설정값 60는 이 그라인더의 상한 50.00를 넘습니다." }`를 반환한다 (2026-08-30에 실제 백엔드에서 뜬 문구다)
-- **When** `분쇄도 값`에 `60`을 넣는다
-- **Then** `설정값 60는 이 그라인더의 상한 50.00를 넘습니다.`가 보이고 `저장` 버튼이 `disabled`가 아니다
-- **검증** 컴포넌트 테스트 `GrindSettingField.test.tsx`
-
-#### AC-WEBEDIT-29 · 단위가 마이크론이면 환산을 부르지 않는다
-
-- **Given** `/recipes/new`가 열려 있다
-- **When** `분쇄도 단위`를 `마이크론`, `분쇄도 값`을 `800`으로 넣는다
-- **Then** `POST /api/v1/gear/grind-conversions`가 한 번도 호출되지 않고 화면에 `약 800 µm`과 `추정치`가 보인다
-- **검증** 컴포넌트 테스트 `GrindSettingField.test.tsx`
+**AC-WEBEDIT-29 (대체됨)** · 「단위가 마이크론이면 환산을 부르지 않는다」였던 원래 AC는 입력 중 실시간 환산이 없어지며(R5) AC-RECIPEEDIT-05로 대체됐다.
 
 ### 서버 오류
 

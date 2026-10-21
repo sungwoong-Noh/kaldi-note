@@ -169,36 +169,6 @@ describe("RecipeStepEditor", () => {
     expect(screen.getByText("(1:30)")).toBeInTheDocument();
   });
 
-  it("AC-WEBEDIT-22 · 합계가 모자라면 부족량을 보여준다", () => {
-    render(
-      <Harness
-        initial={[
-          at(0, 10, { stepType: "BLOOM", waterG: 60 }),
-          at(45, 10, { waterG: 180 }),
-        ]}
-        waterG={300}
-      />,
-    );
-
-    expect(screen.getByText("240 g / 300 g")).toBeInTheDocument();
-    expect(screen.getByText("60 g 부족합니다")).toBeInTheDocument();
-  });
-
-  it("AC-WEBEDIT-23 · 합계가 맞으면 부족·초과 문구가 없다", () => {
-    render(
-      <Harness
-        initial={[
-          at(0, 10, { stepType: "BLOOM", waterG: 60 }),
-          at(45, 10, { waterG: 240 }),
-        ]}
-        waterG={300}
-      />,
-    );
-
-    expect(screen.getByText("300 g / 300 g")).toBeInTheDocument();
-    expect(screen.queryByText(/부족합니다/)).not.toBeInTheDocument();
-    expect(screen.queryByText(/초과합니다/)).not.toBeInTheDocument();
-  });
 });
 
 describe("스텝 타입 변경", () => {

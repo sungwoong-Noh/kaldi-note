@@ -20,7 +20,7 @@ const inRange = (value: number | null, range: { min: number; max: number }) =>
   value !== null && value >= range.min && value <= range.max;
 
 /** 소수 1자리, `.0`이면 지운다. `20` → `20`, `2.5` → `2.5` */
-const trim = (value: number) => (Math.round(value * 10) / 10).toString();
+export const gramsText = (value: number) => (Math.round(value * 10) / 10).toString();
 
 /** `물 / 원두`를 소수 1자리 HALF_UP으로 `1:15.6`. 둘 중 하나라도 비었거나 범위 밖이면 `—`. */
 export function ratioLabel(doseG: number | null, waterG: number | null) {
@@ -45,7 +45,7 @@ export function waterObservation(
   }
   const direction = diff < 0 ? "적습니다" : "많습니다";
   return {
-    text: `스텝 물 합계가 총 물량보다 ${trim(Math.abs(diff))} g ${direction}. 저장하려면 합계를 맞춰 주세요.`,
+    text: `스텝 물 합계가 총 물량보다 ${gramsText(Math.abs(diff))} g ${direction}. 저장하려면 합계를 맞춰 주세요.`,
     mismatch: true,
   };
 }
@@ -77,7 +77,7 @@ export function timeline(
     return {
       uid: step.uid,
       label: STEP_TYPE_LABELS[step.stepType],
-      cumulative: pouring ? trim(poured) : "—",
+      cumulative: pouring ? gramsText(poured) : "—",
       leftPct: (step.startAtSeconds / end) * 100,
       widthPct: (step.durationSeconds / end) * 100,
     };

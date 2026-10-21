@@ -61,24 +61,27 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
     );
   }
 
+  // 제목은 폼이 그린다(웹·모바일 모양이 다르다).
   return (
-    <Screen>
+    <Shell wide>
       <RecipeForm
+        mode="edit"
         initial={fromRecipe(recipe.data)}
+        micronEstimated={recipe.data.grindMicronEstimated}
         submitting={update.isPending}
         error={update.error}
         onSubmit={(body) => update.mutate(body)}
         onCancel={() => router.push(`/recipes/${recipeId}`)}
         onSessionLost={onSessionLost}
       />
-    </Screen>
+    </Shell>
   );
 }
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
     <Shell stack>
-      <h1 className="text-page-title font-semibold">레시피 편집</h1>
+      <h1 className="text-page-title font-semibold">레시피 수정</h1>
       {children}
     </Shell>
   );

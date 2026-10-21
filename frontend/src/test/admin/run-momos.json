@@ -1,0 +1,11 @@
+{
+  "id": 5,
+  "source": "momos",
+  "status": "SUCCEEDED",
+  "startedAt": "2026-10-19T12:25:58.963255Z",
+  "finishedAt": "2026-10-19T12:26:36.167353Z",
+  "created": 0,
+  "updated": 21,
+  "skipped": [],
+  "unmapped": []
+}

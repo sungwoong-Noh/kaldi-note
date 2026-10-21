@@ -112,6 +112,40 @@ class CrawlRunServiceTest extends AbstractIntegrationTest {
   }
 
   @Test
+  @DisplayName("AC-CRAWL-37 · 목록에서 상품을 하나도 찾지 못하면 FAILED")
+  void 목록이_비면_FAILED다() {
+    expectList(0);
+
+    Long id = service.start("momos", null).id();
+
+    CrawlRun run = reload(id);
+    assertThat(run.getStatus()).isEqualTo(CrawlRunStatus.FAILED);
+    assertThat(run.getErrorMessage()).isEqualTo("목록에서 상품 링크를 찾지 못했습니다");
+    assertThat(sleeps).isEmpty();
+    server.verify();
+  }
+
+  @Test
+  @DisplayName("AC-CRAWL-38 · 원두로 인식한 상품이 하나도 없으면 FAILED")
+  void 원두가_하나도_없으면_FAILED다() {
+    expectList(2);
+    server
+        .expect(requestTo(DETAIL + 1))
+        .andRespond(withSuccess("<html></html>", MediaType.TEXT_HTML));
+    server
+        .expect(requestTo(DETAIL + 2))
+        .andRespond(withSuccess("<html></html>", MediaType.TEXT_HTML));
+
+    Long id = service.start("momos", null).id();
+
+    CrawlRun run = reload(id);
+    assertThat(run.getStatus()).isEqualTo(CrawlRunStatus.FAILED);
+    assertThat(run.getErrorMessage()).isEqualTo("원두로 인식한 상품이 없습니다 (상품 2개)");
+    assertThat(run.getCreatedCount()).isZero();
+    server.verify();
+  }
+
+  @Test
   @DisplayName("AC-CRAWL-40 · 요청 사이에 1000ms 쉰다")
   void 요청_사이에_1000ms_쉰다() {
     expectList(2);

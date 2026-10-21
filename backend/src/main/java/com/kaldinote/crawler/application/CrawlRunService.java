@@ -135,6 +135,12 @@ public class CrawlRunService {
       runRepository.save(run);
       return;
     }
+    // 사이트 구조가 바뀌면 예외 없이 0건이 된다 — 조용한 성공으로 두지 않는다 (AC-CRAWL-37·38)
+    if (urls.isEmpty()) {
+      run.fail("목록에서 상품 링크를 찾지 못했습니다", Instant.now());
+      runRepository.save(run);
+      return;
+    }
 
     MasterNames names = importService.masterNames();
     int created = 0;
@@ -175,6 +181,11 @@ public class CrawlRunService {
         case SKIPPED -> skipped.add(new SkippedItem(name, result.reason()));
       }
       result.unmapped().forEach(u -> unmapped.add(new UnmappedItem(name, u.field(), u.raw())));
+    }
+    if (created + updated + skipped.size() == 0) {
+      run.fail("원두로 인식한 상품이 없습니다 (상품 " + urls.size() + "개)", Instant.now());
+      runRepository.save(run);
+      return;
     }
     run.succeed(created, updated, skipped, unmapped, Instant.now());
     runRepository.save(run);

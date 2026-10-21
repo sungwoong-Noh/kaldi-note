@@ -1,0 +1,24 @@
+[
+  {
+    "key": "momos",
+    "name": "모모스커피",
+    "listUrl": "https://momos.co.kr/Product_CoffeeBeans",
+    "lastRun": {
+      "id": 5,
+      "status": "SUCCEEDED",
+      "startedAt": "2026-10-19T12:25:58.963255Z",
+      "finishedAt": "2026-10-19T12:26:36.167353Z"
+    }
+  },
+  {
+    "key": "unspecialty",
+    "name": "언스페셜티 몰",
+    "listUrl": "https://unspecialty.com/sitemap.xml",
+    "lastRun": {
+      "id": 4,
+      "status": "SUCCEEDED",
+      "startedAt": "2026-10-14T11:54:22.363234Z",
+      "finishedAt": "2026-10-14T11:57:10.064140Z"
+    }
+  }
+]

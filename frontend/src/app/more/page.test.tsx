@@ -38,6 +38,25 @@ beforeEach(() => {
 });
 
 describe("MorePage", () => {
+  it("AC-ADMIN-14 · ADMIN에게만 관리자 링크가 보인다", async () => {
+    server.use(
+      http.get(ME_URL, () => HttpResponse.json({ ...me, role: "ADMIN" })),
+    );
+    const { unmount } = renderWithQuery(<MorePage />);
+    expect(await screen.findByRole("link", { name: "관리자" })).toHaveAttribute(
+      "href",
+      "/admin",
+    );
+    unmount();
+
+    server.use(http.get(ME_URL, () => HttpResponse.json(me)));
+    renderWithQuery(<MorePage />);
+    await screen.findByText("노성웅");
+    expect(
+      screen.queryByRole("link", { name: "관리자" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("AC-WEBSHELL-08 · 내 정보가 보인다", async () => {
     renderWithQuery(<MorePage />);
 

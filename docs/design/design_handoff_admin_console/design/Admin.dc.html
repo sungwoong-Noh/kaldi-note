@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Admin console" description="kaldi·note 관리자 화면 — 원두 수집 · 장비 · 그라인더 영점 · 회원, 1440×900 web, light + dark" -->
+<helmet><script src="./ds-base.js"></script><style>
+body{margin:0;background:oklch(0.93 0.008 80);font-family:'IBM Plex Sans KR',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+[data-theme="light"]{--a-canvas:oklch(0.96 0.006 82);--a-paper:oklch(0.99 0.004 85);--a-surface:oklch(0.97 0.006 85);--a-sunken:oklch(0.93 0.008 80);--a-border:oklch(0.88 0.008 75);--a-border-strong:oklch(0.85 0.008 75);--a-divider:oklch(0.92 0.008 78);--a-ink:oklch(0.22 0.015 60);--a-ink2:oklch(0.38 0.015 60);--a-ink3:oklch(0.55 0.02 70);--a-label:oklch(0.58 0.02 70);--a-accent:oklch(0.42 0.06 45);--a-wash:oklch(0.95 0.02 50);--a-btn:oklch(0.22 0.015 60);--a-btn-hover:oklch(0.15 0.015 60);--a-btn-ink:oklch(0.97 0.004 85);--a-symbol:oklch(0.3 0.04 50);--a-dot:oklch(0.62 0.05 50);--a-avatar:oklch(0.88 0.02 60);--a-avatar-ink:oklch(0.35 0.04 50);--a-scrim:oklch(0.22 0.015 60 / 0.28);--a-focus:oklch(0.42 0.06 45 / 0.12)}
+[data-theme="dark"]{--a-canvas:oklch(0.17 0.008 60);--a-paper:oklch(0.21 0.009 60);--a-surface:oklch(0.21 0.009 60);--a-sunken:oklch(0.17 0.008 60);--a-border:oklch(0.29 0.01 60);--a-border-strong:oklch(0.3 0.01 60);--a-divider:oklch(0.28 0.01 60);--a-ink:oklch(0.95 0.005 85);--a-ink2:oklch(0.82 0.01 78);--a-ink3:oklch(0.68 0.01 70);--a-label:oklch(0.68 0.01 70);--a-accent:oklch(0.72 0.07 55);--a-wash:oklch(0.72 0.07 55 / 0.14);--a-btn:oklch(0.95 0.005 85);--a-btn-hover:oklch(0.88 0.008 80);--a-btn-ink:oklch(0.17 0.008 60);--a-symbol:oklch(0.88 0.03 70);--a-dot:oklch(0.72 0.07 55);--a-avatar:oklch(0.29 0.01 60);--a-avatar-ink:oklch(0.88 0.03 70);--a-scrim:oklch(0.1 0.005 60 / 0.5);--a-focus:oklch(0.72 0.07 55 / 0.16)}
+input::placeholder{color:var(--a-ink3)}
+[data-k="chip"][data-on="true"]{background:oklch(0.22 0.015 60)!important;color:oklch(0.97 0.004 85)!important;border-color:oklch(0.22 0.015 60)!important}[data-k="pill"][data-on="true"]{background:var(--a-btn)!important;color:var(--a-btn-ink)!important;border-color:var(--a-btn)!important}[data-k="nav"][data-on="true"]{background:var(--a-sunken)!important;color:var(--a-ink)!important;font-weight:600!important}[data-k="tab"][data-on="true"]{border-bottom-color:var(--a-ink)!important}[data-k="tabl"][data-on="true"]{color:var(--a-ink)!important;font-weight:600!important}[data-k="cb"][data-on="true"],[data-k="ring"][data-on="true"]{border-color:var(--a-ink)!important}[data-k="cbd"][data-on="true"],[data-k="dot"][data-on="true"]{background:var(--a-ink)!important}[data-k="seg"][data-on="true"]{background:var(--a-paper)!important;border-color:var(--a-border-strong)!important;color:var(--a-ink)!important;font-weight:500!important}[data-sel="true"]{background:var(--a-sunken)!important}[data-first="true"]{border-top:none!important}[data-dim="true"]{color:var(--a-ink3)!important}[data-strong="true"]{font-weight:600!important}[data-state="err"]{border-color:var(--a-ink)!important}[data-state="chg"]{border-color:var(--a-accent)!important}[data-mono="true"]{font-family:'IBM Plex Mono',monospace!important}
+[data-theme] span:not(.sc-interp){white-space:nowrap}[data-theme] div{word-break:keep-all}
+a{color:oklch(0.42 0.06 45)}a:hover{color:oklch(0.28 0.04 45)}
+</style></helmet>
+<div style="padding:32px 40px 96px;display:flex;flex-direction:column;gap:20px;width:1440px;box-sizing:content-box">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:oklch(0.5 0.02 70);width:84px;white-space:nowrap">상태 미리보기</div>
+<div style="display:flex;gap:6px">
+<sc-for list="{{ chips }}" as="c" hint-placeholder-count="6"><div onClick="{{ c.onClick }}" data-k="chip" data-on="{{ c.on }}" style="flex:none;white-space:nowrap;padding:6px 11px;border-radius:999px;font-size:12.5px;cursor:pointer;border:1px solid oklch(0.85 0.008 75);background:oklch(0.99 0.004 85);color:oklch(0.38 0.015 60)">{{ c.label }}</div></sc-for>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:oklch(0.5 0.02 70);width:84px;white-space:nowrap">화면</div>
+<div style="display:flex;gap:6px">
+<sc-for list="{{ globalChips }}" as="c" hint-placeholder-count="3"><div onClick="{{ c.onClick }}" data-k="chip" data-on="{{ c.on }}" style="flex:none;white-space:nowrap;padding:6px 11px;border-radius:999px;font-size:12.5px;cursor:pointer;border:1px solid oklch(0.85 0.008 75);background:oklch(0.99 0.004 85);color:oklch(0.38 0.015 60)">{{ c.label }}</div></sc-for>
+</div>
+</div>
+</div>
+
+<div data-theme="{{ theme }}" style="width:1440px;height:900px;position:relative;overflow:hidden;border:1px solid oklch(0.85 0.008 75);background:var(--a-canvas);display:flex;flex-direction:column;font-family:'IBM Plex Sans KR',system-ui,sans-serif;color:var(--a-ink)">
+
+<sc-if value="{{ isForbidden }}" hint-placeholder-val="{{ false }}">
+<div style="height:56px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--a-paper);border-bottom:1px solid var(--a-border)">
+<div style="display:flex;align-items:center;gap:9px"><div style="width:20px;height:20px;border:2px solid var(--a-symbol);border-radius:50%;display:flex;align-items:center;justify-content:center;box-sizing:border-box"><div style="width:6px;height:6px;background:var(--a-symbol);border-radius:50%"></div></div><div style="font-size:19px;font-weight:600;letter-spacing:-0.03em;color:var(--a-ink);white-space:nowrap">kaldi<span style="color:var(--a-dot)">·</span>note</div></div>
+<div style="width:32px;height:32px;border-radius:999px;background:var(--a-avatar);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;color:var(--a-avatar-ink);white-space:nowrap">지</div>
+</div>
+<div style="flex:1;display:flex;align-items:center;justify-content:center">
+<div style="width:440px;display:flex;flex-direction:column;gap:14px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">403 · /admin</div>
+<div style="font-size:28px;font-weight:600;letter-spacing:-0.025em;line-height:1.25;color:var(--a-ink);white-space:nowrap">관리자 권한이 있는 계정만 볼 수 있는 화면입니다.</div>
+<div style="font-size:15px;line-height:1.7;color:var(--a-ink2)">지금 로그인한 계정(지윤)의 역할은 <span style="font-family:'IBM Plex Mono',monospace;font-size:13.5px">USER</span>입니다. 권한이 필요하면 관리자에게 요청해 주세요.</div>
+<div style="display:flex;gap:10px;padding-top:6px"><div style="padding:11px 18px;background:var(--a-btn);color:var(--a-btn-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">앱으로 돌아가기</div></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+<div style="height:56px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--a-paper);border-bottom:1px solid var(--a-border)">
+<div style="display:flex;align-items:center;gap:14px">
+<div style="display:flex;align-items:center;gap:9px"><div style="width:20px;height:20px;border:2px solid var(--a-symbol);border-radius:50%;display:flex;align-items:center;justify-content:center;box-sizing:border-box"><div style="width:6px;height:6px;background:var(--a-symbol);border-radius:50%"></div></div><div style="font-size:19px;font-weight:600;letter-spacing:-0.03em;color:var(--a-ink);white-space:nowrap">kaldi<span style="color:var(--a-dot)">·</span>note</div></div>
+<div style="width:1px;height:18px;background:var(--a-border)"></div>
+<div style="font-size:14px;font-weight:600;color:var(--a-ink);white-space:nowrap">관리자</div>
+</div>
+<div style="display:flex;align-items:center;gap:18px">
+<span style="font-size:13px;color:var(--a-ink2);border-bottom:1px solid var(--a-border-strong);padding-bottom:1px;cursor:pointer">앱으로 돌아가기</span>
+<div style="width:32px;height:32px;border-radius:999px;background:var(--a-avatar);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;color:var(--a-avatar-ink);white-space:nowrap">현</div>
+</div>
+</div>
+
+<div style="flex:1;min-height:0;display:flex">
+<div style="width:240px;flex:none;background:var(--a-paper);border-right:1px solid var(--a-border);padding:24px 14px;display:flex;flex-direction:column;gap:26px;box-sizing:border-box">
+<sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="2">
+<div style="display:flex;flex-direction:column;gap:3px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--a-label);padding:0 12px 8px;white-space:nowrap">{{ g.label }}</div>
+<sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3"><div onClick="{{ it.onClick }}" data-k="nav" data-on="{{ it.on }}" style="padding:9px 12px;border-radius:7px;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;background:transparent;color:var(--a-ink2);font-weight:400"><span>{{ it.label }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.04em;color:var(--a-ink3);font-weight:400">{{ it.tag }}</span></div></sc-for>
+</div>
+</sc-for>
+</div>
+
+<div style="flex:1;min-width:0;overflow:auto">
+<div style="padding:32px 40px 48px;display:flex;flex-direction:column;gap:26px">
+<div style="display:flex;flex-direction:column;gap:7px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">{{ head.eyebrow }}</div>
+<div style="display:flex;align-items:center;gap:12px"><div style="flex:none;white-space:nowrap;font-size:27px;font-weight:600;letter-spacing:-0.03em;line-height:1.15;color:var(--a-ink)">{{ head.title }}</div><sc-if value="{{ head.hasApi }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;padding:3px 7px;border:1px dashed var(--a-ink3);border-radius:3px;color:var(--a-ink3)">{{ head.api }}</span></sc-if></div>
+<div style="max-width:64ch;font-size:14.5px;line-height:1.7;color:var(--a-ink2);text-wrap:pretty">{{ head.desc }}</div>
+</div>
+<sc-if value="{{ hasNote }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 16px;background:var(--a-sunken);border-radius:7px;font-size:13.5px;line-height:1.6;color:var(--a-ink)">{{ note }}</div></sc-if>
+
+<sc-if value="{{ isCrawl }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--a-ink);white-space:nowrap">구매처</div>
+<div style="background:var(--a-paper);border:1px solid var(--a-border);border-radius:10px;overflow:hidden">
+<sc-for list="{{ sources }}" as="s" hint-placeholder-count="2">
+<div data-first="{{ s.first }}" style="border-top:1px solid var(--a-divider)">
+<div style="display:grid;grid-template-columns:150px minmax(0,1fr) 210px 96px;gap:16px;align-items:center;padding:16px 20px">
+<div style="display:flex;flex-direction:column;gap:3px"><div style="font-size:14.5px;font-weight:600;color:var(--a-ink);white-space:nowrap">{{ s.name }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--a-ink3);white-space:nowrap">{{ s.key }}</div></div>
+<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--a-ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.listUrl }}</div>
+<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-start"><dc-import name="StatusTag" status="{{ s.lastStatus }}" hint-size="96px,20px"></dc-import><div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--a-ink3);white-space:nowrap">{{ s.lastLine }}</div></div>
+<div>
+<sc-if value="{{ s.running }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:5px"><div style="padding:9px 0;text-align:center;background:var(--a-sunken);color:var(--a-ink3);border-radius:7px;font-size:13.5px;font-weight:500;white-space:nowrap">수집 중</div><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-align:center;color:var(--a-accent)">{{ s.elapsed }}</div></div></sc-if>
+<sc-if value="{{ s.idle }}" hint-placeholder-val="{{ true }}"><div onClick="{{ s.onRun }}" style="padding:9px 0;text-align:center;background:var(--a-btn);color:var(--a-btn-ink);border-radius:7px;font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:var(--a-btn-hover)">수집</div></sc-if>
+</div>
+</div>
+<sc-if value="{{ s.conflict }}" hint-placeholder-val="{{ false }}"><div style="margin:0 20px 16px;padding:12px 14px;background:var(--a-sunken);border-radius:7px;font-size:13px;line-height:1.6;color:var(--a-ink2)"><span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--a-ink);white-space:nowrap">409 CRAWL_ALREADY_RUNNING</span> — 이 구매처는 이미 수집 중이라 새 실행을 시작하지 않았습니다. 진행 중인 실행 #129를 표시합니다.</div></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:16px">
+<div style="display:flex;align-items:baseline;gap:10px"><div style="font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--a-ink);white-space:nowrap">실행 이력</div><div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--a-ink3);white-space:nowrap">{{ histCount }}</div></div>
+<div style="display:flex;gap:6px"><sc-for list="{{ srcPills }}" as="p" hint-placeholder-count="3"><div onClick="{{ p.onClick }}" data-k="pill" data-on="{{ p.on }}" style="flex:none;white-space:nowrap;padding:5px 11px;border-radius:999px;font-size:12.5px;cursor:pointer;border:1px solid var(--a-border-strong);background:transparent;color:var(--a-ink2)">{{ p.label }}</div></sc-for></div>
+</div>
+<sc-if value="{{ hasRuns }}" hint-placeholder-val="{{ true }}">
+<div style="background:var(--a-paper);border:1px solid var(--a-border);border-radius:10px;overflow:hidden">
+<div style="display:grid;grid-template-columns:44px 108px minmax(0,1fr) 108px 52px 44px 44px 52px 52px;gap:10px;padding:10px 20px;background:var(--a-surface);border-bottom:1px solid var(--a-divider);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap"><span>#</span><span>시작</span><span>소스</span><span>상태</span><span style="text-align:right">소요</span><span style="text-align:right">생성</span><span style="text-align:right">갱신</span><span style="text-align:right">건너뜀</span><span style="text-align:right">미매핑</span></div>
+<sc-for list="{{ runRows }}" as="r" hint-placeholder-count="6"><div onClick="{{ r.onClick }}" data-sel="{{ r.sel }}" style="display:grid;grid-template-columns:44px 108px minmax(0,1fr) 108px 52px 44px 44px 52px 52px;gap:10px;align-items:center;padding:12px 20px;border-top:1px solid var(--a-divider);cursor:pointer;background:transparent" style-hover="background:var(--a-surface)">
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--a-ink3);white-space:nowrap">{{ r.id }}</span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--a-ink);white-space:nowrap">{{ r.start }}</span>
+<span style="font-size:13.5px;color:var(--a-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.src }}</span>
+<span><dc-import name="StatusTag" status="{{ r.status }}" hint-size="96px,20px"></dc-import></span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;color:var(--a-ink2)">{{ r.dur }}</span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;color:var(--a-ink)">{{ r.created }}</span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;color:var(--a-ink2)">{{ r.updated }}</span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;color:var(--a-ink)" data-dim="{{ r.skDim }}">{{ r.sk }}</span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;text-align:right;color:var(--a-ink);font-weight:400" data-dim="{{ r.unDim }}" data-strong="{{ r.unStrong }}">{{ r.un }}</span>
+</div></sc-for>
+<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 20px;border-top:1px solid var(--a-divider);font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--a-ink3);white-space:nowrap"><span style="white-space:nowrap">{{ pageLabel }}</span><span style="display:flex;gap:16px"><span>← 이전</span><span>다음 →</span></span></div>
+</div>
+</sc-if>
+<sc-if value="{{ noRuns }}" hint-placeholder-val="{{ false }}"><div style="padding:44px 24px;background:var(--a-paper);border:1px solid var(--a-border);border-radius:10px;text-align:center;display:flex;flex-direction:column;gap:6px"><div style="font-size:15px;font-weight:500;color:var(--a-ink)">아직 실행 이력이 없습니다.</div><div style="font-size:13.5px;color:var(--a-ink3)">위에서 구매처를 골라 「수집」을 누르면 첫 실행이 여기 쌓입니다.</div></div></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isGear }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;gap:26px;border-bottom:1px solid var(--a-divider)"><sc-for list="{{ gearTabs }}" as="t" hint-placeholder-count="3"><div onClick="{{ t.onClick }}" data-k="tab" data-on="{{ t.on }}" style="padding:4px 0 11px;cursor:pointer;display:flex;gap:7px;align-items:baseline;border-bottom:2px solid transparent;margin-bottom:-1px"><span data-k="tabl" data-on="{{ t.on }}" style="font-size:14.5px;color:var(--a-ink3);font-weight:400">{{ t.label }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--a-ink3);white-space:nowrap">{{ t.count }}</span></div></sc-for></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:16px">
+<div style="display:flex;gap:6px"><sc-for list="{{ originPills }}" as="p" hint-placeholder-count="3"><div onClick="{{ p.onClick }}" data-k="pill" data-on="{{ p.on }}" style="flex:none;white-space:nowrap;padding:6px 12px;border-radius:999px;font-size:12.5px;cursor:pointer;border:1px solid var(--a-border-strong);background:transparent;color:var(--a-ink2)">{{ p.label }}</div></sc-for></div>
+<div style="display:flex;align-items:center;gap:12px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--a-ink3);white-space:nowrap">{{ gearCount }}</span><input value="{{ q }}" onChange="{{ onQ }}" placeholder="브랜드·이름 검색" style="width:230px;padding:9px 12px;background:var(--a-paper);border:1px solid var(--a-border-strong);border-radius:7px;font-family:'IBM Plex Sans KR',sans-serif;font-size:13.5px;color:var(--a-ink);outline:none;box-sizing:border-box"></div>
+</div>
+<sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--a-sunken);border-radius:8px"><span style="font-size:13.5px;font-weight:500;color:var(--a-ink)">{{ selLabel }}</span><span style="flex:1;font-size:12.5px;color:var(--a-ink3)">{{ selHint }}</span><sc-if value="{{ canMerge }}" hint-placeholder-val="{{ false }}"><div onClick="{{ onMerge }}" style="padding:7px 13px;background:var(--a-btn);color:var(--a-btn-ink);border-radius:6px;font-size:12.5px;font-weight:500;cursor:pointer;white-space:nowrap">병합</div></sc-if><sc-if value="{{ cannotMerge }}" hint-placeholder-val="{{ true }}"><div style="padding:7px 13px;background:var(--a-paper);color:var(--a-ink3);border-radius:6px;font-size:12.5px;font-weight:500;white-space:nowrap">병합</div></sc-if><div onClick="{{ clearSel }}" style="font-size:12.5px;color:var(--a-ink2);border-bottom:1px solid var(--a-border-strong);cursor:pointer">선택 해제</div></div></sc-if>
+
+<sc-if value="{{ gearAny }}" hint-placeholder-val="{{ true }}">
+<div style="background:var(--a-paper);border:1px solid var(--a-border);border-radius:10px;overflow:hidden">
+<sc-if value="{{ isGrinder }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:20px minmax(0,1fr) 48px 64px 44px 60px 60px 44px 70px;gap:12px;padding:10px 20px;background:var(--a-surface);border-bottom:1px solid var(--a-divider);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap"><span></span><span>이름</span><span>조절</span><span style="text-align:right">µm/클릭</span><span style="text-align:right">영점</span><span style="text-align:right">범위</span><span>버</span><span>환산</span><span>구분</span></div>
+<sc-for list="{{ gearRows }}" as="r" hint-placeholder-count="6"><div onClick="{{ r.onRow }}" data-sel="{{ r.sel }}" style="display:grid;grid-template-columns:20px minmax(0,1fr) 48px 64px 44px 60px 60px 44px 70px;gap:12px;align-items:center;padding:11px 20px;border-top:1px solid var(--a-divider);cursor:pointer;background:transparent" style-hover="background:var(--a-surface)">
+<div onClick="{{ r.onCheck }}" data-k="cb" data-on="{{ r.checked }}" style="width:16px;height:16px;border:1px solid var(--a-border-strong);border-radius:3px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:var(--a-paper)"><div data-k="cbd" data-on="{{ r.checked }}" style="width:8px;height:8px;border-radius:1px;background:transparent"></div></div>
+<div style="min-width:0;display:flex;flex-direction:column;gap:2px"><div style="font-size:14px;font-weight:500;color:var(--a-ink);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.4">{{ r.name }}</div><div style="font-size:11.5px;color:var(--a-ink3)">{{ r.brandL }}</div></div>
+<span style="font-size:13px;color:var(--a-ink2)">{{ r.adjL }}</span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:right;color:var(--a-ink)">{{ r.mpcL }}</span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:right;color:var(--a-ink2)">{{ r.zeroL }}</span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:right;color:var(--a-ink2)">{{ r.rangeL }}</span>
+<span style="font-size:13px;color:var(--a-ink2)">{{ r.burrL }}</span>
+<span style="font-size:13px;color:var(--a-ink2)" data-dim="{{ r.convDim }}">{{ r.convL }}</span>
+<span><sc-if value="{{ r.isSys }}" hint-placeholder-val="{{ true }}"><span style="font-size:11.5px;padding:3px 8px;border-radius:3px;background:var(--a-sunken);color:var(--a-ink2);white-space:nowrap">시스템</span></sc-if><sc-if value="{{ r.isUser }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;padding:2px 7px;border-radius:3px;border:1px solid var(--a-border-strong);color:var(--a-ink2);white-space:nowrap">사용자</span></sc-if></span>
+</div></sc-for>
+</sc-if>
+<sc-if value="{{ isDripper }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:20px minmax(0,1fr) 140px 70px;gap:12px;padding:10px 20px;background:var(--a-surface);border-bottom:1px solid var(--a-divider);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap"><span></span><span>이름</span><span>형태</span><span>구분</span></div>
+<sc-for list="{{ gearRows }}" as="r" hint-placeholder-count="5"><div onClick="{{ r.onRow }}" data-sel="{{ r.sel }}" style="display:grid;grid-template-columns:20px minmax(0,1fr) 140px 70px;gap:12px;align-items:center;padding:11px 20px;border-top:1px solid var(--a-divider);cursor:pointer;background:transparent" style-hover="background:var(--a-surface)">
+<div onClick="{{ r.onCheck }}" data-k="cb" data-on="{{ r.checked }}" style="width:16px;height:16px;border:1px solid var(--a-border-strong);border-radius:3px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:var(--a-paper)"><div data-k="cbd" data-on="{{ r.checked }}" style="width:8px;height:8px;border-radius:1px;background:transparent"></div></div>
+<div style="min-width:0;display:flex;flex-direction:column;gap:2px"><div style="font-size:14px;font-weight:500;color:var(--a-ink)">{{ r.name }}</div><div style="font-size:11.5px;color:var(--a-ink3)">{{ r.brandL }}</div></div>
+<span style="font-size:13px;color:var(--a-ink2)">{{ r.typeL }}</span>
+<span><sc-if value="{{ r.isSys }}" hint-placeholder-val="{{ true }}"><span style="font-size:11.5px;padding:3px 8px;border-radius:3px;background:var(--a-sunken);color:var(--a-ink2)">시스템</span></sc-if><sc-if value="{{ r.isUser }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;padding:2px 7px;border-radius:3px;border:1px solid var(--a-border-strong);color:var(--a-ink2)">사용자</span></sc-if></span>
+</div></sc-for>
+</sc-if>
+<sc-if value="{{ isFilter }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:20px minmax(0,1fr) 110px 120px 70px;gap:12px;padding:10px 20px;background:var(--a-surface);border-bottom:1px solid var(--a-divider);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap"><span></span><span>이름</span><span>재질</span><span>모양</span><span>구분</span></div>
+<sc-for list="{{ gearRows }}" as="r" hint-placeholder-count="4"><div onClick="{{ r.onRow }}" data-sel="{{ r.sel }}" style="display:grid;grid-template-columns:20px minmax(0,1fr) 110px 120px 70px;gap:12px;align-items:center;padding:13px 20px;border-top:1px solid var(--a-divider);cursor:pointer;background:transparent" style-hover="background:var(--a-surface)">
+<div onClick="{{ r.onCheck }}" data-k="cb" data-on="{{ r.checked }}" style="width:16px;height:16px;border:1px solid var(--a-border-strong);border-radius:3px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;background:var(--a-paper)"><div data-k="cbd" data-on="{{ r.checked }}" style="width:8px;height:8px;border-radius:1px;background:transparent"></div></div>
+<div style="font-size:14px;font-weight:500;color:var(--a-ink)">{{ r.name }}</div>
+<span style="font-size:13px;color:var(--a-ink2)">{{ r.matL }}</span>
+<span style="font-size:13px;color:var(--a-ink2)">{{ r.shapeL }}</span>
+<span><sc-if value="{{ r.isSys }}" hint-placeholder-val="{{ true }}"><span style="font-size:11.5px;padding:3px 8px;border-radius:3px;background:var(--a-sunken);color:var(--a-ink2)">시스템</span></sc-if><sc-if value="{{ r.isUser }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;padding:2px 7px;border-radius:3px;border:1px solid var(--a-border-strong);color:var(--a-ink2)">사용자</span></sc-if></span>
+</div></sc-for>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ gearEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:44px 24px;background:var(--a-paper);border:1px solid var(--a-border);border-radius:10px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center"><div style="font-size:15px;font-weight:500;color:var(--a-ink)">{{ emptyText }}</div><div onClick="{{ clearQ }}" style="font-size:13px;color:var(--a-ink2);border-bottom:1px solid var(--a-border-strong);cursor:pointer">검색어 지우기</div></div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isZero }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start">
+<div style="background:var(--a-paper);border:1px solid var(--a-border);border-radius:10px;overflow:hidden">
+<div style="padding:10px 16px;background:var(--a-surface);border-bottom:1px solid var(--a-divider);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">그라인더 모델</div>
+<sc-for list="{{ zModels }}" as="m" hint-placeholder-count="8"><div onClick="{{ m.onClick }}" data-sel="{{ m.sel }}" style="padding:11px 16px;border-top:1px solid var(--a-divider);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;background:transparent" style-hover="background:var(--a-surface)"><div style="flex:1;min-width:0"><div data-strong="{{ m.sel }}" style="font-size:13.5px;font-weight:500;color:var(--a-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.title }}</div><div style="font-size:11.5px;color:var(--a-ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.brand }}</div></div><span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--a-ink3);white-space:nowrap">{{ m.sub }}</span></div></sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:var(--a-paper);border:1px solid var(--a-border);border-radius:10px;padding:22px 24px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+<div style="display:flex;flex-direction:column;gap:4px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">{{ zm.eyebrow }}</div><div style="font-size:21px;font-weight:600;letter-spacing:-0.02em;color:var(--a-ink);white-space:nowrap">{{ zm.title }}</div></div>
+<div data-dim="{{ zNoConv }}" style="font-size:13px;color:var(--a-ink2);padding-top:4px">{{ zm.convL }}</div>
+</div>
+<sc-if value="{{ zNoConv }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 14px;background:var(--a-sunken);border-radius:7px;font-size:13.5px;line-height:1.65;color:var(--a-ink2)">µm/클릭 값이 없어 환산할 수 없는 모델입니다. 새 값을 입력하면 아래 미리보기가 계산됩니다.</div></sc-if>
+<div style="display:flex;flex-direction:column">
+<div style="display:grid;grid-template-columns:140px 90px minmax(0,1fr);gap:16px;padding:0 0 8px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap"><span>항목</span><span style="text-align:right">현재</span><span>새 값</span></div>
+<sc-for list="{{ zFields }}" as="f" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:140px 90px minmax(0,1fr);gap:16px;align-items:center;padding:10px 0;border-top:1px solid var(--a-divider)">
+<span style="font-size:13.5px;color:var(--a-ink2)">{{ f.label }}</span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:14px;text-align:right;color:var(--a-ink3)">{{ f.cur }}</span>
+<div style="display:flex;align-items:center;gap:12px">
+<div data-state="{{ f.state }}" style="display:flex;align-items:stretch;border:1px solid var(--a-border-strong);border-radius:7px;overflow:hidden;background:var(--a-paper)">
+<div onClick="{{ f.dec }}" style="width:36px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--a-ink2);cursor:pointer;border-right:1px solid var(--a-divider)" style-hover="background:var(--a-surface)">−</div>
+<input value="{{ f.val }}" onChange="{{ f.onInput }}" placeholder="{{ f.placeholder }}" style="width:84px;padding:9px 10px;border:none;outline:none;background:transparent;font-family:'IBM Plex Mono',monospace;font-size:14.5px;text-align:right;color:var(--a-ink)">
+<div style="padding:0 10px 0 0;display:flex;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--a-ink3)">{{ f.unit }}</div>
+<div onClick="{{ f.inc }}" style="width:36px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--a-ink2);cursor:pointer;border-left:1px solid var(--a-divider)" style-hover="background:var(--a-surface)">+</div>
+</div>
+<span style="font-size:12.5px;color:var(--a-ink);font-weight:400" data-strong="{{ f.err }}">{{ f.msg }}</span>
+</div>
+</div></sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:14.5px;font-weight:600;color:var(--a-ink);white-space:nowrap">저장 전 미리보기</div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--a-ink3);white-space:nowrap">추정 µm = (클릭 − 영점) × µm/클릭</div></div>
+<div style="border:1px solid var(--a-divider);border-radius:8px;overflow:hidden">
+<div style="display:grid;grid-template-columns:100px 1fr 1fr 80px;gap:12px;padding:9px 16px;background:var(--a-surface);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap"><span>설정</span><span style="text-align:right">현재 추정</span><span style="text-align:right">새 추정</span><span style="text-align:right">차이</span></div>
+<sc-for list="{{ zRows }}" as="z" hint-placeholder-count="3"><div style="display:grid;grid-template-columns:100px 1fr 1fr 80px;gap:12px;padding:10px 16px;border-top:1px solid var(--a-divider);font-family:'IBM Plex Mono',monospace;font-size:13.5px"><span style="color:var(--a-ink2)">{{ z.clicks }}</span><span style="text-align:right;color:var(--a-ink3)">{{ z.before }}</span><span style="text-align:right;color:var(--a-ink);font-weight:500">{{ z.after }}</span><span style="text-align:right;color:var(--a-ink)" data-dim="{{ z.same }}">{{ z.diff }}</span></div></sc-for>
+</div>
+<div style="font-size:13px;line-height:1.65;color:var(--a-ink3)">이미 저장된 레시피의 추정 입도는 바뀌지 않고, 새로 계산하는 값부터 적용됩니다. 환산 결과는 언제나 추정치입니다.</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;padding-top:4px;border-top:1px solid var(--a-divider);padding-top:18px">
+<sc-if value="{{ zCanSave }}" hint-placeholder-val="{{ false }}"><div onClick="{{ zOpenConfirm }}" style="padding:10px 18px;background:var(--a-btn);color:var(--a-btn-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:var(--a-btn-hover)">저장</div></sc-if>
+<sc-if value="{{ zCannot }}" hint-placeholder-val="{{ true }}"><div style="padding:10px 18px;background:var(--a-sunken);color:var(--a-ink3);border-radius:7px;font-size:14px;font-weight:500;white-space:nowrap">저장</div></sc-if>
+<div onClick="{{ zReset }}" style="padding:10px 16px;color:var(--a-ink2);border-radius:7px;font-size:14px;cursor:pointer" style-hover="background:var(--a-sunken)">되돌리기</div>
+<span style="font-size:12.5px;color:var(--a-ink3)">{{ zSaveHint }}</span>
+</div>
+</div>
+<div style="background:var(--a-paper);border:1px solid var(--a-border);border-radius:10px;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px"><div style="font-size:14.5px;font-weight:600;color:var(--a-ink);white-space:nowrap">변경 이력</div><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;padding:3px 7px;border:1px dashed var(--a-ink3);border-radius:3px;color:var(--a-ink3)">API 없음</span></div>
+<sc-if value="{{ zHasHist }}" hint-placeholder-val="{{ true }}"><sc-for list="{{ zHist }}" as="h" hint-placeholder-count="2"><div style="display:grid;grid-template-columns:140px 70px 110px minmax(0,1fr);gap:12px;padding:11px 20px;border-top:1px solid var(--a-divider);align-items:center"><span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--a-ink2);white-space:nowrap">{{ h.when }}</span><span style="font-size:13px;color:var(--a-ink)">{{ h.who }}</span><span style="font-size:13px;color:var(--a-ink2)">{{ h.field }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--a-ink)">{{ h.change }}</span></div></sc-for></sc-if>
+<sc-if value="{{ zNoHist }}" hint-placeholder-val="{{ false }}"><div style="padding:14px 20px;border-top:1px solid var(--a-divider);font-size:13.5px;color:var(--a-ink3)">이 모델은 아직 바뀐 적이 없습니다.</div></sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isMembers }}" hint-placeholder-val="{{ false }}">
+<div style="background:var(--a-paper);border:1px solid var(--a-border);border-radius:10px;overflow:hidden">
+<div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.4fr) 100px 120px 110px;gap:16px;padding:10px 20px;background:var(--a-surface);border-bottom:1px solid var(--a-divider);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap"><span>회원</span><span>이메일</span><span>역할</span><span>가입일</span><span></span></div>
+<sc-for list="{{ users }}" as="u" hint-placeholder-count="2"><div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.4fr) 100px 120px 110px;gap:16px;align-items:center;padding:13px 20px;border-top:1px solid var(--a-divider)">
+<div style="display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:999px;background:var(--a-avatar);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--a-avatar-ink);flex:none;white-space:nowrap">{{ u.init }}</div><span style="font-size:14px;font-weight:500;color:var(--a-ink)">{{ u.nick }}</span><sc-if value="{{ u.me }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;color:var(--a-ink3)">나</span></sc-if></div>
+<span data-dim="{{ u.noEmail }}" style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--a-ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ u.email }}</span>
+<span><sc-if value="{{ u.isAdmin }}" hint-placeholder-val="{{ true }}"><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.08em;padding:2px 7px;border-radius:3px;border:1px solid var(--a-ink);color:var(--a-ink)">ADMIN</span></sc-if><sc-if value="{{ u.isUser }}" hint-placeholder-val="{{ false }}"><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.08em;padding:3px 7px;border-radius:3px;background:var(--a-sunken);color:var(--a-ink2)">USER</span></sc-if></span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--a-ink2);white-space:nowrap">{{ u.created }}</span>
+<div onClick="{{ u.onChange }}" style="justify-self:end;padding:7px 12px;border:1px solid var(--a-border-strong);background:var(--a-surface);border-radius:6px;font-size:12.5px;font-weight:500;color:var(--a-ink);cursor:pointer;white-space:nowrap" style-hover="background:var(--a-sunken)">역할 변경</div>
+</div></sc-for>
+</div>
+<div style="font-size:13px;color:var(--a-ink3)">정지·탈퇴 처리는 이 화면에서 하지 않습니다.</div>
+</sc-if>
+
+</div>
+</div>
+
+<sc-if value="{{ showRunPanel }}" hint-placeholder-val="{{ true }}">
+<div style="width:420px;flex:none;background:var(--a-paper);border-left:1px solid var(--a-border);display:flex;flex-direction:column;min-height:0">
+<div style="padding:20px 24px 18px;border-bottom:1px solid var(--a-divider);display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;align-items:flex-start"><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">Run #{{ d.id }} · {{ d.sourceKey }}</div><div style="font-size:20px;font-weight:600;letter-spacing:-0.02em;color:var(--a-ink);white-space:nowrap">{{ d.sourceName }}</div><dc-import name="StatusTag" status="{{ d.status }}" hint-size="96px,20px"></dc-import></div>
+<span onClick="{{ closePanel }}" style="font-size:13px;color:var(--a-ink2);border-bottom:1px solid var(--a-border-strong);cursor:pointer;margin-top:2px">닫기</span>
+</div>
+<div style="flex:1;overflow:auto;padding:20px 24px 32px;display:flex;flex-direction:column;gap:22px">
+<div style="display:grid;grid-template-columns:1.3fr 1fr 0.8fr;gap:12px">
+<div style="display:flex;flex-direction:column;gap:3px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">시작</div><div style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:var(--a-ink)">{{ d.start }}</div></div>
+<div style="display:flex;flex-direction:column;gap:3px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">종료</div><div style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:var(--a-ink)">{{ d.end }}</div></div>
+<div style="display:flex;flex-direction:column;gap:3px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">{{ d.durLabel }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:var(--a-ink)">{{ d.dur }}</div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;padding:18px 0;border-top:1px solid var(--a-divider);border-bottom:1px solid var(--a-divider)">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:36px;font-weight:500;letter-spacing:-0.04em;line-height:1;color:var(--a-ink)">{{ d.hero }}</div>
+<div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--a-ink3);white-space:nowrap">{{ d.sub }}</div>
+</div>
+<div style="font-size:14px;line-height:1.7;color:var(--a-ink2);text-wrap:pretty">{{ d.obs }}</div>
+<sc-if value="{{ d.isFailed }}" hint-placeholder-val="{{ false }}"><div style="padding:14px 16px;background:var(--a-sunken);border-radius:7px;display:flex;flex-direction:column;gap:6px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">errorMessage</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.6;color:var(--a-ink);word-break:break-all">{{ d.err }}</div></div></sc-if>
+<sc-if value="{{ d.showLists }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:15px;font-weight:600;color:var(--a-ink);white-space:nowrap">건너뛴 상품</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--a-ink3);white-space:nowrap">{{ d.skCount }}</div></div>
+<sc-if value="{{ d.noSkipped }}" hint-placeholder-val="{{ false }}"><div style="font-size:13.5px;color:var(--a-ink3)">건너뛴 상품이 없습니다.</div></sc-if>
+<sc-for list="{{ d.skipGroups }}" as="g" hint-placeholder-count="2"><div style="display:flex;flex-direction:column">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-bottom:6px"><div style="display:flex;flex-direction:column;gap:2px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.04em;color:var(--a-ink)">{{ g.code }}</span><span style="font-size:12px;color:var(--a-ink3)">{{ g.label }}</span></div><span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--a-ink3);white-space:nowrap">{{ g.count }}</span></div>
+<sc-for list="{{ g.items }}" as="it" hint-placeholder-count="1"><div style="padding:8px 0;border-top:1px solid var(--a-divider);font-size:13.5px;color:var(--a-ink)">{{ it.name }}</div></sc-for>
+</div></sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:15px;font-weight:600;color:var(--a-ink);white-space:nowrap">매핑하지 못한 원문</div><div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--a-ink3);white-space:nowrap">{{ d.unCount }}</div></div>
+<sc-if value="{{ d.noUnmapped }}" hint-placeholder-val="{{ false }}"><div style="font-size:13.5px;color:var(--a-ink3)">매핑하지 못한 원문이 없습니다.</div></sc-if>
+<sc-for list="{{ d.unGroups }}" as="g" hint-placeholder-count="2"><div style="display:flex;flex-direction:column">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding-bottom:6px"><div style="display:flex;align-items:baseline;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.04em;color:var(--a-ink)">{{ g.code }}</span><span style="font-size:12px;color:var(--a-ink3)">{{ g.label }}</span></div><span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--a-ink3);white-space:nowrap">{{ g.count }}</span></div>
+<sc-for list="{{ g.items }}" as="it" hint-placeholder-count="2"><div style="padding:9px 0;border-top:1px solid var(--a-divider);display:flex;flex-direction:column;gap:3px;align-items:flex-start"><span style="font-size:14px;font-weight:600;color:var(--a-ink);background:var(--a-wash);padding:1px 6px;border-radius:3px;white-space:nowrap">“{{ it.raw }}”</span><span style="font-size:12px;color:var(--a-ink3);padding-left:6px">{{ it.name }}</span></div></sc-for>
+<sc-if value="{{ g.hasMore }}" hint-placeholder-val="{{ false }}"><div onClick="{{ g.onMore }}" style="padding:9px 0;border-top:1px solid var(--a-divider);font-size:12.5px;color:var(--a-ink2);cursor:pointer"><span style="border-bottom:1px solid var(--a-border-strong)">{{ g.more }}</span></div></sc-if>
+</div></sc-for>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ showGearPanel }}" hint-placeholder-val="{{ false }}">
+<div style="width:420px;flex:none;background:var(--a-paper);border-left:1px solid var(--a-border);display:flex;flex-direction:column;min-height:0">
+<div style="padding:20px 24px 18px;border-bottom:1px solid var(--a-divider);display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+<div style="flex:1;display:flex;flex-direction:column;gap:7px;align-items:flex-start;min-width:0"><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">{{ gp.eyebrow }}</div><div style="font-size:19px;font-weight:600;letter-spacing:-0.02em;line-height:1.35;color:var(--a-ink);text-wrap:pretty;word-break:keep-all">{{ gp.title }}</div><sc-if value="{{ gp.isSys }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;padding:3px 8px;border-radius:3px;background:var(--a-sunken);color:var(--a-ink2)">시스템 장비</span></sc-if><sc-if value="{{ gp.isUser }}" hint-placeholder-val="{{ true }}"><span style="font-size:11.5px;padding:2px 7px;border-radius:3px;border:1px solid var(--a-border-strong);color:var(--a-ink2)">사용자 등록</span></sc-if></div>
+<span onClick="{{ closeGear }}" style="font-size:13px;color:var(--a-ink2);border-bottom:1px solid var(--a-border-strong);cursor:pointer;margin-top:2px;flex:none">닫기</span>
+</div>
+<div style="flex:1;overflow:auto;padding:20px 24px 24px;display:flex;flex-direction:column;gap:16px">
+<sc-for list="{{ gp.fields }}" as="f" hint-placeholder-count="5"><div style="display:flex;flex-direction:column;gap:6px">
+<span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">{{ f.label }}</span>
+<sc-if value="{{ f.isText }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;gap:8px;padding:0 14px;background:var(--a-paper);border:1px solid var(--a-border-strong);border-radius:7px"><input value="{{ f.value }}" onChange="{{ f.onInput }}" placeholder="{{ f.placeholder }}" data-mono="{{ f.mono }}" style="flex:1;min-width:0;padding:11px 0;border:none;outline:none;background:transparent;font-family:'IBM Plex Sans KR',sans-serif;font-size:14.5px;color:var(--a-ink)"><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--a-ink3)">{{ f.unit }}</span></div></sc-if>
+<sc-if value="{{ f.isEnum }}" hint-placeholder-val="{{ false }}"><div style="display:flex;padding:3px;background:var(--a-sunken);border-radius:8px;gap:3px"><sc-for list="{{ f.opts }}" as="o" hint-placeholder-count="3"><div onClick="{{ o.onClick }}" data-k="seg" data-on="{{ o.on }}" style="flex:1;text-align:center;padding:7px 0;border-radius:6px;font-size:12.5px;cursor:pointer;background:transparent;border:1px solid transparent;color:var(--a-ink3);font-weight:400">{{ o.label }}</div></sc-for></div></sc-if>
+</div></sc-for>
+<sc-if value="{{ gp.hasConv }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:var(--a-ink2)">{{ gp.conv }}</div></sc-if>
+<div style="display:flex;flex-direction:column;gap:6px;padding:14px 0 0;border-top:1px solid var(--a-divider)">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">사용 현황</span><span style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.06em;padding:3px 7px;border:1px dashed var(--a-ink3);border-radius:3px;color:var(--a-ink3)">API 없음</span></div>
+<div style="font-size:13.5px;color:var(--a-ink2)">{{ gp.usage }}</div>
+</div>
+<sc-if value="{{ gp.saveFail }}" hint-placeholder-val="{{ false }}"><div style="padding:13px 15px;background:var(--a-sunken);border-radius:7px;display:flex;flex-direction:column;gap:4px"><div style="font-size:13.5px;font-weight:600;color:var(--a-ink);white-space:nowrap">저장하지 못했습니다.</div><div style="font-size:13px;line-height:1.6;color:var(--a-ink2)">서버가 응답하지 않았습니다 <span style="font-family:'IBM Plex Mono',monospace;font-size:12px">(500)</span>. 입력한 값은 그대로 남아 있습니다. 잠시 후 다시 저장해 주세요.</div></div></sc-if>
+</div>
+<div style="padding:14px 24px;border-top:1px solid var(--a-divider);display:flex;gap:8px;align-items:center">
+<div onClick="{{ gp.onSave }}" style="padding:10px 18px;background:var(--a-btn);color:var(--a-btn-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:var(--a-btn-hover)">저장</div>
+<div onClick="{{ closeGear }}" style="padding:10px 16px;background:var(--a-surface);border:1px solid var(--a-border-strong);color:var(--a-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">취소</div>
+<div style="flex:1"></div>
+<sc-if value="{{ gp.isUser }}" hint-placeholder-val="{{ true }}"><div onClick="{{ gp.onPromote }}" style="padding:10px 4px;color:var(--a-accent);font-size:13.5px;font-weight:500;cursor:pointer"><span style="border-bottom:1px solid currentColor">시스템 장비로</span></div></sc-if>
+</div>
+</div>
+</sc-if>
+</div>
+
+<sc-if value="{{ hasModal }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;background:var(--a-scrim);display:flex;align-items:center;justify-content:center;z-index:5">
+<div style="width:460px;background:var(--a-paper);border:1px solid var(--a-border);border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box">
+
+<sc-if value="{{ mMerge }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">Merge · {{ mergeCount }}</div><div style="font-size:19px;font-weight:600;letter-spacing:-0.02em;color:var(--a-ink);white-space:nowrap">남길 항목을 고르세요</div></div>
+<div style="display:flex;flex-direction:column;border:1px solid var(--a-divider);border-radius:8px;overflow:hidden">
+<sc-for list="{{ mergeItems }}" as="m" hint-placeholder-count="2"><div onClick="{{ m.onClick }}" style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-top:1px solid var(--a-divider);cursor:pointer;background:transparent" data-first="{{ m.first }}" data-sel="{{ m.on }}">
+<div data-k="ring" data-on="{{ m.on }}" style="width:16px;height:16px;border-radius:999px;border:1px solid var(--a-border-strong);display:flex;align-items:center;justify-content:center;box-sizing:border-box;flex:none;margin-top:2px"><div style="width:8px;height:8px;border-radius:999px;background:transparent" data-k="dot" data-on="{{ m.on }}"></div></div>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px"><div style="font-size:14px;font-weight:500;color:var(--a-ink);word-break:keep-all">{{ m.title }}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--a-ink3);white-space:nowrap">{{ m.sub }}</div></div>
+<span style="font-size:11.5px;color:var(--a-ink3);white-space:nowrap">{{ m.origin }}</span>
+</div></sc-for>
+</div>
+<div style="font-size:13.5px;line-height:1.7;color:var(--a-ink2)">{{ mergeText }}</div>
+<sc-if value="{{ mergeBlocked }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 14px;background:var(--a-sunken);border-radius:7px;font-size:13px;line-height:1.65;color:var(--a-ink)">선택한 항목 중 시스템 장비가 <span style="font-family:'IBM Plex Mono',monospace">{{ mergeSys }}</span>개입니다. 시스템 장비끼리는 병합할 수 없습니다 — 시스템 장비를 하나만 남기고 선택을 다시 해 주세요.</div></sc-if>
+<div style="font-size:13px;font-weight:600;color:var(--a-ink);white-space:nowrap">이 작업은 되돌릴 수 없습니다.</div>
+<div style="display:flex;justify-content:flex-end;gap:8px">
+<div onClick="{{ closeModal }}" style="padding:10px 16px;background:var(--a-surface);border:1px solid var(--a-border-strong);color:var(--a-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">취소</div>
+<sc-if value="{{ mergeOk }}" hint-placeholder-val="{{ true }}"><div onClick="{{ onMergeConfirm }}" style="padding:10px 18px;background:var(--a-btn);color:var(--a-btn-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">병합</div></sc-if>
+<sc-if value="{{ mergeBlocked }}" hint-placeholder-val="{{ false }}"><div style="padding:10px 18px;background:var(--a-sunken);color:var(--a-ink3);border-radius:7px;font-size:14px;font-weight:500;white-space:nowrap">병합</div></sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ mPromote }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">Promote</div><div style="font-size:19px;font-weight:600;letter-spacing:-0.02em;line-height:1.35;color:var(--a-ink);word-break:keep-all">{{ promoteTitle }}</div></div>
+<div style="font-size:13.5px;line-height:1.7;color:var(--a-ink2)">시스템 장비가 되면 모든 사용자의 장비 선택 목록에 나타납니다. 등록한 사용자는 이 장비를 더 이상 직접 고칠 수 없습니다.</div>
+<div style="display:flex;justify-content:flex-end;gap:8px"><div onClick="{{ closeModal }}" style="padding:10px 16px;background:var(--a-surface);border:1px solid var(--a-border-strong);color:var(--a-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">취소</div><div onClick="{{ onPromoteConfirm }}" style="padding:10px 18px;background:var(--a-btn);color:var(--a-btn-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">시스템 장비로</div></div>
+</sc-if>
+
+<sc-if value="{{ mZero }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">모든 사용자에게 적용</div><div style="font-size:19px;font-weight:600;letter-spacing:-0.02em;color:var(--a-ink);white-space:nowrap">{{ zm.title }} 공통값을 바꿉니다</div></div>
+<div style="border:1px solid var(--a-divider);border-radius:8px;overflow:hidden"><sc-for list="{{ zChanges }}" as="c" hint-placeholder-count="1"><div style="display:flex;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--a-divider)" data-first="{{ c.first }}"><span style="font-size:13.5px;color:var(--a-ink2)">{{ c.label }}</span><span style="font-family:'IBM Plex Mono',monospace;font-size:13.5px;color:var(--a-ink)">{{ c.change }}</span></div></sc-for></div>
+<div style="font-size:13.5px;line-height:1.7;color:var(--a-ink2)">이미 저장된 레시피의 추정 입도는 바뀌지 않고, 새로 계산하는 값부터 적용됩니다.</div>
+<div style="display:flex;justify-content:flex-end;gap:8px"><div onClick="{{ closeModal }}" style="padding:10px 16px;background:var(--a-surface);border:1px solid var(--a-border-strong);color:var(--a-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">취소</div><div onClick="{{ zConfirm }}" style="padding:10px 18px;background:var(--a-btn);color:var(--a-btn-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">저장</div></div>
+</sc-if>
+
+<sc-if value="{{ mRole }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">{{ role.change }}</div><div style="font-size:19px;font-weight:600;letter-spacing:-0.02em;color:var(--a-ink);white-space:nowrap">{{ role.title }}</div></div>
+<div style="font-size:13.5px;line-height:1.7;color:var(--a-ink2)">{{ role.desc }}</div>
+<div style="display:flex;justify-content:flex-end;gap:8px"><div onClick="{{ closeModal }}" style="padding:10px 16px;background:var(--a-surface);border:1px solid var(--a-border-strong);color:var(--a-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">취소</div><div onClick="{{ onRoleConfirm }}" style="padding:10px 18px;background:var(--a-btn);color:var(--a-btn-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">역할 변경</div></div>
+</sc-if>
+
+<sc-if value="{{ mRoleBlocked }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--a-label);white-space:nowrap">ADMIN → USER</div><div style="font-size:19px;font-weight:600;letter-spacing:-0.02em;color:var(--a-ink);white-space:nowrap">본인의 ADMIN 권한은 해제할 수 없습니다</div></div>
+<div style="font-size:13.5px;line-height:1.7;color:var(--a-ink2)">관리자가 한 명도 남지 않는 일을 막기 위해, 자신의 역할은 바꿀 수 없습니다. 다른 ADMIN 계정에서 변경해 주세요.</div>
+<div style="display:flex;justify-content:flex-end"><div onClick="{{ closeModal }}" style="padding:10px 18px;background:var(--a-btn);color:var(--a-btn-ink);border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap">확인</div></div>
+</sc-if>
+
+</div>
+</div>
+</sc-if>
+</sc-if>
+</div>
+
+<sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;padding-top:12px;font-family:'IBM Plex Sans KR',sans-serif">
+<div style="background:oklch(0.99 0.004 85);border:1px solid oklch(0.88 0.008 75);border-radius:10px;overflow:hidden">
+<div style="padding:16px 20px;display:flex;flex-direction:column;gap:4px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:oklch(0.58 0.02 70);white-space:nowrap">Responsive</div><div style="font-size:17px;font-weight:600;color:oklch(0.22 0.015 60);white-space:nowrap">1280px 미만 동작</div></div>
+<div style="display:grid;grid-template-columns:150px 1fr 1fr;gap:12px;padding:9px 20px;background:oklch(0.97 0.006 85);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.58 0.02 70);white-space:nowrap"><span>요소</span><span>1024–1279</span><span>1024 미만</span></div>
+<sc-for list="{{ respRows }}" as="r" hint-placeholder-count="7"><div style="display:grid;grid-template-columns:150px 1fr 1fr;gap:12px;padding:11px 20px;border-top:1px solid oklch(0.92 0.008 78);font-size:13px;line-height:1.6;color:oklch(0.38 0.015 60)"><span style="font-weight:500;color:oklch(0.22 0.015 60)">{{ r.el }}</span><span>{{ r.mid }}</span><span>{{ r.small }}</span></div></sc-for>
+</div>
+<div style="background:oklch(0.99 0.004 85);border:1px solid oklch(0.88 0.008 75);border-radius:10px;overflow:hidden">
+<div style="padding:16px 20px;display:flex;flex-direction:column;gap:4px"><div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:oklch(0.58 0.02 70);white-space:nowrap">Open questions</div><div style="font-size:17px;font-weight:600;color:oklch(0.22 0.015 60);white-space:nowrap">결정해 주실 것</div></div>
+<sc-for list="{{ questions }}" as="q" hint-placeholder-count="10"><div style="display:grid;grid-template-columns:28px 1fr;gap:10px;padding:12px 20px;border-top:1px solid oklch(0.92 0.008 78)"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:oklch(0.55 0.02 70);padding-top:1px;white-space:nowrap">{{ q.n }}</span><div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:13.5px;font-weight:600;color:oklch(0.22 0.015 60);line-height:1.5;white-space:nowrap">{{ q.q }}</div><div style="font-size:13px;line-height:1.6;color:oklch(0.38 0.015 60)"><span style="font-weight:500;color:oklch(0.42 0.06 45)">추천</span> {{ q.rec }}</div><div style="font-size:12.5px;line-height:1.6;color:oklch(0.55 0.02 70)">{{ q.why }}</div></div></div></sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light' | 'dark'&quot;},&quot;startPage&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;crawl&quot;,&quot;gear&quot;,&quot;zero&quot;,&quot;members&quot;,&quot;forbidden&quot;],&quot;default&quot;:&quot;crawl&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;showNotes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+const pad = n => String(n).padStart(2, '0');
+const mmss = s => pad(Math.floor(s / 60)) + ':' + pad(s % 60);
+const clock = () => { const d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); };
+const SOURCES = [{ key: 'momos', name: '모모스커피', listUrl: 'https://momos.co.kr/shop/coffee-beans' }, { key: 'unspecialty', name: '언스페셜티 몰', listUrl: 'https://unspecialty.com/category/beans' }];
+const SRCN = { momos: '모모스커피', unspecialty: '언스페셜티 몰' };
+const SKIP = { USER_OWNED: '사용자가 등록한 원두 — 덮어쓰지 않음', FETCH_FAILED: '상품 페이지를 읽지 못함', PARSE_FAILED: '페이지 구조를 해석하지 못함' };
+const FIELD = { process: '가공법', variety: '품종', roastLevel: '로스팅', origin: '산지' };
+const ADJ = { CLICK: '클릭', NUMBERED: '눈금', STEPLESS: '무단' };
+const BURR = { CONICAL: '코니컬', FLAT: '플랫' };
+const TYPE = { CONE: '원뿔', FLAT_BOTTOM: '평저', WAVE: '웨이브', HYBRID: '하이브리드', IMMERSION: '침출' };
+const MAT = { PAPER_BLEACHED: '표백지', PAPER_NATURAL: '무표백지', ABACA: '아바카', METAL: '금속', CLOTH: '융' };
+function manyUnmapped() {
+  const P = ['허니 무산소', '내추럴 카보닉 메서레이션', '더블 퍼먼테이션', '앤에어로빅 레드 허니', '써멀 쇼크 워시드', '이스트 인큐베이션', '락틱 내추럴'];
+  const V = ['게이샤 그린팁', 'SL28/SL34 혼합', '74158 / 74110', '핑크 버번 (추정)', '시드라 & 카투라', '에티오피아 랜드레이스'];
+  const O = ['시다마 벤사 봄베 마을', '우일라 산 아구스틴 일대', '안티오키아 남서부'];
+  const R = ['라이트-미디엄 (시나몬+)', '노르딕 라이트', '미디엄 다크 (풀시티)'];
+  const N = ['콜롬비아 라 마리아', '에티오피아 첼벳사', '코스타리카 돈 마요', '케냐 가추하', '과테말라 엘 인헤르토', '파나마 하트만', '브라질 다테하', '온두라스 엘 푸엔테', '르완다 무시마', '페루 엘 메라도'];
+  const out = [];
+  const add = (field, arr, n, off) => { for (let i = 0; i < n; i++) out.push({ name: N[(i + off) % N.length] + ' · 로트 ' + (i + 1), field, raw: arr[i % arr.length] }); };
+  add('process', P, 21, 0); add('variety', V, 14, 3); add('origin', O, 6, 5); add('roastLevel', R, 3, 7);
+  return out;
+}
+const RUNS = [
+  { id: 128, source: 'momos', status: 'SUCCEEDED', start: '10.14 09:12:04', end: '09:14:31', dur: '02:27', created: 19, updated: 42,
+    skipped: [{ name: '에티오피아 구지 함벨라', reason: 'USER_OWNED' }, { name: '콜롬비아 엘 파라이소 리치', reason: 'FETCH_FAILED' }, { name: '모모스 시즌 블렌드 가을', reason: 'PARSE_FAILED' }],
+    unmapped: [{ name: '콜롬비아 엘 파라이소 리치', field: 'process', raw: '더블 무산소 써멀 쇼크' }, { name: '코스타리카 라 칸델라리아', field: 'process', raw: '허니 무산소' }, { name: '파나마 엘리다 게이샤', field: 'variety', raw: '게이샤 그린팁' }, { name: '케냐 키린야가 AA', field: 'roastLevel', raw: '라이트-미디엄 (시나몬+)' }, { name: '에티오피아 시다마 벤사', field: 'origin', raw: '시다마 벤사 봄베 마을' }], errorMessage: null },
+  { id: 127, source: 'unspecialty', status: 'SUCCEEDED', start: '10.13 21:40:15', end: '21:43:02', dur: '02:47', created: 4, updated: 61, skipped: [], unmapped: [], errorMessage: null },
+  { id: 126, source: 'unspecialty', status: 'FAILED', start: '10.13 21:31:10', end: '21:31:12', dur: '00:02', created: 0, updated: 0, skipped: [], unmapped: [], errorMessage: 'List page returned HTTP 503 Service Unavailable — GET https://unspecialty.com/category/beans' },
+  { id: 125, source: 'momos', status: 'INTERRUPTED', start: '10.12 18:02:44', end: '—', dur: '—', created: 7, updated: 12, skipped: [{ name: '브라질 세하도 내추럴', reason: 'FETCH_FAILED' }], unmapped: [{ name: '르완다 무시마 워시드', field: 'variety', raw: '레드 버번 (BM139)' }, { name: '온두라스 산타 바바라', field: 'process', raw: '세미 워시드 허니' }], errorMessage: null },
+  { id: 124, source: 'unspecialty', status: 'SUCCEEDED', start: '10.10 14:20:51', end: '14:26:09', dur: '05:18', created: 0, updated: 58, skipped: [{ name: '언스페셜티 하우스 블렌드', reason: 'PARSE_FAILED' }, { name: '드립백 10개입 세트', reason: 'PARSE_FAILED' }], unmapped: manyUnmapped(), errorMessage: null },
+  { id: 123, source: 'momos', status: 'SUCCEEDED', start: '10.08 08:55:30', end: '08:57:41', dur: '02:11', created: 2, updated: 55, skipped: [], unmapped: [{ name: '과테말라 엘 인헤르토', field: 'variety', raw: '파카마라 & 마라카투라' }], errorMessage: null },
+];
+const GRINDERS = [
+  { id: 1, brand: 'Comandante', name: 'C40 MK4', adj: 'CLICK', mpc: 30, zero: 0, min: 0, max: 40, burr: 'CONICAL', sys: true },
+  { id: 10, brand: 'Comandante', name: 'C40', adj: 'CLICK', mpc: 30, zero: 0, min: 0, max: 40, burr: 'CONICAL', sys: true },
+  { id: 2, brand: '1Zpresso', name: 'K-Ultra', adj: 'NUMBERED', mpc: 20, zero: 0, min: 0, max: 100, burr: 'CONICAL', sys: true },
+  { id: 3, brand: 'Timemore', name: 'C3 ESP', adj: 'CLICK', mpc: 15, zero: 0, min: 0, max: 90, burr: 'CONICAL', sys: true },
+  { id: 4, brand: 'Fellow', name: 'Ode Gen 2', adj: 'NUMBERED', mpc: null, zero: 0, min: 1, max: 31, burr: 'FLAT', sys: true },
+  { id: 5, brand: 'Baratza', name: 'Encore ESP', adj: 'NUMBERED', mpc: 18, zero: 0, min: 1, max: 40, burr: 'CONICAL', sys: true },
+  { id: 6, brand: '코만단테', name: 'C40', adj: 'CLICK', mpc: 30, zero: 0, min: 0, max: 40, burr: null, sys: false },
+  { id: 7, brand: 'Comandante', name: 'C40 MK3 Nitro Blade', adj: 'CLICK', mpc: 30, zero: 1, min: 0, max: 40, burr: 'CONICAL', sys: false },
+  { id: 8, brand: '1zpresso', name: 'k ultra', adj: 'NUMBERED', mpc: null, zero: 0, min: 0, max: 100, burr: null, sys: false },
+  { id: 9, brand: 'Kingrinder', name: 'K6 Manual Hand Coffee Grinder Adjustable Setting Conical Stainless Steel Burr (2024 리뉴얼)', adj: 'CLICK', mpc: null, zero: 0, min: 0, max: 240, burr: 'CONICAL', sys: false },
+];
+const DRIPPERS = [
+  { id: 1, brand: 'Hario', name: 'V60 02', type: 'CONE', sys: true }, { id: 2, brand: 'Kalita', name: 'Wave 185', type: 'WAVE', sys: true },
+  { id: 3, brand: 'Origami', name: 'Dripper M', type: 'HYBRID', sys: true }, { id: 4, brand: 'Clever', name: 'Clever Dripper L', type: 'IMMERSION', sys: true },
+  { id: 5, brand: 'April', name: 'Brewer', type: 'FLAT_BOTTOM', sys: false }, { id: 6, brand: '하리오', name: 'V60', type: 'CONE', sys: false },
+];
+const FILTERS = [
+  { id: 1, name: 'Hario V60 02 필터', material: 'PAPER_BLEACHED', shape: '원뿔 02', sys: true }, { id: 2, name: 'Kalita Wave 185 필터', material: 'PAPER_BLEACHED', shape: '웨이브 185', sys: true },
+  { id: 3, name: 'Cafec Abaca 원뿔', material: 'ABACA', shape: '원뿔 02', sys: true }, { id: 4, name: 'Able Kone', material: 'METAL', shape: '원뿔', sys: false },
+];
+const USERS = [{ id: 1, nick: '현', email: 'hyun@kaldinote.app', role: 'ADMIN', created: '2026.08.21', me: true }, { id: 2, nick: '지윤', email: null, role: 'USER', created: '2026.08.23', me: false }];
+const ZHIST = [{ model: 1, when: '2026.10.02 22:14', who: '현', field: '영점 오프셋', change: '0.5 → 0' }, { model: 1, when: '2026.09.20 08:03', who: '현', field: 'µm / 클릭', change: '29 → 30' }, { model: 2, when: '2026.09.11 19:40', who: '현', field: 'µm / 클릭', change: '22 → 20' }];
+const RESP = [
+  { el: '좌측 메뉴 240', mid: '200px로 줄이고 섹션 라벨·API 표시 유지', small: '상단 바 아래 가로 메뉴 줄(텍스트 탭)로 이동' },
+  { el: '우측 상세 패널 420', mid: '본문 위에 겹치는 오버레이(오른쪽 고정, 스크림). 표는 전체 폭 유지', small: '같음 — 폭 min(420px, 100%)' },
+  { el: '실행 이력 표', mid: '건너뜀·미매핑을 「확인 필요 n」 한 열로 합침', small: '# 열 숨김, 시작은 날짜만' },
+  { el: '구매처 행', mid: '목록 URL을 이름 아래 줄로', small: '같음' },
+  { el: '장비 표', mid: '범위·버 열 숨김(패널에서 확인)', small: '영점·환산 열도 숨김' },
+  { el: '그라인더 영점', mid: '모델 목록을 폼 위 드롭다운으로', small: '같음' },
+  { el: '회원 표', mid: '이메일을 닉네임 아래 줄로', small: '가입일 숨김' },
+  { el: '최소 폭', mid: '—', small: '960 미만: 「관리자 화면은 데스크톱에서 열어 주세요」 안내만' },
+];
+const QUESTIONS = [
+  { q: '실행 상세는 우측 패널인가, 별도 페이지인가', rec: '우측 패널 + /admin/crawl/runs/{id} 딥링크(패널이 열린 상태로 진입).', why: '이력을 훑으며 연달아 비교하는 것이 주 작업이고, 링크 공유는 딥링크로 충분합니다.' },
+  { q: 'RUNNING 중에도 created·updated 중간 집계를 주나요?', rec: '주지 않는 것으로 가정해 「끝나면 표시」로 그렸습니다. 준다면 3초 폴링마다 숫자만 갱신.', why: 'API 명세에 RUNNING 중 값 정의가 없습니다.' },
+  { q: '폴링 간격과 중지 조건', rec: '3초, 탭이 숨겨지면 중지, RUNNING이 아니면 종료.', why: '실행이 수십 초~수 분이라 3초면 체감 지연이 없습니다.' },
+  { q: 'INTERRUPTED 실행의 finishedAt', rec: '재시작 시각을 넣지 않고 null 유지 → 종료·소요 「—」.', why: '실제로 끝난 시각이 아니므로 소요 시간이 오해를 줍니다.' },
+  { q: 'unmapped 원문을 화면에서 바로 매핑(규칙 추가)할까요?', rec: '이번 단계는 읽기 전용.', why: 'API가 없고, 매핑 규칙 저장 위치가 정해지지 않았습니다.' },
+  { q: '병합 시 기존 기록·레시피·내 기구 참조 처리', rec: '남길 항목으로 모두 옮기고 나머지는 삭제(화면 문구도 이 가정).', why: '참조를 끊으면 과거 기록의 장비 정보가 사라집니다.' },
+  { q: '시스템 장비가 둘 이상 포함된 병합', rec: '차단(그린 상태). 필요하면 한쪽을 먼저 수정·정리.', why: '시스템 장비 삭제는 모든 사용자에게 영향이 큽니다.' },
+  { q: '승격 후 등록자의 편집 권한', rec: '잃음 — 시스템 장비는 ADMIN만 수정.', why: '모든 사용자에게 보이는 값이 개인 편집으로 바뀌면 안 됩니다.' },
+  { q: '환산식과 영점의 부호', rec: '추정 µm = (클릭 − 영점) × µm/클릭 로 그렸습니다. 서버 식 확인 필요.', why: '미리보기 숫자가 서버 결과와 달라지면 이 화면이 거짓말을 하게 됩니다.' },
+  { q: '입력 허용 범위', rec: 'µm/클릭 1–200, 영점 −10~10, 최소 ≥ 0, 최대 > 최소.', why: '임의값입니다. 실제 모델 분포를 보고 정해 주세요.' },
+  { q: '관리자 0명 방지', rec: '본인 해제 차단 + 마지막 ADMIN의 해제도 서버에서 차단.', why: '두 사람 체제에서는 실수 한 번으로 관리자가 없어집니다.' },
+  { q: '다크 테마의 accent-wash·스크림', rec: '다크 accent 14% 알파를 임시로 썼습니다. 토큰으로 확정할지 정해 주세요.', why: '디자인 시스템에 다크 wash 토큰이 없습니다.' },
+];
+
+class Component extends DCLogic {
+  state = {
+    page: null, theme: null, forbidden: false, scn: { crawl: 'default', gear: 'default', zero: 'default', members: 'default' },
+    selRun: 128, panel: true, srcFilter: 'all', sim: null, expanded: {}, crawlScn: 'default',
+    gear: { grinder: GRINDERS, dripper: DRIPPERS, filter: FILTERS }, gearTab: 'grinder', gearOrigin: 'all', q: '', sel: [], activeId: 6, draft: null, saveFail: false, saveFailMode: false,
+    modal: null, keeper: null, note: null,
+    zeroId: 1, zdraft: null, zhist: ZHIST, users: USERS, roleTarget: null,
+  };
+  componentDidMount() {
+    this.t = setInterval(() => {
+      const s = this.state.sim;
+      if (s && s.status === 'RUNNING') { if (s.auto && Date.now() - s.startMs > 12000) this.finishSim(); else this.forceUpdate(); }
+    }, 1000);
+  }
+  componentWillUnmount() { clearInterval(this.t); }
+  elapsed() { const s = this.state.sim; return s ? mmss(Math.max(0, Math.round((Date.now() - s.startMs) / 1000))) : '00:00'; }
+  finishSim() {
+    const s = this.state.sim; const el = Math.round((Date.now() - s.startMs) / 1000);
+    this.setState({ sim: { ...s, status: 'SUCCEEDED', endLabel: clock(), dur: mmss(el), created: 3, updated: 40, skipped: [], unmapped: [{ name: '에티오피아 반자 위요', field: 'process', raw: '카보닉 허니' }] }, crawlScn: 'simdone', selRun: 129, panel: true });
+  }
+  startCrawl(key) {
+    this.setState({ sim: { source: key, startMs: Date.now(), status: 'RUNNING', auto: true, startLabel: '10.14 ' + clock() }, crawlScn: 'running', selRun: 129, panel: true, note: null });
+  }
+  runs() {
+    if (this.state.crawlScn === 'empty') return [];
+    const list = RUNS.slice(); const s = this.state.sim;
+    if (s) list.unshift({ id: 129, source: s.source, status: s.status, start: s.startLabel, end: s.endLabel || '—', dur: s.status === 'RUNNING' ? this.elapsed() : s.dur, created: s.created ?? null, updated: s.updated ?? null, skipped: s.skipped || [], unmapped: s.unmapped || [], errorMessage: null });
+    return list;
+  }
+  setScn(page, k) { this.setState(s => ({ scn: { ...s.scn, [page]: k } })); }
+  crawlScn(k) {
+    const runSim = { source: 'momos', startMs: Date.now() - 72000, status: 'RUNNING', auto: false, startLabel: '10.14 09:41:07' };
+    const m = { default: { selRun: 128 }, running: { sim: runSim, selRun: 129 }, conflict: { sim: runSim, selRun: 129 }, failed: { selRun: 126 }, interrupted: { selRun: 125 }, clean: { selRun: 127 }, many: { selRun: 124 }, empty: { selRun: null, panel: false } };
+    this.setState({ sim: null, panel: true, expanded: {}, srcFilter: 'all', note: null, modal: null, crawlScn: k, ...m[k] });
+    this.setScn('crawl', k);
+  }
+  gearScn(k) {
+    const base = { gear: { grinder: GRINDERS, dripper: DRIPPERS, filter: FILTERS }, gearTab: 'grinder', gearOrigin: 'all', q: '', sel: [], modal: null, note: null, saveFail: false, saveFailMode: false, draft: null };
+    const m = { default: { activeId: 6 }, merge: { sel: [1, 6], modal: 'merge', keeper: 1, activeId: null }, merge2: { sel: [1, 10, 6], modal: 'merge', keeper: 1, activeId: null }, fail: { activeId: 7, saveFail: true, saveFailMode: true }, empty: { q: 'Mahlkönig EK43', activeId: null }, long: { activeId: 9 }, promote: { activeId: 6, modal: 'promote' } };
+    this.setState({ ...base, ...m[k] }); this.setScn('gear', k);
+  }
+  zeroScn(k) {
+    const m = { default: { zeroId: 1, zdraft: null }, noconv: { zeroId: 4, zdraft: null }, range: { zeroId: 1, zdraft: { mpc: '250', zero: '12', min: '0', max: '40' } }, confirm: { zeroId: 1, zdraft: { mpc: '30', zero: '0.5', min: '0', max: '40' }, modal: 'zero' } };
+    this.setState({ modal: null, note: null, gear: { ...this.state.gear, grinder: GRINDERS }, ...m[k] }); this.setScn('zero', k);
+  }
+  memScn(k) {
+    const m = { default: { modal: null }, role: { modal: 'role', roleTarget: 2 }, blocked: { modal: 'role', roleTarget: 1 } };
+    this.setState({ users: USERS, note: null, ...m[k] }); this.setScn('members', k);
+  }
+  go(k) { this.setState({ page: k, forbidden: false, modal: null, note: null }); }
+  curZ() { const g = this.state.gear.grinder.find(x => x.id === this.state.zeroId) || this.state.gear.grinder[0]; return { mpc: g.mpc == null ? '' : String(g.mpc), zero: String(g.zero), min: String(g.min), max: String(g.max) }; }
+  setZ(k, val) { this.setState(s => ({ zdraft: { ...(s.zdraft || this.curZ()), [k]: val } })); }
+  stepZ(k, d) { const z = this.state.zdraft || this.curZ(); const c = z[k] === '' || isNaN(Number(z[k])) ? (k === 'mpc' ? 20 : 0) : Number(z[k]); this.setZ(k, String(Math.round((c + d) * 10) / 10)); }
+  setDraft(k, v) { this.setState(s => { const tab = s.gearTab; const it = s.gear[tab].find(x => x.id === s.activeId); return { draft: { ...(s.draft || it), [k]: v } }; }); }
+  saveGear() {
+    const S = this.state;
+    if (S.saveFailMode) { this.setState({ saveFail: true }); return; }
+    const d = { ...(S.draft || {}) }; ['mpc', 'zero', 'min', 'max'].forEach(k => { if (k in d && typeof d[k] === 'string') d[k] = d[k] === '' ? null : Number(d[k]); });
+    const tab = S.gearTab;
+    this.setState({ gear: { ...S.gear, [tab]: S.gear[tab].map(x => x.id === S.activeId ? { ...x, ...d } : x) }, draft: null, saveFail: false, note: '저장했습니다.' });
+  }
+  renderVals() {
+    const S = this.state, P = this.props;
+    const theme = S.theme || P.theme || 'light';
+    const page0 = S.page || P.startPage || 'crawl';
+    const forbidden = S.forbidden || (!S.page && page0 === 'forbidden');
+    const pg = page0 === 'forbidden' ? 'crawl' : page0;
+    const v = { theme, isForbidden: forbidden, isAdmin: !forbidden, showNotes: P.showNotes !== false, respRows: RESP, questions: QUESTIONS.map((q, i) => ({ ...q, n: pad(i + 1) })) };
+    const chip = (label, on, fn) => ({ label, on, bg: on ? 'oklch(0.22 0.015 60)' : 'oklch(0.99 0.004 85)', color: on ? 'oklch(0.97 0.004 85)' : 'oklch(0.38 0.015 60)', bd: on ? 'oklch(0.22 0.015 60)' : 'oklch(0.85 0.008 75)', onClick: fn });
+    const CH = {
+      crawl: [['default', 'SUCCEEDED'], ['running', 'RUNNING · 폴링'], ['failed', 'FAILED'], ['interrupted', 'INTERRUPTED'], ['clean', 'skipped·unmapped 0건'], ['many', 'unmapped 44건'], ['empty', '이력 0건'], ['conflict', '409 시도']].map(([k, l]) => chip(l, S.scn.crawl === k, () => this.crawlScn(k))),
+      gear: [['default', '기본'], ['merge', '병합 확인'], ['merge2', '시스템 장비 2개 병합'], ['promote', '승격 확인'], ['fail', '저장 실패'], ['empty', '빈 결과'], ['long', '긴 이름']].map(([k, l]) => chip(l, S.scn.gear === k, () => this.gearScn(k))),
+      zero: [['default', '기본'], ['noconv', '환산 불가 모델'], ['range', '범위 밖 입력'], ['confirm', '저장 확인']].map(([k, l]) => chip(l, S.scn.zero === k, () => this.zeroScn(k))),
+      members: [['default', '기본'], ['role', '역할 변경 확인'], ['blocked', '본인 ADMIN 해제 차단']].map(([k, l]) => chip(l, S.scn.members === k, () => this.memScn(k))),
+    };
+    v.chips = forbidden ? [] : CH[pg];
+    v.globalChips = [chip('라이트', theme === 'light', () => this.setState({ theme: 'light' })), chip('다크', theme === 'dark', () => this.setState({ theme: 'dark' })), chip('비관리자 접근 (403)', forbidden, () => this.setState({ forbidden: !forbidden, page: pg }))];
+    const NAV = [{ label: '카탈로그', items: [['crawl', '원두 수집', ''], ['gear', '장비', 'API 없음'], ['zero', '그라인더 영점', 'API 없음']] }, { label: '운영', items: [['members', '회원', 'API 일부']] }];
+    v.navGroups = NAV.map(g => ({ label: g.label, items: g.items.map(([k, l, t]) => { const on = k === pg; return { label: l, tag: t, on, bg: on ? 'var(--a-sunken)' : 'transparent', color: on ? 'var(--a-ink)' : 'var(--a-ink2)', weight: on ? 600 : 400, onClick: () => this.go(k) }; }) }));
+    const HEAD = {
+      crawl: ['Catalog · Crawl', '원두 수집', '구매처의 원두 목록을 읽어 카탈로그에 바로 반영합니다. 검수 단계가 없으므로, 실행 결과의 건너뛴 상품과 매핑하지 못한 원문을 확인하는 것이 곧 검수입니다.', ''],
+      gear: ['Catalog · Gear', '장비', '시스템 기본 장비와 사용자가 등록한 장비가 함께 있습니다. 값을 고치고, 같은 장비를 병합하고, 사용자 장비를 시스템 장비로 올립니다.', 'API 없음'],
+      zero: ['Catalog · Grind zero', '그라인더 영점', '분쇄도 환산기가 쓰는 모델 공통값입니다. 모든 사용자에게 적용되며, 개인 보정(calibrationOffsetClicks)과는 별개입니다. 환산 결과는 언제나 추정치입니다.', 'API 없음'],
+      members: ['Operations · Members', '회원', '가입한 사용자와 역할입니다. 이 화면에서는 역할(USER ↔ ADMIN)만 바꿉니다.', 'API 일부'],
+    }[pg];
+    v.head = { eyebrow: HEAD[0], title: HEAD[1], desc: HEAD[2], api: HEAD[3], hasApi: !!HEAD[3] };
+    v.isCrawl = pg === 'crawl'; v.isGear = pg === 'gear'; v.isZero = pg === 'zero'; v.isMembers = pg === 'members';
+    v.hasNote = !!S.note; v.note = S.note || '';
+
+    // crawl
+    const runs = this.runs(); const sim = S.sim; const simRunning = !!(sim && sim.status === 'RUNNING');
+    v.sources = SOURCES.map((s, i) => {
+      const last = runs.find(r => r.source === s.key); const running = simRunning && sim.source === s.key;
+      return { name: s.name, key: s.key, listUrl: s.listUrl, lastStatus: last ? last.status : '', lastLine: last ? (last.start + ' · ' + (last.status === 'RUNNING' ? last.dur + ' 경과' : '소요 ' + last.dur)) : '아직 실행하지 않았습니다', running, idle: !running, elapsed: running ? this.elapsed() + ' 경과' : '', conflict: S.crawlScn === 'conflict' && running, first: i === 0, onRun: () => this.startCrawl(s.key) };
+    });
+    const shownRuns = runs.filter(r => S.srcFilter === 'all' || r.source === S.srcFilter);
+    const panelOn = S.panel && !!runs.find(r => r.id === S.selRun);
+    v.runRows = shownRuns.map(r => {
+      const run = r.status === 'RUNNING'; const sk = r.skipped.length, un = r.unmapped.length;
+      return { id: r.id, start: r.start, src: SRCN[r.source], status: r.status, dur: r.dur, created: r.created == null ? '—' : r.created, updated: r.updated == null ? '—' : r.updated, sk: run ? '—' : sk, un: run ? '—' : un, skDim: run || !sk, unDim: run || !un, unStrong: un >= 40, skC: !run && sk ? 'var(--a-ink)' : 'var(--a-ink3)', unC: !run && un ? 'var(--a-ink)' : 'var(--a-ink3)', unW: un >= 40 ? 600 : 400, sel: panelOn && r.id === S.selRun, bg: panelOn && r.id === S.selRun ? 'var(--a-sunken)' : 'transparent', onClick: () => this.setState({ selRun: r.id, panel: true }) };
+    });
+    v.hasRuns = shownRuns.length > 0; v.noRuns = !v.hasRuns;
+    v.histCount = shownRuns.length + '건 · 최신순';
+    v.pageLabel = shownRuns.length ? '1–' + shownRuns.length + ' / ' + shownRuns.length : '';
+    v.srcPills = [['all', '전체'], ['momos', '모모스커피'], ['unspecialty', '언스페셜티 몰']].map(([k, l]) => { const on = S.srcFilter === k; return { label: l, on, bg: on ? 'var(--a-btn)' : 'transparent', color: on ? 'var(--a-btn-ink)' : 'var(--a-ink2)', bd: on ? 'var(--a-btn)' : 'var(--a-border-strong)', onClick: () => this.setState({ srcFilter: k }) }; });
+    v.showRunPanel = !forbidden && pg === 'crawl' && panelOn;
+    v.closePanel = () => this.setState({ panel: false });
+    const r = runs.find(x => x.id === S.selRun);
+    if (r) {
+      const run = r.status === 'RUNNING'; const sk = r.skipped.length, un = r.unmapped.length;
+      const by = (arr, key) => arr.reduce((m, x) => { (m[x[key]] = m[x[key]] || []).push(x); return m; }, {});
+      const skG = by(r.skipped, 'reason'); const unG = by(r.unmapped, 'field');
+      const unGroups = Object.keys(unG).sort((a, b) => unG[b].length - unG[a].length).map(f => {
+        const all = unG[f]; const ex = S.expanded[r.id + f];
+        return { code: f, label: FIELD[f] || f, count: all.length + '건', items: ex ? all : all.slice(0, 5), hasMore: all.length > 5 && !ex, more: '나머지 ' + (all.length - 5) + '건 보기', onMore: () => this.setState(s => ({ expanded: { ...s.expanded, [r.id + f]: true } })) };
+      });
+      const top = unGroups[0]; let obs;
+      if (run) obs = '수집 중입니다. 3초마다 상태를 다시 읽습니다. 생성·갱신 집계와 목록은 실행이 끝나면 표시됩니다.';
+      else if (r.status === 'FAILED') obs = '실행 전체가 실패했습니다. 이번 실행으로 생성되거나 갱신된 원두는 없습니다.';
+      else if (r.status === 'INTERRUPTED') obs = '앱이 재시작되어 실행이 중단되었습니다. 아래는 중단 시점까지의 집계입니다.';
+      else if (!sk && !un) obs = '이번 실행에서 건너뛴 상품과 매핑하지 못한 원문이 없습니다.';
+      else obs = '이번 실행에서 상품 ' + sk + '건을 건너뛰고, 원문 ' + un + '건을 매핑하지 못했습니다.' + (un >= 40 && top ? ' ' + top.label + '(' + top.code + ')이 ' + top.count + '으로 가장 많습니다.' : '');
+      v.d = { id: r.id, sourceKey: r.source, sourceName: SRCN[r.source], status: r.status, start: r.start, end: r.end, durLabel: run ? '경과' : '소요', dur: r.dur, hero: run ? '진행 중' : '생성 ' + r.created, sub: run ? '갱신 — · 건너뜀 — · 미매핑 —' : '갱신 ' + r.updated + ' · 건너뜀 ' + sk + ' · 미매핑 ' + un, obs, isFailed: r.status === 'FAILED', err: r.errorMessage || '', showLists: !run && r.status !== 'FAILED', skCount: sk + '건', unCount: un + '건', noSkipped: sk === 0, noUnmapped: un === 0, skipGroups: Object.keys(skG).map(k => ({ code: k, label: SKIP[k], count: skG[k].length + '건', items: skG[k] })), unGroups };
+    } else v.d = { skipGroups: [], unGroups: [] };
+
+    // gear
+    const tab = S.gearTab; const all = S.gear[tab]; const q = S.q.trim().toLowerCase();
+    const items = all.filter(it => (S.gearOrigin === 'all' || (S.gearOrigin === 'sys' ? it.sys : !it.sys)) && (!q || ((it.brand || '') + ' ' + it.name).toLowerCase().includes(q)));
+    v.gearTabs = [['grinder', '그라인더'], ['dripper', '드리퍼'], ['filter', '필터']].map(([k, l]) => { const on = k === tab; return { label: l, on, count: String(S.gear[k].length), color: on ? 'var(--a-ink)' : 'var(--a-ink3)', weight: on ? 600 : 400, line: on ? 'var(--a-ink)' : 'transparent', onClick: () => this.setState({ gearTab: k, sel: [], activeId: null, draft: null, q: '', note: null, saveFail: false }) }; });
+    v.originPills = [['all', '전체'], ['sys', '시스템'], ['user', '사용자 등록']].map(([k, l]) => { const on = S.gearOrigin === k; return { label: l, on, bg: on ? 'var(--a-btn)' : 'transparent', color: on ? 'var(--a-btn-ink)' : 'var(--a-ink2)', bd: on ? 'var(--a-btn)' : 'var(--a-border-strong)', onClick: () => this.setState({ gearOrigin: k }) }; });
+    v.q = S.q; v.onQ = e => this.setState({ q: e.target.value });
+    v.clearQ = () => this.setState({ q: '' });
+    v.gearCount = items.length + ' / ' + all.length;
+    v.isGrinder = tab === 'grinder'; v.isDripper = tab === 'dripper'; v.isFilter = tab === 'filter';
+    v.gearRows = items.map(it => { const ch = S.sel.includes(it.id); return { name: it.name, brandL: it.brand || '', adjL: ADJ[it.adj], mpcL: it.mpc == null ? '—' : String(it.mpc), zeroL: String(it.zero), rangeL: it.min + '–' + it.max, burrL: it.burr ? BURR[it.burr] : '—', convL: it.mpc == null ? '불가' : '가능', convC: it.mpc == null ? 'var(--a-ink3)' : 'var(--a-ink2)', typeL: TYPE[it.type], matL: MAT[it.material], shapeL: it.shape, checked: ch, convDim: it.mpc == null, sel: it.id === S.activeId, isSys: it.sys, isUser: !it.sys, bg: it.id === S.activeId ? 'var(--a-sunken)' : 'transparent', cb: ch ? 'var(--a-ink)' : 'transparent', cbBd: ch ? 'var(--a-ink)' : 'var(--a-border-strong)', onRow: () => this.setState({ activeId: it.id, draft: null, saveFail: false, note: null }), onCheck: e => { e.stopPropagation(); this.setState(s => ({ sel: s.sel.includes(it.id) ? s.sel.filter(x => x !== it.id) : [...s.sel, it.id] })); } }; });
+    v.gearAny = items.length > 0; v.gearEmpty = !v.gearAny;
+    v.emptyText = q ? '‘' + S.q + '’와 일치하는 장비가 없습니다.' : '조건에 맞는 장비가 없습니다.';
+    v.hasSel = S.sel.length > 0; v.selLabel = S.sel.length + '개 선택'; v.canMerge = S.sel.length >= 2; v.cannotMerge = !v.canMerge;
+    v.selHint = v.canMerge ? '같은 장비라면 하나로 합칠 수 있습니다.' : '병합하려면 2개 이상 선택하세요.';
+    v.onMerge = () => this.setState({ modal: 'merge', keeper: S.sel[0] });
+    v.clearSel = () => this.setState({ sel: [] });
+    const title = it => ((it.brand ? it.brand + ' ' : '') + it.name);
+    const act = S.activeId != null ? all.find(x => x.id === S.activeId) : null;
+    v.showGearPanel = !forbidden && pg === 'gear' && !!act;
+    v.closeGear = () => this.setState({ activeId: null, draft: null, saveFail: false });
+    if (act) {
+      const d = S.draft || act;
+      const txt = (label, key, mono, unit) => ({ label, isText: true, isEnum: false, mono: !!mono, value: d[key] == null ? '' : String(d[key]), ff: mono ? "'IBM Plex Mono',monospace" : "'IBM Plex Sans KR',sans-serif", unit: unit || '', placeholder: mono ? '값 없음' : '', onInput: e => this.setDraft(key, e.target.value), opts: [] });
+      const en = (label, key, map, allowNull) => ({ label, isText: false, isEnum: true, opts: Object.entries(map).map(([k, l]) => ({ code: k, label: l })).concat(allowNull ? [{ code: null, label: '없음' }] : []).map(o => { const on = (d[key] ?? null) === o.code; return { label: o.label, on, bg: on ? 'var(--a-paper)' : 'transparent', bd: on ? 'var(--a-border-strong)' : 'transparent', color: on ? 'var(--a-ink)' : 'var(--a-ink3)', weight: on ? 500 : 400, onClick: () => this.setDraft(key, o.code) }; }) });
+      const fields = tab === 'grinder' ? [txt('Brand', 'brand'), txt('Name', 'name'), en('조절 방식', 'adj', ADJ), txt('µm / 클릭', 'mpc', true, 'µm'), txt('영점 오프셋', 'zero', true, '클릭'), txt('최소 설정', 'min', true), txt('최대 설정', 'max', true), en('버', 'burr', BURR, true)]
+        : tab === 'dripper' ? [txt('Brand', 'brand'), txt('Name', 'name'), en('형태', 'type', TYPE)]
+        : [txt('Name', 'name'), en('재질', 'material', MAT), txt('모양', 'shape')];
+      const noMpc = d.mpc === '' || d.mpc == null;
+      v.gp = { eyebrow: { grinder: 'Grinder', dripper: 'Dripper', filter: 'Filter' }[tab] + ' · #' + act.id, title: title(act), isSys: act.sys, isUser: !act.sys, fields, hasConv: tab === 'grinder', conv: noMpc ? '환산 불가 — µm/클릭 값이 없습니다.' : '환산 가능 — µm/클릭 값이 있습니다.', usage: act.sys ? '사용 중 2명 · 기본 제공' : '사용 중 1명 · 등록 현 · 2026.09.02', saveFail: S.saveFail, onSave: () => this.saveGear(), onPromote: () => this.setState({ modal: 'promote' }) };
+    } else v.gp = { fields: [] };
+    const selItems = all.filter(x => S.sel.includes(x.id)); const sysCount = selItems.filter(x => x.sys).length;
+    v.mergeCount = selItems.length + '개'; v.mergeSys = sysCount;
+    v.mergeItems = selItems.map((x, i) => { const on = x.id === S.keeper; return { title: title(x), sub: tab === 'grinder' ? ADJ[x.adj] + ' · µm/클릭 ' + (x.mpc ?? '—') + ' · ' + x.min + '–' + x.max : tab === 'dripper' ? TYPE[x.type] : MAT[x.material] + ' · ' + x.shape, on, first: i === 0, origin: x.sys ? '시스템' : '사용자', top: i ? '1px solid var(--a-divider)' : 'none', bg: on ? 'var(--a-surface)' : 'transparent', ring: on ? 'var(--a-ink)' : 'var(--a-border-strong)', dot: on ? 'var(--a-ink)' : 'transparent', onClick: () => this.setState({ keeper: x.id }) }; });
+    v.mergeBlocked = sysCount >= 2; v.mergeOk = !v.mergeBlocked;
+    v.mergeText = '남길 항목 하나를 고르면 나머지 ' + Math.max(0, selItems.length - 1) + '개는 삭제되고, 그 장비를 쓰던 기록·레시피·내 기구는 남길 항목을 가리키게 됩니다.';
+    v.onMergeConfirm = () => { const keep = all.find(x => x.id === S.keeper); const n = selItems.length - 1; this.setState({ gear: { ...S.gear, [tab]: all.filter(x => x.id === S.keeper || !S.sel.includes(x.id)) }, sel: [], modal: null, activeId: S.keeper, draft: null, note: title(keep) + ' 하나로 병합했습니다. 장비 ' + n + '개를 삭제했습니다.' }); };
+    v.promoteTitle = act ? title(act) + '을(를) 시스템 장비로 바꿉니다' : '';
+    v.onPromoteConfirm = () => this.setState({ gear: { ...S.gear, [tab]: all.map(x => x.id === S.activeId ? { ...x, sys: true } : x) }, modal: null, note: act ? title(act) + '을(를) 시스템 장비로 바꿨습니다.' : '' });
+
+    // zero
+    const gr = S.gear.grinder; const zg = gr.find(x => x.id === S.zeroId) || gr[0];
+    const cur = { mpc: zg.mpc == null ? '' : String(zg.mpc), zero: String(zg.zero), min: String(zg.min), max: String(zg.max) };
+    const z = S.zdraft || cur; const n = x => x === '' || x == null ? null : Number(x);
+    const errs = {};
+    if (z.mpc !== '' && (isNaN(n(z.mpc)) || n(z.mpc) < 1 || n(z.mpc) > 200)) errs.mpc = '범위 밖 · 1–200';
+    if (isNaN(n(z.zero)) || Math.abs(n(z.zero)) > 10) errs.zero = '범위 밖 · −10~10';
+    if (isNaN(n(z.min)) || n(z.min) < 0) errs.min = '범위 밖 · 0 이상';
+    if (isNaN(n(z.max)) || n(z.max) <= n(z.min)) errs.max = '최소값보다 커야 합니다';
+    const keys = ['mpc', 'zero', 'min', 'max']; const changed = keys.some(k => z[k] !== cur[k]); const ok = !Object.keys(errs).length;
+    const FL = [['mpc', 'µm / 클릭', 'µm', 0.5], ['zero', '영점 오프셋', '클릭', 0.5], ['min', '최소 설정', '클릭', 1], ['max', '최대 설정', '클릭', 1]];
+    v.zFields = FL.map(([k, l, u, st]) => ({ label: l, unit: u, cur: cur[k] === '' ? '—' : cur[k], val: z[k], placeholder: k === 'mpc' ? '값 없음' : '', bd: errs[k] ? 'var(--a-ink)' : (z[k] !== cur[k] ? 'var(--a-accent)' : 'var(--a-border-strong)'), msg: errs[k] || (z[k] !== cur[k] ? '변경됨' : ''), err: !!errs[k], state: errs[k] ? 'err' : (z[k] !== cur[k] ? 'chg' : ''), msgW: errs[k] ? 600 : 400, onInput: e => this.setZ(k, e.target.value), dec: () => this.stepZ(k, -st), inc: () => this.stepZ(k, st) }));
+    const est = (c, m, zz) => m == null || zz == null || isNaN(m) || isNaN(zz) ? null : Math.round((c - zz) * m);
+    const cm = n(cur.mpc), cz = n(cur.zero), nm = errs.mpc ? null : n(z.mpc), nz = errs.zero ? null : n(z.zero);
+    v.zRows = [10, 20, 30].map(c => { const b = est(c, cm, cz), a = est(c, nm, nz); const df = b != null && a != null ? a - b : null; return { clicks: c + ' 클릭', before: b == null ? '—' : b + ' µm', after: a == null ? '—' : a + ' µm', diff: df == null ? '—' : (df > 0 ? '+' : df < 0 ? '−' : '±') + Math.abs(df), same: !df, dc: df ? 'var(--a-ink)' : 'var(--a-ink3)' }; });
+    v.zNoConv = zg.mpc == null;
+    v.zm = { eyebrow: 'Grinder #' + zg.id + (zg.sys ? ' · 시스템' : ' · 사용자 등록'), title: title(zg), convL: zg.mpc == null ? '환산 불가' : '환산 가능', convC: zg.mpc == null ? 'var(--a-ink3)' : 'var(--a-ink2)' };
+    v.zCanSave = changed && ok; v.zCannot = !v.zCanSave;
+    v.zSaveHint = !ok ? '범위 밖 값이 있어 저장할 수 없습니다.' : (!changed ? '바뀐 값이 없습니다.' : '');
+    v.zOpenConfirm = () => this.setState({ modal: 'zero' });
+    v.zReset = () => this.setState({ zdraft: null });
+    v.zModels = gr.map(x => { const on = x.id === zg.id; return { title: x.name, brand: x.brand + (x.sys ? '' : ' · 사용자'), sel: on, sub: x.mpc == null ? '환산 불가' : x.mpc + ' µm', bg: on ? 'var(--a-sunken)' : 'transparent', weight: on ? 600 : 500, onClick: () => this.setState({ zeroId: x.id, zdraft: null, note: null }) }; });
+    v.zHist = S.zhist.filter(h => h.model === zg.id); v.zHasHist = v.zHist.length > 0; v.zNoHist = !v.zHasHist;
+    const FLN = { mpc: 'µm / 클릭', zero: '영점 오프셋', min: '최소 설정', max: '최대 설정' };
+    v.zChanges = keys.filter(k => z[k] !== cur[k]).map((k, i) => ({ label: FLN[k], first: i === 0, change: (cur[k] === '' ? '—' : cur[k]) + ' → ' + (z[k] === '' ? '—' : z[k]), top: i ? '1px solid var(--a-divider)' : 'none' }));
+    v.zConfirm = () => {
+      const upd = { mpc: n(z.mpc), zero: n(z.zero), min: n(z.min), max: n(z.max) };
+      const add = keys.filter(k => z[k] !== cur[k]).map(k => ({ model: zg.id, when: '2026.10.14 ' + clock().slice(0, 5), who: '현', field: FLN[k], change: (cur[k] === '' ? '—' : cur[k]) + ' → ' + z[k] }));
+      this.setState({ gear: { ...S.gear, grinder: gr.map(x => x.id === zg.id ? { ...x, ...upd } : x) }, zdraft: null, modal: null, zhist: [...add, ...S.zhist], note: '저장했습니다. 새로 계산하는 환산부터 적용됩니다.' });
+    };
+
+    // members
+    v.users = S.users.map(u => ({ init: u.nick[0], nick: u.nick, email: u.email || '없음', noEmail: !u.email, emailC: u.email ? 'var(--a-ink2)' : 'var(--a-ink3)', isAdmin: u.role === 'ADMIN', isUser: u.role === 'USER', me: u.me, created: u.created, onChange: () => this.setState({ modal: 'role', roleTarget: u.id }) }));
+    const t = S.users.find(u => u.id === S.roleTarget);
+    const blocked = !!(t && t.me && t.role === 'ADMIN');
+    const next = t ? (t.role === 'ADMIN' ? 'USER' : 'ADMIN') : '';
+    v.role = t ? { change: t.role + ' → ' + next, title: t.nick + ' 님의 역할을 ' + next + '로 바꿉니다', desc: next === 'ADMIN' ? '원두 수집·장비·그라인더 영점·회원 화면에 접근할 수 있게 됩니다.' : '관리자 화면에 더 이상 들어올 수 없습니다.' } : {};
+    v.onRoleConfirm = () => this.setState({ users: S.users.map(u => u.id === t.id ? { ...u, role: next } : u), modal: null, note: t.nick + ' 님의 역할을 ' + next + '로 바꿨습니다.' });
+
+    v.hasModal = !forbidden && !!S.modal;
+    v.mMerge = S.modal === 'merge'; v.mPromote = S.modal === 'promote'; v.mZero = S.modal === 'zero';
+    v.mRole = S.modal === 'role' && !blocked; v.mRoleBlocked = S.modal === 'role' && blocked;
+    v.closeModal = () => this.setState({ modal: null });
+    return v;
+  }
+}
+</script>
+</body>
+</html>

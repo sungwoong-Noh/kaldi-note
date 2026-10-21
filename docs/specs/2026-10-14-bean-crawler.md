@@ -1,7 +1,7 @@
 ---
 id: CRAWL
 title: 원두 크롤러 — 구매처 사이트에서 원두 카탈로그 수집
-status: 구현중
+status: 구현완료
 milestone:
 supersedes:
 ---
@@ -352,6 +352,21 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 - **Then** `status=SUCCEEDED`, `created=2`, skipped 1건 `reason="FETCH_FAILED"`
 - **검증** 통합 테스트 `CrawlRunServiceTest`
 
+#### AC-CRAWL-37 · 목록에서 상품을 하나도 찾지 못하면 FAILED (2026-10-19 추가)
+
+- **Given** 목록 응답은 HTTP `200`이지만 `parseList` 결과가 0개 (사이트 구조가 바뀐 경우)
+- **When** `momos` 실행
+- **Then** `status=FAILED`, `errorMessage="목록에서 상품 링크를 찾지 못했습니다"`, 상세 요청 0회
+- **검증** 통합 테스트 `CrawlRunServiceTest`
+
+#### AC-CRAWL-38 · 원두로 인식한 상품이 하나도 없으면 FAILED (2026-10-19 추가)
+
+- **Given** 목록에 상세 2개, 둘 다 `parseDetail`이 `Optional.empty()` (언스페셜티는 스펙 표 클래스가 바뀌면 전부 「원두 아님」이 된다)
+- **When** `momos` 실행 (상세 본문에 JSON-LD Product가 없다)
+- **Then** `status=FAILED`, `errorMessage="원두로 인식한 상품이 없습니다 (상품 2개)"`, `created=0`
+- **검증** 통합 테스트 `CrawlRunServiceTest`
+- 판정은 `created + updated + skipped 수 == 0`이다. 상세가 전부 `FETCH_FAILED`면 skipped가 남으므로 SUCCEEDED다.
+
 #### AC-CRAWL-36 · ADMIN이 아니면 403
 
 - **Given** `role=USER` 토큰
@@ -408,52 +423,6 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
 
 ---
 
-## 구현 순서
-
-- [x] **Task 1: 픽스처 저장** — Covers: (AC-01~05의 입력)
-  `curl -A "kaldi-note-crawler/1.0"`로 `momos-list.html`, `momos-4938.html`, `unspecialty-sitemap.xml`,
-  `unspecialty-920.html`, `unspecialty-211.html`을 `backend/src/test/resources/fixtures/crawler/`에 저장.
-  목록 개수를 다시 세어 AC-01(21)·AC-03(132)과 다르면 스펙을 먼저 고친다.
-
-- [x] **Task 2: V17 + roast_level nullable** — Covers: AC-CRAWL-41
-
-  ```sql
-  ALTER TABLE bean_products ALTER COLUMN roast_level DROP NOT NULL;
-  ```
-  `BeanProduct.roastLevel`의 `nullable=false` 제거. (응답 DTO가 `.name()`을 불러 NPE가 났다 — Task 6.5)
-
-- [x] **Task 3: 파서** — Covers: AC-CRAWL-01~05
-  jsoup 추가. `crawler.domain.CrawledBean` / `CrawledOrigin` record, `BeanSource` 인터페이스.
-
-  ```java
-  public interface BeanSource {
-    String key(); String name(); URI listUrl();
-    List<URI> parseList(String body);
-    Optional<CrawledBean> parseDetail(URI url, String body);
-  }
-  ```
-
-- [x] **Task 4: 가져오기** — Covers: AC-CRAWL-10~19
-  `catalog.application.BeanImportService.importBean(CrawledBean) → ImportResult(CREATED|UPDATED|SKIPPED, reason, unmapped)`.
-  `BeanCatalogService.buildOrigins`의 블렌드 검증은 쓰지 않고 `BeanOrigin.of`를 직접 쓴다. 상품 단위
-  `@Transactional`.
-
-- [x] **Task 5: 실행** — Covers: AC-CRAWL-23, 34, 35, 40
-  V18 `crawl_runs`, `CrawlRun` 엔티티, `CrawlRunService.start(key, userId)`(executor·sleeper·`RestClient`
-  주입), 중복 실행 거부, `ApplicationReadyEvent` 리스너.
-
-- [x] **Task 6: 관리 API** — Covers: AC-CRAWL-20~22, 30~32, 36
-  `CrawlAdminController`, `ErrorCode` 3개, `docs/contracts/2026-10-14-bean-crawler.json`.
-
-- [x] **Task 6.5: 응답 DTO null 처리** — Covers: AC-CRAWL-44 (구현 중 추가)
-
-- [x] **Task 7.5: 소수 Agtron** — Covers: AC-CRAWL-46 (구현 중 추가)
-
-- [x] **Task 7: 프론트 null 수용** — Covers: AC-CRAWL-42, 43, 45
-  `features/catalog/schema.ts`의 `roastLevel`에 `.nullish()`, `RoastDot`은 `roastLevel == null`이면 `null` 반환.
-  타입 오류가 나는 호출부(`useRoastLevel` 등)는 `?? undefined`로 맞춘다.
-
----
 
 ## 수동 확인
 
@@ -461,11 +430,11 @@ skipped `reason`: `USER_OWNED` / `FETCH_FAILED` / `PARSE_FAILED`.
   `POST /api/v1/admin/crawl-sources/momos/runs` → `GET /crawl-runs/{id}`가 `SUCCEEDED`가 될 때까지
   폴링 → `SELECT count(*) FROM bean_products WHERE created_by_user_id IS NULL`이 `created`와 같다 →
   한 번 더 실행하면 `created=0` → `unspecialty`도 같은 순서로, 실행 중에 POST를 한 번 더 보내 `409` 확인
-- [ ] ★ 로컬에서 원두 고르기 다이얼로그를 열어 배전도 `null` 상품이 목록에 보이고 콘솔 에러가 없다
+- [x] ★ 로컬에서 원두 고르기 다이얼로그를 열어 배전도 `null` 상품이 목록에 보이고 콘솔 에러가 없다 (2026-10-19 확인 — 상품 22로 재고를 만들어 `/brews/new?recipeId=8`에서 열었다. 목록에 보이고 RoastDot 없음, 콘솔 에러는 세션 갱신 전 401뿐)
 - [ ] 운영 배포 후 운영 DB에서 `UPDATE users SET role='ADMIN' WHERE email=…` 1회 (운영 코드에 승격 경로 없음)
 
 ## 열어둔 결정
 
 - 주기 실행 여부·주기 — 수동 실행을 몇 번 써 본 뒤 정한다
-- 관리자 화면 디자인 — 관리자 화면 스펙에서
+- ~~관리자 화면 디자인~~ → `docs/specs/2026-10-19-admin-crawl-console.md`
 - unmapped 원문을 마스터 별칭으로 보강하는 방법 — unmapped가 쌓인 걸 보고 정한다

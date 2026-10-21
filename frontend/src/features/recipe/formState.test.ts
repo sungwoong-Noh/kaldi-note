@@ -91,7 +91,7 @@ describe("fromRecipe", () => {
 });
 
 describe("toRequestBody", () => {
-  it("최소 입력이면 세 필드와 공개 범위, 빈 스텝만 담는다", () => {
+  it("최소 입력이면 세 필드와 공개 범위·온도·배전도, 빈 스텝만 담는다", () => {
     const state = {
       ...emptyFormState(),
       title: "아침 레시피",
@@ -104,6 +104,8 @@ describe("toRequestBody", () => {
       doseG: 15,
       waterG: 250,
       visibility: "PRIVATE",
+      temperatureType: "HOT",
+      recommendedRoastLevel: "MEDIUM",
       steps: [],
     });
   });
@@ -143,5 +145,27 @@ describe("toRequestBody", () => {
     const body = toRequestBody(fromRecipe(kasuya));
 
     expect(body.steps[1]).not.toHaveProperty("stepOrder");
+  });
+});
+
+describe("온도·배전도", () => {
+  it("AC-RECIPEEDIT-02 · 새 레시피는 HOT · 중배전으로 시작해 본문에 실린다", () => {
+    const body = toRequestBody(emptyFormState());
+
+    expect(body.temperatureType).toBe("HOT");
+    expect(body.recommendedRoastLevel).toBe("MEDIUM");
+  });
+
+  it("AC-RECIPEEDIT-03 · 편집 저장이 서버 값(ICE · 약배전)을 그대로 보낸다", () => {
+    const body = toRequestBody(
+      fromRecipe({
+        ...kasuya,
+        temperatureType: "ICE",
+        recommendedRoastLevel: "LIGHT",
+      }),
+    );
+
+    expect(body.temperatureType).toBe("ICE");
+    expect(body.recommendedRoastLevel).toBe("LIGHT");
   });
 });

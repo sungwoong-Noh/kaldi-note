@@ -169,9 +169,9 @@ HOT·MEDIUM으로 채운다 — ICE·약배전 레시피를 편집 저장하면 
 #### AC-RECIPEEDIT-02 · 새 레시피 기본 선택은 HOT · 중배전 · 나만 보기
 
 - **Given** `/recipes/new`
-- **When** 아무것도 고르지 않고 제목 「a」, 원두 `16.0`, 물 `250.0`으로 저장한다
-- **Then** 세그먼트 선택이 HOT · 중배전 · 나만 보기이고, POST 본문에 `temperatureType:"HOT"`,
-  `recommendedRoastLevel:"MEDIUM"`, `visibility:"PRIVATE"`
+- **When** 아무것도 고르지 않고 제목 「아침 레시피」, 원두 `15`, 물 `250`으로 저장한다
+- **Then** 세그먼트 선택이 HOT · 중배전 · 나만 보기이고, POST 본문이 정확히 `{ "title": "아침 레시피", "doseG": 15,
+  "waterG": 250, "visibility": "PRIVATE", "temperatureType": "HOT", "recommendedRoastLevel": "MEDIUM", "steps": [] }`
 - **검증** `src/app/recipes/new/page.test.tsx`
 
 #### AC-RECIPEEDIT-03 · 편집 저장이 온도·배전도를 보존한다
@@ -407,13 +407,15 @@ HOT·MEDIUM으로 채운다 — ICE·약배전 레시피를 편집 저장하면 
 스펙 전체가 아니라 일부 AC만 대체한다(frontmatter `supersedes`는 비운다). 구현하면서 해당 테스트를 새 AC로 옮기거나
 지우고, 이전 스펙의 그 AC에 「(대체됨)」 표시를 단다.
 
-- AC-WEBEDIT-21(`2026-08-30-web-recipe-write.md`) → AC-RECIPEEDIT-47 — 초 입력 + m:ss 보조 표기가 m:ss 입력으로
+- AC-WEBEDIT-07(`2026-08-30-web-recipe-write.md`) → AC-RECIPEEDIT-02 — 최소 본문에 `temperatureType`·`recommendedRoastLevel`이 늘
+  실린다(빠뜨리면 서버가 편집 저장 때 HOT·MEDIUM으로 덮는다)
+- AC-WEBEDIT-21 → AC-RECIPEEDIT-47 — 초 입력 + m:ss 보조 표기가 m:ss 입력으로
 - AC-WEBEDIT-22 · 23 → AC-RECIPEEDIT-06 — 부족량 문구가 Observation으로
 - AC-WEBEDIT-25 ~ 29 → AC-RECIPEEDIT-05 — 실시간 환산 제거(R5)
 - AC-STRUCT-05 · 06(`2026-09-15-structure.md`, 레시피 화면 부분) → AC-RECIPEEDIT-40 · 42 — 스텝 행이 표·요약 행으로
 - AC-STRUCT-09 → AC-RECIPEEDIT-07 · 80 — 편집 화면에 미리보기 타임라인이 생긴다
 
-유지: AC-WEBEDIT-01 ~ 20 · 24 · 30 ~ 37, AC-RECIPE-46 · 50(서버 스텝 검증).
+유지: AC-WEBEDIT-01 ~ 06 · 08 ~ 20 · 24 · 30 ~ 37, AC-RECIPE-46 · 50(서버 스텝 검증).
 
 ---
 

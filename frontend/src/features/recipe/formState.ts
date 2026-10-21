@@ -14,6 +14,8 @@ import type { Recipe } from "./schema";
 
 export type Visibility = "PRIVATE" | "FRIENDS" | "PUBLIC";
 export type GrindSettingUnit = "CLICK" | "NUMBER" | "MICRON";
+export type TemperatureType = Recipe["temperatureType"];
+export type RoastLevel = Recipe["recommendedRoastLevel"];
 
 /** 비어 있는 숫자 입력은 `null`이다. 0과 구분해야 한다 — 0은 사용자가 실제로 넣은 값이다. */
 export type RecipeFormState = {
@@ -24,6 +26,8 @@ export type RecipeFormState = {
   waterTempC: number | null;
   totalTimeSeconds: number | null;
   visibility: Visibility;
+  temperatureType: TemperatureType;
+  recommendedRoastLevel: RoastLevel;
   brewerId: number | null;
   filterId: number | null;
   grinderModelId: number | null;
@@ -42,6 +46,9 @@ export function emptyFormState(): RecipeFormState {
     totalTimeSeconds: null,
     // 기본은 나만 보기다. 공개로 시작하면 실수로 남에게 보이는 쪽이 기본값이 된다.
     visibility: "PRIVATE",
+    // 서버가 값이 없을 때 채우는 기본값과 같다.
+    temperatureType: "HOT",
+    recommendedRoastLevel: "MEDIUM",
     brewerId: null,
     filterId: null,
     grinderModelId: null,
@@ -72,6 +79,8 @@ export function fromRecipe(recipe: Recipe): RecipeFormState {
     waterTempC: recipe.waterTempC ?? null,
     totalTimeSeconds: recipe.totalTimeSeconds ?? null,
     visibility: recipe.visibility,
+    temperatureType: recipe.temperatureType,
+    recommendedRoastLevel: recipe.recommendedRoastLevel,
     brewerId: recipe.brewerId ?? null,
     filterId: recipe.filterId ?? null,
     grinderModelId: recipe.grinderModelId ?? null,
@@ -103,6 +112,9 @@ export type RecipeStepRequest = {
 export type RecipeRequestBody = {
   title: string;
   visibility: Visibility;
+  // 빠뜨리면 서버가 HOT·MEDIUM으로 덮는다 — 편집 저장이 ICE·약배전을 지우던 원인이다.
+  temperatureType: TemperatureType;
+  recommendedRoastLevel: RoastLevel;
   steps: RecipeStepRequest[];
   description?: string;
   doseG?: number;
@@ -139,6 +151,8 @@ export function toRequestBody(state: RecipeFormState): RecipeRequestBody {
     ["waterTempC", state.waterTempC],
     ["totalTimeSeconds", state.totalTimeSeconds],
     ["visibility", state.visibility],
+    ["temperatureType", state.temperatureType],
+    ["recommendedRoastLevel", state.recommendedRoastLevel],
     ["brewerId", state.brewerId],
     ["filterId", state.filterId],
     ["grinderModelId", state.grinderModelId],

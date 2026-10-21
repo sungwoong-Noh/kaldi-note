@@ -228,12 +228,7 @@ pill · `scope=DRAWER&owner=MINE`)이 대체한다.
 
 ### 생성과 저장
 
-#### AC-WEBEDIT-07 · 최소 입력만으로 저장하면 세 필드만 담아 보낸다
-
-- **Given** `/recipes/new`가 열려 있다
-- **When** `제목`에 `아침 레시피`, `원두량`에 `15`, `물량`에 `250`을 넣고 `저장`을 누른다
-- **Then** `POST /api/v1/recipes` 본문이 `{ "title": "아침 레시피", "doseG": 15, "waterG": 250, "visibility": "PRIVATE", "steps": [] }`이고, 201 응답의 `id`가 `1`이면 `/recipes/1`로 이동한다
-- **검증** 페이지 테스트 `RecipeNewPage.test.tsx`
+**AC-WEBEDIT-07 (대체됨)** · 최소 본문이 `{title, doseG, waterG, visibility, steps}` 다섯 키이던 원래 AC는 `temperatureType`·`recommendedRoastLevel`이 늘 실리는 것으로 바뀌며 `docs/specs/2026-10-21-recipe-edit-redesign.md`의 AC-RECIPEEDIT-02로 대체됐다.
 
 #### AC-WEBEDIT-08 · 저장하는 동안 버튼이 잠긴다
 

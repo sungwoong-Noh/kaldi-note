@@ -93,7 +93,7 @@ describe("RecipeNewPage", () => {
     );
   });
 
-  it("AC-WEBEDIT-07 · 최소 입력만으로 저장하면 세 필드만 담아 보낸다", async () => {
+  it("AC-RECIPEEDIT-02 · 최소 입력이면 세 필드와 기본 공개·온도·배전도만 담아 보낸다", async () => {
     const user = userEvent.setup();
     let body: unknown = null;
     server.use(
@@ -113,6 +113,8 @@ describe("RecipeNewPage", () => {
       doseG: 15,
       waterG: 250,
       visibility: "PRIVATE",
+      temperatureType: "HOT",
+      recommendedRoastLevel: "MEDIUM",
       steps: [],
     });
   });

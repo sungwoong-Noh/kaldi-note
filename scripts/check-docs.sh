@@ -30,7 +30,7 @@ failed=0
 echo "1) 스펙 milestone이 ROADMAP에 있는가"
 roadmap_milestones=""
 if [ -f "$ROADMAP" ]; then
-  roadmap_milestones=$(grep -oE '^### (M[0-9]+) ·' "$ROADMAP" | sed -E 's/^### (M[0-9]+) ·/\1/')
+  roadmap_milestones=$(grep -oE '^### (M[0-9]+(\.[0-9]+)?) ·' "$ROADMAP" | sed -E 's/^### (M[0-9]+(\.[0-9]+)?) ·/\1/')
 fi
 checked=0
 for spec in "$SPEC_DIR"/*.md; do

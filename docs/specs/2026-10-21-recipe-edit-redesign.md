@@ -230,8 +230,9 @@ HOT·MEDIUM으로 채운다 — ICE·약배전 레시피를 편집 저장하면 
 
 - **Given** 새 레시피 / 편집
 - **When** 화면을 연다
-- **Then** 제목 「새 레시피」·저장 「레시피 저장」 / 제목 「레시피 수정」·저장 「변경 사항 저장」
-- **검증** `page.test.tsx` · `RecipeEditor.test.tsx`
+- **Then** 제목 「새 레시피」·저장 「레시피 저장」 / 제목 「레시피 수정」·저장 「변경 사항 저장」. `≥1100px`에서는 웹 상단 바가
+  보이고 그 오른쪽에 「취소」·저장이 놓인다(목업 W)
+- **검증** `page.test.tsx` · `navScreens.test.ts` · e2e `recipe-edit.spec.ts`
 
 ### 엣지
 
@@ -412,10 +413,12 @@ HOT·MEDIUM으로 채운다 — ICE·약배전 레시피를 편집 저장하면 
 - AC-WEBEDIT-21 → AC-RECIPEEDIT-47 — 초 입력 + m:ss 보조 표기가 m:ss 입력으로
 - AC-WEBEDIT-22 · 23 → AC-RECIPEEDIT-06 — 부족량 문구가 Observation으로
 - AC-WEBEDIT-25 ~ 29 → AC-RECIPEEDIT-05 — 실시간 환산 제거(R5)
-- AC-STRUCT-05 · 06(`2026-09-15-structure.md`, 레시피 화면 부분) → AC-RECIPEEDIT-40 · 42 — 스텝 행이 표·요약 행으로
+- AC-WEBHDR-10(`2026-09-20-web-header-rollout.md`)의 `/recipes/new`·`/recipes/{id}/edit` → AC-RECIPEEDIT-10 — 목업 W는 상단 바에
+  저장을 둔다(기록 폼 AC-BREWFIT-03과 같은 방식)
+- AC-STRUCT-05(`2026-09-15-structure.md`) → AC-RECIPEEDIT-40 · 42 — 스텝 행이 표·요약 행으로(PR ②)
 - AC-STRUCT-09 → AC-RECIPEEDIT-07 · 80 — 편집 화면에 미리보기 타임라인이 생긴다
 
-유지: AC-WEBEDIT-01 ~ 06 · 08 ~ 20 · 24 · 30 ~ 37, AC-RECIPE-46 · 50(서버 스텝 검증).
+유지: AC-WEBEDIT-01 ~ 06 · 08 ~ 20 · 24 · 30 ~ 37, AC-STRUCT-06(단위는 숫자 셀 안에 그대로 있다), AC-RECIPE-46 · 50(서버 스텝 검증).
 
 ---
 
@@ -444,7 +447,7 @@ HOT·MEDIUM으로 채운다 — ICE·약배전 레시피를 편집 저장하면 
 - [ ] **Task 11: 모바일 요약 행 + 바텀시트** — Covers: AC-RECIPEEDIT-42, 43, 44
 - [ ] **Task 12: 방식·교반·메모 입력** — Covers: AC-RECIPEEDIT-45, 46
 - [ ] **Task 13: S2 + 760–1099 인라인 편집** — Covers: AC-RECIPEEDIT-48
-- [ ] **Task 14: STRUCT-05·06 대체 정리 + e2e**
+- [ ] **Task 14: STRUCT-05 대체 정리 + e2e**
 
 ---
 

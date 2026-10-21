@@ -409,7 +409,7 @@ export function NumberCell({
           {...input}
         />
         {unit !== undefined && (
-          <span className="ml-[4px] font-mono text-[11px] text-ink-3">
+          <span data-unit className="ml-[4px] font-mono text-[11px] text-ink-3">
             {unit}
           </span>
         )}

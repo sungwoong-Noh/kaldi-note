@@ -66,16 +66,23 @@ test.describe("구조 — 폼", () => {
     await page.goto("/recipes/new");
     await page.waitForLoadState("networkidle");
 
-    const input = await page.getByLabel("원두량").boundingBox();
-    const unit = await page.locator("[data-unit]").first().boundingBox();
+    // 레시피 폼은 기록 폼과 같은 숫자 셀(`NumberCell`)을 쓴다 — 칸은 셀의 테두리다. 모바일에서 원두량은
+    // 히어로 칩이라 두 레이아웃 모두 숫자 셀인 물 온도로 잰다.
+    const cell = await page
+      .locator('[data-kit="number-cell"]', { has: page.getByLabel("물 온도") })
+      .boundingBox();
+    const unit = await page
+      .locator('[data-kit="number-cell"] [data-unit]')
+      .first()
+      .boundingBox();
 
-    expect(unit!.x + unit!.width).toBeLessThan(input!.x + input!.width);
+    expect(unit!.x + unit!.width).toBeLessThan(cell!.x + cell!.width);
   });
 });
 
 test("AC-STRUCT-05 · 스텝 행의 열 위치가 행마다 같다", async ({ page }) => {
   await installStubs(page);
-  await page.goto("/recipes/12/edit");
+  await page.goto("/recipes/3/edit");
   await page.waitForLoadState("networkidle");
 
   const cols = await page.evaluate(() => {
@@ -104,14 +111,6 @@ test.describe("구조 — 타임라인", () => {
       await expect(page.locator("[data-timeline-axis]"), path).toHaveCount(1);
     });
   }
-
-  test("AC-STRUCT-09 · 편집 화면에는 타임라인이 없다", async ({ page }) => {
-    await installStubs(page);
-    await page.goto("/recipes/12/edit");
-    await page.waitForLoadState("networkidle");
-
-    await expect(page.locator("[data-timeline-axis]")).toHaveCount(0);
-  });
 });
 
 test("AC-STRUCT-21 · select에 화살표가 그려진다", async ({ page }) => {
@@ -121,7 +120,8 @@ test("AC-STRUCT-21 · select에 화살표가 그려진다", async ({ page }) => 
 
   // appearance-none만 주면 화살표가 사라져 드롭다운인지 알 수 없다.
   // Tailwind 임의값으로는 data URI가 생성되지 않아 globals.css에서 정의한다.
-  const style = await page.getByLabel("공개 범위").evaluate((el) => {
+  // 공개 범위는 세그먼트가 됐다(AC-RECIPEEDIT) — 남은 select인 드리퍼로 잰다.
+  const style = await page.getByLabel("드리퍼").evaluate((el) => {
     const computed = getComputedStyle(el);
     return { image: computed.backgroundImage, appearance: computed.appearance };
   });

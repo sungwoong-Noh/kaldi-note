@@ -237,12 +237,7 @@ AC-RECIPESBREWS-63(owner pill)으로 대체되며 함께 없어졌다. 체크박
 
 **AC-STRUCT-08 (대체됨)** · 「시간 열의 폭이 두 화면에서 같다」를 보던 원래 AC는 목업이 시각의 정본이 되며 대체됐다([ADR 0010](../decisions/0010-mockup-is-visual-source-of-truth.md)). 이 값을 강제하던 테스트는 지웠다.
 
-#### AC-STRUCT-09 · 편집 화면에는 타임라인이 없다
-
-- **Given** `/recipes/12/edit`
-- **When** `[data-timeline-axis]`를 찾는다
-- **Then** **0개**다
-- **검증** e2e `structure.spec.ts`
+**AC-STRUCT-09 (대체됨)** · 「편집 화면에는 타임라인이 없다」였던 원래 AC는 레시피 편집 화면에 미리보기 타임라인이 생기며 `docs/specs/2026-10-21-recipe-edit-redesign.md`의 AC-RECIPEEDIT-07·80으로 대체됐다.
 
 ### 기록 비교표
 

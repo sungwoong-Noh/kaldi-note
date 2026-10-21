@@ -58,7 +58,7 @@ test.describe("터치 타깃 — 아이콘 버튼", () => {
 
   test("AC-TOUCH-05 · 스텝 행의 ↑ ↓ 삭제가 각각 44×44다", async ({ page }) => {
     await installStubs(page);
-    await page.goto("/recipes/12/edit");
+    await page.goto("/recipes/3/edit");
 
     for (const name of ["스텝 2 위로", "스텝 2 아래로", "스텝 2 삭제"]) {
       const button = page.getByRole("button", { name });
@@ -70,11 +70,13 @@ test.describe("터치 타깃 — 아이콘 버튼", () => {
 
   test("AC-TOUCH-07 · disabled인 ↑ ↓도 44×44다", async ({ page }) => {
     await installStubs(page);
-    await page.goto("/recipes/12/edit");
+    await page.goto("/recipes/3/edit");
 
-    // hoffmann은 스텝이 7개다. 첫 스텝의 ↑와 마지막 스텝의 ↓가 disabled다.
+    // 첫 스텝의 ↑와 마지막 스텝의 ↓가 disabled다. 스텝 수는 스텁 레시피(kasuyaRecipe)가 정한다.
     const first = page.getByRole("button", { name: "스텝 1 위로" });
-    const last = page.getByRole("button", { name: "스텝 7 아래로" });
+    await expect(first).toBeVisible();
+    const count = await page.locator("[data-step-row]").count();
+    const last = page.getByRole("button", { name: `스텝 ${count} 아래로` });
 
     await expect(first).toBeDisabled();
     await expect(last).toBeDisabled();

@@ -113,7 +113,10 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
         mode="edit"
         initial={fromRecipe(recipe.data)}
         micronEstimated={recipe.data.grindMicronEstimated}
-        originDoseG={parent.data?.doseG}
+        // 배너(작성자)가 없으면 「원본 … g」도 맥락 없이 떠 있게 된다 — 함께 보인다.
+        originDoseG={
+          recipe.data.sourceAuthorName ? parent.data?.doseG : undefined
+        }
         banner={<OriginBanner recipe={recipe.data} parent={parent.data} />}
         submitting={update.isPending}
         error={update.error}

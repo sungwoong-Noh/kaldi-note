@@ -6,6 +6,7 @@ import {
   insertStepAfter,
   isPouringStep,
   MAX_STEPS,
+  STEP_TYPE_LABELS,
   moveStep,
   pouredWaterTotal,
   removeStep,
@@ -13,15 +14,6 @@ import {
   type StepType,
 } from "../stepSequence";
 import { Button, cardClass, controlClass } from "@/components/ui";
-
-const STEP_TYPE_LABELS: Record<StepType, string> = {
-  BLOOM: "블룸",
-  POUR: "붓기",
-  WAIT: "대기",
-  SWIRL: "스월",
-  STIR: "젓기",
-  DRAWDOWN: "드로다운",
-};
 
 type Props = {
   steps: EditableStep[];

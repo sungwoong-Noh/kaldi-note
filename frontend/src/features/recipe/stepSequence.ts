@@ -16,6 +16,16 @@ const DEFAULT_DURATION_SECONDS = 10;
 export type StepType =
   "BLOOM" | "POUR" | "WAIT" | "SWIRL" | "STIR" | "DRAWDOWN";
 
+/** 편집 화면의 스텝 종류 라벨(목업 03). */
+export const STEP_TYPE_LABELS: Record<StepType, string> = {
+  BLOOM: "뜸",
+  POUR: "붓기",
+  WAIT: "대기",
+  SWIRL: "돌리기",
+  STIR: "젓기",
+  DRAWDOWN: "배출",
+};
+
 /**
  * 편집 중인 스텝. 서버 응답과 다른 점은 `uid` 하나다.
  *

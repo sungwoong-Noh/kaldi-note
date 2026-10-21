@@ -27,7 +27,8 @@ import {
 import { BeanBatchDialog } from "./BeanBatchDialog";
 import { BeanPickerDialog, batchCaption, beanName } from "./BeanPickerDialog";
 import { BrewForm } from "./BrewForm";
-import { FORM_SHELL_CLASS, LeaveConfirmDialog } from "./BrewFormLayout";
+import { LeaveConfirmDialog } from "@/components/LeaveConfirmDialog";
+import { FORM_SHELL_CLASS } from "./BrewFormLayout";
 import { UserGrinderDialog } from "./UserGrinderDialog";
 import { ButtonLink, Shell } from "@/components/ui";
 

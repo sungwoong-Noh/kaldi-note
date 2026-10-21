@@ -4,7 +4,7 @@
  * <p>전부 순수 함수다. 화면은 폼 상태를 넘겨 받은 문자열·숫자를 그리기만 한다.
  */
 
-import { formatDuration } from "@/lib/format";
+import { formatDuration, roundHalfUp1, tenths } from "@/lib/format";
 import {
   isPouringStep,
   pouredWaterTotal,
@@ -25,7 +25,7 @@ const trim = (value: number) => (Math.round(value * 10) / 10).toString();
 /** `물 / 원두`를 소수 1자리 HALF_UP으로 `1:15.6`. 둘 중 하나라도 비었거나 범위 밖이면 `—`. */
 export function ratioLabel(doseG: number | null, waterG: number | null) {
   if (!inRange(doseG, DOSE_RANGE) || !inRange(waterG, WATER_RANGE)) return "—";
-  return `1:${(Math.round(((waterG as number) / (doseG as number)) * 10) / 10).toFixed(1)}`;
+  return `1:${roundHalfUp1(tenths(waterG as number), tenths(doseG as number))}`;
 }
 
 /**

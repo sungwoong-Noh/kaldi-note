@@ -33,6 +33,11 @@ describe("ratioLabel", () => {
     expect(ratioLabel(null, 250)).toBe("—");
   });
 
+  it("HALF_UP을 정수로 계산한다 — 196.2 / 12 = 16.35 → 16.4", () => {
+    // 부동소수로 나누면 16.349999…라 16.3이 된다.
+    expect(ratioLabel(12, 196.2)).toBe("1:16.4");
+  });
+
   it("범위 밖 값이면 계산하지 않는다", () => {
     expect(ratioLabel(0, 250)).toBe("—");
     expect(ratioLabel(16, 3200)).toBe("—");

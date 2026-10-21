@@ -60,3 +60,28 @@ export function formatLedgerDate(
   const sameYear = year === kstToday.slice(0, 4);
   return { date: sameYear ? `${month}.${day}` : `${year}.${month}.${day}`, weekday };
 }
+
+const MIN_SEC = /^([0-5]?\d):([0-5]\d)$/;
+
+/** `3:30` → 210. 빈칸은 `null`(값 없음), 형식이 틀리면 `"invalid"`. 범위는 `0:00`~`59:59`. */
+export function parseMinSec(text: string): number | null | "invalid" {
+  if (text === "") return null;
+  const match = MIN_SEC.exec(text);
+  if (!match) return "invalid";
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+/**
+ * `numerator / denominator`를 소수 1자리 HALF_UP으로. 둘 다 정수여야 한다.
+ *
+ * <p>부동소수로 나눈 뒤 `toFixed(1)`를 쓰면 `267 / 20 = 13.35`가 `13.3499…`로 표현돼 `13.3`이 된다.
+ * 정수끼리 반올림해서 그 오차를 피한다.
+ */
+export function roundHalfUp1(numerator: number, denominator: number): string {
+  return (
+    Math.floor((20 * numerator + denominator) / (2 * denominator)) / 10
+  ).toFixed(1);
+}
+
+/** 소수 1자리까지만 받는 중량에 10을 곱해 정수로 만든다. */
+export const tenths = (value: number) => Math.round(value * 10);

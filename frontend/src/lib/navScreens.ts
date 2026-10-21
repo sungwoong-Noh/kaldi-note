@@ -22,11 +22,12 @@ export function isHidden(pathname: string): boolean {
 }
 
 /**
- * 기록 작성·편집. 탭바는 감추지만 `≥1100px`에서는 상단 바를 띄우고 오른쪽에 폼의 `취소`·`기록하기`를
- * 받는다(docs/specs/2026-10-11-brew-form-fidelity.md AC-BREWFIT-03 — AC-WEBHDR-10의 이 두 경로를 대체).
+ * 기록·레시피 작성·편집. 탭바는 감추지만 `≥1100px`에서는 상단 바를 띄우고 오른쪽에 폼의 `취소`·저장을
+ * 받는다 — 기록은 AC-BREWFIT-03(docs/specs/2026-10-11-brew-form-fidelity.md), 레시피는 AC-RECIPEEDIT-10
+ * (docs/specs/2026-10-21-recipe-edit-redesign.md). 둘이 AC-WEBHDR-10의 네 경로를 대체한다.
  */
-export function isBrewForm(pathname: string): boolean {
-  return /^\/brews\/(new|[^/]+\/edit)$/.test(pathname);
+export function isFormWithTopBar(pathname: string): boolean {
+  return /^\/(brews|recipes)\/(new|[^/]+\/edit)$/.test(pathname);
 }
 
 /** 기록 상세. 상단 바 오른쪽 자리에 `다시 내리기`·`수정`·`삭제`를 받는다(AC-BDETAIL-11·12). */

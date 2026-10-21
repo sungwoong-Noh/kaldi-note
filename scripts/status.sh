@@ -25,7 +25,7 @@ echo "════════════════════════�
 # docs/specs/를 다시 훑어도 비용이 무시할 만하다.
 milestones=""
 if [ -f "$ROADMAP" ]; then
-  milestones=$(grep -oE '^### (M[0-9]+) ·' "$ROADMAP" | sed -E 's/^### (M[0-9]+) ·/\1/')
+  milestones=$(grep -oE '^### (M[0-9]+(\.[0-9]+)?) ·' "$ROADMAP" | sed -E 's/^### (M[0-9]+(\.[0-9]+)?) ·/\1/')
 else
   echo "로드맵이 없습니다: $ROADMAP"
 fi

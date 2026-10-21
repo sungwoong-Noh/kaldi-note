@@ -17,7 +17,7 @@ test.describe("시각 위계 — 라이트", () => {
     await installStubs(page);
     await page.goto("/recipes/new");
 
-    const save = page.getByRole("button", { name: "저장" });
+    const save = page.getByRole("button", { name: "레시피 저장", exact: true });
     await expect(save).toBeVisible();
 
     expect(
@@ -64,7 +64,7 @@ test.describe("시각 위계 — 다크", () => {
     await installStubs(page);
     await page.goto("/recipes/new");
 
-    const save = page.getByRole("button", { name: "저장" });
+    const save = page.getByRole("button", { name: "레시피 저장", exact: true });
     await expect(save).toBeVisible();
 
     const style = await save.evaluate((el) => {

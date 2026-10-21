@@ -93,7 +93,7 @@ describe("RecipeNewPage", () => {
     );
   });
 
-  it("AC-WEBEDIT-07 · 최소 입력만으로 저장하면 세 필드만 담아 보낸다", async () => {
+  it("AC-RECIPEEDIT-02 · 최소 입력이면 세 필드와 기본 공개·온도·배전도만 담아 보낸다", async () => {
     const user = userEvent.setup();
     let body: unknown = null;
     server.use(
@@ -105,7 +105,7 @@ describe("RecipeNewPage", () => {
 
     renderWithQuery(<RecipeNewPage />);
     await fillMinimum(user);
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/recipes/1"));
     expect(body).toEqual({
@@ -113,6 +113,8 @@ describe("RecipeNewPage", () => {
       doseG: 15,
       waterG: 250,
       visibility: "PRIVATE",
+      temperatureType: "HOT",
+      recommendedRoastLevel: "MEDIUM",
       steps: [],
     });
   });
@@ -130,7 +132,7 @@ describe("RecipeNewPage", () => {
 
     renderWithQuery(<RecipeNewPage />);
     await fillMinimum(user);
-    const save = screen.getByRole("button", { name: "저장" });
+    const save = screen.getByRole("button", { name: "레시피 저장" });
     await user.click(save);
 
     expect(save).toBeDisabled();
@@ -155,7 +157,7 @@ describe("RecipeNewPage", () => {
     // 스텝 하나를 넣고 물량은 비워둔다 — 합계 0 vs 총 물량 250이라 어긋난다.
     await user.click(screen.getByRole("button", { name: "스텝 추가" }));
 
-    const save = screen.getByRole("button", { name: "저장" });
+    const save = screen.getByRole("button", { name: "레시피 저장" });
     expect(save).toBeEnabled();
     await user.click(save);
 
@@ -174,7 +176,7 @@ describe("RecipeNewPage", () => {
 
     renderWithQuery(<RecipeNewPage />);
     await fillMinimum(user);
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
     const waterInput = await screen.findByLabelText("물량");
     const describedBy = waterInput.getAttribute("aria-describedby");
@@ -204,7 +206,7 @@ describe("RecipeNewPage", () => {
     for (let i = 0; i < 3; i += 1) {
       await user.click(screen.getByRole("button", { name: "스텝 추가" }));
     }
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
     const thirdStep = await screen.findByRole("listitem", { name: "스텝 3" });
     expect(thirdStep).toHaveTextContent("붓는 스텝은 물량이 0보다 커야 합니다");
@@ -224,7 +226,7 @@ describe("RecipeNewPage", () => {
 
     renderWithQuery(<RecipeNewPage />);
     await fillMinimum(user);
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
     expect(
       await screen.findByText("unknownField: 알 수 없는 값입니다"),
@@ -243,13 +245,13 @@ describe("RecipeNewPage", () => {
 
     renderWithQuery(<RecipeNewPage />);
     await fillMinimum(user);
-    await user.click(screen.getByRole("button", { name: "저장" }));
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
     expect(
       await screen.findByText("스텝 물량 합계가 총 물량과 다릅니다."),
     ).toBeInTheDocument();
     expect(push).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "저장" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "레시피 저장" })).toBeEnabled();
   });
 
   it("AC-WEBEDIT-36 · 변경한 뒤에는 새로고침을 경고한다", async () => {
@@ -281,5 +283,94 @@ describe("RecipeNewPage", () => {
     await user.click(await screen.findByRole("button", { name: "취소" }));
 
     expect(push).toHaveBeenCalledWith("/recipes");
+  });
+});
+
+describe("RecipeNewPage 상태", () => {
+  it("AC-RECIPEEDIT-10 · 제목 「새 레시피」, 저장 「레시피 저장」", async () => {
+    renderWithQuery(<RecipeNewPage />);
+
+    expect(
+      await screen.findByRole("heading", { name: "새 레시피" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "레시피 저장" }),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-RECIPEEDIT-30 · 제목 빈칸 · 원두 0.0 · 물 3200이면 요청 없이 세 항목을 짚고 제목에 포커스", async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    server.use(
+      http.post(`${BASE}/recipes`, () => {
+        calls += 1;
+        return HttpResponse.json(created, { status: 201 });
+      }),
+    );
+
+    renderWithQuery(<RecipeNewPage />);
+    await user.type(await screen.findByLabelText("원두량"), "0.0");
+    await user.type(screen.getByLabelText("물량"), "3200");
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
+
+    expect(
+      await screen.findByText("3개 항목을 확인해 주세요."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("제목을 입력해 주세요.")).toBeInTheDocument();
+    expect(
+      screen.getByText("1.0–200.0 g 사이로 입력해 주세요."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("3000 g 이하로 입력해 주세요."),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText("제목")).toHaveFocus());
+    expect(screen.getByTestId("recipe-ratio")).toHaveTextContent("—");
+    expect(calls).toBe(0);
+  });
+
+  it("AC-RECIPEEDIT-31 · 저장이 500이면 입력을 그대로 두고 다시 시도로 같은 본문을 보낸다", async () => {
+    const user = userEvent.setup();
+    const bodies: unknown[] = [];
+    server.use(
+      http.post(`${BASE}/recipes`, async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json(
+          { code: "INTERNAL_ERROR", message: "서버 오류" },
+          { status: 500 },
+        );
+      }),
+    );
+
+    renderWithQuery(<RecipeNewPage />);
+    await fillMinimum(user);
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
+
+    expect(
+      await screen.findByText(
+        "저장하지 못했습니다. 입력한 내용은 그대로 있습니다.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("제목")).toHaveValue("아침 레시피");
+
+    await user.click(screen.getByRole("button", { name: "다시 시도" }));
+    await waitFor(() => expect(bodies).toHaveLength(2));
+    expect(bodies[1]).toEqual(bodies[0]);
+  });
+
+  it("AC-RECIPEEDIT-33 · 저장 중에는 「저장 중…」이고 입력·버튼이 전부 잠긴다", async () => {
+    const user = userEvent.setup();
+    server.use(http.post(`${BASE}/recipes`, () => new Promise(() => {})));
+
+    renderWithQuery(<RecipeNewPage />);
+    await fillMinimum(user);
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
+
+    expect(
+      await screen.findByRole("button", { name: "저장 중…" }),
+    ).toBeDisabled();
+    const form = document.querySelector("[data-recipe-form]") as HTMLElement;
+    const controls = form.querySelectorAll("input, select, textarea, button");
+    expect(controls.length).toBeGreaterThan(0);
+    controls.forEach((control) => expect(control).toBeDisabled());
   });
 });

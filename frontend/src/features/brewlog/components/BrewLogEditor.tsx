@@ -24,7 +24,8 @@ import {
 import type { BrewLog } from "../schema";
 import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
 import { BrewForm } from "./BrewForm";
-import { FORM_SHELL_CLASS, LeaveConfirmDialog } from "./BrewFormLayout";
+import { LeaveConfirmDialog } from "@/components/LeaveConfirmDialog";
+import { FORM_SHELL_CLASS } from "./BrewFormLayout";
 import { Shell } from "@/components/ui";
 
 /** 스펙이 정한 문구다. 값을 바꾸거나 기록을 지우는 것 말고는 길이 없다. */

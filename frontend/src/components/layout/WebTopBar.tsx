@@ -7,7 +7,7 @@ import {
   backHref,
   isActive,
   isBrewDetail,
-  isBrewForm,
+  isFormWithTopBar,
   isHidden,
 } from "@/lib/navScreens";
 import { Avatar, ButtonLink } from "@/components/ui";
@@ -48,8 +48,8 @@ export function WebTopBar() {
   const pathname = usePathname();
   const me = useMe();
 
-  const brewForm = isBrewForm(pathname);
-  if (isHidden(pathname) && !brewForm) return null;
+  const formBar = isFormWithTopBar(pathname);
+  if (isHidden(pathname) && !formBar) return null;
 
   // 상세·도구 화면은 `<1100px`에서 로고 대신 「뒤로」다. 목업의 뒤로 바에는 밑줄이 없다
   // (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-12).
@@ -62,7 +62,7 @@ export function WebTopBar() {
   // 스케일에 없어 `gap-6`(24) + `ml-4`(16)로 만든다.
   return (
     <header
-      className={`${brewForm ? "hidden min-[1100px]:flex" : "flex"} items-center justify-between gap-6 border-border bg-paper px-6 py-3 min-[1100px]:px-12 min-[1100px]:py-4 ${back ? "min-[1100px]:border-b" : "border-b"}`}
+      className={`${formBar ? "hidden min-[1100px]:flex" : "flex"} items-center justify-between gap-6 border-border bg-paper px-6 py-3 min-[1100px]:px-12 min-[1100px]:py-4 ${back ? "min-[1100px]:border-b" : "border-b"}`}
     >
       {back && (
         <Link
@@ -100,7 +100,7 @@ export function WebTopBar() {
         </nav>
       </div>
       {/* 기록 폼이 `createPortal`로 `취소`·`기록하기`를 넣는 자리(AC-BREWFIT-03). */}
-      {brewForm ? (
+      {formBar ? (
         <div id={TOPBAR_ACTIONS_ID} className="flex items-center gap-2" />
       ) : (
         <div className="flex items-center gap-4">

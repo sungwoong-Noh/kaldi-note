@@ -5,7 +5,14 @@
  */
 
 import type { MappedFieldErrors } from "@/lib/fieldErrors";
-import { formatDuration } from "@/lib/format";
+import {
+  formatDuration,
+  parseMinSec,
+  roundHalfUp1,
+  tenths,
+} from "@/lib/format";
+
+export { parseMinSec };
 import type { Recipe } from "../recipe/schema";
 import type { UserGrinder } from "../gear/schema";
 import type { BrewLog } from "./schema";
@@ -283,31 +290,6 @@ function toInstant(local: string): string | null {
   const parsed = new Date(local);
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
-
-const MIN_SEC = /^([0-5]?\d):([0-5]\d)$/;
-
-/** `3:30` → 210. 빈칸은 `null`(값 없음), 형식이 틀리면 `"invalid"`. 범위는 `0:00`~`59:59`. */
-export function parseMinSec(text: string): number | null | "invalid" {
-  if (text === "") return null;
-  const match = MIN_SEC.exec(text);
-  if (!match) return "invalid";
-  return Number(match[1]) * 60 + Number(match[2]);
-}
-
-/**
- * `numerator / denominator`를 소수 1자리 HALF_UP으로. 둘 다 정수여야 한다.
- *
- * <p>부동소수로 나눈 뒤 `toFixed(1)`를 쓰면 `267 / 20 = 13.35`가 `13.3499…`로 표현돼 `13.3`이 된다.
- * 정수끼리 반올림해서 그 오차를 피한다.
- */
-function roundHalfUp1(numerator: number, denominator: number): string {
-  return (
-    Math.floor((20 * numerator + denominator) / (2 * denominator)) / 10
-  ).toFixed(1);
-}
-
-/** 원두량·물량은 소수 1자리까지만 받는다 — 10을 곱하면 정수다. */
-const tenths = (value: number) => Math.round(value * 10);
 
 /**
  * 히어로의 실측 비율 미리보기. 저장 전 표시용이라 클라이언트가 계산한다 — 저장 후 화면은 서버 값을 쓴다

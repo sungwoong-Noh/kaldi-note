@@ -10,10 +10,13 @@ import {
   type EditableStep,
   type StepType,
 } from "./stepSequence";
+import { DOSE_RANGE, WATER_RANGE } from "./preview";
 import type { Recipe } from "./schema";
 
 export type Visibility = "PRIVATE" | "FRIENDS" | "PUBLIC";
 export type GrindSettingUnit = "CLICK" | "NUMBER" | "MICRON";
+export type TemperatureType = Recipe["temperatureType"];
+export type RoastLevel = Recipe["recommendedRoastLevel"];
 
 /** 비어 있는 숫자 입력은 `null`이다. 0과 구분해야 한다 — 0은 사용자가 실제로 넣은 값이다. */
 export type RecipeFormState = {
@@ -24,6 +27,8 @@ export type RecipeFormState = {
   waterTempC: number | null;
   totalTimeSeconds: number | null;
   visibility: Visibility;
+  temperatureType: TemperatureType;
+  recommendedRoastLevel: RoastLevel;
   brewerId: number | null;
   filterId: number | null;
   grinderModelId: number | null;
@@ -42,6 +47,9 @@ export function emptyFormState(): RecipeFormState {
     totalTimeSeconds: null,
     // 기본은 나만 보기다. 공개로 시작하면 실수로 남에게 보이는 쪽이 기본값이 된다.
     visibility: "PRIVATE",
+    // 서버가 값이 없을 때 채우는 기본값과 같다.
+    temperatureType: "HOT",
+    recommendedRoastLevel: "MEDIUM",
     brewerId: null,
     filterId: null,
     grinderModelId: null,
@@ -72,6 +80,8 @@ export function fromRecipe(recipe: Recipe): RecipeFormState {
     waterTempC: recipe.waterTempC ?? null,
     totalTimeSeconds: recipe.totalTimeSeconds ?? null,
     visibility: recipe.visibility,
+    temperatureType: recipe.temperatureType,
+    recommendedRoastLevel: recipe.recommendedRoastLevel,
     brewerId: recipe.brewerId ?? null,
     filterId: recipe.filterId ?? null,
     grinderModelId: recipe.grinderModelId ?? null,
@@ -103,6 +113,9 @@ export type RecipeStepRequest = {
 export type RecipeRequestBody = {
   title: string;
   visibility: Visibility;
+  // 빠뜨리면 서버가 HOT·MEDIUM으로 덮는다 — 편집 저장이 ICE·약배전을 지우던 원인이다.
+  temperatureType: TemperatureType;
+  recommendedRoastLevel: RoastLevel;
   steps: RecipeStepRequest[];
   description?: string;
   doseG?: number;
@@ -139,6 +152,8 @@ export function toRequestBody(state: RecipeFormState): RecipeRequestBody {
     ["waterTempC", state.waterTempC],
     ["totalTimeSeconds", state.totalTimeSeconds],
     ["visibility", state.visibility],
+    ["temperatureType", state.temperatureType],
+    ["recommendedRoastLevel", state.recommendedRoastLevel],
     ["brewerId", state.brewerId],
     ["filterId", state.filterId],
     ["grinderModelId", state.grinderModelId],
@@ -161,4 +176,30 @@ export function toRequestBody(state: RecipeFormState): RecipeRequestBody {
       ]),
     ),
   };
+}
+
+export type RecipeFormErrors = Partial<
+  Record<"title" | "doseG" | "waterG", string>
+>;
+
+/**
+ * 저장 전 클라이언트 검증 — 제목·원두·물 셋만 본다(목업 S3). 나머지는 서버 필드 오류가 그 필드에 붙는다.
+ * 범위는 서버 DTO와 같다.
+ */
+export function validateRecipeForm(state: RecipeFormState): RecipeFormErrors {
+  const errors: RecipeFormErrors = {};
+  if (state.title.trim() === "") errors.title = "제목을 입력해 주세요.";
+
+  const dose = state.doseG;
+  if (dose === null || dose < DOSE_RANGE.min || dose > DOSE_RANGE.max) {
+    errors.doseG = "1.0–200.0 g 사이로 입력해 주세요.";
+  }
+
+  const water = state.waterG;
+  if (water === null || water < WATER_RANGE.min) {
+    errors.waterG = "10.0 g 이상 입력해 주세요.";
+  } else if (water > WATER_RANGE.max) {
+    errors.waterG = "3000 g 이하로 입력해 주세요.";
+  }
+  return errors;
 }

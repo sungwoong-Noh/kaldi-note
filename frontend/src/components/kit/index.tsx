@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import type { InputHTMLAttributes, ReactNode } from "react";
+import {
+  useState,
+  type ChangeEvent,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from "react";
 import type { RoastLevel } from "@/features/catalog/schema";
 import { RoastDot } from "@/components/ui";
 
@@ -52,7 +57,8 @@ export function Segmented<T extends string>({
   label,
 }: {
   options: readonly { value: T; label: string }[];
-  value: T;
+  /** `null`이면 고른 칸이 없다(분쇄도 단위처럼 비워 둘 수 있는 값). */
+  value: T | null;
   onChange?: (value: T) => void;
   label: string;
 }) {
@@ -403,7 +409,7 @@ export function NumberCell({
           {...input}
         />
         {unit !== undefined && (
-          <span className="ml-[4px] font-mono text-[11px] text-ink-3">
+          <span data-unit className="ml-[4px] font-mono text-[11px] text-ink-3">
             {unit}
           </span>
         )}
@@ -488,4 +494,31 @@ export function TasteDots({
       </span>
     </div>
   );
+}
+
+/** 빈칸은 `null`, 숫자가 아니면 `null`. */
+function parseNumber(text: string): number | null {
+  if (text === "") return null;
+  const value = Number(text);
+  return Number.isFinite(value) ? value : null;
+}
+
+/**
+ * 숫자 입력의 글자. `type="text"`라 `30.`처럼 입력 중인 글자를 상태 숫자로 되돌리면 소수점을 칠 수 없다 —
+ * 입력한 글자를 따로 들고, 바깥 값이 그 글자와 다를 때만(다른 곳에서 바뀌었을 때) 바깥 값을 보인다.
+ */
+export function useNumberText(
+  value: number | null,
+  onChange: (value: number | null) => void,
+) {
+  const [text, setText] = useState(value === null ? "" : String(value));
+  return {
+    value:
+      parseNumber(text) === value ? text : value === null ? "" : String(value),
+    onChange: (e: ChangeEvent<HTMLInputElement>) => {
+      const next = e.target.value.trim();
+      setText(next);
+      onChange(parseNumber(next));
+    },
+  };
 }

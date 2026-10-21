@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { backHref, isActive, isHidden } from "./navScreens";
+import { backHref, isActive, isFormWithTopBar, isHidden } from "./navScreens";
 
 describe("isHidden", () => {
   it("로그인·작성·편집 화면은 숨긴다", () => {
@@ -52,5 +52,14 @@ describe("backHref", () => {
     expect(backHref("/recipes/new")).toBeNull();
     expect(backHref("/recipes/1/edit")).toBeNull();
     expect(backHref("/brews/1/edit")).toBeNull();
+  });
+});
+
+describe("isFormWithTopBar", () => {
+  it("AC-RECIPEEDIT-10 · 레시피 작성·편집도 웹 상단 바에 저장을 받는다", () => {
+    expect(isFormWithTopBar("/recipes/new")).toBe(true);
+    expect(isFormWithTopBar("/recipes/3/edit")).toBe(true);
+    expect(isFormWithTopBar("/brews/new")).toBe(true);
+    expect(isFormWithTopBar("/recipes/3")).toBe(false);
   });
 });

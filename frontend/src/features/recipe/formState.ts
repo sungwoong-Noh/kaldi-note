@@ -10,6 +10,7 @@ import {
   type EditableStep,
   type StepType,
 } from "./stepSequence";
+import { DOSE_RANGE, WATER_RANGE } from "./preview";
 import type { Recipe } from "./schema";
 
 export type Visibility = "PRIVATE" | "FRIENDS" | "PUBLIC";
@@ -175,4 +176,30 @@ export function toRequestBody(state: RecipeFormState): RecipeRequestBody {
       ]),
     ),
   };
+}
+
+export type RecipeFormErrors = Partial<
+  Record<"title" | "doseG" | "waterG", string>
+>;
+
+/**
+ * 저장 전 클라이언트 검증 — 제목·원두·물 셋만 본다(목업 S3). 나머지는 서버 필드 오류가 그 필드에 붙는다.
+ * 범위는 서버 DTO와 같다.
+ */
+export function validateRecipeForm(state: RecipeFormState): RecipeFormErrors {
+  const errors: RecipeFormErrors = {};
+  if (state.title.trim() === "") errors.title = "제목을 입력해 주세요.";
+
+  const dose = state.doseG;
+  if (dose === null || dose < DOSE_RANGE.min || dose > DOSE_RANGE.max) {
+    errors.doseG = "1.0–200.0 g 사이로 입력해 주세요.";
+  }
+
+  const water = state.waterG;
+  if (water === null || water < WATER_RANGE.min) {
+    errors.waterG = "10.0 g 이상 입력해 주세요.";
+  } else if (water > WATER_RANGE.max) {
+    errors.waterG = "3000 g 이하로 입력해 주세요.";
+  }
+  return errors;
 }

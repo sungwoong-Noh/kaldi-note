@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { emptyFormState, fromRecipe, toRequestBody } from "./formState";
+import {
+  emptyFormState,
+  fromRecipe,
+  toRequestBody,
+  validateRecipeForm,
+} from "./formState";
 import type { Recipe } from "./schema";
 
 const kasuya: Recipe = {
@@ -167,5 +172,40 @@ describe("온도·배전도", () => {
 
     expect(body.temperatureType).toBe("ICE");
     expect(body.recommendedRoastLevel).toBe("LIGHT");
+  });
+});
+
+describe("validateRecipeForm", () => {
+  it("제목 빈칸 · 원두 0.0 · 물 3200이면 세 필드 문구를 돌려준다", () => {
+    expect(
+      validateRecipeForm({
+        ...emptyFormState(),
+        title: "  ",
+        doseG: 0,
+        waterG: 3200,
+      }),
+    ).toEqual({
+      title: "제목을 입력해 주세요.",
+      doseG: "1.0–200.0 g 사이로 입력해 주세요.",
+      waterG: "3000 g 이하로 입력해 주세요.",
+    });
+  });
+
+  it("물이 비었거나 10.0 미만이면 하한 문구", () => {
+    const base = { ...emptyFormState(), title: "a", doseG: 15 };
+    expect(validateRecipeForm({ ...base, waterG: null }).waterG).toBe(
+      "10.0 g 이상 입력해 주세요.",
+    );
+    expect(validateRecipeForm({ ...base, waterG: 9.9 }).waterG).toBe(
+      "10.0 g 이상 입력해 주세요.",
+    );
+  });
+
+  it("경계값 1.0 · 200.0 · 10.0 · 3000.0은 통과한다", () => {
+    const base = { ...emptyFormState(), title: "a" };
+    expect(validateRecipeForm({ ...base, doseG: 1, waterG: 10 })).toEqual({});
+    expect(validateRecipeForm({ ...base, doseG: 200, waterG: 3000 })).toEqual(
+      {},
+    );
   });
 });

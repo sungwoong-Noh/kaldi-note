@@ -2,14 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { ApiError } from "@/lib/api-client";
 import { fetchRecipe, updateRecipe } from "../api";
 import { fromRecipe, type RecipeRequestBody } from "../formState";
 import { RecipeForm } from "./RecipeForm";
-import { Shell } from "@/components/ui";
+import { Button, Shell } from "@/components/ui";
 
 export function RecipeEditor({ id: recipeId }: { id: number }) {
   const router = useRouter();
@@ -53,10 +52,11 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
     }
     return (
       <Screen>
-        <ErrorState
-          error={recipe.error}
-          onRetry={() => void recipe.refetch()}
-        />
+        {/* S7 — 편집 진입 실패는 서버 문구가 아니라 목업 문구로 말한다. */}
+        <div role="alert" className="flex flex-col items-start gap-3 py-12">
+          <p className="text-body text-ink">레시피를 불러오지 못했습니다.</p>
+          <Button onClick={() => void recipe.refetch()}>다시 시도</Button>
+        </div>
       </Screen>
     );
   }

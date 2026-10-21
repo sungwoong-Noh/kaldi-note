@@ -131,3 +131,91 @@ describe("RecipeEditPage", () => {
     expect(push).toHaveBeenCalledWith("/recipes/12");
   });
 });
+
+describe("RecipeEditPage 상태", () => {
+  it("AC-RECIPEEDIT-10 · 제목 「레시피 수정」, 저장 「변경 사항 저장」", async () => {
+    await renderEditPage();
+
+    expect(
+      await screen.findByRole("button", { name: "변경 사항 저장" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "레시피 수정" }),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-RECIPEEDIT-03 · ICE · 약배전 레시피를 편집 저장하면 두 값이 그대로 간다", async () => {
+    const user = userEvent.setup();
+    let body: Record<string, unknown> | null = null;
+    server.use(
+      http.get(`${BASE}/recipes/2`, () =>
+        HttpResponse.json({
+          ...mine,
+          temperatureType: "ICE",
+          recommendedRoastLevel: "LIGHT",
+        }),
+      ),
+      http.put(`${BASE}/recipes/2`, async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(mine);
+      }),
+    );
+
+    await renderEditPage();
+    const title = await screen.findByLabelText("제목");
+    await user.type(title, " 2");
+    await user.click(screen.getByRole("button", { name: "변경 사항 저장" }));
+
+    await waitFor(() => expect(body).not.toBeNull());
+    expect(body).toMatchObject({
+      temperatureType: "ICE",
+      recommendedRoastLevel: "LIGHT",
+    });
+  });
+
+  it("AC-RECIPEEDIT-22 · 고친 뒤 취소하면 확인을 묻고, 계속 편집하면 머문다", async () => {
+    const user = userEvent.setup();
+    await renderEditPage();
+
+    await user.type(await screen.findByLabelText("제목"), "!");
+    await user.click(screen.getByRole("button", { name: "취소" }));
+    expect(
+      screen.getByRole("dialog", { name: "저장하지 않고 나갈까요?" }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "계속 편집" }));
+    expect(push).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("AC-RECIPEEDIT-22 · 고친 게 없으면 바로 상세로 간다", async () => {
+    const user = userEvent.setup();
+    await renderEditPage();
+
+    await user.click(await screen.findByRole("button", { name: "취소" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(push).toHaveBeenCalledWith("/recipes/2");
+  });
+
+  it("AC-RECIPEEDIT-32 · 불러오기가 500이면 안내하고 다시 시도로 재조회한다", async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    server.use(
+      http.get(`${BASE}/recipes/2`, () => {
+        calls += 1;
+        return HttpResponse.json(
+          { code: "INTERNAL_ERROR", message: "서버 오류" },
+          { status: 500 },
+        );
+      }),
+    );
+
+    await renderEditPage();
+
+    expect(
+      await screen.findByText("레시피를 불러오지 못했습니다."),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "다시 시도" }));
+    await waitFor(() => expect(calls).toBe(2));
+  });
+});

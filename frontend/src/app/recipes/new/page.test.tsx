@@ -285,3 +285,92 @@ describe("RecipeNewPage", () => {
     expect(push).toHaveBeenCalledWith("/recipes");
   });
 });
+
+describe("RecipeNewPage 상태", () => {
+  it("AC-RECIPEEDIT-10 · 제목 「새 레시피」, 저장 「레시피 저장」", async () => {
+    renderWithQuery(<RecipeNewPage />);
+
+    expect(
+      await screen.findByRole("heading", { name: "새 레시피" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "레시피 저장" }),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-RECIPEEDIT-30 · 제목 빈칸 · 원두 0.0 · 물 3200이면 요청 없이 세 항목을 짚고 제목에 포커스", async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    server.use(
+      http.post(`${BASE}/recipes`, () => {
+        calls += 1;
+        return HttpResponse.json(created, { status: 201 });
+      }),
+    );
+
+    renderWithQuery(<RecipeNewPage />);
+    await user.type(await screen.findByLabelText("원두량"), "0.0");
+    await user.type(screen.getByLabelText("물량"), "3200");
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
+
+    expect(
+      await screen.findByText("3개 항목을 확인해 주세요."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("제목을 입력해 주세요.")).toBeInTheDocument();
+    expect(
+      screen.getByText("1.0–200.0 g 사이로 입력해 주세요."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("3000 g 이하로 입력해 주세요."),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText("제목")).toHaveFocus());
+    expect(screen.getByTestId("recipe-ratio")).toHaveTextContent("—");
+    expect(calls).toBe(0);
+  });
+
+  it("AC-RECIPEEDIT-31 · 저장이 500이면 입력을 그대로 두고 다시 시도로 같은 본문을 보낸다", async () => {
+    const user = userEvent.setup();
+    const bodies: unknown[] = [];
+    server.use(
+      http.post(`${BASE}/recipes`, async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json(
+          { code: "INTERNAL_ERROR", message: "서버 오류" },
+          { status: 500 },
+        );
+      }),
+    );
+
+    renderWithQuery(<RecipeNewPage />);
+    await fillMinimum(user);
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
+
+    expect(
+      await screen.findByText(
+        "저장하지 못했습니다. 입력한 내용은 그대로 있습니다.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("제목")).toHaveValue("아침 레시피");
+
+    await user.click(screen.getByRole("button", { name: "다시 시도" }));
+    await waitFor(() => expect(bodies).toHaveLength(2));
+    expect(bodies[1]).toEqual(bodies[0]);
+  });
+
+  it("AC-RECIPEEDIT-33 · 저장 중에는 「저장 중…」이고 입력·버튼이 전부 잠긴다", async () => {
+    const user = userEvent.setup();
+    server.use(http.post(`${BASE}/recipes`, () => new Promise(() => {})));
+
+    renderWithQuery(<RecipeNewPage />);
+    await fillMinimum(user);
+    await user.click(screen.getByRole("button", { name: "레시피 저장" }));
+
+    expect(
+      await screen.findByRole("button", { name: "저장 중…" }),
+    ).toBeDisabled();
+    const form = document.querySelector("[data-recipe-form]") as HTMLElement;
+    const controls = form.querySelectorAll("input, select, textarea, button");
+    expect(controls.length).toBeGreaterThan(0);
+    controls.forEach((control) => expect(control).toBeDisabled());
+  });
+});

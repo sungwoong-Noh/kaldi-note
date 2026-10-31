@@ -443,7 +443,7 @@ HOT·MEDIUM으로 채운다 — ICE·약배전 레시피를 편집 저장하면 
 
 ### PR ② 스텝 편집 (① 머지 후 새 브랜치)
 
-- [ ] **Task 10: 웹 스텝 표 + 편집 패널** — Covers: AC-RECIPEEDIT-40, 41, 47, 49
+- [x] **Task 10: 웹 스텝 표 + 편집 패널** — Covers: AC-RECIPEEDIT-40, 41, 47, 49
 - [ ] **Task 11: 모바일 요약 행 + 바텀시트** — Covers: AC-RECIPEEDIT-42, 43, 44
 - [ ] **Task 12: 방식·교반·메모 입력** — Covers: AC-RECIPEEDIT-45, 46
 - [ ] **Task 13: S2 + 760–1099 인라인 편집** — Covers: AC-RECIPEEDIT-48

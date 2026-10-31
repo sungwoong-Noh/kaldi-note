@@ -1,7 +1,8 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it } from "vitest";
+import { emptyFormState, toRequestBody } from "../formState";
 import type { EditableStep, StepType } from "../stepSequence";
 import { RecipeStepEditor } from "./RecipeStepEditor";
 
@@ -31,16 +32,34 @@ function at(
 }
 
 /** 스텝 상태를 들고 있는 테스트용 부모. 실제 화면에서는 RecipeForm이 이 역할을 한다. */
+let latest: EditableStep[] = [];
+
 function Harness({
   initial = [],
   waterG = null,
+  wide = false,
 }: {
   initial?: EditableStep[];
   waterG?: number | null;
+  wide?: boolean;
 }) {
   const [steps, setSteps] = useState(initial);
-  return <RecipeStepEditor steps={steps} waterG={waterG} onChange={setSteps} />;
+  return (
+    <RecipeStepEditor
+      steps={steps}
+      waterG={waterG}
+      wide={wide}
+      onChange={(next) => {
+        latest = next;
+        setSteps(next);
+      }}
+    />
+  );
 }
+
+/** 마지막 `onChange`의 스텝으로 만든 요청 본문의 스텝 배열. */
+const requestSteps = () =>
+  toRequestBody({ ...emptyFormState(), steps: latest }).steps;
 
 const startValue = (n: number) => screen.getByLabelText(`스텝 ${n} 시작`);
 const typeValue = (n: number) => screen.getByLabelText(`스텝 ${n} 타입`);
@@ -189,7 +208,9 @@ describe("RecipeStepEditor", () => {
     render(<Harness initial={[at(0, 10, { stepType: "POUR", waterG: 50 })]} />);
 
     const startInput = startValue(1) as HTMLInputElement;
-    const durationInput = screen.getByLabelText("스텝 1 소요") as HTMLInputElement;
+    const durationInput = screen.getByLabelText(
+      "스텝 1 소요",
+    ) as HTMLInputElement;
     const waterInput = screen.getByLabelText("스텝 1 물량") as HTMLInputElement;
 
     expect(startInput).toHaveAttribute("inputmode", "numeric");
@@ -216,5 +237,166 @@ describe("스텝 타입 변경", () => {
     await user.selectOptions(typeValue(1), "WAIT" satisfies StepType);
 
     expect(screen.queryByLabelText("스텝 1 물량")).not.toBeInTheDocument();
+  });
+});
+
+describe("웹 스텝 표 (≥1100)", () => {
+  const four = () => [
+    at(0, 45, {
+      stepType: "BLOOM",
+      waterG: 45,
+      pourTechnique: "CENTER",
+      agitation: "SWIRL",
+    }),
+    at(45, 30, {
+      stepType: "POUR",
+      waterG: 105,
+      pourTechnique: "SPIRAL",
+      agitation: "NONE",
+      note: "물줄기를 가늘게",
+    }),
+    at(90, 30, { stepType: "POUR", waterG: 100, pourTechnique: "SPIRAL" }),
+    at(120, 90, { stepType: "DRAWDOWN", note: "다 빠질 때까지" }),
+  ];
+
+  it("AC-RECIPEEDIT-40 · 헤더 순서가 # · 종류 · 시작 · 지속 · 물 · 방식·메모다", () => {
+    render(<Harness initial={four()} wide />);
+
+    const headers = screen
+      .getAllByRole("columnheader")
+      .map((h) => h.textContent)
+      .filter(Boolean);
+    expect(headers).toEqual(["#", "종류", "시작", "지속", "물", "방식 · 메모"]);
+  });
+
+  it("AC-RECIPEEDIT-40 · 행은 m:ss 시간·물·방식 요약을 보여준다", () => {
+    render(<Harness initial={four()} wide />);
+
+    const row = screen.getByRole("row", { name: "스텝 2" });
+    expect(row).toHaveTextContent("붓기");
+    expect(row).toHaveTextContent("0:45");
+    expect(row).toHaveTextContent("0:30");
+    expect(row).toHaveTextContent("105 g");
+    expect(row).toHaveTextContent("나선 · 물줄기를 가늘게");
+    expect(screen.getByRole("row", { name: "스텝 1" })).toHaveTextContent(
+      "중심 · 돌리기",
+    );
+  });
+
+  it("AC-RECIPEEDIT-40 · 2번 행을 누르면 「스텝 2 편집」 패널이 표 아래 열린다", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={four()} wide />);
+    expect(screen.queryByRole("region", { name: "스텝 2 편집" })).toBeNull();
+
+    await user.click(button("스텝 2 열기"));
+
+    const panel = screen.getByRole("region", { name: "스텝 2 편집" });
+    expect(panel).toHaveTextContent("스텝 2 편집");
+    const table = screen.getByRole("table");
+    expect(
+      table.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(button("스텝 2 열기")).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("AC-RECIPEEDIT-40 · 열린 행을 다시 누르면 패널이 닫힌다", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={four()} wide />);
+
+    await user.click(button("스텝 2 열기"));
+    await user.click(button("스텝 2 열기"));
+
+    expect(screen.queryByRole("region", { name: "스텝 2 편집" })).toBeNull();
+  });
+
+  it("AC-RECIPEEDIT-40 · 패널에서 고친 값이 바로 행에 반영된다", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={four()} wide />);
+
+    await user.click(button("스텝 2 열기"));
+    const water = screen.getByLabelText("스텝 2 물량");
+    await user.clear(water);
+    await user.type(water, "110");
+
+    expect(screen.getByRole("row", { name: "스텝 2" })).toHaveTextContent(
+      "110 g",
+    );
+  });
+
+  it("AC-RECIPEEDIT-47 · 시작·지속은 m:ss로 입력한다", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={[at(0, 10, { stepType: "BLOOM" })]} wide />);
+
+    await user.click(button("스텝 1 열기"));
+    const start = screen.getByLabelText("스텝 1 시작");
+    const duration = screen.getByLabelText("스텝 1 지속");
+    expect(start).toHaveValue("0:00");
+    expect(duration).toHaveValue("0:10");
+
+    await user.clear(start);
+    await user.type(start, "1:30");
+    await user.clear(duration);
+    await user.type(duration, "0:45");
+
+    expect(requestSteps()[0]).toMatchObject({
+      startAtSeconds: 90,
+      durationSeconds: 45,
+    });
+    expect(start).toHaveValue("1:30");
+  });
+
+  it("AC-RECIPEEDIT-47 · 형식이 틀린 동안에는 이전 값이 남는다", async () => {
+    const user = userEvent.setup();
+    const initial = [at(45, 10)];
+    latest = initial;
+    render(<Harness initial={initial} wide />);
+
+    await user.click(button("스텝 1 열기"));
+    const start = screen.getByLabelText("스텝 1 시작");
+    await user.clear(start);
+    await user.type(start, "1:3");
+
+    expect(start).toHaveValue("1:3");
+    expect(requestSteps()[0].startAtSeconds).toBe(45);
+  });
+
+  it("AC-RECIPEEDIT-49 · 배출 스텝은 물 칸이 —이고 물 입력이 없고 본문에 waterG가 없다", async () => {
+    const user = userEvent.setup();
+    const drawdown = [at(0, 90, { stepType: "DRAWDOWN", waterG: 30 })];
+    latest = drawdown;
+    render(<Harness initial={drawdown} wide />);
+
+    const row = screen.getByRole("row", { name: "스텝 1" });
+    expect(within(row).getByText("—")).toBeInTheDocument();
+
+    await user.click(button("스텝 1 열기"));
+    expect(screen.queryByLabelText("스텝 1 물량")).toBeNull();
+    expect(requestSteps()[0]).not.toHaveProperty("waterG");
+  });
+
+  it("AC-WEBEDIT-31 · 서버 스텝 오류는 그 행의 설명으로 붙는다", () => {
+    render(
+      <RecipeStepEditor
+        steps={four()}
+        waterG={250}
+        wide
+        errors={{ 2: "붓는 스텝은 물량이 0보다 커야 합니다" }}
+        onChange={() => {}}
+      />,
+    );
+
+    expect(
+      screen.getByRole("row", { name: "스텝 3" }),
+    ).toHaveAccessibleDescription("붓는 스텝은 물량이 0보다 커야 합니다");
+  });
+
+  it("행의 위·아래·삭제가 표에서도 동작한다", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={[at(0), at(45), at(90)]} wide />);
+
+    await user.click(button("스텝 2 삭제"));
+
+    expect(latest.map((s) => s.startAtSeconds)).toEqual([0, 45]);
+    expect(button("스텝 1 위로")).toBeDisabled();
   });
 });

@@ -66,9 +66,9 @@ describe("RecipeEditPage", () => {
     );
     expect(screen.getByLabelText("원두량")).toHaveValue("30");
     expect(screen.getByLabelText("물량")).toHaveValue("500");
-    expect(
-      screen.getAllByRole("listitem", { name: /^스텝 \d+$/ }),
-    ).toHaveLength(hoffmann.steps.length);
+    expect(screen.getAllByRole("row", { name: /^스텝 \d+$/ })).toHaveLength(
+      hoffmann.steps.length,
+    );
   });
 
   it("AC-WEBEDIT-10 · 편집 저장은 PUT으로 스텝 배열을 통째로 보낸다", async () => {

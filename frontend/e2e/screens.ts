@@ -14,7 +14,7 @@ export const SCREENS: readonly Screen[] = [
   { path: "/gear/grind-converter", hasTabBar: false },
   { path: "/recipes/new", hasTabBar: false },
   { path: "/brews/new?recipeId=12", hasTabBar: false },
-  { path: "/recipes/12/edit", hasTabBar: false },
+  { path: "/recipes/3/edit", hasTabBar: false },
   { path: "/brews/2/edit", hasTabBar: false },
 ];
 

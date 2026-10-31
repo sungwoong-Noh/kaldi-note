@@ -70,7 +70,10 @@ test.describe("리스킨 — 히어로", () => {
       .evaluate((el) => {
         const cs = getComputedStyle(el);
         return {
-          family: cs.fontFamily.split(",")[0].trim().replace(/^["']|["']$/g, ""),
+          family: cs.fontFamily
+            .split(",")[0]
+            .trim()
+            .replace(/^["']|["']$/g, ""),
           transform: cs.textTransform,
           spacing: parseFloat(cs.letterSpacing),
         };
@@ -93,7 +96,7 @@ test.describe("리스킨 — 히어로", () => {
     "/recipes",
     "/recipes/12",
     "/recipes/new",
-    "/recipes/12/edit",
+    "/recipes/3/edit",
     "/brews",
     "/brews/2",
     "/brews/new?recipeId=12",
@@ -115,5 +118,4 @@ test.describe("리스킨 — 히어로", () => {
       expect(width, path).toBeLessThanOrEqual(360);
     });
   }
-
 });

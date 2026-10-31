@@ -1,11 +1,13 @@
 "use client";
 
-import { formatDuration, formatGrams } from "@/lib/format";
+import { formatDuration } from "@/lib/format";
+import { gramsText, waterObservation } from "../preview";
 import {
   appendStep,
   insertStepAfter,
   isPouringStep,
   MAX_STEPS,
+  STEP_TYPE_LABELS,
   moveStep,
   pouredWaterTotal,
   removeStep,
@@ -13,15 +15,6 @@ import {
   type StepType,
 } from "../stepSequence";
 import { Button, cardClass, controlClass } from "@/components/ui";
-
-const STEP_TYPE_LABELS: Record<StepType, string> = {
-  BLOOM: "블룸",
-  POUR: "붓기",
-  WAIT: "대기",
-  SWIRL: "스월",
-  STIR: "젓기",
-  DRAWDOWN: "드로다운",
-};
 
 type Props = {
   steps: EditableStep[];
@@ -38,7 +31,8 @@ type Props = {
  * <p>상태를 들지 않는다 — 부모가 들고 있는 배열을 받아 `onChange`로 새 배열을 돌려준다. 시간 규칙은 전부 `stepSequence.ts`의 순수
  * 함수에 있고 여기서는 그것을 부르기만 한다.
  *
- * <p><b>합계는 보여주기만 한다.</b> 물량이 안 맞아도 저장을 막지 않는다 — 거부는 서버 몫이다.
+ * <p><b>합계는 보여주기만 한다.</b> 물량이 안 맞으면 합계를 `danger`로 칠할 뿐 요청은 나간다 — 거부는 서버 몫이고(AC-RECIPE-50),
+ * 차이를 문장으로 말하는 쪽은 미리보기 Observation이다(AC-RECIPEEDIT-06).
  */
 export function RecipeStepEditor({
   steps,
@@ -55,9 +49,20 @@ export function RecipeStepEditor({
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-baseline justify-between">
-        <h2 className="text-card-title font-semibold">푸어 스텝</h2>
-        <WaterSummary steps={steps} waterG={waterG} />
+        <h2 className="font-mono text-[10px] tracking-[0.14em] text-ink-3 uppercase">
+          스텝 · {steps.length} / {MAX_STEPS}
+        </h2>
+        <WaterTotal steps={steps} waterG={waterG} />
       </div>
+
+      {steps.length === 0 && (
+        <div className="flex flex-col gap-[4px] rounded-[10px] border border-dashed border-border px-[16px] py-[18px] text-center">
+          <p className="text-[14px] text-ink-2">스텝이 없습니다.</p>
+          <p className="text-[12.5px] text-ink-3">
+            스텝 없이도 저장할 수 있습니다. 타이머는 총 시간만 셉니다.
+          </p>
+        </div>
+      )}
 
       <ol className="flex flex-col gap-3">
         {steps.map((step, index) => {
@@ -177,41 +182,34 @@ export function RecipeStepEditor({
         })}
       </ol>
 
-      <Button disabled={atLimit} onClick={() => onChange(appendStep(steps))}>
-        스텝 추가
+      <Button
+        aria-label="스텝 추가"
+        disabled={atLimit}
+        onClick={() => onChange(appendStep(steps))}
+      >
+        + 스텝 추가
       </Button>
     </section>
   );
 }
 
-/** 붓는 스텝의 물량 합계와 총 물량의 차이. 경고일 뿐 저장을 막지 않는다. */
-function WaterSummary({
+/** 붓는 스텝 물 합계 / 총 물량. 다르면 `danger`(R4). 스텝이 없거나 총 물량이 비면 그리지 않는다. */
+function WaterTotal({
   steps,
   waterG,
 }: {
   steps: EditableStep[];
   waterG: number | null;
 }) {
-  if (waterG === null) return null;
-
-  const poured = pouredWaterTotal(steps);
-  const difference = Number((waterG - poured).toFixed(1));
+  if (waterG === null || steps.length === 0) return null;
+  const mismatch = waterObservation(steps, waterG)?.mismatch ?? false;
 
   return (
-    <p className="flex items-baseline gap-2 text-body">
-      <span className="tabular-nums">
-        {formatGrams(poured)} / {formatGrams(waterG)}
-      </span>
-      {difference > 0 && (
-        <span className="text-danger">
-          {formatGrams(difference)} 부족합니다
-        </span>
-      )}
-      {difference < 0 && (
-        <span className="text-danger">
-          {formatGrams(-difference)} 초과합니다
-        </span>
-      )}
+    <p
+      data-testid="step-water-total"
+      className={`font-mono text-[11px] tabular-nums ${mismatch ? "text-danger" : "text-accent"}`}
+    >
+      물 합계 {gramsText(pouredWaterTotal(steps))} / {gramsText(waterG)} g
     </p>
   );
 }

@@ -106,3 +106,42 @@ test.describe("AC-RECIPEEDIT-83 · 장비 select는 눌러서 고를 수 있다 
     });
   }
 });
+
+test("AC-RECIPEEDIT-40 · 웹 스텝 표의 헤더 순서와 행을 누르면 열리는 편집 패널", async ({
+  page,
+}) => {
+  await open(page, 1440, EDIT);
+  const table = page.getByRole("table");
+
+  await expect(table.getByRole("columnheader")).toHaveText([
+    "#",
+    "종류",
+    "시작",
+    "지속",
+    "물",
+    "방식 · 메모",
+    "",
+  ]);
+
+  // 행 전체가 버튼이다 — 가운데(시작 칸)를 눌러도 열린다.
+  const row = page.getByRole("row", { name: "스텝 2" });
+  const box = (await row.boundingBox())!;
+  await page.mouse.click(box.x + box.width * 0.35, box.y + box.height / 2);
+
+  const panel = page.getByRole("region", { name: "스텝 2 편집" });
+  await expect(panel).toBeVisible();
+  const tableBox = (await table.boundingBox())!;
+  expect((await panel.boundingBox())!.y).toBeGreaterThanOrEqual(
+    tableBox.y + tableBox.height,
+  );
+});
+
+test("AC-RECIPEEDIT-41 · 1100–1279에서는 「방식 · 메모」 열을 숨긴다", async ({
+  page,
+}) => {
+  await open(page, 1100, EDIT);
+  await expect(page.getByRole("columnheader", { name: "시작" })).toBeVisible();
+  await expect(
+    page.getByRole("columnheader", { name: "방식 · 메모" }),
+  ).toBeHidden();
+});

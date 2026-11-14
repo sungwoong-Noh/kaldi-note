@@ -733,11 +733,12 @@ function GearSelect({
   );
 }
 
-function Steps({ state, patch, stepErrors }: ViewProps) {
+function Steps({ state, patch, stepErrors, wide }: ViewProps) {
   return (
     <RecipeStepEditor
       steps={state.steps}
       waterG={state.waterG}
+      wide={wide}
       errors={stepErrors}
       onChange={(steps) => patch({ steps })}
     />

@@ -26,6 +26,22 @@ export const STEP_TYPE_LABELS: Record<StepType, string> = {
   DRAWDOWN: "배출",
 };
 
+export type PourTechnique = "CENTER" | "SPIRAL" | "PULSE" | "EDGE";
+export type Agitation = "NONE" | "SWIRL" | "STIR";
+
+export const POUR_TECHNIQUE_LABELS: Record<PourTechnique, string> = {
+  CENTER: "중심",
+  SPIRAL: "나선",
+  PULSE: "펄스",
+  EDGE: "가장자리",
+};
+
+export const AGITATION_LABELS: Record<Agitation, string> = {
+  NONE: "없음",
+  SWIRL: "돌리기",
+  STIR: "젓기",
+};
+
 /**
  * 편집 중인 스텝. 서버 응답과 다른 점은 `uid` 하나다.
  *
@@ -38,8 +54,8 @@ export type EditableStep = {
   startAtSeconds: number;
   durationSeconds: number;
   waterG: number | null;
-  pourTechnique: "CENTER" | "SPIRAL" | "PULSE" | "EDGE" | null;
-  agitation: "NONE" | "SWIRL" | "STIR" | null;
+  pourTechnique: PourTechnique | null;
+  agitation: Agitation | null;
   note: string | null;
 };
 

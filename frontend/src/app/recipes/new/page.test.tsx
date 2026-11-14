@@ -211,8 +211,11 @@ describe("RecipeNewPage", () => {
     }
     await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
-    const thirdStep = await screen.findByRole("listitem", { name: "스텝 3" });
-    expect(thirdStep).toHaveTextContent("붓는 스텝은 물량이 0보다 커야 합니다");
+    // jsdom은 웹 폭이라 스텝이 표 행이다 — 오류는 그 행의 설명으로 붙는다.
+    const thirdStep = await screen.findByRole("row", { name: "스텝 3" });
+    expect(thirdStep).toHaveAccessibleDescription(
+      "붓는 스텝은 물량이 0보다 커야 합니다",
+    );
   });
 
   it("AC-WEBEDIT-32 · 매핑되지 않는 필드 오류는 상단에 남는다", async () => {

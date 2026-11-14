@@ -70,3 +70,27 @@ Always Free 한도(Object Storage 20GB, 아웃바운드 10TB/월) 안에서는 �
 - [x] 백업 버킷이 private이고 사진 버킷(public)과 분리돼 있다 — 2026-08-19 확인. 백업 객체 URL에 인증 없이 GET하면 `404`, 같은 방식으로 media 객체는 `200`. 버킷 설정도 API로 직접 확인(`kaldi-note-backup`=`NoPublicAccess`, `kaldi-note-media`=`ObjectRead`, 둘 다 Standard·Versioning Disabled)
 - [x] 8일 연속 백업 후 버킷에 최근 7개만 남아 있다 — 2026-08-19 확인. 8일을 기다리지 않고 과거 날짜 더미 객체 6개를 넣어 총 10개로 만든 뒤 실행했더니 오래된 3개가 삭제되고 정확히 7개가 남았다
 - [x] `.env`의 값으로 카카오/구글 실계정 로그인과 사진 업로드가 실제로 동작한다 — 2026-08-19 **카카오 실계정으로 E2E 전 구간 확인**: 로그인(userId 생성) → 레시피 생성 → `POST /attachments/upload-url`로 PAR 발급(앱이 OCI SDK로 실제 호출한 첫 성공) → PAR에 PUT 200 → 확정 → 공개 URL 인증 없이 GET 200 → 첨부 삭제 시 OCI 객체까지 삭제(같은 URL이 404). **구글은 미확인** — provider만 다른 같은 경로다
+
+## 크롤러 중계 Worker
+
+아임웹(모모스 등) 앞단 CloudFront WAF가 클라우드 호스팅 IP를 일괄 차단하므로, 중계 대상 호스트는 Cloudflare Worker(`kaldi-fetch-relay`)를 거쳐 가져온다([`docs/specs/2026-11-14-fetch-relay.md`](../docs/specs/2026-11-14-fetch-relay.md)).
+
+1. Worker 배포 (최초 1회 및 코드 변경 시):
+   ```bash
+   cd infra/fetch-relay && npx wrangler deploy
+   ```
+2. 공유 토큰 생성 및 Worker 시크릿 등록 (`openssl rand -hex 32`로 생성한 값을 입력):
+   ```bash
+   cd infra/fetch-relay && npx wrangler secret put RELAY_TOKEN
+   ```
+3. VM `/opt/kaldi-note/infra/.env`에 두 변수를 추가하고 앱 컨테이너를 재기동한다:
+   ```env
+   KALDI_CRAWLER_RELAY_URL=https://kaldi-fetch-relay.<계정>.workers.dev
+   KALDI_CRAWLER_RELAY_TOKEN=<위에서 생성한 토큰>
+   ```
+   ```bash
+   cd /opt/kaldi-note/infra && docker compose -f docker-compose.prod.yml up -d
+   ```
+4. 수동 확인 (`docs/specs/2026-11-14-fetch-relay.md`「수동 확인」과 동일):
+   - [ ] ★ Worker 배포 + VM `.env` 반영 후, 관리자 콘솔에서 모모스 수집 실행 → `status=SUCCEEDED`, `created + updated ≥ 1`
+   - [ ] VM에서 `curl -s -o /dev/null -w "%{http_code}" "https://kaldi-fetch-relay.<계정>.workers.dev/?url=https%3A%2F%2Fmomos.co.kr%2F"` (토큰 없이) → `401`

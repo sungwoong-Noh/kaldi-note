@@ -324,7 +324,7 @@ Worker 자체 오류 응답 본문은 `{"code":"<CODE>"}`, `Content-Type: applic
   - `.github/workflows/spec.yml`에 단계 추가: `node --test infra/fetch-relay/`
     (ubuntu-latest의 Node 사용, `actions/setup-node`로 Node 24 고정)
 
-- [ ] **Task 5: 배포 절차 문서** — Covers: (문서)
+- [x] **Task 5: 배포 절차 문서** — Covers: (문서)
 
   `infra/README.md`에 「크롤러 중계 Worker」 절: ① `cd infra/fetch-relay && npx wrangler deploy`
   ② `npx wrangler secret put RELAY_TOKEN` (값은 `openssl rand -hex 32`) ③ VM `.env`에 두 변수

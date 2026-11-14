@@ -1,7 +1,7 @@
 ---
 id: QUICKBREW
 title: 빠른 기록 — 오늘 홈 · 빠른 기록 시트 · 기록 탭
-status: 초안
+status: 승인
 milestone: P1
 supersedes:
 ---

@@ -123,6 +123,41 @@ describe("키트 부품", () => {
     expect(indicator.style.transform).toContain("calc(1 *");
   });
 
+  it("Segmented role='tab'은 tablist/tab 역할과 aria-selected를 사용한다", () => {
+    function TabProbe() {
+      const [val, setVal] = useState<"DRAWER" | "PUBLIC">("DRAWER");
+      return (
+        <Segmented
+          label="레시피 범위"
+          role="tab"
+          options={[
+            { value: "DRAWER", label: "내 서랍" },
+            { value: "PUBLIC", label: "둘러보기" },
+          ]}
+          value={val}
+          onChange={setVal}
+        />
+      );
+    }
+
+    const { container } = render(<TabProbe />);
+    expect(screen.getByRole("tablist", { name: "레시피 범위" })).toBeVisible();
+    const drawerTab = screen.getByRole("tab", { name: "내 서랍" });
+    const publicTab = screen.getByRole("tab", { name: "둘러보기" });
+    expect(drawerTab).toHaveAttribute("aria-selected", "true");
+    expect(publicTab).toHaveAttribute("aria-selected", "false");
+    expect(drawerTab).not.toHaveAttribute("aria-checked");
+
+    const indicator = container.querySelector(
+      "[data-segment-indicator]",
+    ) as HTMLElement;
+    expect(indicator.style.transform).toContain("calc(0 *");
+
+    fireEvent.click(publicTab);
+    expect(publicTab).toHaveAttribute("aria-selected", "true");
+    expect(indicator.style.transform).toContain("calc(1 *");
+  });
+
   it("AC-QUICKBREW-60 · 바텀시트와 사이드 패널은 열기 240ms / 닫기 200ms cubic-bezier(0.2, 0.8, 0.2, 1) 슬라이드 상태를 가진다", () => {
     const { rerender } = render(
       <>

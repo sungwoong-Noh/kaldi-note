@@ -76,6 +76,22 @@ rc=$?
 check "1b · 있는 milestone이면 통과" "0" "$rc"
 rm -rf "$DIR"
 
+# P 번호 마일스톤(2026-11-14 로드맵 재작성)도 받는다
+DIR=$(new_fixture)
+printf '\n### P1 · 빠른 기록\n' >>"$DIR/ROADMAP.md"
+cat >"$DIR/specs/a.md" <<'EOF'
+---
+id: A
+title: a
+status: 초안
+milestone: P1
+---
+EOF
+out=$(run "$DIR")
+rc=$?
+check "1c · P 번호 milestone도 통과" "0" "$rc"
+rm -rf "$DIR"
+
 # ── 2) supersedes 대상이 대체됨이 아니면 실패 ───────────────────────────
 DIR=$(new_fixture)
 cat >"$DIR/specs/old.md" <<'EOF'

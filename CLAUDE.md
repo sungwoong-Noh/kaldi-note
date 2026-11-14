@@ -95,7 +95,7 @@ GitHub Issues + [Project 보드](https://github.com/users/sungwoong-Noh/projects
 
 ## 뒤집으면 안 되는 설계 결정
 
-**`docs/decisions/`가 정본이다** (ADR 0001~0009). 코드만 보면 "왜 이렇게 복잡한가" 싶을 수
+**`docs/decisions/`가 정본이다** (ADR 0001~0011). 코드만 보면 "왜 이렇게 복잡한가" 싶을 수
 있으나 각각 이유가 있다. 바꿔야 할 근거가 생기면 먼저 사람에게 확인받는다.
 
 ## 배포 환경 제약

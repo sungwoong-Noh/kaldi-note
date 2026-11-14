@@ -83,3 +83,26 @@ test("AC-RECIPEEDIT-82 · 모바일 하단 고정 저장이 스크롤 전후 화
     expect(gap, `scrollY=${scroll}`).toBeLessThanOrEqual(24);
   }
 });
+
+/** `select` 한가운데를 누르면 그 `select`가 클릭을 받는다 — 감싼 라벨의 `hit-44` 의사 요소가 가로채지 않는다(#197). */
+async function selectReceivesClick(page: Page, name: string) {
+  const select = page.getByRole("combobox", { name, exact: true });
+  await select.scrollIntoViewIfNeeded();
+  return select.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return (
+      document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === el
+    );
+  });
+}
+
+test.describe("AC-RECIPEEDIT-83 · 장비 select는 눌러서 고를 수 있다 (#197)", () => {
+  for (const width of [390, 1440]) {
+    test(`${width}px`, async ({ page }) => {
+      await open(page, width);
+      for (const name of ["드리퍼", "필터", "그라인더"]) {
+        expect(await selectReceivesClick(page, name), name).toBe(true);
+      }
+    });
+  }
+});

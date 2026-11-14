@@ -43,8 +43,8 @@
 - **jsdom 기본 폭(1024px)이 이 프로젝트의 웹/모바일 임계값(760px)보다 넓다.** "모바일" 의도로
   짠 유닛 테스트가 실은 웹 컴포넌트 경로를 타고 있을 수 있다. `useIsWide`(기록 폼)는 jsdom에 `matchMedia`가
   없어 **웹**으로 판정한다 — 모바일 경로는 `mockViewportWidth(390)`(`src/test/viewport.ts`) + `vi.unstubAllGlobals()`.
-- **`hit-44`는 `<input>`·`<select>`에 직접 달면 아무 효과가 없다** — 대체 요소라 `::after`를 그리지 않는다.
-  감싸는 `<label>`에 단다(`e2e/hitArea.ts`가 라벨을 잰다).
+- **`hit-44`는 `<input>`·`<select>`에 직접 달면 아무 효과가 없다** — 대체 요소라 `::after`를 그리지 않아 감싸는 `<label>`에 단다(`e2e/hitArea.ts`가 라벨을 잰다).
+  단, `<select>`는 클릭이 `<label>::after`에 떨어지면 포커스만 가고 목록이 안 열려 `hit-44`의 `& > select`가 의사 요소 위로 올린다(#197) — 중간에 래퍼를 끼우면 직접 자식이 아니게 돼 다시 막힌다.
 - **Tailwind의 `hidden`(`display:none`)은 접근성 트리에서 서브트리를 통째로 뺀다.** 숨겨진
   요소는 `getByRole` 계열 쿼리와 충돌하지 않는다 — 반대로 "진짜 숨겨졌는지"를 확인하려면
   텍스트가 안 보인다는 것보다 **트리에서 빠졌는지**를 확인해야 한다.

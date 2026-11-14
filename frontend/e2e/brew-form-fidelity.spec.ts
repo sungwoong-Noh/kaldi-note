@@ -248,3 +248,18 @@ test.describe("AC-BREWFIT-26 · 가로 스크롤이 없다", () => {
     }
   }
 });
+
+test("AC-BREWFIT-25 · 그라인더 select는 눌러서 고를 수 있다 (#197)", async ({
+  page,
+}) => {
+  await open(page, 1280);
+  const select = page.getByRole("combobox", { name: "그라인더", exact: true });
+  await select.scrollIntoViewIfNeeded();
+  const hit = await select.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return (
+      document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2) === el
+    );
+  });
+  expect(hit).toBe(true);
+});

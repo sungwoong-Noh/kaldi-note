@@ -170,8 +170,9 @@ export function toRequestBody(state: RecipeFormState): RecipeRequestBody {
         ["durationSeconds", step.durationSeconds],
         // 붓지 않는 스텝에 물량을 실으면 서버가 RECIPE_STEP_WATER_INVALID로 거부한다.
         ["waterG", isPouringStep(step) ? step.waterG : null],
-        ["pourTechnique", step.pourTechnique],
-        ["agitation", step.agitation],
+        // 방식·교반은 붓는 스텝의 속성이다(목업 03 「방식 · 교반」). 붓지 않는 스텝으로 바꿨으면 싣지 않는다.
+        ["pourTechnique", isPouringStep(step) ? step.pourTechnique : null],
+        ["agitation", isPouringStep(step) ? step.agitation : null],
         ["note", step.note],
       ]),
     ),

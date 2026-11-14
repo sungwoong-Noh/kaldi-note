@@ -400,3 +400,75 @@ describe("웹 스텝 표 (≥1100)", () => {
     expect(button("스텝 1 위로")).toBeDisabled();
   });
 });
+
+/**
+ * 부으면서 돌리기는 「돌리기」 스텝이 아니라 「붓기」 스텝 + 교반 「돌리기」다(목업 03 스텝 시트 「방식 · 교반」).
+ * 「돌리기」·「젓기」 스텝은 물 없이 하는 동작으로 남는다 — 서버가 붓지 않는 스텝의 물량을 거부한다.
+ */
+describe("붓는 방식 · 교반", () => {
+  it("AC-RECIPEEDIT-45 · (모바일) 붓기 스텝에서 방식 「나선」, 교반 「돌리기」를 고르면 요청에 실린다", async () => {
+    const user = userEvent.setup();
+    render(
+      <Harness initial={[at(0, 30, { stepType: "POUR", waterG: 100 })]} />,
+    );
+
+    await user.selectOptions(
+      screen.getByLabelText("스텝 1 붓는 방식"),
+      "SPIRAL",
+    );
+    await user.selectOptions(screen.getByLabelText("스텝 1 교반"), "SWIRL");
+
+    expect(requestSteps()[0]).toMatchObject({
+      stepType: "POUR",
+      waterG: 100,
+      pourTechnique: "SPIRAL",
+      agitation: "SWIRL",
+    });
+  });
+
+  it("AC-RECIPEEDIT-45 · (웹 패널) 붓기 스텝에서 방식·교반을 고르면 요청에 실린다", async () => {
+    const user = userEvent.setup();
+    render(
+      <Harness wide initial={[at(0, 30, { stepType: "POUR", waterG: 100 })]} />,
+    );
+    await user.click(screen.getByRole("button", { name: "스텝 1 열기" }));
+    const panel = screen.getByRole("region", { name: "스텝 1 편집" });
+
+    await user.selectOptions(
+      within(panel).getByLabelText("스텝 1 붓는 방식"),
+      "SPIRAL",
+    );
+    await user.selectOptions(
+      within(panel).getByLabelText("스텝 1 교반"),
+      "SWIRL",
+    );
+
+    expect(requestSteps()[0]).toMatchObject({
+      pourTechnique: "SPIRAL",
+      agitation: "SWIRL",
+    });
+  });
+
+  it("AC-RECIPEEDIT-45 · 붓지 않는 스텝에는 방식·교반 칸이 없고 요청에도 싣지 않는다", async () => {
+    const user = userEvent.setup();
+    render(
+      <Harness
+        initial={[
+          at(0, 30, {
+            stepType: "POUR",
+            waterG: 100,
+            pourTechnique: "SPIRAL",
+            agitation: "SWIRL",
+          }),
+        ]}
+      />,
+    );
+
+    await user.selectOptions(typeValue(1), "SWIRL");
+
+    expect(screen.queryByLabelText("스텝 1 붓는 방식")).toBeNull();
+    expect(screen.queryByLabelText("스텝 1 교반")).toBeNull();
+    expect(requestSteps()[0]).not.toHaveProperty("pourTechnique");
+    expect(requestSteps()[0]).not.toHaveProperty("agitation");
+  });
+});

@@ -1,301 +1,336 @@
 import { expect, test, type Page } from "@playwright/test";
-import { brewLogPage } from "../src/test/fixtures";
-import { undersized } from "./hitArea";
+import { brewLogPage, brewLogWithTds } from "../src/test/fixtures";
 import { installStubs } from "./stubs";
 
 /**
- * 내 잔 — docs/specs/2026-10-10-my-cups-ledger.md (목업 02 BM1·BW1).
+ * 「기록」 탭 (`/brews`) — docs/specs/2026-11-14-quick-brew.md (시안 F1 · F2 · FW).
  *
- * <p>값은 스텁(`brewLogPage`: id 2 · 2026-08-31 · 20 g · 92 °C · 3:30 · 17.6 · ★ 4 / id 3 · 2026-08-30 ·
- * 시간·수율 없음 · ★ 3, 레시피 hoffmann · Hario V60 02, 원두 프릿츠 예가체프)에서 온다.
- * 오늘은 2026-10-10(KST)로 고정한다 — 연도가 바뀌어도 `08.31 월` 표기가 흔들리지 않게.
+ * 승계 `AC-MYCUPS-12·23`과 신규 `AC-QUICKBREW-31·35·36·37`을 실제 브라우저 배치와
+ * 스크롤·요청 기록으로 검증한다.
  */
 
 const MOBILE = { width: 390, height: 844 } as const;
+const TABLET = { width: 900, height: 900 } as const;
 const WEB = { width: 1440, height: 900 } as const;
+
+function makePageOf(
+  content: object[],
+  overrides: { totalElements?: number; hasNext?: boolean } = {},
+) {
+  return {
+    ...brewLogPage,
+    content,
+    page: 0,
+    size: 20,
+    totalElements: overrides.totalElements ?? content.length,
+    totalPages: 1,
+    hasNext: overrides.hasNext ?? false,
+  };
+}
+
+function calendarDaysFor2026Nov() {
+  return {
+    month: "2026-11",
+    totalCount: 12,
+    days: [
+      { date: "2026-11-01", count: 1, primaryRecipeName: "James Hoffmann Ultimate V60" },
+      { date: "2026-11-03", count: 2, primaryRecipeName: "James Hoffmann Ultimate V60" },
+      { date: "2026-11-05", count: 1, primaryRecipeName: "James Hoffmann Ultimate V60" },
+      { date: "2026-11-07", count: 2, primaryRecipeName: "James Hoffmann Ultimate V60" },
+      { date: "2026-11-09", count: 2, primaryRecipeName: "James Hoffmann Ultimate V60" },
+      { date: "2026-11-11", count: 1, primaryRecipeName: "James Hoffmann Ultimate V60" },
+      { date: "2026-11-12", count: 2, primaryRecipeName: "James Hoffmann Ultimate V60" },
+      { date: "2026-11-14", count: 1, primaryRecipeName: "James Hoffmann Ultimate V60" },
+    ],
+  };
+}
+
+interface OpenOptions {
+  readonly fixedIso?: string;
+  readonly listResponse?: object;
+  readonly calendarByMonth?: Record<string, object>;
+  readonly dayLogsByDate?: Record<string, object[]>;
+  readonly onListRequest?: (url: URL) => void;
+}
 
 async function open(
   page: Page,
   viewport: { width: number; height: number },
-  list: object = brewLogPage,
+  options: OpenOptions = {},
 ) {
-  await page.clock.setFixedTime(new Date("2026-10-10T01:00:00Z"));
+  await page.clock.setFixedTime(
+    new Date(options.fixedIso ?? "2026-10-10T01:00:00Z"),
+  );
   await page.setViewportSize(viewport);
   await installStubs(page);
-  // 아바타가 me의 실제 카카오 CDN 주소를 가리킨다. 외부 이미지가 실패하면 박스가 무너진다(#179) —
-  // AC-GRAMMAR-03과 같이 1×1 PNG로 바꿔 끼워 이 화면의 배치만 잰다.
-  await page.route(
-    (url) => url.hostname.endsWith("kakaocdn.net"),
-    (route) =>
-      route.fulfill({
-        contentType: "image/png",
-        body: Buffer.from(
-          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
-          "base64",
-        ),
-      }),
-  );
-  // 목록만 바꿔 끼운다 — 나중에 등록한 route가 먼저 걸린다.
-  await page.route(/\/api\/v1\/brew-logs(\?|$)/, (route) =>
-    route.fulfill({ json: list }),
-  );
+
+  await page.route("**/api/v1/brew-logs/calendar**", (route) => {
+    const url = new URL(route.request().url());
+    const month = url.searchParams.get("month") ?? "";
+    const matched = options.calendarByMonth?.[month];
+    return route.fulfill({
+      json: matched ?? { month, totalCount: 0, days: [] },
+    });
+  });
+
+  await page.route(/\/api\/v1\/brew-logs(\?|$)/, (route) => {
+    const url = new URL(route.request().url());
+    const date = url.searchParams.get("date");
+    if (date !== null) {
+      return route.fulfill({
+        json: makePageOf(options.dayLogsByDate?.[date] ?? []),
+      });
+    }
+    options.onListRequest?.(url);
+    return route.fulfill({ json: options.listResponse ?? brewLogPage });
+  });
+
   await page.goto("/brews");
   await page.waitForLoadState("networkidle");
 }
 
-test.describe("내 잔 — 모바일 390", () => {
-  test("AC-MYCUPS-06 · 머리는 개수 eyebrow·제목·장식 아바타다", async ({
+test.describe("기록 탭 — 모바일 390 (시안 F1 · F2)", () => {
+  test("AC-QUICKBREW-31 · 제목 옆 N잔(totalElements)과 세그먼트 전환 시 목록 600px 스크롤을 복원한다", async ({
     page,
   }) => {
-    await open(page, MOBILE);
+    const manyLogs = Array.from({ length: 20 }, (_, i) => ({
+      ...brewLogWithTds,
+      id: 100 + i,
+      // 하루 1잔씩 KST 2026-10-10부터 거슬러 내려가 스크롤 높이 > 1400px 확보
+      brewedAt: new Date(
+        Date.UTC(2026, 9, 10 - i, 1, 0, 0),
+      ).toISOString(),
+    }));
 
-    const eyebrow = page.getByText("My cups · 2", { exact: true });
-    await expect(eyebrow).toBeVisible();
-    expect(
-      await eyebrow.evaluate((el) => getComputedStyle(el).textTransform),
-    ).toBe("uppercase");
+    await open(page, MOBILE, {
+      fixedIso: "2026-10-10T01:00:00Z",
+      listResponse: makePageOf(manyLogs, { totalElements: 142, hasNext: true }),
+      calendarByMonth: {
+        "2026-10": {
+          month: "2026-10",
+          totalCount: 5,
+          days: [{ date: "2026-10-10", count: 1 }],
+        },
+      },
+    });
+
+    await expect(page.getByText("142잔", { exact: true })).toBeVisible();
     await expect(
-      page.getByRole("heading", { level: 1, name: "내 잔" }),
+      page.getByRole("heading", { level: 1, name: "기록" }),
     ).toBeVisible();
+    const listBtn = page.getByRole("button", { name: "목록", exact: true });
+    const calBtn = page.getByRole("button", { name: "달력", exact: true });
+    await expect(listBtn).toHaveAttribute("aria-pressed", "true");
+    await expect(calBtn).toHaveAttribute("aria-pressed", "false");
 
-    // 숨겨진 웹 상단 바에도 「내 잔」 글자가 있다 — h1을 가진 머리만 잡는다.
-    const header = page
-      .locator("header")
-      .filter({ has: page.getByRole("heading", { level: 1, name: "내 잔" }) });
-    const avatar = header.locator("img, span.rounded-full").last();
-    expect(await avatar.boundingBox()).toMatchObject({ width: 36, height: 36 });
-    // 아바타는 누를 수 없다(AC-MYCUPS-06) — 머리 안에 링크·버튼이 없다.
-    await expect(header.locator("a, button")).toHaveCount(0);
+    await page.evaluate(() => window.scrollTo(0, 600));
+    await expect
+      .poll(() => page.evaluate(() => Math.round(window.scrollY)))
+      .toBe(600);
+
+    await calBtn.click();
+    await expect(calBtn).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByText("2026.10", { exact: true })).toBeVisible();
+    // 모바일 F2는 월 헤더 건수 라벨을 생략한다(AC-HOMECAL-40).
+    await expect(page.getByText(/일 · .*잔/)).toHaveCount(0);
+
+    await listBtn.click();
+    await expect(listBtn).toHaveAttribute("aria-pressed", "true");
+    await expect
+      .poll(() => page.evaluate(() => Math.round(window.scrollY)))
+      .toBe(600);
   });
 
-  test("AC-MYCUPS-08 · 행 왼쪽 배전도 점이 10px다", async ({ page }) => {
-    await open(page, MOBILE);
-
-    await expect(page.getByText("08.31 월 · 92°C · 3:30")).toBeVisible();
-    await expect(page.getByText("17.6 % · ★ 4")).toBeVisible();
-    const dot = page.locator("[data-roast-dot]").first();
-    expect(await dot.boundingBox()).toMatchObject({ width: 10, height: 10 });
-  });
-
-  test("AC-MYCUPS-10 · 통계 값은 Mono 22px다", async ({ page }) => {
-    await open(page, MOBILE);
-
-    const value = page
-      .locator("[data-stat-label]")
-      .first()
-      .locator("xpath=following-sibling::*[1]");
-    expect(await value.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
-      "22px",
-    );
-    expect(
-      await value.evaluate((el) => getComputedStyle(el).fontFamily),
-    ).toMatch(/^"?IBM Plex Mono/);
-  });
-
-  test("AC-MYCUPS-11 · (정정) 전폭 「기록하기」가 빠른 기록을 연다", async ({
+  test("AC-MYCUPS-12 · 행 전체가 기록 상세 링크다 (모바일)", async ({
     page,
   }) => {
     await open(page, MOBILE);
 
-    // ADR 0011 — /recipes 링크가 아니라 빠른 기록 시트를 여는 버튼이다.
-    const cta = page.getByRole("button", { name: "기록하기" });
-    await expect(cta).toBeVisible();
-    const tiles = page
-      .locator("[data-stat-label]")
-      .first()
-      .locator("xpath=../..");
-    const [ctaBox, tilesBox] = [
-      await cta.boundingBox(),
-      await tiles.boundingBox(),
-    ];
-    expect(ctaBox!.width).toBe(tilesBox!.width);
-  });
-
-  test("AC-MYCUPS-12 · 행을 누르면 기록 상세로 간다 (모바일)", async ({
-    page,
-  }) => {
-    await open(page, MOBILE);
-
-    await page.getByText("08.31 월 · 92°C · 3:30").click();
+    await page
+      .locator('[data-date-group="2026-08-31"] a[href="/brews/2"]')
+      .click();
     await expect(page).toHaveURL(/\/brews\/2$/);
-  });
-
-  test("AC-MYCUPS-22 · 알약과 더 보기의 누르는 영역이 44×44 이상이다", async ({
-    page,
-  }) => {
-    await open(page, MOBILE, { ...brewLogPage, hasNext: true, totalPages: 2 });
-
-    const controls = page
-      .getByRole("group", { name: "내 잔 필터" })
-      .getByRole("button")
-      .or(page.getByRole("button", { name: "더 보기" }));
-    await expect(controls).toHaveCount(4);
-    expect(await controls.evaluateAll(undersized)).toEqual([]);
   });
 });
 
-test.describe("내 잔 — 웹 1440", () => {
-  test("AC-MYCUPS-07 · 머리는 연도 eyebrow와 알약·개수가 한 줄이다", async ({
-    page,
-  }) => {
-    await open(page, WEB);
-
-    await expect(
-      page.getByText("My cups · 2026", { exact: true }),
-    ).toBeVisible();
-    const pills = page.getByRole("group", { name: "내 잔 필터" });
-    // 통계 「이번 달」 값과 글자가 같을 수 있다 — 알약 옆의 것만 잡는다.
-    const count = pills.locator("xpath=..").getByText("2잔", { exact: true });
-    await expect(pills.getByRole("button")).toHaveText([
-      "전체",
-      "이번 달",
-      "★ 4 이상",
-    ]);
-    const [p, c] = [await pills.boundingBox(), await count.boundingBox()];
-    expect(
-      Math.abs(p!.y + p!.height / 2 - (c!.y + c!.height / 2)),
-    ).toBeLessThan(4);
-  });
-
-  test("AC-MYCUPS-09 · 표는 BW1의 열 순서·폭·정렬·보조줄을 갖는다", async ({
-    page,
-  }) => {
-    await open(page, WEB);
-
-    const headers = page.getByRole("columnheader");
-    await expect(headers).toHaveText([
-      "날짜",
-      "레시피 / 원두",
-      "원두량",
-      "온도",
-      "시간",
-      "수율",
-      "평가",
-    ]);
-    const widths = await headers.evaluateAll((els) =>
-      els.map((el) => Math.round(el.getBoundingClientRect().width)),
-    );
-    expect([widths[0], ...widths.slice(2)]).toEqual([
-      108, 100, 90, 90, 100, 70,
-    ]);
-
-    const firstRow = page.getByRole("row").nth(1);
-    const aligns = await firstRow
-      .getByRole("cell")
-      .evaluateAll((els) => els.map((el) => getComputedStyle(el).textAlign));
-    expect(aligns.slice(2)).toEqual([
-      "right",
-      "right",
-      "right",
-      "right",
-      "right",
-    ]);
-    await expect(firstRow).toContainText("James Hoffmann Ultimate V60");
-    await expect(firstRow.locator("[data-ledger-sub]")).toHaveText(
-      "프릿츠 예가체프 · Hario V60 02",
-    );
-    await expect(firstRow.locator("[data-roast-dot]")).toHaveCount(1);
-  });
-
-  test("AC-MYCUPS-10 · 통계 값은 Mono 24px, 즐겨 쓴 레시피는 Sans 15px다", async ({
-    page,
-  }) => {
-    await open(page, WEB);
-
-    // 알약 「이번 달」과 글자가 같다 — 통계 라벨에서만 찾는다.
-    const valueOf = (label: string) =>
-      page
-        .locator("[data-stat-label]")
-        .filter({ hasText: new RegExp(`^${label}$`) })
-        .locator("xpath=following-sibling::*[1]");
-    const month = valueOf("이번 달");
-    expect(await month.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
-      "24px",
-    );
-    expect(
-      await month.evaluate((el) => getComputedStyle(el).fontFamily),
-    ).toMatch(/^"?IBM Plex Mono/);
-    const recipe = valueOf("즐겨 쓴 레시피");
-    expect(await recipe.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
-      "15px",
-    );
-    expect(
-      await recipe.evaluate((el) => getComputedStyle(el).fontFamily),
-    ).toMatch(/^"?IBM Plex Sans KR/);
-  });
-
-  test("AC-MYCUPS-11 · 웹 본문에는 「기록하기」가 없다(상단 바 CTA 하나뿐)", async ({
-    page,
-  }) => {
-    await open(page, WEB);
-
-    // ADR 0011 — 「기록하기」는 빠른 기록 시트를 여는 버튼이다. 상단 바의 하나뿐.
-    await expect(page.getByRole("button", { name: "기록하기" })).toHaveCount(1);
-  });
-
-  /**
-   * 날짜 칸은 레시피 칸 링크의 `::after`가 덮는다 — Playwright의 click은 「가로챈다」며 거부하므로
-   * 그 좌표를 마우스로 직접 누른다(사람이 누르는 것과 같다). 둘째 행이 /brews/3으로 가는 것으로
-   * `::after`가 자기 행만 덮는지(tr이 기준인지)도 본다.
-   */
-  for (const [row, id, date] of [
-    [1, 2, "08.31"],
-    [2, 3, "08.30"],
+test.describe("기록 탭 — 웹 1440 (시안 FW)", () => {
+  for (const [dateGroup, id] of [
+    ["2026-08-31", 2],
+    ["2026-08-30", 3],
   ] as const) {
-    test(`AC-MYCUPS-12 · ${row}번째 행의 날짜를 누르면 /brews/${id}로 간다 (웹)`, async ({
+    test(`AC-MYCUPS-12 · ${dateGroup} 원장 행을 누르면 /brews/${id}로 간다 (웹)`, async ({
       page,
     }) => {
       await open(page, WEB);
 
-      const box = await page
-        .getByRole("row")
-        .nth(row)
-        .getByText(date, { exact: true })
-        .boundingBox();
-      await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+      await page
+        .locator(`[data-date-group="${dateGroup}"] a[href="/brews/${id}"]`)
+        .click();
       await expect(page).toHaveURL(new RegExp(`/brews/${id}$`));
     });
   }
 
-  test("AC-MYCUPS-15 · 점이 없는 행도 제목의 왼쪽 선이 같다", async ({
+  test("AC-QUICKBREW-35 · 웹 달력 모드는 우측 300px 카드를 감추고 720px 달력 카드와 선택 날짜 DayList를 보여준다", async ({
     page,
   }) => {
-    const [first, second] = brewLogPage.content;
-    const { beanBatchId: _omit, ...withoutBean } = second;
-    void _omit;
-    await open(page, WEB, { ...brewLogPage, content: [first, withoutBean] });
+    await open(page, WEB, {
+      fixedIso: "2026-11-14T01:00:00Z",
+      listResponse: makePageOf([
+        { ...brewLogWithTds, id: 2, brewedAt: "2026-11-14T02:00:00Z" },
+      ]),
+      calendarByMonth: {
+        "2026-11": calendarDaysFor2026Nov(),
+      },
+      dayLogsByDate: {
+        "2026-11-14": [
+          { ...brewLogWithTds, id: 2, brewedAt: "2026-11-14T02:00:00Z" },
+        ],
+      },
+    });
 
-    const titles = page.getByRole("row").locator("a[href^='/brews/']");
-    await expect(titles).toHaveCount(2);
-    const xs = await titles.evaluateAll((els) =>
-      els.map((el) => Math.round(el.getBoundingClientRect().left)),
-    );
-    expect(xs[0]).toBe(xs[1]);
+    const asideBox = await page.locator("aside").boundingBox();
+    expect(Math.round(asideBox!.width)).toBe(300);
+
+    await page.getByRole("button", { name: "달력", exact: true }).click();
+    await expect(page.locator("aside")).toHaveCount(0);
+
+    const card = page
+      .locator("div.rounded-\\[12px\\]")
+      .filter({ hasText: "8일 · 12잔" });
+    await expect(card).toBeVisible();
+    const cardBox = await card.boundingBox();
+    expect(Math.round(cardBox!.width)).toBe(720);
+
+    await expect(page.getByText("11.14 토 · 1잔", { exact: true })).toBeVisible();
     await expect(
-      page.getByRole("row").nth(2).locator("[data-ledger-sub]"),
-    ).toHaveText("Hario V60 02");
+      page.getByText("James Hoffmann Ultimate V60").first(),
+    ).toBeVisible();
+  });
+
+  test("AC-QUICKBREW-36 · 웹 300px 카드 ‹ › 월 이동, 로드된 날짜 스크롤, 미로드 날짜 달력 전환", async ({
+    page,
+  }) => {
+    const listRequests: string[] = [];
+    // 11.14에 12건, 11.12에 1건을 두어 11.12 그룹이 처음에는 뷰포트 아래(top >= 900)에 있게 한다.
+    const loadedLogs = [
+      ...Array.from({ length: 12 }, (_, i) => ({
+        ...brewLogWithTds,
+        id: 200 + i,
+        brewedAt: `2026-11-14T${String(10 - Math.floor(i / 2)).padStart(2, "0")}:00:00Z`,
+      })),
+      { ...brewLogWithTds, id: 212, brewedAt: "2026-11-12T02:00:00Z" },
+    ];
+
+    await open(page, WEB, {
+      fixedIso: "2026-11-14T01:00:00Z",
+      listResponse: makePageOf(loadedLogs, { totalElements: 14 }),
+      calendarByMonth: {
+        "2026-11": calendarDaysFor2026Nov(),
+        "2026-10": {
+          month: "2026-10",
+          totalCount: 1,
+          days: [
+            {
+              date: "2026-10-05",
+              count: 1,
+              primaryRecipeName: "James Hoffmann Ultimate V60",
+            },
+          ],
+        },
+      },
+      dayLogsByDate: {
+        "2026-10-05": [
+          { ...brewLogWithTds, id: 99, brewedAt: "2026-10-05T02:00:00Z" },
+        ],
+      },
+      onListRequest: (url) => listRequests.push(url.toString()),
+    });
+
+    expect(listRequests).toHaveLength(1);
+    const aside = page.locator("aside");
+    const targetGroup = page.locator('[data-date-group="2026-11-12"]');
+    expect(
+      await targetGroup.evaluate((el) => el.getBoundingClientRect().top),
+    ).toBeGreaterThanOrEqual(900);
+
+    await aside.locator('[data-date="2026-11-12"]').click();
+    await expect(
+      page.getByRole("button", { name: "목록", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect
+      .poll(() => targetGroup.evaluate((el) => el.getBoundingClientRect().top))
+      .toBeLessThan(900);
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+    await aside.getByRole("button", { name: "이전 달" }).click();
+    await expect(aside.getByText("2026.10", { exact: true })).toBeVisible();
+
+    await aside.locator('[data-date="2026-10-05"]').click();
+    await expect(
+      page.getByRole("button", { name: "달력", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByText("10.05 월 · 1잔", { exact: true })).toBeVisible();
+    // 추가 목록 페이지 요청 없이 달력 모드로 전환해 DayList만 부른다.
+    expect(listRequests).toHaveLength(1);
   });
 });
 
-test.describe("내 잔 — 가로 스크롤", () => {
-  for (const viewport of [MOBILE, WEB]) {
-    test(`AC-MYCUPS-23 · ${viewport.width}px에서 가로 스크롤이 없다`, async ({
+test.describe("기록 탭 — 900px 접힘 & 가로 스크롤", () => {
+  test("AC-QUICKBREW-37 · 900×900에서 이번 주 한 줄로 접혀 시작하고 줄을 누르면 한 달로 펼쳐진다", async ({
+    page,
+  }) => {
+    await open(page, TABLET, {
+      fixedIso: "2026-11-14T01:00:00Z",
+      listResponse: makePageOf([
+        { ...brewLogWithTds, id: 2, brewedAt: "2026-11-14T02:00:00Z" },
+      ]),
+      calendarByMonth: {
+        "2026-11": calendarDaysFor2026Nov(),
+      },
+    });
+
+    await expect(page.getByTestId("calendar-row")).toHaveCount(1);
+    await expect(
+      page.locator('[data-testid="calendar-week-grid"] button'),
+    ).toHaveCount(1);
+
+    const asideBox = await page.locator("aside").boundingBox();
+    const ledgerBox = await page.locator("[data-brew-ledger]").boundingBox();
+    expect(asideBox!.y + asideBox!.height).toBeLessThanOrEqual(
+      ledgerBox!.y + 1,
+    );
+
+    await page.getByRole("button", { name: "이번 주 달력 펼치기" }).click();
+    expect(await page.getByTestId("calendar-row").count()).toBeGreaterThan(1);
+  });
+
+  for (const viewport of [
+    MOBILE,
+    { width: 760, height: 1024 },
+    TABLET,
+    WEB,
+  ] as const) {
+    test(`AC-MYCUPS-23 · ${viewport.width}px 목록·달력 모드에서 가로 스크롤이 없다`, async ({
       page,
     }) => {
-      await open(page, viewport);
+      await open(page, viewport, {
+        fixedIso: "2026-11-14T01:00:00Z",
+        listResponse: makePageOf([
+          { ...brewLogWithTds, id: 2, brewedAt: "2026-11-14T02:00:00Z" },
+        ]),
+        calendarByMonth: { "2026-11": calendarDaysFor2026Nov() },
+      });
 
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBeLessThanOrEqual(viewport.width);
-      const table = page.locator("table");
-      if ((await table.count()) > 0) {
-        const wrapper = table.locator("xpath=..");
-        const [scroll, client] = await wrapper.evaluate((el) => [
-          el.scrollWidth,
-          el.clientWidth,
-        ]);
-        expect(scroll).toBe(client);
-      }
+
+      await page.getByRole("button", { name: "달력", exact: true }).click();
+      await page.waitForLoadState("networkidle");
+
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+      ).toBeLessThanOrEqual(viewport.width);
     });
   }
 });

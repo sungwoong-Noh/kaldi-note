@@ -70,7 +70,7 @@ supersedes:
 | 메서드 | 경로 | 인증 | 바뀌는 것 |
 |---|---|---|---|
 | `POST` | `/api/v1/brew-logs` | 필요 | 필수값 축소 · 원두 필드 3개 추가 |
-| `PATCH` | `/api/v1/brew-logs/{id}` | 필요 | 같은 필드를 고칠 수 있다(null로 비우기 포함) |
+| `PATCH` | `/api/v1/brew-logs/{id}` | 필요 | `beanProductId`·`beanName`·`roastedAt`을 고칠 수 있다. **null은 기존 규칙대로 「변경 없음」** — 값 지우기는 하지 않는다(2026-11-14 승인 후 정정, AC-08) |
 | `GET` | `/api/v1/brew-logs` · `/{id}` | 필요 | 응답에 `beanProductId`·`beanName`·`roastedAt` 추가. 「지난번」은 `?userId={me}&size=1` |
 | `GET` | `/api/v1/brew-logs/calendar` | 필요 | 변경 없음 — 「이번 주」·「지난주」·요일 점을 프론트가 계산 |
 
@@ -178,11 +178,14 @@ supersedes:
 - **Then** `content`는 1건이고 그 `brewedAt`은 11.13 기록이다. `totalElements`는 3
 - **검증** API 테스트 `BrewLogControllerTest`
 
-#### AC-QUICKBREW-08 · 수정으로 선택값을 비울 수 있다
+#### AC-QUICKBREW-08 · 수정의 null은 「변경 없음」이다 — 새 필드도 같다
 
-- **Given** `userGrinderId`·`actualGrindSettingValue`·`beanName`이 있는 내 기록
-- **When** `PATCH` `{ "userGrinderId": null, "actualGrindSettingValue": null, "beanName": null }`
-- **Then** 200, 세 필드가 없고 `actualGrindMicronEstimated`도 없다
+> **정정 (2026-11-14, 승인 후):** 처음에는 「null로 선택값을 비운다」였으나, 기존 `BrewLogPatchRequest`의
+> 「null = 변경 없음, 값 지우기 미지원」 규칙과 충돌해 사용자 결정으로 바꿨다. 값 지우기는 「열어둔 결정」.
+
+- **Given** `beanName: "하늘 블렌드"`·`userGrinderId: 3`·`actualGrindSettingValue: 24.0`인 내 기록
+- **When** `PATCH` `{ "beanName": null, "userGrinderId": null, "rating": 4.5 }` / `PATCH` `{ "beanName": "구지" }`
+- **Then** 200, `rating`만 4.5로 바뀌고 나머지는 그대로 / 200, `beanName`이 `"구지"`
 - **검증** API 테스트 `BrewLogControllerTest`
 
 ### 기능 — 화면
@@ -494,6 +497,7 @@ supersedes:
 
 ## 열어둔 결정
 
-- **마이그레이션 번호** — 크롤러 세션이 같은 시기에 `V19`를 쓸 수 있다. Task 1 시작 시 `origin/main`의 마지막 번호 + 1로 정한다.
+- **마이그레이션 번호** — `V19`(2026-11-14 확인: `origin/main`의 마지막은 `V18__create_crawl_runs.sql`). Task 1 시작 시 다시 확인한다.
+- **수정에서 값 지우기** — 기존 PATCH는 null을 「변경 없음」으로 본다(AC-08). 잘못 고른 그라인더·원두를 비워야 하는 불편이 P1 실사용에서 나오면 JSON Merge Patch 방식으로 별도 스펙.
 - **카탈로그 검색 성능** — `GET /bean-products` 전체를 프론트가 거른다. 카탈로그가 1,000건을 넘으면 서버 검색(`?q=`)을 별도 스펙으로.
 - **기존 「원두 봉투」 화면** — 새 기록이 봉투를 쓰지 않게 된 뒤 남길지 숨길지는 P1 1주 실사용 뒤 불편 목록에서 정한다.

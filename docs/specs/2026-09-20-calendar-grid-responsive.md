@@ -1,11 +1,22 @@
 ---
 id: HOMECAL
 title: 웹 달력 그리드 반응형 재설계
-status: 구현완료
+status: 대체됨
 plan: docs/archive/plans/2026-09-20-plan-calendar-grid-responsive.md
 ---
 
 # 웹 달력 그리드 반응형 재설계 스펙
+
+> ## ★ 2026-11-15 — 대체됨
+>
+> [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md) Task 10에서 홈(`/`)이 달력에서
+> 「오늘」 화면으로 교체되고, 웹 달력은 `/brews` 좌측 사이드바의 300px 고정 카드(시안 FW, Task 12)로
+> 옮겨 가면서 뷰포트 남는 높이를 채우는 홈 2컬럼 그리드(`fillHeight`) 자체가 쓰이지 않게 되었다.
+>
+> - 공용 달력 부품(`Calendar`·`MonthNav`·`DayList` 모바일) AC 30건은 이미
+>   [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)로 승계되었으며,
+>   구 홈 전용 grid e2e(`home-calendar-web.spec.ts`) 제거와 함께 본 스펙의
+>   `AC-HOMECAL-85~91`을 대체됨으로 마감한다.
 
 > 작성 규칙은 [`docs/conventions/workflow.md`](../conventions/workflow.md) 참조.
 > **모든 인수 조건은 자동화된 테스트로 옮길 수 있어야 한다.**
@@ -57,7 +68,7 @@ Calendar Web.dc.html`)에 맞춰 반응형으로 다시 만든다.** 지금은 �
 
 ### 정상 동작
 
-#### AC-HOMECAL-85 · `≥1100px`에서 그리드가 남는 세로 공간을 채운다
+**AC-HOMECAL-85 (대체됨) · `≥1100px`에서 그리드가 남는 세로 공간을 채운다**
 
 - **Given** 뷰포트 폭 `1440px`, 높이 `900px`
 - **When** 홈을 연다
@@ -65,7 +76,7 @@ Calendar Web.dc.html`)에 맞춰 반응형으로 다시 만든다.** 지금은 �
   뷰포트 높이에 따라 달라진다(예: 높이 `900px`일 때와 `1100px`일 때 그리드 높이가 다르다)
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-86 · 행 높이가 `64px` 밑으로 내려가야 하면 페이지가 스크롤된다
+**AC-HOMECAL-86 (대체됨) · 행 높이가 `64px` 밑으로 내려가야 하면 페이지가 스크롤된다**
 
 - **Given** 뷰포트 폭 `1440px`, 높이를 그리드 6행이 각 `64px`를 유지하기엔 부족한 값(예:
   `500px`)으로 줄인 상태
@@ -74,7 +85,7 @@ Calendar Web.dc.html`)에 맞춰 반응형으로 다시 만든다.** 지금은 �
   `scrollHeight`가 `window.innerHeight`보다 크다(페이지가 세로로 스크롤된다)
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-87 · 그리드선 — 상단은 `divider-strong`, 내부는 `sunken`, 폭 `1px`
+**AC-HOMECAL-87 (대체됨) · 그리드선 — 상단은 `divider-strong`, 내부는 `sunken`, 폭 `1px`다**
 
 - **Given** 뷰포트 폭 `1440px`
 - **When** 그리드의 상단 테두리와 셀 사이 내부 선의 색을 읽는다
@@ -82,14 +93,14 @@ Calendar Web.dc.html`)에 맞춰 반응형으로 다시 만든다.** 지금은 �
   `1px`다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-88 · 셀 안쪽 여백이 상하 `8px`·좌우 `12px`다
+**AC-HOMECAL-88 (대체됨) · 셀 안쪽 여백이 상하 `8px`·좌우 `12px`다**
 
 - **Given** 뷰포트 폭 `1440px`
 - **When** 날짜가 있는 셀의 `getComputedStyle`을 읽는다
 - **Then** `paddingTop`·`paddingBottom`이 `8px`, `paddingLeft`·`paddingRight`가 `12px`다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-89 · 선택된 날짜 숫자가 `24px` 원으로 감전다
+**AC-HOMECAL-89 (대체됨) · 선택된 날짜 숫자가 `24px` 원으로 감전다**
 
 - **Given** 뷰포트 폭 `1440px`, `2026-09-05`가 선택된 상태
 - **When** 그 셀의 날짜 숫자 요소를 본다
@@ -97,7 +108,7 @@ Calendar Web.dc.html`)에 맞춰 반응형으로 다시 만든다.** 지금은 �
   글자색이 `--on-ink` 토큰 값이다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-90 · 오늘이지만 선택 안 된 날짜 숫자에 `1px` 링이 있다
+**AC-HOMECAL-90 (대체됨) · 오늘이지만 선택 안 된 날짜 숫자에 `1px` 링이 있다**
 
 - **Given** 뷰포트 폭 `1440px`, 오늘(`2026-09-19`)이 선택되지 않은 상태(다른 날짜가 선택됨)
 - **When** 오늘 셀의 날짜 숫자 요소를 본다
@@ -107,7 +118,7 @@ Calendar Web.dc.html`)에 맞춰 반응형으로 다시 만든다.** 지금은 �
 
 ### 경계값
 
-#### AC-HOMECAL-91 · `1099px`(1컬럼)에서는 이 반응형 채움을 쓰지 않는다
+**AC-HOMECAL-91 (대체됨) · `1099px`(1컬럼)에서는 이 반응형 채움을 쓰지 않는다**
 
 - **Given** 뷰포트 폭 `1099px`
 - **When** 홈을 연다

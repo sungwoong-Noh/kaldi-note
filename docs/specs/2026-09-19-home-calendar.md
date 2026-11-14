@@ -1,11 +1,22 @@
 ---
 id: HOMECAL
 title: 홈 달력 — 언제 내렸는지 한눈에 보기 (모바일 + 웹)
-status: 구현완료
+status: 대체됨
 plan: docs/archive/plans/2026-09-19-plan-home-calendar.md
 ---
 
 # 홈 달력 스펙
+
+> ## ★ 2026-11-14 — 대체됨
+>
+> [ADR 0011](../decisions/0011-brew-first-minimal-input.md)에 따라 홈(`/`)이 달력에서
+> 「오늘」 화면으로 바뀌어 [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)가 이 스펙을 대체한다.
+>
+> - **달력 부품(`Calendar`·`MonthNav`·`DayList` 모바일) AC 13개**(`AC-HOMECAL-25·26·32·34·35·40·41·42·43·45·46·53·76`)와
+>   **현행 백엔드 API·`kstDate`·`RoastDot` AC 29개**(`AC-HOMECAL-01~24·54·66·67·73·75`):
+>   대체되지 않았으므로 [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)로 `#### AC-` 헤딩을 옮겨
+>   `check-spec-coverage.sh` 감시를 유지한다.
+> - **홈(`/`)·팔로우 레일·웹 2컬럼 홈 전용 AC**: `quick-brew`로 대체됐다(팔로우 레일은 M4 보류).
 
 > 2026-09-19 `/interview`로 확정. 작성 규칙은 [`docs/conventions/workflow.md`](../conventions/workflow.md).
 > **모든 인수 조건은 자동화된 테스트로 옮길 수 있어야 한다.**
@@ -338,63 +349,63 @@ CTA            기록하기
 
 ### 정상 동작 — 달력 집계 API
 
-#### AC-HOMECAL-01 · 기록이 있는 날짜만 담는다
+**AC-HOMECAL-01 (승계 → quick-brew)** · 기록이 있는 날짜만 담는다
 
 - **Given** 2026-09에 `2026-09-02`와 `2026-09-05`(KST)에만 기록이 있는 사용자
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
 - **Then** `days`의 길이가 `2`이고 `date`가 각각 `"2026-09-02"`, `"2026-09-05"`다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-02 · UTC 전날 23시 기록은 KST 다음 날에 집계된다
+**AC-HOMECAL-02 (승계 → quick-brew)** · UTC 전날 23시 기록은 KST 다음 날에 집계된다
 
 - **Given** `brewedAt`이 `2026-09-18T23:00:00Z`인 기록 1건만 있는 사용자
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
 - **Then** `days`가 `[{ "date": "2026-09-19", "count": 1, ... }]`다 — `2026-09-18`이 아니다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-03 · KST 자정 경계가 `15:00:00Z`에서 갈린다
+**AC-HOMECAL-03 (승계 → quick-brew)** · KST 자정 경계가 `15:00:00Z`에서 갈린다
 
 - **Given** `brewedAt`이 각각 `2026-09-19T14:59:59Z`, `2026-09-19T15:00:00Z`인 기록 2건
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
 - **Then** `days`가 `[{"date":"2026-09-19","count":1,...},{"date":"2026-09-20","count":1,...}]`다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-04 · 같은 날 2건이면 항목은 1개이고 count가 2다
+**AC-HOMECAL-04 (승계 → quick-brew)** · 같은 날 2건이면 항목은 1개이고 count가 2다
 
 - **Given** `2026-09-05`(KST)에 기록 2건이 있는 사용자
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
 - **Then** `date`가 `"2026-09-05"`인 항목이 **1개**이고 그 `count`가 `2`다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-05 · totalCount는 그 달 전체 건수다
+**AC-HOMECAL-05 (승계 → quick-brew)** · totalCount는 그 달 전체 건수다
 
 - **Given** `2026-09-02`에 1건, `2026-09-05`에 2건이 있는 사용자
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
 - **Then** `totalCount`가 `3`이고 `month`가 `"2026-09"`다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-06 · days는 date 오름차순이다
+**AC-HOMECAL-06 (승계 → quick-brew)** · days는 date 오름차순이다
 
 - **Given** `2026-09-20`, `2026-09-02`, `2026-09-11` 순으로 저장된 기록 3건
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
 - **Then** `days[*].date`가 `["2026-09-02", "2026-09-11", "2026-09-20"]`이다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-07 · 소프트 삭제된 기록은 집계되지 않는다
+**AC-HOMECAL-07 (승계 → quick-brew)** · 소프트 삭제된 기록은 집계되지 않는다
 
 - **Given** `2026-09-02`에 기록 2건이 있고 그중 1건의 `deleted_at`이 `NULL`이 아니다
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
 - **Then** `date`가 `"2026-09-02"`인 항목의 `count`가 `1`이고 `totalCount`가 `1`이다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-08 · 맞팔로우 상대의 FRIENDS 기록이 집계된다
+**AC-HOMECAL-08 (승계 → quick-brew)** · 맞팔로우 상대의 FRIENDS 기록이 집계된다
 
 - **Given** 호출자와 상호 팔로우한 사용자 `12`가 `2026-09-05`에 `visibility=FRIENDS` 기록 1건
 - **When** `GET /api/v1/brew-logs/calendar?userId=12&month=2026-09`
 - **Then** `totalCount`가 `1`이고 `days`에 `"2026-09-05"`가 있다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-09 · 맞팔로우가 아니면 PUBLIC만 집계된다
+**AC-HOMECAL-09 (승계 → quick-brew)** · 맞팔로우가 아니면 PUBLIC만 집계된다
 
 - **Given** 호출자와 팔로우 관계가 없는 사용자 `12`가 `2026-09-05`에 `PUBLIC` 1건,
   `2026-09-06`에 `FRIENDS` 1건, `2026-09-07`에 `PRIVATE` 1건
@@ -402,28 +413,28 @@ CTA            기록하기
 - **Then** `totalCount`가 `1`이고 `days`가 `2026-09-05` 하나뿐이다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-10 · 존재하지 않는 userId는 200과 빈 결과다
+**AC-HOMECAL-10 (승계 → quick-brew)** · 존재하지 않는 userId는 200과 빈 결과다
 
 - **Given** 어떤 사용자도 갖지 않는 `userId=999999`
 - **When** `GET /api/v1/brew-logs/calendar?userId=999999&month=2026-09`
 - **Then** HTTP `200`, `days`가 `[]`, `totalCount`가 `0`이다 — `403`도 `404`도 아니다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-14 · userId를 생략하면 호출자 본인의 달력이다
+**AC-HOMECAL-14 (승계 → quick-brew)** · userId를 생략하면 호출자 본인의 달력이다
 
 - **Given** 호출자가 `2026-09-02`에 기록 1건, 다른 사용자가 `2026-09-03`에 `PUBLIC` 1건
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-09` (`userId` 없음)
 - **Then** `days`가 `2026-09-02` 하나뿐이다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-66 · primaryRecipeName은 그날 가장 늦게 내린 기록의 레시피명이다
+**AC-HOMECAL-66 (승계 → quick-brew)** · primaryRecipeName은 그날 가장 늦게 내린 기록의 레시피명이다
 
 - **Given** `2026-09-05`(KST)에 `08:00`에 「Hoffmann V60」, `14:00`에 「Kasuya 4:6」으로 내린 기록 2건
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
 - **Then** `date`가 `"2026-09-05"`인 항목의 `primaryRecipeName`이 `"Kasuya 4:6"`이다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-67 · 기록이 없는 날은 days에 항목 자체가 없다
+**AC-HOMECAL-67 (승계 → quick-brew)** · 기록이 없는 날은 days에 항목 자체가 없다
 
 - **Given** `2026-09-02`에만 기록이 있는 사용자
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
@@ -432,7 +443,7 @@ CTA            기록하기
 
 ### 정상 동작 — 날짜별 목록
 
-#### AC-HOMECAL-15 · date는 KST 기준 하루로 필터한다
+**AC-HOMECAL-15 (승계 → quick-brew)** · date는 KST 기준 하루로 필터한다
 
 - **Given** `brewedAt`이 `2026-09-18T23:00:00Z`, `2026-09-19T14:59:59Z`,
   `2026-09-19T15:00:00Z`인 기록 3건
@@ -440,14 +451,14 @@ CTA            기록하기
 - **Then** `content`의 길이가 `2`이고 `2026-09-19T15:00:00Z` 기록이 빠진다
 - **검증** API 테스트 `BrewLogControllerTest`
 
-#### AC-HOMECAL-16 · date와 userId는 AND로 결합된다
+**AC-HOMECAL-16 (승계 → quick-brew)** · date와 userId는 AND로 결합된다
 
 - **Given** `2026-09-19`에 호출자 기록 1건, 맞팔로우 사용자 `12`의 기록 1건
 - **When** `GET /api/v1/brew-logs?userId=12&date=2026-09-19`
 - **Then** `content`의 길이가 `1`이고 그 `userId`가 `12`다
 - **검증** API 테스트 `BrewLogControllerTest`
 
-#### AC-HOMECAL-73 · 목록 요약 응답에 overallNote가 담긴다
+**AC-HOMECAL-73 (승계 → quick-brew)** · 목록 요약 응답에 overallNote가 담긴다
 
 - **Given** `overallNote`가 `"산미가 강했다"`인 기록 1건
 - **When** `GET /api/v1/brew-logs`
@@ -456,21 +467,21 @@ CTA            기록하기
 
 ### 정상 동작 — 맞팔로우 목록
 
-#### AC-HOMECAL-18 · 맞팔로우인 사람만 담긴다
+**AC-HOMECAL-18 (승계 → quick-brew)** · 맞팔로우인 사람만 담긴다
 
 - **Given** 호출자가 `12`와 상호 팔로우, `13`을 일방 팔로우, `14`에게 일방 팔로우당한 상태
 - **When** `GET /api/v1/users/me/mutual-follows`
 - **Then** 배열의 길이가 `1`이고 `[0].id`가 `12`다
 - **검증** API 테스트 `MutualFollowControllerTest`
 
-#### AC-HOMECAL-19 · 마지막 기록이 최근인 순으로 정렬된다
+**AC-HOMECAL-19 (승계 → quick-brew)** · 마지막 기록이 최근인 순으로 정렬된다
 
 - **Given** 맞팔로우 `12`의 마지막 기록이 `2026-09-10`, `13`의 마지막 기록이 `2026-09-18`
 - **When** `GET /api/v1/users/me/mutual-follows`
 - **Then** `[*].id`가 `[13, 12]`다
 - **검증** API 테스트 `MutualFollowControllerTest`
 
-#### AC-HOMECAL-20 · 기록이 없는 맞팔로우는 맨 뒤에 닉네임 오름차순으로 놓인다
+**AC-HOMECAL-20 (승계 → quick-brew)** · 기록이 없는 맞팔로우는 맨 뒤에 닉네임 오름차순으로 놓인다
 
 - **Given** 맞팔로우 `12`(닉네임 `지연`, 기록 있음), `13`(닉네임 `하은`, 기록 없음),
   `14`(닉네임 `민재`, 기록 없음)
@@ -478,21 +489,21 @@ CTA            기록하기
 - **Then** `[*].id`가 `[12, 14, 13]`이다 — 무기록자끼리 `민재` → `하은` 순이다
 - **검증** API 테스트 `MutualFollowControllerTest`
 
-#### AC-HOMECAL-21 · 마지막 기록 시각이 같으면 닉네임 오름차순이다
+**AC-HOMECAL-21 (승계 → quick-brew)** · 마지막 기록 시각이 같으면 닉네임 오름차순이다
 
 - **Given** 맞팔로우 `12`(닉네임 `하은`), `13`(닉네임 `민재`)의 마지막 기록 `brewedAt`이 동일하다
 - **When** `GET /api/v1/users/me/mutual-follows`
 - **Then** `[*].id`가 `[13, 12]`다
 - **검증** API 테스트 `MutualFollowControllerTest`
 
-#### AC-HOMECAL-22 · 응답에 email과 role이 없다
+**AC-HOMECAL-22 (승계 → quick-brew)** · 응답에 email과 role이 없다
 
 - **Given** `email`과 `role`을 가진 맞팔로우 사용자 1명
 - **When** `GET /api/v1/users/me/mutual-follows`
 - **Then** `[0]`의 키가 `id`·`nickname`·`profileImageUrl`뿐이고 `email`·`role`·`createdAt` 키가 없다
 - **검증** API 테스트 `MutualFollowControllerTest`
 
-#### AC-HOMECAL-23 · 자기 자신은 목록에 없다
+**AC-HOMECAL-23 (승계 → quick-brew)** · 자기 자신은 목록에 없다
 
 - **Given** 맞팔로우가 `12` 한 명인 호출자 `11`
 - **When** `GET /api/v1/users/me/mutual-follows`
@@ -501,21 +512,21 @@ CTA            기록하기
 
 ### 경계값 — 반응형 분기
 
-#### AC-HOMECAL-55 · 1100px에서 2컬럼이다
+**AC-HOMECAL-55 (대체됨)** · 1100px에서 2컬럼이다
 
 - **Given** 기록이 있는 달을 보는 홈, 뷰포트 폭 `1100px`
 - **When** 화면을 연다
 - **Then** 좌측 달력과 우측 폭 `420px` 컬럼이 동시에 보인다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-56 · 1099px에서 1컬럼이고 셀은 웹 박스다
+**AC-HOMECAL-56 (대체됨)** · 1099px에서 1컬럼이고 셀은 웹 박스다
 
 - **Given** 뷰포트 폭 `1099px`
 - **When** 화면을 연다
 - **Then** 우측 컬럼이 없고 선택 날짜 목록이 달력 **아래**에 있으며, 셀에 대표 레시피명 줄이 있다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-57 · 759px에서 모바일 레이아웃이다
+**AC-HOMECAL-57 (대체됨)** · 759px에서 모바일 레이아웃이다
 
 - **Given** 뷰포트 폭 `759px`
 - **When** 화면을 연다
@@ -524,77 +535,77 @@ CTA            기록하기
 
 ### 정상 동작 — 달력 화면 (공통)
 
-#### AC-HOMECAL-25 · 주 시작이 월요일이다
+**AC-HOMECAL-25 (승계 → quick-brew)** · 주 시작이 월요일이다
 
 - **Given** 홈
 - **When** 화면을 연다
 - **Then** 요일 헤더의 첫 칸이 `월`이고 마지막 칸이 `일`이다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-26 · 기록이 2건인 날에도 점은 1개다
+**AC-HOMECAL-26 (승계 → quick-brew)** · 기록이 2건인 날에도 점은 1개다
 
 - **Given** `2026-09-05`의 `count`가 `2`인 달력 응답
 - **When** 화면을 연다
 - **Then** `2026-09-05` 셀 안의 점 요소가 `1`개다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-27 · 진입하면 오늘이 선택돼 있다
+**AC-HOMECAL-27 (대체됨)** · 진입하면 오늘이 선택돼 있다
 
 - **Given** 오늘이 `2026-09-19`(KST)
 - **When** 홈을 연다
 - **Then** `2026-09-19` 셀에 `aria-current="date"`가 있다
 - **검증** 컴포넌트 테스트 `HomePage.test.tsx`
 
-#### AC-HOMECAL-28 · 날짜를 누르면 목록이 그 날짜 기록으로 바뀐다
+**AC-HOMECAL-28 (대체됨)** · 날짜를 누르면 목록이 그 날짜 기록으로 바뀐다
 
 - **Given** `2026-09-05`에 기록 2건이 있는 달력
 - **When** `2026-09-05` 셀을 누른다
 - **Then** 목록 헤더가 `09.05 SAT · 2 BREWS`이고 행이 2개다
 - **검증** 컴포넌트 테스트 `HomePage.test.tsx`
 
-#### AC-HOMECAL-29 · 빈 날짜를 누르면 선택되고 빈 문구가 뜬다
+**AC-HOMECAL-29 (대체됨)** · 빈 날짜를 누르면 선택되고 빈 문구가 뜬다
 
 - **Given** `2026-09-03`에 기록이 없는 달력
 - **When** `2026-09-03` 셀을 누른다
 - **Then** 그 셀에 `aria-current="date"`가 있고 `이 날에는 기록이 없습니다.`가 보인다
 - **검증** 컴포넌트 테스트 `HomePage.test.tsx`
 
-#### AC-HOMECAL-30 · 기록이 1건인 날을 눌러도 상세로 이동하지 않는다
+**AC-HOMECAL-30 (대체됨)** · 기록이 1건인 날을 눌러도 상세로 이동하지 않는다
 
 - **Given** `2026-09-02`에 기록 1건이 있는 달력
 - **When** `2026-09-02` 셀을 누른다
 - **Then** 주소가 `/`에 머물고 목록에 행이 1개 있다
 - **검증** e2e `home-calendar.spec.ts`
 
-#### AC-HOMECAL-31 · 목록 행을 누르면 상세로 간다
+**AC-HOMECAL-31 (대체됨)** · 목록 행을 누르면 상세로 간다
 
 - **Given** `2026-09-02`가 선택돼 있고 그날 기록의 `id`가 `7`
 - **When** 목록의 첫 행을 누른다
 - **Then** 주소가 `/brews/7`이다
 - **검증** e2e `home-calendar.spec.ts`
 
-#### AC-HOMECAL-32 · 이번 달에서 다음 달 버튼이 비활성이다
+**AC-HOMECAL-32 (승계 → quick-brew)** · 이번 달에서 다음 달 버튼이 비활성이다
 
 - **Given** 오늘이 `2026-09-19`이고 `2026-09`를 보는 중
 - **When** 화면을 연다
 - **Then** 다음 달 버튼이 `disabled`다
 - **검증** 컴포넌트 테스트 `MonthNav.test.tsx`
 
-#### AC-HOMECAL-33 · 이전 달로 넘기면 선택 없음 상태가 된다
+**AC-HOMECAL-33 (대체됨)** · 이전 달로 넘기면 선택 없음 상태가 된다
 
 - **Given** `2026-09-19`가 선택된 `2026-09` 달력
 - **When** 이전 달 버튼을 누른다
 - **Then** 월 헤더가 `2026.08`이고 `aria-current="date"`인 셀이 없으며 목록이 비어 있다
 - **검증** 컴포넌트 테스트 `HomePage.test.tsx`
 
-#### AC-HOMECAL-34 · 좌우 스와이프로 월이 바뀐다
+**AC-HOMECAL-34 (승계 → quick-brew)** · 좌우 스와이프로 월이 바뀐다
 
 - **Given** `2026-09`를 보는 중
 - **When** 달력 영역에서 우로 스와이프한다
 - **Then** 월 헤더가 `2026.08`이다
 - **검증** e2e `home-calendar.spec.ts`
 
-#### AC-HOMECAL-35 · 화살표 키로 날짜가 이동한다
+**AC-HOMECAL-35 (승계 → quick-brew)** · 화살표 키로 날짜가 이동한다
 
 - **Given** `2026-09-19` 셀에 포커스가 있다
 - **When** `→`를 한 번, `↓`를 한 번 누른다
@@ -603,14 +614,14 @@ CTA            기록하기
 
 ### 정상 동작 — 레일
 
-#### AC-HOMECAL-36 · 첫 칸이 「나」이고 기본 선택이다
+**AC-HOMECAL-36 (대체됨 · M4 보류)** · 첫 칸이 「나」이고 기본 선택이다
 
 - **Given** 맞팔로우가 2명인 사용자
 - **When** 홈을 연다
 - **Then** 레일의 첫 칸 라벨이 `나`이고 그 칸의 `aria-selected`가 `"true"`다
 - **검증** 컴포넌트 테스트 `FollowRail.test.tsx`
 
-#### AC-HOMECAL-37 · 상대를 누르면 달력이 그 사람 기록으로 바뀐다
+**AC-HOMECAL-37 (대체됨 · M4 보류)** · 상대를 누르면 달력이 그 사람 기록으로 바뀐다
 
 - **Given** 맞팔로우 `지연`(id `12`)이 레일에 있다
 - **When** `지연` 칸을 누른다
@@ -618,35 +629,35 @@ CTA            기록하기
   월 헤더가 `2026.09` + `지연 · 6 BREWS`다
 - **검증** 컴포넌트 테스트 `HomePage.test.tsx`
 
-#### AC-HOMECAL-38 · 사람을 바꾸면 month는 유지되고 selectedDate는 초기화된다
+**AC-HOMECAL-38 (대체됨 · M4 보류)** · 사람을 바꾸면 month는 유지되고 selectedDate는 초기화된다
 
 - **Given** `2026-08`을 보며 `2026-08-11`을 선택한 내 달력 (오늘은 `2026-09-19`)
 - **When** 레일에서 `지연`을 누른다
 - **Then** 월 헤더가 `2026.08`이고 `aria-current="date"`인 셀이 없다
 - **검증** 컴포넌트 테스트 `HomePage.test.tsx`
 
-#### AC-HOMECAL-39 · 남의 달력에 관계 문구가 뜬다
+**AC-HOMECAL-39 (대체됨 · M4 보류)** · 남의 달력에 관계 문구가 뜬다
 
 - **Given** 레일에서 `지연`이 선택돼 있고 기록이 있는 날짜를 골랐다
 - **When** 목록을 본다
 - **Then** 목록 하단에 `맞팔로우 — 서로의 기록이 보입니다`가 있다
 - **검증** 컴포넌트 테스트 `HomePage.test.tsx`
 
-#### AC-HOMECAL-44 · profileImageUrl이 없으면 닉네임 첫 글자가 뜬다
+**AC-HOMECAL-44 (대체됨 · M4 보류)** · profileImageUrl이 없으면 닉네임 첫 글자가 뜬다
 
 - **Given** `profileImageUrl` 키가 없는 맞팔로우 `{ "id": 12, "nickname": "지연" }`
 - **When** 레일을 본다
 - **Then** 그 칸에 `img`가 없고 텍스트 `지`가 있다
 - **검증** 컴포넌트 테스트 `FollowRail.test.tsx`
 
-#### AC-HOMECAL-47 · 레일이 tablist 역할을 갖는다
+**AC-HOMECAL-47 (대체됨 · M4 보류)** · 레일이 tablist 역할을 갖는다
 
 - **Given** 맞팔로우가 1명인 사용자
 - **When** 홈을 연다
 - **Then** 레일 컨테이너가 `role="tablist"`이고 각 칸이 `role="tab"`과 `aria-selected`를 갖는다
 - **검증** 컴포넌트 테스트 `FollowRail.test.tsx`
 
-#### AC-HOMECAL-71 · 웹 레일에서 선택된 사람이 채운 pill이다
+**AC-HOMECAL-71 (대체됨 · M4 보류)** · 웹 레일에서 선택된 사람이 채운 pill이다
 
 - **Given** 뷰포트 폭 `1440px`, 레일에서 `나`가 선택됨
 - **When** 화면을 연다
@@ -655,28 +666,28 @@ CTA            기록하기
 
 ### 정상 동작 — 문구와 수치
 
-#### AC-HOMECAL-40 · 월 헤더 라벨이 달력 주인에 따라 다르다
+**AC-HOMECAL-40 (승계 → quick-brew)** · 월 헤더 라벨이 달력 주인에 따라 다르다
 
 - **Given** 9월 `totalCount`가 `9`
 - **When** 내 달력과 `지연`의 달력을 각각 본다
 - **Then** 각각 `9 BREWS`, `지연 · 6 BREWS`다
 - **검증** 컴포넌트 테스트 `MonthNav.test.tsx`
 
-#### AC-HOMECAL-41 · 1건은 `1 BREW`, 0건은 `0 BREWS`다
+**AC-HOMECAL-41 (승계 → quick-brew)** · 1건은 `1 BREW`, 0건은 `0 BREWS`다
 
 - **Given** `totalCount`가 각각 `1`, `0`인 달력 응답
 - **When** 월 헤더를 본다
 - **Then** 각각 `1 BREW`, `0 BREWS`다
 - **검증** 단위 테스트 `brewCountLabel.test.ts`
 
-#### AC-HOMECAL-42 · 목록 헤더가 날짜·요일·건수를 담는다
+**AC-HOMECAL-42 (승계 → quick-brew)** · 목록 헤더가 날짜·요일·건수를 담는다
 
 - **Given** `2026-09-19`(토)에 기록 2건
 - **When** 그 날짜를 선택한다
 - **Then** 목록 헤더가 `09.19 SAT · 2 BREWS`다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`
 
-#### AC-HOMECAL-43 · 수율이 없으면 비율을 보여준다
+**AC-HOMECAL-43 (승계 → quick-brew)** · 수율이 없으면 비율을 보여준다
 
 - **Given** `extractionYieldPercent`가 `20.4`인 기록과, 그 키가 없고 `brewRatio`가 `15.6`인 기록
 - **When** 목록을 본다
@@ -685,42 +696,42 @@ CTA            기록하기
 
 ### 정상 동작 — 웹 셀
 
-#### AC-HOMECAL-63 · 기록이 있는 셀에 대표 레시피명이 뜬다
+**AC-HOMECAL-63 (대체됨)** · 기록이 있는 셀에 대표 레시피명이 뜬다
 
 - **Given** 뷰포트 폭 `1440px`, `2026-09-05`의 `primaryRecipeName`이 `"Kasuya 4:6"`
 - **When** 화면을 연다
 - **Then** `2026-09-05` 셀에 `Kasuya 4:6`이 보인다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-64 · 기록이 3건이면 `외 2건`이 뜬다
+**AC-HOMECAL-64 (대체됨)** · 기록이 3건이면 `외 2건`이 뜬다
 
 - **Given** 뷰포트 폭 `1440px`, `2026-09-05`의 `count`가 `3`
 - **When** 화면을 연다
 - **Then** `2026-09-05` 셀에 `외 2건`이 보인다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-65 · 기록이 1건이면 `외 N건`이 없다
+**AC-HOMECAL-65 (대체됨)** · 기록이 1건이면 `외 N건`이 없다
 
 - **Given** 뷰포트 폭 `1440px`, `2026-09-02`의 `count`가 `1`
 - **When** 화면을 연다
 - **Then** `2026-09-02` 셀에 `외`로 시작하는 텍스트가 없다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-68 · 6주에 걸친 달도 그리드 전체 높이가 같다
+**AC-HOMECAL-68 (대체됨)** · 6주에 걸친 달도 그리드 전체 높이가 같다
 
 - **Given** 뷰포트 폭 `1440px`. `2026-08`은 6주, `2026-09`는 5주에 걸친다
 - **When** `2026-09`에서 이전 달로 넘긴다
 - **Then** 그리드 컨테이너의 높이가 두 달에서 같고, 행 수가 `5`에서 `6`으로 바뀐다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-69 · 다른 달 칸은 내용 없이 배경만 있다
+**AC-HOMECAL-69 (대체됨)** · 다른 달 칸은 내용 없이 배경만 있다
 
 - **Given** 뷰포트 폭 `1440px`, `2026-09-01`이 화요일이라 첫 주 월요일 칸이 8월에 속한다
 - **When** 화면을 연다
 - **Then** 그 칸에 날짜 숫자도 점도 없고 `button`이 아니다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-70 · 선택된 셀에 링과 배경이 있다
+**AC-HOMECAL-70 (대체됨)** · 선택된 셀에 링과 배경이 있다
 
 - **Given** 뷰포트 폭 `1440px`
 - **When** `2026-09-05` 셀을 누른다
@@ -729,21 +740,21 @@ CTA            기록하기
 
 ### 정상 동작 — 웹 상단 바와 우측 컬럼
 
-#### AC-HOMECAL-58 · 상단 바에 6개 요소가 있다
+**AC-HOMECAL-58 (대체됨)** · 상단 바에 6개 요소가 있다
 
 - **Given** 뷰포트 폭 `1440px`
 - **When** 홈을 연다
 - **Then** 로고·`홈`·`레시피`·`기록`·`기록하기`·아바타가 모두 보이고 하단 탭바가 보이지 않는다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-59 · 아바타를 누르면 더보기로 간다
+**AC-HOMECAL-59 (대체됨)** · 아바타를 누르면 더보기로 간다
 
 - **Given** 뷰포트 폭 `1440px`
 - **When** 상단 바의 아바타를 누른다
 - **Then** 주소가 `/more`다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-60 · 상단 바 CTA는 레시피 선택으로 보낸다
+**AC-HOMECAL-60 (대체됨)** · 상단 바 CTA는 레시피 선택으로 보낸다
 
 > 2026-09-19 정정 — 원래 문구는 「상단 바 CTA는 날짜를 프리필하지 않는다」였다. 위
 > 「구현 중 정정」 참조.
@@ -755,7 +766,7 @@ CTA            기록하기
 
 > **정정 (2026-11-14):** ADR 0011(기록 먼저)로 이 진입점은 **빠른 기록 시트를 여는 「기록하기」 버튼**이 됐다(`docs/specs/2026-11-14-quick-brew.md` AC-QUICKBREW-29). 위 본문은 당시 결정의 기록으로 남기고, 테스트는 이 ID로 새 동작을 검증한다.
 
-#### AC-HOMECAL-61 · 우측 하단 CTA도 레시피 선택으로 보낸다
+**AC-HOMECAL-61 (대체됨)** · 우측 하단 CTA도 레시피 선택으로 보낸다
 
 > 2026-09-19 정정 — 원래 문구는 「우측 하단 CTA는 선택 날짜를 프리필한다」였다.
 
@@ -764,21 +775,21 @@ CTA            기록하기
 - **Then** 주소가 `/recipes`다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-62 · 남의 달력 우측 CTA는 프로필로 간다
+**AC-HOMECAL-62 (대체됨)** · 남의 달력 우측 CTA는 프로필로 간다
 
 - **Given** 뷰포트 폭 `1440px`, 레일에서 `지연`(id `12`)이 선택된 상태
 - **When** `지연 님 프로필 보기`를 누른다
 - **Then** 주소가 `/u/12`다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-72 · 메모가 있으면 카드에 한 줄이 뜬다
+**AC-HOMECAL-72 (대체됨)** · 메모가 있으면 카드에 한 줄이 뜬다
 
 - **Given** 뷰포트 폭 `1440px`, 선택 날짜 기록의 `overallNote`가 `"산미가 강했다"`
 - **When** 우측 카드를 본다
 - **Then** `산미가 강했다`가 보인다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-74 · 메모가 없으면 그 줄 자체가 없다
+**AC-HOMECAL-74 (대체됨)** · 메모가 없으면 그 줄 자체가 없다
 
 - **Given** 뷰포트 폭 `1440px`, 선택 날짜 기록에 `overallNote` 키가 없다
 - **When** 우측 카드를 본다
@@ -789,14 +800,14 @@ CTA            기록하기
 `docs/specs/2026-10-11-home-fidelity.md`의 AC-HOMEFIT-12(진단은 카드 밖 관찰 블록 1개 — TDS가 있는 가장
 최근 잔의 것)가 대체한다. 문구를 가공 없이 보이는 것은 그대로다.
 
-#### AC-HOMECAL-78 · 상단 바에 로고 심볼이 렌더된다
+**AC-HOMECAL-78 (대체됨)** · 상단 바에 로고 심볼이 렌더된다
 
 - **Given** 뷰포트 폭 `1440px`
 - **When** 홈을 연다
 - **Then** 상단 바에 `svg` 요소와 텍스트 `kaldi·note`가 있다
 - **검증** e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-79 · 우측 컬럼만 스크롤한다
+**AC-HOMECAL-79 (대체됨)** · 우측 컬럼만 스크롤한다
 
 - **Given** 뷰포트 폭 `1440px`, 기록이 4건인 날짜가 선택된 상태
 - **When** 우측 컬럼을 아래로 스크롤한다
@@ -812,35 +823,35 @@ CTA            기록하기
 > `min-[1100px]:flex`로 좁힌다. 적용 폭은 `<1100px` — 기존 `WebTopBar`가 켜지는 지점의 정확한
 > 반대편이다.
 
-#### AC-HOMECAL-80 · 1100px 미만에서도 로고 헤더가 보인다
+**AC-HOMECAL-80 (대체됨)** · 1100px 미만에서도 로고 헤더가 보인다
 
 - **Given** 뷰포트 폭 `390px`
 - **When** 홈을 연다
 - **Then** 상단에 `svg` 요소와 텍스트 `kaldi·note`가 있다
 - **검증** e2e `home-calendar.spec.ts`
 
-#### AC-HOMECAL-81 · 그 헤더에는 네비게이션 링크가 없다
+**AC-HOMECAL-81 (대체됨)** · 그 헤더에는 네비게이션 링크가 없다
 
 - **Given** 뷰포트 폭 `390px`
 - **When** 홈을 연다
 - **Then** 상단 헤더 안에 `홈`·`레시피`·`기록` 링크가 없다 — 하단 탭바에만 있다
 - **검증** e2e `home-calendar.spec.ts`
 
-#### AC-HOMECAL-82 · 그 헤더에는 CTA와 아바타가 없다
+**AC-HOMECAL-82 (대체됨)** · 그 헤더에는 CTA와 아바타가 없다
 
 - **Given** 뷰포트 폭 `390px`
 - **When** 홈을 연다
 - **Then** 상단 헤더 안에 `기록하기` 버튼과 프로필 아바타 링크가 없다
 - **검증** e2e `home-calendar.spec.ts`
 
-#### AC-HOMECAL-83 · 1100px 이상에서는 기존 전체 헤더가 그대로 보인다
+**AC-HOMECAL-83 (대체됨)** · 1100px 이상에서는 기존 전체 헤더가 그대로 보인다
 
 - **Given** 뷰포트 폭 `1440px`
 - **When** 홈을 연다
 - **Then** 상단 헤더 안에 `홈`·`레시피`·`기록` 링크, `기록하기` 버튼, 아바타가 모두 있다
 - **검증** e2e `home-calendar-web.spec.ts` (기존 `AC-HOMECAL-58` 회귀 확인)
 
-#### AC-HOMECAL-84 · 웹에서는 `Shell`의 `max-w-2xl`에 눌리지 않는다
+**AC-HOMECAL-84 (대체됨)** · 웹에서는 `Shell`의 `max-w-2xl`에 눌리지 않는다
 
 > **2026-09-20 발견.** `Shell` 컴포넌트가 모든 화면에 `max-w-2xl`(672px)을 고정으로 씌운다.
 > 홈의 웹 2컬럼 레이아웃(달력 `flex:1` + 우측 고정 `420px`)이 그 안에 눌려 들어가면서
@@ -855,35 +866,35 @@ CTA            기록하기
 
 ### 정상 동작 — roast dot, 접근성, 캐싱
 
-#### AC-HOMECAL-75 · roast dot 색이 로스팅 강도에 따라 다르다
+**AC-HOMECAL-75 (승계 → quick-brew)** · roast dot 색이 로스팅 강도에 따라 다르다
 
 - **Given** `roastLevel`이 각각 `LIGHT`, `DARK`인 원두를 쓴 기록 2건
 - **When** 목록을 본다
 - **Then** 두 행의 roast dot `background-color`가 서로 다르다
 - **검증** 컴포넌트 테스트 `RoastDot.test.tsx`
 
-#### AC-HOMECAL-76 · 원두를 연결하지 않은 기록은 roast dot이 없다
+**AC-HOMECAL-76 (승계 → quick-brew)** · 원두를 연결하지 않은 기록은 roast dot이 없다
 
 - **Given** `beanBatchId` 키가 없는 기록 1건
 - **When** 목록을 본다
 - **Then** 그 행에 roast dot 요소가 없다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`
 
-#### AC-HOMECAL-45 · 날짜 셀의 aria-label이 건수를 말한다
+**AC-HOMECAL-45 (승계 → quick-brew)** · 날짜 셀의 aria-label이 건수를 말한다
 
 - **Given** `2026-09-19`에 기록 2건, `2026-09-03`에 기록 없음
 - **When** 두 셀의 `aria-label`을 읽는다
 - **Then** 각각 `"9월 19일, 기록 2건"`, `"9월 3일, 기록 없음"`이다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-46 · 선택된 셀에 aria-current가 있다
+**AC-HOMECAL-46 (승계 → quick-brew)** · 선택된 셀에 aria-current가 있다
 
 - **Given** `2026-09-05`를 선택한 상태
 - **When** DOM을 본다
 - **Then** `aria-current="date"`인 요소가 정확히 1개이고 그것이 `2026-09-05` 셀이다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-48 · 모바일 하단 CTA는 레시피 선택으로 보낸다
+**AC-HOMECAL-48 (대체됨)** · 모바일 하단 CTA는 레시피 선택으로 보낸다
 
 > 2026-09-19 정정 — 원래 문구는 「모바일 하단 CTA는 선택 날짜를 프리필한다」였다. `/brews/new`가
 > `recipeId`를 필수로 받아 캘린더 홈에서 곧바로 열 수 없다는 것을 구현 중 발견했다(사람 승인,
@@ -894,42 +905,42 @@ CTA            기록하기
 - **Then** 주소가 `/recipes`다
 - **검증** e2e `home-calendar.spec.ts`
 
-#### AC-HOMECAL-49 · 기록을 저장하고 돌아오면 점이 찍혀 있다
+**AC-HOMECAL-49 (대체됨)** · 기록을 저장하고 돌아오면 점이 찍혀 있다
 
 - **Given** `2026-09-19`에 기록이 없는 달력
 - **When** `/brews/new`에서 `2026-09-19`로 기록을 저장하고 홈으로 돌아온다
 - **Then** `2026-09-19` 셀에 점이 있다
 - **검증** e2e `home-calendar.spec.ts`
 
-#### AC-HOMECAL-50 · 이전 달로 넘길 때 추가 요청이 없다
+**AC-HOMECAL-50 (대체됨)** · 이전 달로 넘길 때 추가 요청이 없다
 
 - **Given** `2026-09`를 열어 `2026-09`와 `2026-08` 응답을 이미 받았다
 - **When** 이전 달 버튼을 누른다
 - **Then** `month=2026-08`에 대한 네트워크 요청이 추가로 발생하지 않는다
 - **검증** 컴포넌트 테스트 `HomePage.test.tsx` (MSW 요청 카운트)
 
-#### AC-HOMECAL-51 · 기록이 4건인 날에도 달력 위치가 변하지 않는다
+**AC-HOMECAL-51 (대체됨)** · 기록이 4건인 날에도 달력 위치가 변하지 않는다
 
 - **Given** 뷰포트 폭 `390px`, 기록이 1건인 날이 선택된 상태에서 그리드의 `y` 좌표를 기록한다
 - **When** 기록이 4건인 날을 선택한다
 - **Then** 그리드의 `y` 좌표가 같다
 - **검증** e2e `home-calendar.spec.ts`
 
-#### AC-HOMECAL-52 · 로딩 중에도 그리드 골격이 유지된다
+**AC-HOMECAL-52 (대체됨)** · 로딩 중에도 그리드 골격이 유지된다
 
 - **Given** 달력 응답이 아직 오지 않은 상태
 - **When** 화면을 본다
 - **Then** 7열 그리드와 날짜 숫자가 이미 있고 점만 없다 — 스켈레톤 블록이 없다
 - **검증** 컴포넌트 테스트 `HomePage.test.tsx`
 
-#### AC-HOMECAL-53 · signal-record 토큰이 라이트·다크에서 각각 지정값이다
+**AC-HOMECAL-53 (승계 → quick-brew)** · signal-record 토큰이 라이트·다크에서 각각 지정값이다
 
 - **Given** `globals.css`
 - **When** 라이트와 다크에서 `--signal-record`를 읽는다
 - **Then** 각각 `oklch(0.55 0.16 30)`, `oklch(0.65 0.17 30)`이다
 - **검증** 단위 테스트 `tokens.test.ts`
 
-#### AC-HOMECAL-54 · 기존 목록과 상세가 KST 날짜로 표시된다
+**AC-HOMECAL-54 (승계 → quick-brew)** · 기존 목록과 상세가 KST 날짜로 표시된다
 
 - **Given** `brewedAt`이 `2026-09-18T23:00:00Z`인 기록
 - **When** `/brews` 목록과 `/brews/[id]` 상세를 본다
@@ -939,35 +950,35 @@ CTA            기록하기
 
 ### 에러
 
-#### AC-HOMECAL-11 · month 형식이 틀리면 400이다
+**AC-HOMECAL-11 (승계 → quick-brew)** · month 형식이 틀리면 400이다
 
 - **Given** 인증된 호출자
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-13`
 - **Then** HTTP `400`과 `code: "INVALID_REQUEST"`를 반환한다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-12 · 미래 달은 200과 빈 결과다
+**AC-HOMECAL-12 (승계 → quick-brew)** · 미래 달은 200과 빈 결과다
 
 - **Given** 오늘이 `2026-09-19`
 - **When** `GET /api/v1/brew-logs/calendar?month=2027-01`
 - **Then** HTTP `200`, `days`가 `[]`, `totalCount`가 `0`이다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-13 · 토큰이 없으면 401이다
+**AC-HOMECAL-13 (승계 → quick-brew)** · 토큰이 없으면 401이다
 
 - **Given** `Authorization` 헤더 없음
 - **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
 - **Then** HTTP `401`을 반환한다
 - **검증** API 테스트 `BrewLogCalendarControllerTest`
 
-#### AC-HOMECAL-17 · date 형식이 틀리면 400이다
+**AC-HOMECAL-17 (승계 → quick-brew)** · date 형식이 틀리면 400이다
 
 - **Given** 인증된 호출자
 - **When** `GET /api/v1/brew-logs?date=2026-9-19`
 - **Then** HTTP `400`과 `code: "INVALID_REQUEST"`를 반환한다
 - **검증** API 테스트 `BrewLogControllerTest`
 
-#### AC-HOMECAL-24 · 맞팔로우 목록도 토큰이 없으면 401이다
+**AC-HOMECAL-24 (승계 → quick-brew)** · 맞팔로우 목록도 토큰이 없으면 401이다
 
 - **Given** `Authorization` 헤더 없음
 - **When** `GET /api/v1/users/me/mutual-follows`

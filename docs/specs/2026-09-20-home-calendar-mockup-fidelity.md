@@ -1,11 +1,23 @@
 ---
 id: HOMECAL
 title: 홈 달력 목업 정합성 보정
-status: 구현완료
+status: 대체됨
 plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 ---
 
 # 홈 달력 목업 정합성 보정 스펙
+
+> ## ★ 2026-11-14 — 대체됨
+>
+> [ADR 0011](../decisions/0011-brew-first-minimal-input.md)에 따라 홈(`/`)이 달력에서
+> 「오늘」 화면으로 바뀌어 [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)가 홈 목업 정합 스펙을 대체한다.
+>
+> - **달력 부품(`Calendar`·`MonthNav`·`DayList` 모바일) AC 17개**(`AC-HOMECAL-92~101·98a·98b·105~109`)와
+>   **공용 `Avatar`·프로필(`/u/[id]`) AC 3개**(`AC-HOMECAL-111·119·120`):
+>   대체되지 않았으므로 [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)로 `#### AC-` 헤딩을 옮겨
+>   `check-spec-coverage.sh` 감시를 유지한다.
+> - **팔로우 레일·웹 2컬럼 홈(`DayCard`·우측 칼럼·웹 셀)·전역 CTA·모바일 60vh**:
+>   `quick-brew`로 대체됐다(팔로우 레일은 M4 보류).
 
 > 작성 규칙은 [`docs/conventions/workflow.md`](../conventions/workflow.md) 참조.
 > **모든 인수 조건은 자동화된 테스트로 옮길 수 있어야 한다.**
@@ -59,7 +71,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 타이포·색 — 요일 헤더 · 날짜 숫자
 
-#### AC-HOMECAL-92 · 요일 헤더가 mono 10px·대문자·자간 0.08em으로 렌더된다
+**AC-HOMECAL-92 (승계 → quick-brew)** · 요일 헤더가 mono 10px·대문자·자간 0.08em으로 렌더된다
 
 - **Given** 홈 달력 화면(모바일)
 - **When** 요일 헤더(`월 화 수 목 금 토 일`) 7칸을 렌더한다
@@ -67,49 +79,49 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   `letter-spacing`이 0.08em이다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-93 · 요일 헤더 평일 색이 oklch(0.58 0.02 70)이다
+**AC-HOMECAL-93 (승계 → quick-brew)** · 요일 헤더 평일 색이 oklch(0.58 0.02 70)이다
 
 - **Given** 요일 헤더의 월~금 칸
 - **When** 렌더한다
 - **Then** 글자 색이 `oklch(0.58 0.02 70)`(라이트)이다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-94 · 요일 헤더 주말 색이 oklch(0.62 0.02 70)이다
+**AC-HOMECAL-94 (승계 → quick-brew)** · 요일 헤더 주말 색이 oklch(0.62 0.02 70)이다
 
 - **Given** 요일 헤더의 토·일 칸
 - **When** 렌더한다
 - **Then** 글자 색이 `oklch(0.62 0.02 70)`(라이트)이다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-95 · 이번 달 지난 날짜(평일) 색이 oklch(0.3 0.015 60)이다
+**AC-HOMECAL-95 (승계 → quick-brew)** · 이번 달 지난 날짜(평일) 색이 oklch(0.3 0.015 60)이다
 
 - **Given** 이번 달 안의 오늘보다 이전 날짜이고 평일(월~금)인 셀
 - **When** 렌더한다
 - **Then** 날짜 숫자 색이 `oklch(0.3 0.015 60)`이다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-96 · 이번 달 지난 날짜(주말) 색이 oklch(0.5 0.015 60)이다
+**AC-HOMECAL-96 (승계 → quick-brew)** · 이번 달 지난 날짜(주말) 색이 oklch(0.5 0.015 60)이다
 
 - **Given** 이번 달 안의 오늘보다 이전 날짜이고 주말(토·일)인 셀
 - **When** 렌더한다
 - **Then** 날짜 숫자 색이 `oklch(0.5 0.015 60)`이다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-97 · 미래 날짜(평일) 색이 oklch(0.72 0.012 70)이다
+**AC-HOMECAL-97 (승계 → quick-brew)** · 미래 날짜(평일) 색이 oklch(0.72 0.012 70)이다
 
 - **Given** 오늘보다 미래인 날짜이고 평일인 셀(같은 달 안)
 - **When** 렌더한다
 - **Then** 날짜 숫자 색이 `oklch(0.72 0.012 70)`이다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-98 · 미래 날짜(주말) 색이 oklch(0.78 0.012 70)이다
+**AC-HOMECAL-98 (승계 → quick-brew)** · 미래 날짜(주말) 색이 oklch(0.78 0.012 70)이다
 
 - **Given** 오늘보다 미래인 날짜이고 주말인 셀(같은 달 안)
 - **When** 렌더한다
 - **Then** 날짜 숫자 색이 `oklch(0.78 0.012 70)`이다
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-98a · 다크 모드 날짜 색은 기존 ink 스케일을 재사용한다
+**AC-HOMECAL-98a (승계 → quick-brew)** · 다크 모드 날짜 색은 기존 ink 스케일을 재사용한다
 
 - **Given** 다크 모드
 - **When** AC-HOMECAL-95~98의 4가지 상태를 각각 렌더한다
@@ -119,7 +131,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   주지 않아 프로젝트의 기존 ink 스케일로 대응시킨 값이다(`[제안 후 승인]`)
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`(다크 모드 렌더)
 
-#### AC-HOMECAL-98b · 다크 모드 요일 헤더 색은 평일·주말 모두 ink-3를 쓴다
+**AC-HOMECAL-98b (승계 → quick-brew)** · 다크 모드 요일 헤더 색은 평일·주말 모두 ink-3를 쓴다
 
 - **Given** 다크 모드
 - **When** 요일 헤더를 렌더한다
@@ -127,7 +139,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   평일/주말 색차는 다크에서는 단일 값으로 단순화한다(`[제안 후 승인]`)
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`(다크 모드 렌더)
 
-#### AC-HOMECAL-99 · 오늘 날짜는 위 4색 규칙을 따르지 않고 선택/오늘 스타일이 우선한다
+**AC-HOMECAL-99 (승계 → quick-brew)** · 오늘 날짜는 위 4색 규칙을 따르지 않고 선택/오늘 스타일이 우선한다
 
 - **Given** 오늘 날짜 셀
 - **When** 선택되지 않은 상태로 렌더한다
@@ -137,7 +149,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 기록 점
 
-#### AC-HOMECAL-100 · 기록 점과 날짜 숫자 사이 gap이 4px다(선택 여부 무관)
+**AC-HOMECAL-100 (승계 → quick-brew)** · 기록 점과 날짜 숫자 사이 gap이 4px다(선택 여부 무관)
 
 - **Given** 기록이 1건 이상인 날짜 셀(모바일)
 - **When** 렌더한다
@@ -146,7 +158,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   「간격은 6단계뿐이다」)
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`
 
-#### AC-HOMECAL-101 · 기록이 없는 날짜도 점과 같은 크기의 투명 자리를 유지한다
+**AC-HOMECAL-101 (승계 → quick-brew)** · 기록이 없는 날짜도 점과 같은 크기의 투명 자리를 유지한다
 
 - **Given** 기록이 0건인 날짜 셀
 - **When** 렌더한다
@@ -156,21 +168,21 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 팔로우 레일 간격
 
-#### AC-HOMECAL-102 · 팔로우 레일 아이템 간 gap이 14px다
+**AC-HOMECAL-102 (대체됨 · M4 보류)** · 팔로우 레일 아이템 간 gap이 14px다
 
 - **Given** 팔로우 레일(모바일)
 - **When** 아바타 아이템 2개 이상을 렌더한다
 - **Then** 아이템 사이 `gap`이 14px다(목업 값 그대로 — 2026-10-11 AC-HOMEFIT-04로 갱신, ADR 0010)
 - **검증** 컴포넌트 테스트 `FollowRail.test.tsx`
 
-#### AC-HOMECAL-103 · 아바타와 라벨 사이 gap이 7px다
+**AC-HOMECAL-103 (대체됨 · M4 보류)** · 아바타와 라벨 사이 gap이 7px다
 
 - **Given** 팔로우 레일 아이템 1개
 - **When** 렌더한다
 - **Then** 아바타와 이름 라벨 사이 `gap`이 7px다(목업 값 그대로 — 2026-10-11 AC-HOMEFIT-04로 갱신)
 - **검증** 컴포넌트 테스트 `FollowRail.test.tsx`
 
-#### AC-HOMECAL-104 · 웹 팔로우 레일 선택 pill의 padding이 6px 14px 6px 6px다
+**AC-HOMECAL-104 (대체됨 · M4 보류)** · 웹 팔로우 레일 선택 pill의 padding이 6px 14px 6px 6px다
 
 - **Given** 웹 팔로우 레일에서 선택된 pill
 - **When** 렌더한다
@@ -179,7 +191,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 월 네비게이션
 
-#### AC-HOMECAL-105 · 월 이동 버튼의 클릭 영역이 44×44px다
+**AC-HOMECAL-105 (승계 → quick-brew)** · 월 이동 버튼의 클릭 영역이 44×44px다
 
 - **Given** 월 이동 버튼(‹, ›) 2개
 - **When** 렌더한다
@@ -187,7 +199,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   2026-10-11 AC-HOMEFIT-06으로 갱신: 보이는 박스가 아니라 hit area로 잰다)
 - **검증** 컴포넌트 테스트 `MonthNav.test.tsx` + 기존 `e2e/touch-targets.spec.ts` 재통과
 
-#### AC-HOMECAL-106 · 월 이동 버튼의 시각 박스가 32×32px다
+**AC-HOMECAL-106 (승계 → quick-brew)** · 월 이동 버튼의 시각 박스가 32×32px다
 
 - **Given** 월 이동 버튼
 - **When** 렌더한다
@@ -195,7 +207,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   안쪽 상자를 없애 한 겹이다, #172)
 - **검증** 컴포넌트 테스트 `MonthNav.test.tsx`
 
-#### AC-HOMECAL-107 · 월 라벨이 새 타입 스케일 `month-label`(mono 22px)로 렌더된다
+**AC-HOMECAL-107 (승계 → quick-brew)** · 월 라벨이 새 타입 스케일 `month-label`(mono 22px)로 렌더된다
 
 - **Given** 월 헤더의 `2026.09` 라벨
 - **When** 렌더한다
@@ -206,7 +218,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 날짜별 목록
 
-#### AC-HOMECAL-108 · 목록 행에 시각·별점 캡션 줄이 새 타입 스케일 `caption`(sans 11.5px)으로 렌더된다
+**AC-HOMECAL-108 (승계 → quick-brew)** · 목록 행에 시각·별점 캡션 줄이 새 타입 스케일 `caption`(sans 11.5px)으로 렌더된다
 
 - **Given** 날짜별 목록의 브루 로그 행 1개(별점이 있는 경우)
 - **When** 렌더한다
@@ -214,7 +226,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   색 `ink-3`로 렌더된다. `SCALE`에 `caption`이 추가되고 `@utility text-caption`이 정의된다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx` + `src/test/typography.test.ts`
 
-#### AC-HOMECAL-109 · 별점이 없으면 캡션 줄에 시각만 렌더된다
+**AC-HOMECAL-109 (승계 → quick-brew)** · 별점이 없으면 캡션 줄에 시각만 렌더된다
 
 - **Given** 별점이 `null`인 브루 로그 행
 - **When** 렌더한다
@@ -223,7 +235,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 관계 문구
 
-#### AC-HOMECAL-110 · 남의 달력 하단 관계 문구에 상대 닉네임이 보간된다
+**AC-HOMECAL-110 (대체됨 · M4 보류)** · 남의 달력 하단 관계 문구에 상대 닉네임이 보간된다
 
 - **Given** 맞팔로우 상태인 사용자 `지연`의 달력을 보는 중
 - **When** 날짜별 목록 하단 관계 문구를 렌더한다
@@ -231,7 +243,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   화면에 로드된 팔로우 레일 데이터에서 클라이언트가 보간한다 — 새 백엔드 필드 없음)
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`
 
-#### AC-HOMECAL-111 · 프로필 화면의 관계 문구도 동일하게 닉네임을 보간한다
+**AC-HOMECAL-111 (승계 → quick-brew)** · 프로필 화면의 관계 문구도 동일하게 닉네임을 보간한다
 
 - **Given** `/u/[id]` 프로필 화면, 맞팔로우 상태
 - **When** 관계 문구를 렌더한다
@@ -241,7 +253,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 웹 우측 컬럼 — 카드
 
-#### AC-HOMECAL-112 · 웹 우측 컬럼의 기록이 원장 행이 아니라 카드로 렌더된다
+**AC-HOMECAL-112 (대체됨)** · 웹 우측 컬럼의 기록이 원장 행이 아니라 카드로 렌더된다
 
 > **2026-09-21 구현 확정 — 값 3개를 프로젝트 스케일에 반올림한다:**
 > - `border-radius` 10px → **`rounded-surface`(12px)**. 이 프로젝트는 모서리를 값이 아니라
@@ -262,7 +274,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   `pad="loose"`) + 내부 `gap-3`(12px)인 카드로 렌더된다(기존 `DayListRow` 원장 행 재사용을 대체)
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant)
 
-#### AC-HOMECAL-113 · 카드 상단에 roast dot 10px·레시피명·캡션·대표 수치가 배치된다
+**AC-HOMECAL-113 (대체됨)** · 카드 상단에 roast dot 10px·레시피명·캡션·대표 수치가 배치된다
 
 > **2026-10-11 갱신:** 캡션은 `원두 · 드리퍼 · 시각`(12px), 레시피명은 15.5px로 목업 값이다
 > (AC-HOMEFIT-11 — 「내 잔」 표 보조줄과 같은 조회로 새 API 없이 만든다). 아래 정정은 그 전 기록이다.
@@ -281,7 +293,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   그 아래 시각 캡션(`text-caption`, 11.5px)이, 우측에 대표 수치가 배치된다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant)
 
-#### AC-HOMECAL-114 · 카드의 대표 수치가 새 타입 스케일 `card-metric`(mono 17px)으로 렌더된다
+**AC-HOMECAL-114 (대체됨)** · 카드의 대표 수치가 새 타입 스케일 `card-metric`(mono 17px)으로 렌더된다
 
 - **Given** 웹 기록 카드의 대표 수치(수율 또는 비율)
 - **When** 렌더한다
@@ -289,7 +301,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   `@utility text-card-metric`이 정의된다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx` + `src/test/typography.test.ts`
 
-#### AC-HOMECAL-115 · 카드 하단에 1px divider 아래 태그 줄(비율·온도·시간·별점)이 렌더된다
+**AC-HOMECAL-115 (대체됨)** · 카드 하단에 1px divider 아래 태그 줄(비율·온도·시간·별점)이 렌더된다
 
 - **Given** 웹 기록 카드 1개
 - **When** 렌더한다
@@ -297,14 +309,14 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   배경)·온도·시간·별점 태그가 순서대로 렌더된다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant)
 
-#### AC-HOMECAL-116 · 메모가 있으면 13px italic 한 줄이 태그 줄 아래 추가된다
+**AC-HOMECAL-116 (대체됨)** · 메모가 있으면 13px italic 한 줄이 태그 줄 아래 추가된다
 
 - **Given** `overallNote`가 있는 웹 기록 카드
 - **When** 렌더한다
 - **Then** 태그 줄 아래 13px italic 텍스트로 메모가 렌더된다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant)
 
-#### AC-HOMECAL-117 · 메모가 없으면 메모 줄이 렌더되지 않는다
+**AC-HOMECAL-117 (대체됨)** · 메모가 없으면 메모 줄이 렌더되지 않는다
 
 - **Given** `overallNote`가 `null`인 웹 기록 카드
 - **When** 렌더한다
@@ -313,7 +325,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 웹 기록 점 위치
 
-#### AC-HOMECAL-118 · 웹 달력 셀에서 기록 점이 날짜 숫자 오른쪽 6px 간격에 렌더된다
+**AC-HOMECAL-118 (대체됨)** · 웹 달력 셀에서 기록 점이 날짜 숫자 오른쪽 6px 간격에 렌더된다
 
 > **2026-10-11 갱신:** 목업 원값 6px로 되돌렸다(AC-HOMEFIT-07, ADR 0010 — 목업이 시각의 정본이다).
 
@@ -329,7 +341,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 아바타 색조
 
-#### AC-HOMECAL-119 · 아바타 배경색이 userId 기반으로 3색 중 하나로 결정된다
+**AC-HOMECAL-119 (승계 → quick-brew)** · 아바타 배경색이 userId 기반으로 3색 중 하나로 결정된다
 
 - **Given** 프로필 사진이 없는 사용자 A(id=1)·B(id=2)·C(id=3)
 - **When** 각각의 이니셜 아바타를 렌더한다
@@ -337,7 +349,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   하나이고, 계산식은 `userId % 3`이다(백엔드 필드 추가 없음, 프론트에서만 계산)
 - **검증** 컴포넌트 테스트 `Avatar.test.tsx`
 
-#### AC-HOMECAL-120 · 같은 사용자는 항상 같은 아바타 색을 받는다
+**AC-HOMECAL-120 (승계 → quick-brew)** · 같은 사용자는 항상 같은 아바타 색을 받는다
 
 - **Given** 사용자 A(id=1)
 - **When** 아바타를 두 번(예: 팔로우 레일과 프로필 화면) 렌더한다
@@ -349,7 +361,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 > 이 절은 위 92~120 작성 뒤 **실제 배포된 앱 화면**을 스크린샷으로 목업과 나란히 대조하며
 > 추가로 찾은 격차다. `HOME-CALENDAR.md`를 다시 읽어 확인했다.
 
-#### AC-HOMECAL-121 · 웹 달력 셀의 콘텐츠가 좌상단 정렬된다
+**AC-HOMECAL-121 (대체됨)** · 웹 달력 셀의 콘텐츠가 좌상단 정렬된다
 
 - **Given** 웹(≥1100px) 달력 셀
 - **When** 렌더한다
@@ -359,7 +371,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   좌상단이 맞다)
 - **검증** 컴포넌트 테스트 `Calendar.test.tsx`(web variant)
 
-#### AC-HOMECAL-122 · 웹 우측 컬럼 컨테이너의 padding이 좌우 40px, 배경이 surface다
+**AC-HOMECAL-122 (대체됨)** · 웹 우측 컬럼 컨테이너의 padding이 좌우 40px, 배경이 surface다
 
 > **2026-10-11 갱신:** 목업 원값 40px로 되돌렸다(AC-HOMEFIT-08, ADR 0010).
 
@@ -373,7 +385,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   좁은 박스처럼 보인다)
 - **검증** 컴포넌트 테스트 또는 e2e `home-calendar-web.spec.ts`
 
-#### AC-HOMECAL-123 · 웹 우측 컬럼에 요일 아이브로우가 렌더된다
+**AC-HOMECAL-123 (대체됨)** · 웹 우측 컬럼에 요일 아이브로우가 렌더된다
 
 - **Given** 웹 2컬럼에서 토요일을 선택한 상태(내 달력)
 - **When** 우측 컬럼 헤더를 렌더한다
@@ -381,7 +393,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   렌더된다. 남의 달력이면 `FRIDAY · 지연` 형식이다(요일 뒤에 `· {닉네임}`)
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant)
 
-#### AC-HOMECAL-124 · 웹 우측 컬럼 헤더의 날짜 숫자가 26px 근사값(page-title 27px)·weight 600으로 렌더된다
+**AC-HOMECAL-124 (대체됨)** · 웹 우측 컬럼 헤더의 날짜 숫자가 26px 근사값(page-title 27px)·weight 600으로 렌더된다
 
 > **2026-10-11 갱신:** 날짜는 `9월 19일`, 크기는 목업 원값 `26px`·600이다(AC-HOMEFIT-10).
 
@@ -393,7 +405,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant) + `src/test/typography.test.ts`(기존
   단계 재사용이므로 새 등록 불필요)
 
-#### AC-HOMECAL-125 · 웹 우측 컬럼 헤더 오른쪽에 건수가 mono·caption(11.5px)으로 렌더된다
+**AC-HOMECAL-125 (대체됨)** · 웹 우측 컬럼 헤더 오른쪽에 건수가 mono·caption(11.5px)으로 렌더된다
 
 > **2026-10-11 갱신:** 건수는 `2 brews`(소문자), 크기는 목업 원값 Mono `12px`이다(AC-HOMEFIT-10).
 
@@ -407,7 +419,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   렌더된다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`(web variant)
 
-#### AC-HOMECAL-126 · 관계 문구가 Observation 블록 스타일로 렌더된다
+**AC-HOMECAL-126 (대체됨 · M4 보류)** · 관계 문구가 Observation 블록 스타일로 렌더된다
 
 > **2026-09-21 구현 확정 — 값 2개를 프로젝트 규칙에 맞춘다:**
 > - `font-size` 13.5px → 타입 스케일에 없다. 기존 `body-sm`(13px, 차이 0.5px)으로 근사한다.
@@ -424,7 +436,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   라벨(대문자 mono 9.5px)은 붙이지 않는다 — 목업이 이 관계 문구에는 라벨을 쓰지 않는다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`
 
-#### AC-HOMECAL-127 · 전역 CTA 문구가 "이 레시피로 내렸다"다
+**AC-HOMECAL-127 (대체됨)** · 전역 CTA 문구가 "이 레시피로 내렸다"다
 
 - **Given** 모바일 하단 고정 CTA와 웹 상단 바 CTA(둘 다 전역 액션 — 날짜와 무관)
 - **When** 렌더한다
@@ -433,7 +445,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   기록 추가"/"프로필 보기")는 이 조건의 대상이 아니다 — 이미 올바르다
 - **검증** 컴포넌트 테스트 `page.test.tsx` + `WebTopBar.test.tsx`
 
-#### AC-HOMECAL-128 · 모바일 날짜별 목록 영역이 뷰포트 높이의 60%를 넘지 않는다
+**AC-HOMECAL-128 (대체됨)** · 모바일 날짜별 목록 영역이 뷰포트 높이의 60%를 넘지 않는다
 
 - **Given** 모바일(390×844) 홈 화면, 1컬럼 레이아웃
 - **When** 날짜별 목록(`data-testid="day-scroll"`)을 렌더한다

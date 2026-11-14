@@ -1,61 +1,38 @@
-import { screen, waitFor } from "@testing-library/react";
+import { act, cleanup, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { closeQuickBrew, useQuickBrew } from "@/lib/quickBrew";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
   brewLogPage,
-  brewers,
+  brewLogWithTds,
+  brewLogWithoutTds,
   fritzRoaster,
-  grindedRecipe,
+  hoffmann,
+  homeCalendar,
   me,
+  myComandante,
   yirgacheffeBatch,
   yirgacheffeProduct,
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
+import { mockViewportWidth } from "@/test/viewport";
 import HomePage from "./page";
 
+const replace = vi.fn();
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), replace, refresh: vi.fn() }),
   usePathname: () => "/",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 const BASE = "http://localhost:8080/api/v1";
 
-const 지연 = { id: 12, nickname: "지연" };
-
-function calendarResponse(month: string, userId?: number) {
-  if (userId === undefined && month === "2026-09") {
-    return {
-      month,
-      totalCount: 2,
-      days: [
-        { date: "2026-09-02", count: 1, primaryRecipeName: "Hoffmann V60" },
-        { date: "2026-09-05", count: 2, primaryRecipeName: "Kasuya 4:6" },
-      ],
-    };
-  }
-  if (userId === 12 && month === "2026-09") {
-    return {
-      month,
-      totalCount: 6,
-      days: [
-        { date: "2026-09-10", count: 1, primaryRecipeName: "Hoffmann V60" },
-      ],
-    };
-  }
-  return { month, totalCount: 0, days: [] };
-}
-
-function dayOf(id: number, date: string, userId = 11) {
-  return {
-    ...brewLogPage.content[0],
-    id,
-    userId,
-    recipeId: 12,
-    brewedAt: `${date}T01:00:00Z`,
-  };
+function QuickBrewProbe() {
+  const open = useQuickBrew();
+  return <div data-testid="qb-state">{open ? open.start : "closed"}</div>;
 }
 
 function pageOf(content: object[]) {
@@ -67,240 +44,374 @@ function pageOf(content: object[]) {
   };
 }
 
-beforeEach(() => {
-  vi.useFakeTimers({ shouldAdvanceTime: true });
-  vi.setSystemTime(new Date("2026-09-19T01:00:00Z"));
-  clearSession();
-  setAccessToken("a.b.c");
+function emptyCalendar(month: string) {
+  return { ...homeCalendar, month, totalCount: 0, days: [] };
+}
 
+function useCatalogAndGearHandlers() {
   server.use(
-    http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
-    http.get(`${BASE}/users/me/mutual-follows`, () =>
-      HttpResponse.json([지연]),
+    http.get(`${BASE}/bean-products/:id`, ({ params }) =>
+      HttpResponse.json({
+        ...yirgacheffeProduct,
+        id: Number(params.id),
+      }),
     ),
-    http.get(`${BASE}/recipes/12`, () =>
-      HttpResponse.json({ ...grindedRecipe, id: 12, title: "Kasuya 4:6" }),
+    http.get(`${BASE}/bean-batches/:id`, ({ params }) =>
+      HttpResponse.json({
+        ...yirgacheffeBatch,
+        id: Number(params.id),
+      }),
     ),
-    http.get(`${BASE}/brew-logs/calendar`, ({ request }) => {
-      const url = new URL(request.url);
-      const userId = url.searchParams.get("userId");
-      return HttpResponse.json(
-        calendarResponse(
-          url.searchParams.get("month") ?? "",
-          userId === null ? undefined : Number(userId),
-        ),
-      );
-    }),
-    http.get(`${BASE}/brew-logs`, ({ request }) => {
-      const url = new URL(request.url);
-      const date = url.searchParams.get("date");
-      const userId = url.searchParams.get("userId");
-      if (date === "2026-09-05" && userId === null)
-        return HttpResponse.json(pageOf([dayOf(1, date), dayOf(2, date)]));
-      if (date === "2026-09-10" && userId === "12")
-        return HttpResponse.json(pageOf([dayOf(3, date, 12)]));
-      return HttpResponse.json(pageOf([]));
-    }),
+    http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
+    http.get(`${BASE}/recipes/:id`, ({ params }) =>
+      HttpResponse.json({ ...hoffmann, id: Number(params.id) }),
+    ),
+    http.get(`${BASE}/gear/user-grinders`, () =>
+      HttpResponse.json([myComandante]),
+    ),
   );
+}
+
+beforeEach(() => {
+  setAccessToken("test-token");
+  closeQuickBrew();
+  replace.mockClear();
 });
 
 afterEach(() => {
+  cleanup();
   vi.useRealTimers();
+  vi.unstubAllGlobals();
+  closeQuickBrew();
+  clearSession();
 });
 
-async function renderHome() {
-  const result = renderWithQuery(<HomePage />);
-  await screen.findByText("2026.09");
-  return result;
-}
-
-describe("HomePage", () => {
-  it("AC-HOMECAL-127 · 모바일 하단 CTA 문구가 이 레시피로 내렸다다", async () => {
-    await renderHome();
-
-    expect(
-      screen.getByRole("link", { name: "이 레시피로 내렸다" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("link", { name: "기록하기" }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("AC-HOMECAL-27 · 진입하면 오늘이 선택돼 있다", async () => {
-    await renderHome();
-
-    expect(
-      await screen.findByRole("button", { name: "9월 19일, 기록 없음" }),
-    ).toHaveAttribute("aria-current", "date");
-  });
-
-  it("AC-HOMECAL-28 · 날짜를 누르면 목록이 그 날짜 기록으로 바뀐다", async () => {
-    await renderHome();
-
-    await userEvent.click(
-      await screen.findByRole("button", { name: "9월 5일, 기록 2건" }),
-    );
-
-    // 갱신(2026-09-21): jsdom 기본 폭(1024px)이 웹 임계값(760px)을 넘어 이 테스트는
-    // 원장 행이 아니라 웹 헤더(요일 아이브로우+날짜, AC-HOMECAL-123~125)와 카드를 본다.
-    expect(await screen.findByText("SATURDAY")).toBeInTheDocument();
-    expect(screen.getByTestId("day-header-date")).toHaveTextContent("9월 5일");
-    expect(screen.getAllByTestId("day-card")).toHaveLength(2);
-  });
-
-  it("AC-HOMECAL-29 · 빈 날짜를 누르면 선택되고 빈 문구가 뜬다", async () => {
-    await renderHome();
-
-    await userEvent.click(
-      await screen.findByRole("button", { name: "9월 3일, 기록 없음" }),
-    );
-
-    expect(
-      screen.getByRole("button", { name: "9월 3일, 기록 없음" }),
-    ).toHaveAttribute("aria-current", "date");
-    expect(screen.getByText("이 날에는 기록이 없습니다.")).toBeInTheDocument();
-  });
-
-  it("AC-HOMECAL-33 · 이전 달로 넘기면 선택 없음 상태가 된다", async () => {
-    await renderHome();
-
-    await userEvent.click(
-      await screen.findByRole("button", { name: "이전 달" }),
-    );
-
-    expect(await screen.findByText("2026.08")).toBeInTheDocument();
-    expect(document.querySelectorAll('[aria-current="date"]')).toHaveLength(0);
-  });
-
-  it("AC-HOMECAL-37 · 상대를 누르면 달력이 그 사람 기록으로 바뀐다", async () => {
-    await renderHome();
-
-    await userEvent.click(await screen.findByRole("tab", { name: /지연/ }));
-
-    expect(await screen.findByText("지연 · 6 BREWS")).toBeInTheDocument();
-  });
-
-  it("AC-HOMECAL-38 · 사람을 바꾸면 month는 유지되고 selectedDate는 초기화된다", async () => {
-    await renderHome();
-    await userEvent.click(
-      await screen.findByRole("button", { name: "이전 달" }),
-    );
-    await screen.findByText("2026.08");
-
-    await userEvent.click(screen.getByRole("tab", { name: /지연/ }));
-
-    expect(screen.getByText("2026.08")).toBeInTheDocument();
-    expect(document.querySelectorAll('[aria-current="date"]')).toHaveLength(0);
-  });
-
-  it("AC-HOMECAL-39 · 남의 달력에 관계 문구가 뜬다", async () => {
-    await renderHome();
-
-    await userEvent.click(await screen.findByRole("tab", { name: /지연/ }));
-    await userEvent.click(
-      await screen.findByRole("button", { name: "9월 10일, 기록 1건" }),
-    );
-
-    // 갱신(2026-09-21, AC-HOMECAL-110): 고정 문구가 상대 닉네임을 보간하는 문구로 바뀌었다.
-    expect(
-      await screen.findByText("맞팔로우 상태여서 지연 님의 기록이 보입니다."),
-    ).toBeInTheDocument();
-  });
-
-  it("AC-HOMECAL-50 · 이전 달로 넘길 때 추가 요청이 없다", async () => {
-    const calls: string[] = [];
-    server.events.on("request:start", ({ request }) => {
-      if (request.url.includes("/brew-logs/calendar")) calls.push(request.url);
-    });
-
-    await renderHome();
-    await waitFor(() =>
-      expect(calls.filter((u) => u.includes("month=2026-08"))).toHaveLength(1),
-    );
-    const before = calls.filter((u) => u.includes("month=2026-08")).length;
-
-    await userEvent.click(
-      await screen.findByRole("button", { name: "이전 달" }),
-    );
-    await screen.findByText("2026.08");
-
-    expect(calls.filter((u) => u.includes("month=2026-08"))).toHaveLength(
-      before,
-    );
-  });
-
-  it("AC-HOMECAL-52 · 로딩 중에도 그리드 골격이 유지된다", async () => {
-    const { delay } = await import("msw");
+describe("오늘 홈 (docs/specs/2026-11-14-quick-brew.md Task 10)", () => {
+  it("AC-QUICKBREW-21 · 기록이 0건인 빈 홈은 첫 잔 안내와 기록하기 버튼만 보이고 지난번과 같게·이번 주·최근 기록 카드가 없다", async () => {
+    mockViewportWidth(390);
     server.use(
-      http.get(`${BASE}/brew-logs/calendar`, async () => {
-        await delay("infinite");
-        return HttpResponse.json(calendarResponse("2026-09"));
+      http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
+      http.get(`${BASE}/brew-logs`, () => HttpResponse.json(pageOf([]))),
+      http.get(`${BASE}/brew-logs/calendar`, ({ request }) => {
+        const month =
+          new URL(request.url).searchParams.get("month") ?? "2026-11";
+        return HttpResponse.json(emptyCalendar(month));
+      }),
+    );
+
+    const user = userEvent.setup();
+    renderWithQuery(
+      <>
+        <HomePage />
+        <QuickBrewProbe />
+      </>,
+    );
+
+    expect(
+      await screen.findByText("첫 잔을 기록해 보세요"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("지난번과 같게")).toBeNull();
+    expect(screen.queryByText("이번 주")).toBeNull();
+    expect(screen.queryByText("최근 기록")).toBeNull();
+    expect(screen.queryByText("이대로 기록")).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "기록하기" }));
+    expect(screen.getByTestId("qb-state")).toHaveTextContent("record");
+  });
+
+  it("AC-QUICKBREW-22 · 오늘 2026-11-14(토) KST 기준으로 이번 주가 1잔이면 카드를 숨기고, 2잔이면 이번 주 숫자와 지난주 1잔을 보여준다", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date("2026-11-14T10:00:00+09:00"));
+    mockViewportWidth(390);
+    useCatalogAndGearHandlers();
+
+    const oneThisWeek = [
+      { date: "2026-11-08", count: 1, primaryRecipeName: "아침" },
+      { date: "2026-11-09", count: 1, primaryRecipeName: "아침" },
+    ];
+    let calendarDays = oneThisWeek;
+
+    server.use(
+      http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
+      http.get(`${BASE}/brew-logs`, () =>
+        HttpResponse.json(pageOf([brewLogWithoutTds])),
+      ),
+      http.get(`${BASE}/brew-logs/calendar`, () =>
+        HttpResponse.json({
+          month: "2026-11",
+          totalCount: calendarDays.length,
+          days: calendarDays,
+        }),
+      ),
+    );
+
+    const view = renderWithQuery(<HomePage />);
+    expect(await screen.findByText("지난번과 같게")).toBeInTheDocument();
+    expect(screen.queryByText("이번 주")).toBeNull();
+    view.unmount();
+
+    calendarDays = [
+      ...oneThisWeek,
+      { date: "2026-11-12", count: 1, primaryRecipeName: "저녁" },
+    ];
+    renderWithQuery(<HomePage />);
+    const weekCard = (await screen.findByText("이번 주")).closest(
+      "[data-week-card]",
+    ) as HTMLElement;
+    expect(weekCard).not.toBeNull();
+    expect(within(weekCard).getByText("2")).toBeInTheDocument();
+    expect(within(weekCard).getByText("지난주 1잔")).toBeInTheDocument();
+  });
+
+  it("AC-QUICKBREW-22 · 주간이 월 경계를 넘으면 두 달 달력을 조회해 합산한다", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date("2026-11-01T10:00:00+09:00"));
+    mockViewportWidth(390);
+    useCatalogAndGearHandlers();
+
+    const requestedMonths: string[] = [];
+    server.use(
+      http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
+      http.get(`${BASE}/brew-logs`, () =>
+        HttpResponse.json(pageOf([brewLogWithoutTds])),
+      ),
+      http.get(`${BASE}/brew-logs/calendar`, ({ request }) => {
+        const month =
+          new URL(request.url).searchParams.get("month") ?? "2026-11";
+        requestedMonths.push(month);
+        if (month === "2026-10") {
+          return HttpResponse.json({
+            month: "2026-10",
+            totalCount: 2,
+            days: [
+              { date: "2026-10-20", count: 1, primaryRecipeName: "지난주" },
+              { date: "2026-10-29", count: 1, primaryRecipeName: "이번주목" },
+            ],
+          });
+        }
+        return HttpResponse.json({
+          month: "2026-11",
+          totalCount: 1,
+          days: [
+            { date: "2026-11-01", count: 1, primaryRecipeName: "이번주일" },
+          ],
+        });
       }),
     );
 
     renderWithQuery(<HomePage />);
-
-    expect(await screen.findAllByRole("columnheader")).toHaveLength(7);
-    // 갱신(2026-09-21, AC-HOMECAL-101): 점 자리는 이제 기록이 없어도 항상 렌더된다
-    // (투명 placeholder) — "점만 비운다"는 요소 부재가 아니라 무색으로 구현이 바뀌었다.
-    const dots = document.querySelectorAll<HTMLElement>("[data-record-dot]");
-    expect(dots.length).toBeGreaterThan(0);
-    for (const dot of dots) {
-      expect(dot.style.backgroundColor).toBe("transparent");
-    }
-    expect(screen.queryByTestId("skeleton")).toBeNull();
+    const weekCard = (await screen.findByText("이번 주")).closest(
+      "[data-week-card]",
+    ) as HTMLElement;
+    expect(requestedMonths.sort()).toEqual(["2026-10", "2026-11"]);
+    expect(within(weekCard).getByText("2")).toBeInTheDocument();
+    expect(within(weekCard).getByText("지난주 1잔")).toBeInTheDocument();
   });
-});
 
-describe("HomePage — 웹 카드 캡션", () => {
-  it("AC-HOMEFIT-23 · 캡션에 새 API를 부르지 않는다", async () => {
-    const paths = new Set<string>();
-    const record = ({ request }: { request: Request }) => {
-      paths.add(new URL(request.url).pathname);
-    };
-    server.events.on("request:start", record);
+  it("모바일 오늘 홈은 지난번과 같게로 이대로 기록을 열고 최근 기록은 최대 3건까지 보인다", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date("2026-11-14T10:00:00+09:00"));
+    mockViewportWidth(390);
+    useCatalogAndGearHandlers();
+
+    const logs = [101, 102, 103, 104, 105].map((id, i) => ({
+      ...brewLogWithoutTds,
+      id,
+      recipeId: undefined,
+      beanProductId: 3,
+      beanName: undefined,
+      beanBatchId: undefined,
+      actualDoseG: 16,
+      actualWaterG: 250,
+      brewRatio: 15.6,
+      userGrinderId: myComandante.id,
+      actualGrindSettingValue: 24,
+      actualWaterTempC: 92,
+      rating: 4.0,
+      brewedAt: `2026-11-${String(13 - i).padStart(2, "0")}T08:20:00+09:00`,
+    }));
+
     server.use(
-      http.get(`${BASE}/recipes/12`, () =>
+      http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
+      http.get(`${BASE}/brew-logs`, () => HttpResponse.json(pageOf(logs))),
+      http.get(`${BASE}/brew-logs/calendar`, () =>
+        HttpResponse.json(emptyCalendar("2026-11")),
+      ),
+    );
+
+    const user = userEvent.setup();
+    renderWithQuery(
+      <>
+        <HomePage />
+        <QuickBrewProbe />
+      </>,
+    );
+
+    const sameButton = await screen.findByRole("button", {
+      name: "이대로 기록",
+    });
+    expect(screen.getByText("11월 14일 토요일")).toBeInTheDocument();
+    expect(screen.getByText("오늘도 한 잔 내려 볼까요?")).toBeInTheDocument();
+    expect(screen.getByText(/어제 08:20/)).toBeInTheDocument();
+    expect(screen.getByText("1:15.6")).toBeInTheDocument();
+    expect(screen.getByText(/24클릭 · 92°C/)).toBeInTheDocument();
+
+    const recentSection = screen
+      .getByRole("heading", { name: "최근 기록" })
+      .closest("section") as HTMLElement;
+    const recentLinks = within(recentSection)
+      .getAllByRole("link")
+      .filter((a) => a.getAttribute("href")?.startsWith("/brews/"));
+    expect(recentLinks).toHaveLength(3);
+    expect(
+      within(recentSection).getByRole("link", { name: "전체 보기" }),
+    ).toHaveAttribute("href", "/brews");
+
+    await user.click(sameButton);
+    expect(screen.getByTestId("qb-state")).toHaveTextContent("same");
+  });
+
+  it("웹 오늘 홈은 최근 기록 최대 5건과 TDS가 있는 가장 최근 기록의 관찰 문장을 보여준다", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date("2026-11-14T10:00:00+09:00"));
+    mockViewportWidth(1280);
+    useCatalogAndGearHandlers();
+
+    const logs = [
+      {
+        ...brewLogWithoutTds,
+        id: 201,
+        recipeId: undefined,
+        beanName: "직접 입력 원두",
+        beanBatchId: undefined,
+        beanProductId: undefined,
+        tdsPercent: undefined,
+        extractionYieldPercent: undefined,
+        diagnosis: "측정 없는 진단",
+        rating: 4.5,
+        brewedAt: "2026-11-13T09:00:00+09:00",
+      },
+      {
+        ...brewLogWithTds,
+        id: 202,
+        recipeId: undefined,
+        beanProductId: 3,
+        beanBatchId: undefined,
+        tdsPercent: 1.38,
+        extractionYieldPercent: 20.1,
+        diagnosis: "수율이 적정하고 단맛이 잘 살아났습니다.",
+        rating: 4.0,
+        brewedAt: "2026-11-12T08:00:00+09:00",
+      },
+      {
+        ...brewLogWithoutTds,
+        id: 203,
+        recipeId: undefined,
+        beanName: "세번째",
+        beanBatchId: undefined,
+        brewedAt: "2026-11-11T08:00:00+09:00",
+      },
+      {
+        ...brewLogWithoutTds,
+        id: 204,
+        recipeId: undefined,
+        beanName: "네번째",
+        beanBatchId: undefined,
+        brewedAt: "2026-11-10T08:00:00+09:00",
+      },
+      {
+        ...brewLogWithoutTds,
+        id: 205,
+        recipeId: undefined,
+        beanName: "다섯번째",
+        beanBatchId: undefined,
+        brewedAt: "2026-11-09T08:00:00+09:00",
+      },
+      {
+        ...brewLogWithoutTds,
+        id: 206,
+        recipeId: undefined,
+        beanName: "여섯번째",
+        beanBatchId: undefined,
+        brewedAt: "2026-11-08T08:00:00+09:00",
+      },
+    ];
+
+    server.use(
+      http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
+      http.get(`${BASE}/brew-logs`, () => HttpResponse.json(pageOf(logs))),
+      http.get(`${BASE}/brew-logs/calendar`, () =>
         HttpResponse.json({
-          ...grindedRecipe,
-          id: 12,
-          title: "Kasuya 4:6",
-          brewerId: 2,
+          month: "2026-11",
+          totalCount: 5,
+          days: [
+            { date: "2026-11-09", count: 1, primaryRecipeName: "A" },
+            { date: "2026-11-13", count: 1, primaryRecipeName: "B" },
+          ],
         }),
       ),
-      http.get(`${BASE}/gear/brewers`, () => HttpResponse.json(brewers)),
-      http.get(`${BASE}/bean-batches/3`, () =>
-        HttpResponse.json(yirgacheffeBatch),
-      ),
-      http.get(`${BASE}/bean-products/:id`, () =>
-        HttpResponse.json(yirgacheffeProduct),
-      ),
-      http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
     );
 
-    await renderHome();
-    await userEvent.click(
-      await screen.findByRole("button", { name: "9월 5일, 기록 2건" }),
-    );
-    // dayOf의 brewedAt 01:00Z → KST 10:00
+    renderWithQuery(<HomePage />);
     expect(
-      await screen.findAllByText("프릿츠 예가체프 · Hario V60 02 · 10:00"),
-    ).toHaveLength(2);
-    server.events.removeListener("request:start", record);
+      await screen.findByText("수율이 적정하고 단맛이 잘 살아났습니다."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("측정 없는 진단")).toBeNull();
+    expect(screen.getByText("20.1%")).toBeInTheDocument();
 
-    const allowed = [
-      /^\/api\/v1\/users\/me$/,
-      /^\/api\/v1\/users\/me\/mutual-follows$/,
-      /^\/api\/v1\/brew-logs$/,
-      /^\/api\/v1\/brew-logs\/calendar$/,
-      /^\/api\/v1\/recipes\/\d+$/,
-      /^\/api\/v1\/gear\/brewers$/,
-      /^\/api\/v1\/bean-batches\/\d+$/,
-      /^\/api\/v1\/bean-products\/\d+$/,
-      /^\/api\/v1\/roasters$/,
-    ];
-    expect(
-      [...paths].filter((path) => !allowed.some((re) => re.test(path))),
-    ).toEqual([]);
+    const recentSection = screen
+      .getByRole("heading", { name: "최근 기록" })
+      .closest("section") as HTMLElement;
+    const recentLinks = within(recentSection)
+      .getAllByRole("link")
+      .filter((a) => a.getAttribute("href")?.startsWith("/brews/"));
+    expect(recentLinks).toHaveLength(5);
+    expect(screen.queryByText("여섯번째")).toBeNull();
+  });
+
+  it("AC-QUICKBREW-65 · 300ms 이전에는 로딩 뼈대를 그리지 않고 300ms 이후부터 뼈대를 보여준 뒤 페이드 전환한다", async () => {
+    vi.useFakeTimers();
+    mockViewportWidth(390);
+
+    let resolveLogs!: (body: object) => void;
+    const logsPromise = new Promise<object>((resolve) => {
+      resolveLogs = resolve;
+    });
+
+    server.use(
+      http.get(`${BASE}/users/me`, () => HttpResponse.json(me)),
+      http.get(`${BASE}/brew-logs`, async () =>
+        HttpResponse.json(await logsPromise),
+      ),
+      http.get(`${BASE}/brew-logs/calendar`, () =>
+        HttpResponse.json(emptyCalendar("2026-11")),
+      ),
+    );
+
+    const { container } = renderWithQuery(<HomePage />);
+
+    // 250ms 시점에는 뼈대가 없어야 한다
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(250);
+    });
+    expect(container.querySelector("[data-today-skeleton]")).toBeNull();
+
+    // 300ms 도달 시 뼈대가 나타난다
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60);
+    });
+    expect(container.querySelector("[data-today-skeleton]")).not.toBeNull();
+
+    // 응답 도착 후 뼈대가 사라지고 페이드 클래스와 함께 내용이 뜬다
+    await act(async () => {
+      resolveLogs(pageOf([]));
+      await Promise.resolve();
+      await Promise.resolve();
+      await vi.advanceTimersByTimeAsync(20);
+    });
+
+    expect(container.querySelector("[data-today-skeleton]")).toBeNull();
+    expect(screen.getByText("첫 잔을 기록해 보세요")).toBeInTheDocument();
+    expect(container.querySelector(".kn-today-fade-in")).not.toBeNull();
   });
 });

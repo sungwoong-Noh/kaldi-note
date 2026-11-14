@@ -1,286 +1,107 @@
 "use client";
 
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
-import { LoadingState } from "@/components/LoadingState";
-import { Shell, ButtonLink, Button } from "@/components/ui";
+import { Shell } from "@/components/ui";
 import { useRequireSession } from "@/features/auth/useRequireSession";
+import { fetchBrewLogPage } from "@/features/brewlog/api";
+import { TodayHome } from "@/features/brewlog/components/TodayHome";
+import { TodaySkeleton } from "@/features/brewlog/components/TodaySkeleton";
+import { useTodayMetadata } from "@/features/brewlog/useTodayMetadata";
 import {
-  useCalendar,
-  useDayLogs,
-  useMutualFollows,
-} from "@/features/calendar/api";
-import {
-  Calendar,
-  type CalendarDayInfo,
-} from "@/features/calendar/components/Calendar";
-import { DayList } from "@/features/calendar/components/DayList";
-import { FollowRail } from "@/features/calendar/components/FollowRail";
-import { MonthNav } from "@/features/calendar/components/MonthNav";
-import type { BrewLogSummary } from "@/features/brewlog/schema";
-import { useRecipeLabels } from "@/features/brewlog/useRecipeLabels";
-import { addMonths, kstMonthOf, kstToday } from "@/lib/kstDate";
-import { useViewportWidth } from "@/lib/useViewportWidth";
+  weekCalendarMonths,
+  weekSummary,
+} from "@/features/brewlog/weekSummary";
+import { useCalendar } from "@/features/calendar/api";
 import { useMe } from "@/features/user/queries";
-import { useRouter } from "next/navigation";
+import { kstToday } from "@/lib/kstDate";
 
-/** ≥760px는 웹 셀(레시피명 한 줄)을 쓴다 — 760~1099는 1컬럼, ≥1100은 2컬럼이다. */
-const WEB_BREAKPOINT_PX = 760;
-const TWO_COLUMN_BREAKPOINT_PX = 1100;
+const SKELETON_DELAY_MS = 300;
+const HOME_RECENT_SIZE = 5;
 
 export default function HomePage() {
   const { ready, onSessionLost } = useRequireSession();
   const me = useMe(onSessionLost);
-  const mutuals = useMutualFollows(onSessionLost);
-  const width = useViewportWidth();
+  const todayKst = kstToday();
+  const months = weekCalendarMonths(todayKst);
 
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState(() =>
-    kstMonthOf(kstToday()),
-  );
-  const [selectedDate, setSelectedDate] = useState<string | null>(() =>
-    kstToday(),
-  );
+  const logsQuery = useQuery({
+    queryKey: ["brew-logs", "home", me.data?.id],
+    queryFn: () =>
+      fetchBrewLogPage(0, HOME_RECENT_SIZE, onSessionLost, {
+        userId: me.data?.id,
+      }),
+    enabled: ready && me.data !== undefined,
+  });
 
-  const meId = me.data?.id ?? null;
-  const effectiveUserId = selectedUserId ?? meId;
-  const isMine = effectiveUserId === null || effectiveUserId === meId;
-  const calendarUserId = isMine ? undefined : (effectiveUserId ?? undefined);
+  // 훅 호출 순서를 고정하기 위해 두 번째 달이 필요 없으면 첫째 달 키를 재사용한다(TanStack Query 중복 제거).
+  const cal1 = useCalendar(undefined, months[0], onSessionLost);
+  const cal2 = useCalendar(undefined, months[1] ?? months[0], onSessionLost);
 
-  const calendar = useCalendar(calendarUserId, selectedMonth, onSessionLost);
-  // 이전 달 프리페치. 화면에 쓰지 않고 캐시에만 얹는다(AC-HOMECAL-50).
-  useCalendar(calendarUserId, addMonths(selectedMonth, -1), onSessionLost);
+  const isLoading =
+    !ready ||
+    me.isPending ||
+    (me.isSuccess &&
+      (logsQuery.isPending ||
+        cal1.isPending ||
+        (months.length === 2 && cal2.isPending)));
 
-  const dayLogs = useDayLogs(calendarUserId, selectedDate, onSessionLost);
-  const logs = dayLogs.data?.content ?? [];
-  const recipeLabels = useRecipeLabels(
-    logs,
-    ready && selectedDate !== null,
-    onSessionLost,
-  );
+  const [skeletonShown, setSkeletonShown] = useState(false);
 
-  const ownerNickname = isMine
-    ? undefined
-    : mutuals.data?.find((profile) => profile.id === effectiveUserId)?.nickname;
+  useEffect(() => {
+    if (!isLoading) return;
+    const timer = window.setTimeout(() => {
+      setSkeletonShown(true);
+    }, SKELETON_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [isLoading]);
 
-  function handleSelectUser(userId: number) {
-    setSelectedUserId(userId);
-    const today = kstToday();
-    setSelectedDate(kstMonthOf(today) === selectedMonth ? today : null);
-  }
+  const logs = logsQuery.data?.content ?? [];
+  const metadata = useTodayMetadata(logs, logsQuery.isSuccess, onSessionLost);
 
-  function handlePrevMonth() {
-    setSelectedMonth((month) => addMonths(month, -1));
-    setSelectedDate(null);
-  }
+  const calendarDays =
+    months.length === 2
+      ? [...(cal1.data?.days ?? []), ...(cal2.data?.days ?? [])]
+      : [...(cal1.data?.days ?? [])];
+  const week = weekSummary(todayKst, calendarDays);
 
-  function handleNextMonth() {
-    // 버튼은 disabled로 이번 달 이후를 막지만, 스와이프는 같은 함수를 타므로 여기서도
-    // 막아야 한다 — 그러지 않으면 스와이프로 미래 달까지 넘어간다.
-    if (selectedMonth === kstMonthOf(kstToday())) return;
-    setSelectedMonth((month) => addMonths(month, 1));
-    setSelectedDate(null);
-  }
+  const error =
+    me.error ??
+    logsQuery.error ??
+    cal1.error ??
+    (months.length === 2 ? cal2.error : null);
 
-  if (!ready || me.isPending) {
+  if (error) {
     return (
-      <Shell>
-        <LoadingState />
+      <Shell wide>
+        <ErrorState
+          error={error}
+          onRetry={() => {
+            if (me.error) void me.refetch();
+            if (logsQuery.error) void logsQuery.refetch();
+            if (cal1.error) void cal1.refetch();
+            if (months.length === 2 && cal2.error) void cal2.refetch();
+          }}
+        />
       </Shell>
     );
   }
 
-  if (me.error) {
-    return (
-      <Shell>
-        <ErrorState error={me.error} onRetry={() => void me.refetch()} />
-      </Shell>
-    );
+  if (isLoading) {
+    const showSkeleton = skeletonShown;
+    return <Shell wide>{showSkeleton ? <TodaySkeleton /> : null}</Shell>;
   }
 
-  if (me.data === undefined) {
-    // isPending이 false이고 error도 없다면 항상 성립한다 — 타입을 좁히기 위한 경계다.
-    return null;
-  }
-
-  const days = new Map<string, CalendarDayInfo>(
-    (calendar.data?.days ?? []).map((day) => [
-      day.date,
-      { count: day.count, primaryRecipeName: day.primaryRecipeName },
-    ]),
-  );
-
-  // 마운트 전(서버 렌더)에는 모바일로 취급한다 — 모바일 우선이라 모른다면 그쪽이 안전하다.
-  const isWeb = width !== null && width >= WEB_BREAKPOINT_PX;
-  const isTwoColumn = width !== null && width >= TWO_COLUMN_BREAKPOINT_PX;
-  const variant: "mobile" | "web" = isWeb ? "web" : "mobile";
-
-  const calendarBlock = (
-    <>
-      <MonthNav
-        month={selectedMonth}
-        totalCount={calendar.data?.totalCount ?? 0}
-        ownerNickname={ownerNickname}
-        onPrev={handlePrevMonth}
-        onNext={handleNextMonth}
+  return (
+    <Shell wide>
+      <TodayHome
+        todayKst={todayKst}
+        logs={logs}
+        week={week}
+        metadata={metadata}
+        fadeIn={skeletonShown}
       />
-      <Calendar
-        month={selectedMonth}
-        days={days}
-        selectedDate={selectedDate}
-        onSelect={setSelectedDate}
-        onSwipeLeft={handleNextMonth}
-        onSwipeRight={handlePrevMonth}
-        variant={variant}
-        fillHeight={isTwoColumn}
-        today={kstToday()}
-      />
-    </>
-  );
-
-  const daySection = selectedDate !== null && (
-    <DaySection
-      date={selectedDate}
-      logs={logs}
-      isPending={dayLogs.isPending}
-      recipeLabels={recipeLabels}
-      ownerNickname={ownerNickname}
-      variant={variant}
-    />
-  );
-
-  const rail = (
-    <FollowRail
-      me={me.data}
-      mutuals={mutuals.data ?? []}
-      selectedUserId={effectiveUserId ?? me.data.id}
-      onSelect={handleSelectUser}
-      variant={variant}
-    />
-  );
-
-  return (
-    <>
-      {/* 웹 레일은 본문 밖, 상단 바 바로 아래 전폭 띠다(AC-HOMEFIT-01). */}
-      {isWeb && rail}
-      {/* grow는 두 경우 모두 필요하다 — 2컬럼은 Calendar의 fillHeight 체인이, 1컬럼/모바일은
-          아래 day-scroll의 flex-1이 각각 이 높이를 물려받는다. */}
-      <Shell stack wide={isWeb} grow>
-        {!isWeb && rail}
-
-        {isTwoColumn ? (
-          <div className="flex flex-1 gap-6">
-            <div data-testid="calendar-area" className="flex flex-1 flex-col">
-              {calendarBlock}
-            </div>
-            {/* 칼럼 높이는 달력이 정한다 — 내용을 absolute로 띄워 카드 수가 높이를 밀지 못하게 하고,
-                넘치는 카드만 안에서 스크롤한다. CTA는 맨 아래 고정이다
-                (docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-08·09·18·19). */}
-            <div
-              data-testid="day-column"
-              className="relative w-[420px] shrink-0 bg-surface px-10"
-            >
-              <div className="absolute inset-x-10 inset-y-0 flex flex-col">
-                <div className="flex min-h-0 flex-1 flex-col pt-8">
-                  {daySection}
-                </div>
-                <div className="flex-none pt-5 pb-7">
-                  <ContextCta
-                    isMine={isMine}
-                    ownerNickname={ownerNickname}
-                    otherUserId={effectiveUserId ?? undefined}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <>
-            {calendarBlock}
-            <div
-              data-testid="day-scroll"
-              className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto"
-            >
-              {daySection}
-            </div>
-          </>
-        )}
-
-        <ButtonLink
-          href="/recipes"
-          variant="primary"
-          block
-          className="min-[1100px]:hidden"
-        >
-          이 레시피로 내렸다
-        </ButtonLink>
-      </Shell>
-    </>
-  );
-}
-
-/** 우측 컬럼 맥락 CTA. 내 달력은 기록 추가, 남의 달력은 프로필 보기다. */
-function ContextCta({
-  isMine,
-  ownerNickname,
-  otherUserId,
-}: {
-  isMine: boolean;
-  ownerNickname?: string;
-  otherUserId?: number;
-}) {
-  const router = useRouter();
-
-  if (isMine) {
-    return (
-      <ButtonLink href="/recipes" variant="primary" block>
-        이 날짜로 기록 추가
-      </ButtonLink>
-    );
-  }
-  if (ownerNickname === undefined || otherUserId === undefined) return null;
-  return (
-    <Button
-      variant="secondary"
-      onClick={() => router.push(`/u/${otherUserId}`)}
-    >
-      {ownerNickname} 님 프로필 보기
-    </Button>
-  );
-}
-
-function DaySection({
-  date,
-  logs,
-  isPending,
-  recipeLabels,
-  ownerNickname,
-  variant,
-}: {
-  date: string;
-  logs: BrewLogSummary[];
-  isPending: boolean;
-  recipeLabels: Map<number, string>;
-  ownerNickname?: string;
-  variant: "mobile" | "web";
-}) {
-  if (isPending) return null;
-
-  if (logs.length === 0) {
-    return (
-      <p className="rounded-control border-l-2 border-divider-strong bg-surface px-3 py-2 text-body-sm">
-        이 날에는 기록이 없습니다.
-      </p>
-    );
-  }
-
-  return (
-    <DayList
-      date={date}
-      logs={logs}
-      recipeLabels={recipeLabels}
-      ownerNickname={ownerNickname}
-      variant={variant}
-    />
+    </Shell>
   );
 }

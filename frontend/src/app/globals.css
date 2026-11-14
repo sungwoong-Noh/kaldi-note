@@ -588,6 +588,10 @@ body {
   animation: kn-num-flip 120ms ease-out both;
 }
 
+.kn-today-fade-in {
+  animation: scrim-fade-in 120ms ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

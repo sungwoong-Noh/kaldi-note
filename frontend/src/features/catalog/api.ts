@@ -11,9 +11,10 @@ import {
   type Roaster,
 } from "./schema";
 
-export function useRoasters(onSessionLost?: () => void) {
+export function useRoasters(onSessionLost?: () => void, enabled = true) {
   return useQuery({
     queryKey: ["catalog", "roasters"],
+    enabled,
     queryFn: () =>
       authedRequest(backendUrl("/api/v1/roasters"), {
         schema: roasterListSchema,

@@ -2,6 +2,7 @@ package com.kaldinote.brewlog.domain;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 /**
  * 수정할 필드 묶음. 모든 값이 nullable이고 null은 "변경 없음"이다.
@@ -29,4 +30,7 @@ public record BrewLogPatch(
     Short body,
     Short bitterness,
     Short aftertaste,
-    String overallNote) {}
+    String overallNote,
+    Long beanProductId,
+    String beanName,
+    LocalDate roastedAt) {}

@@ -4,6 +4,7 @@ import com.kaldinote.brewlog.domain.BrewLog;
 import com.kaldinote.extraction.domain.ExtractionAnalysis;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 /**
  * 목록 항목용. BrewLogResponse와 필드가 같다.
@@ -19,6 +20,9 @@ public record BrewLogSummaryResponse(
     Long userId,
     Long recipeId,
     Long beanBatchId,
+    Long beanProductId,
+    String beanName,
+    LocalDate roastedAt,
     Instant brewedAt,
     String visibility,
     BigDecimal actualDoseG,
@@ -54,6 +58,9 @@ public record BrewLogSummaryResponse(
         log.getUserId(),
         log.getRecipeId(),
         log.getBeanBatchId(),
+        log.getBeanProductId(),
+        log.getBeanName(),
+        log.getRoastedAt(),
         log.getBrewedAt(),
         log.getVisibility().name(),
         log.getActualDoseG(),

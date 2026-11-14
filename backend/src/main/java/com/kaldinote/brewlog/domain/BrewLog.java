@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,13 +42,28 @@ public class BrewLog extends BaseTimeEntity {
   @Column(name = "recipe_id")
   private Long recipeId;
 
-  /** 남의 레시피로 브루잉했을 때(비소유) recipeId가 null이 되는 경우에도, 브루 시점 값은 이 필드에 항상 남는다. */
+  /**
+   * 레시피로 내린 기록의 브루 시점 값. 남의 레시피로 브루잉해 recipeId가 null이 되는 경우에도 남는다. 레시피 없이 쓴 빠른 기록은 null이다(ADR
+   * 0011).
+   */
   @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "recipe_snapshot", nullable = false, columnDefinition = "jsonb")
+  @Column(name = "recipe_snapshot", columnDefinition = "jsonb")
   private RecipeSnapshot recipeSnapshot;
 
-  @Column(name = "bean_batch_id", nullable = false)
+  @Column(name = "bean_batch_id")
   private Long beanBatchId;
+
+  /** 빠른 기록에서 카탈로그로 고른 원두. 봉투(beanBatchId)를 거치지 않는다. */
+  @Column(name = "bean_product_id")
+  private Long beanProductId;
+
+  /** 카탈로그에 없어 이름만 적은 원두. */
+  @Column(name = "bean_name", length = 100)
+  private String beanName;
+
+  /** 봉투 없이 기록에 직접 남긴 로스팅 날짜. */
+  @Column(name = "roasted_at")
+  private LocalDate roastedAt;
 
   @Column(name = "brewed_at", nullable = false)
   private Instant brewedAt;
@@ -62,7 +78,7 @@ public class BrewLog extends BaseTimeEntity {
   @Column(name = "actual_water_g", nullable = false, precision = 6, scale = 1)
   private BigDecimal actualWaterG;
 
-  @Column(name = "actual_water_temp_c", nullable = false, precision = 4, scale = 1)
+  @Column(name = "actual_water_temp_c", precision = 4, scale = 1)
   private BigDecimal actualWaterTempC;
 
   @Column(name = "actual_total_time_seconds")
@@ -71,10 +87,10 @@ public class BrewLog extends BaseTimeEntity {
   @Column(name = "actual_drawdown_seconds")
   private Integer actualDrawdownSeconds;
 
-  @Column(name = "user_grinder_id", nullable = false)
+  @Column(name = "user_grinder_id")
   private Long userGrinderId;
 
-  @Column(name = "actual_grind_setting_value", nullable = false, precision = 7, scale = 1)
+  @Column(name = "actual_grind_setting_value", precision = 7, scale = 1)
   private BigDecimal actualGrindSettingValue;
 
   @Column(name = "actual_grind_micron_estimated", precision = 6, scale = 0)
@@ -87,10 +103,10 @@ public class BrewLog extends BaseTimeEntity {
   private BigDecimal tdsPercent;
 
   /** 재고가 삭제돼도 남아야 하므로 파생 계산이 아니라 스냅샷으로 저장한다. */
-  @Column(name = "days_off_roast", nullable = false)
+  @Column(name = "days_off_roast")
   private Integer daysOffRoast;
 
-  @Column(name = "degassing_status", nullable = false, length = 20)
+  @Column(name = "degassing_status", length = 20)
   private String degassingStatus;
 
   @Column(precision = 2, scale = 1)
@@ -220,6 +236,13 @@ public class BrewLog extends BaseTimeEntity {
     return log;
   }
 
+  /** 봉투 없이 남기는 원두 정보(빠른 기록). 생성 직후 한 번 부른다 — create의 위치 인자를 늘리지 않으려고 분리했다. */
+  public void recordBean(Long beanProductId, String beanName, LocalDate roastedAt) {
+    this.beanProductId = beanProductId;
+    this.beanName = beanName;
+    this.roastedAt = roastedAt;
+  }
+
   public boolean isOwnedBy(Long userId) {
     return this.userId != null && this.userId.equals(userId);
   }
@@ -291,6 +314,17 @@ public class BrewLog extends BaseTimeEntity {
     }
     if (patch.overallNote() != null) {
       this.overallNote = patch.overallNote();
+    }
+    if (patch.beanProductId() != null) {
+      this.beanProductId = patch.beanProductId();
+      this.beanName = null;
+    }
+    if (patch.beanName() != null) {
+      this.beanName = patch.beanName();
+      this.beanProductId = null;
+    }
+    if (patch.roastedAt() != null) {
+      this.roastedAt = patch.roastedAt();
     }
     if (recomputedMicron != null) {
       this.actualGrindMicronEstimated = recomputedMicron;

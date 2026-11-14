@@ -1,7 +1,7 @@
 ---
 id: QUICKBREW
 title: 빠른 기록 — 오늘 홈 · 빠른 기록 시트 · 기록 탭
-status: 승인
+status: 구현중
 milestone: P1
 supersedes:
 ---
@@ -115,7 +115,7 @@ supersedes:
 | `beanName` | N | 앞뒤 공백 제거 후 1~100자. 공백뿐이면 null로 저장 |
 | `beanProductId` + `beanName` 동시 | — | 400 |
 | `beanBatchId` | N | 기존 의미 그대로(남의 봉투면 403) |
-| `roastedAt` | N | `brewedAt`의 KST 날짜 이하. 미래면 400 |
+| `roastedAt` | N | `brewedAt`의 날짜 이하(경과일과 같은 기준 — 기존 `computeDaysOffRoast`의 UTC 날짜). 늦으면 400 |
 | `userGrinderId` | N | 남의 그라인더면 403(기존) |
 | `actualGrindSettingValue` | N | **`userGrinderId` 없이 주면 400.** 추정 µm은 그라인더가 있을 때만 계산 |
 | `actualWaterTempC` · 시간 · TDS · 맛 5축 · `rating` · `overallNote` | N | 기존 검증 그대로(`rating` 0.5~5.0 · `overallNote` ≤1000자) |
@@ -134,49 +134,49 @@ supersedes:
 - **Given** 로그인한 사용자, 다른 기록 0건
 - **When** `POST /api/v1/brew-logs` `{ "actualDoseG": 16.0, "actualWaterG": 250.0 }`
 - **Then** 201. 응답 `brewedAt`은 요청 시각과 5초 이내. `recipeId`·`beanBatchId`·`beanProductId`·`beanName`·`userGrinderId`·`actualGrindSettingValue`·`actualWaterTempC`·`daysOffRoast`·`degassingStatus`는 null(non_null 직렬화로 키 없음). `visibility`는 `"PRIVATE"`. `brewRatio`는 `15.6`
-- **검증** API 테스트 `BrewLogControllerTest`
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-02 · 원두 이름만 직접 적어 기록한다
 
 - **Given** 로그인한 사용자
 - **When** `POST` `{ "actualDoseG": 16.0, "actualWaterG": 260.0, "beanName": "  하늘 블렌드 " }`
 - **Then** 201, `beanName`은 `"하늘 블렌드"`, `beanProductId`·`beanBatchId`는 없다. `bean_products` 행 수는 변하지 않는다
-- **검증** API 테스트 `BrewLogControllerTest`
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-03 · 카탈로그 원두를 고른다
 
 - **Given** `bean_products` id 41 존재
 - **When** `POST` `{ "actualDoseG": 16.0, "actualWaterG": 250.0, "beanProductId": 41 }`
 - **Then** 201, 응답 `beanProductId`는 41. `bean_batches` 행 수는 변하지 않는다
-- **검증** API 테스트 `BrewLogControllerTest`
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-04 · 로스팅 날짜로 경과일을 계산한다
 
 - **Given** —
-- **When** `POST` `{ ..., "brewedAt": "2026-11-13T23:20:00Z", "roastedAt": "2026-11-02" }` (KST 11.14)
+- **When** `POST` `{ ..., "brewedAt": "2026-11-14T03:00:00Z", "roastedAt": "2026-11-02" }` (UTC·KST 모두 11.14)
 - **Then** `daysOffRoast`는 12, `degassingStatus`는 기존 `DegassingStatus.of(12)`의 값. `roastedAt`이 없으면 둘 다 null
-- **검증** 통합 테스트 `BrewLogServiceTest`
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-05 · 레시피를 연결할 때만 스냅샷이 생긴다
 
 - **Given** 내 레시피 id 12
 - **When** `recipeId: 12`로 1건, `recipeId` 없이 1건 저장
 - **Then** 앞 건은 `recipeSnapshot`이 채워지고(기존 규칙 그대로), 뒷 건은 `recipeSnapshot`이 없다
-- **검증** 통합 테스트 `BrewLogServiceTest`
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-06 · 기존 기록은 마이그레이션 전후로 같다
 
 - **Given** 마이그레이션 직전 버전으로 `recipeId`·`beanBatchId`·`userGrinderId`가 모두 있는 기록 1건
 - **When** 마이그레이션 후 `GET /api/v1/brew-logs/{id}`
 - **Then** 기존 필드 값이 전부 같고, 새 필드 `beanProductId`·`beanName`·`roastedAt`은 없다
-- **검증** 통합 테스트(Flyway 대상 버전 지정) `BrewLogMigrationTest`
+- **검증** API 테스트 `QuickBrewControllerTest`(기존 방식 기록의 응답) + 수동 확인(로컬 DB의 기존 행에 V19 적용)
 
 #### AC-QUICKBREW-07 · 「지난번」은 목록의 첫 항목이다
 
 - **Given** 내 기록 3건(`brewedAt` 11.10 · 11.13 · 11.12), 다른 사용자 기록 1건(11.14)
 - **When** `GET /api/v1/brew-logs?userId={me}&size=1`
 - **Then** `content`는 1건이고 그 `brewedAt`은 11.13 기록이다. `totalElements`는 3
-- **검증** API 테스트 `BrewLogControllerTest`
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-08 · 수정의 null은 「변경 없음」이다 — 새 필드도 같다
 
@@ -186,7 +186,7 @@ supersedes:
 - **Given** `beanName: "하늘 블렌드"`·`userGrinderId: 3`·`actualGrindSettingValue: 24.0`인 내 기록
 - **When** `PATCH` `{ "beanName": null, "userGrinderId": null, "rating": 4.5 }` / `PATCH` `{ "beanName": "구지" }`
 - **Then** 200, `rating`만 4.5로 바뀌고 나머지는 그대로 / 200, `beanName`이 `"구지"`
-- **검증** API 테스트 `BrewLogControllerTest`
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 ### 기능 — 화면
 
@@ -302,21 +302,21 @@ supersedes:
 - **Given** —
 - **When** `actualDoseG`가 `0.0` / `0.1`
 - **Then** 400 `INVALID_REQUEST` / 201. 물량도 같다. 둘 중 하나가 없으면 400 `INVALID_REQUEST`
-- **검증** API 테스트
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-41 · 원두 이름 길이
 
 - **Given** —
 - **When** `beanName`이 100자 / 101자 / `"   "`
 - **Then** 201 / 400 `INVALID_REQUEST` / 201이고 `beanName` 없음
-- **검증** API 테스트
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-42 · 로스팅 날짜 경계
 
-- **Given** `brewedAt` `2026-11-13T23:20:00Z`(KST 11.14)
+- **Given** `brewedAt` `2026-11-14T03:00:00Z`(UTC·KST 모두 11.14)
 - **When** `roastedAt`이 `2026-11-14` / `2026-11-15`
 - **Then** 201(`daysOffRoast` 0) / 400 `INVALID_REQUEST`
-- **검증** API 테스트
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-43 · 필수 칸이 비면 「다음」이 잠긴다
 
@@ -339,28 +339,28 @@ supersedes:
 - **Given** —
 - **When** `POST` `{ ..., "beanProductId": 41, "beanName": "구지" }`
 - **Then** HTTP `400`과 `code: "INVALID_REQUEST"`
-- **검증** API 테스트
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-51 · 그라인더 없이 분쇄도만
 
 - **Given** —
 - **When** `POST` `{ ..., "actualGrindSettingValue": 24.0 }` (`userGrinderId` 없음)
 - **Then** HTTP `400`과 `code: "INVALID_REQUEST"`
-- **검증** API 테스트
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-52 · 없는 원두 상품
 
 - **Given** `bean_products`에 id 999999 없음
 - **When** `POST` `{ ..., "beanProductId": 999999 }`
 - **Then** HTTP `404`와 `code: "NOT_FOUND"`
-- **검증** API 테스트
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-53 · 남의 그라인더
 
 - **Given** 다른 사용자의 `user_grinders` id
 - **When** `POST` `{ ..., "userGrinderId": <그 id> }`
 - **Then** HTTP `403`과 `code: "FORBIDDEN"`(기존 규칙이 필수값 축소 뒤에도 유지)
-- **검증** API 테스트
+- **검증** API 테스트 `QuickBrewControllerTest`
 
 #### AC-QUICKBREW-54 · 저장 실패 — 입력 유지
 
@@ -440,10 +440,10 @@ supersedes:
 
 ## 구현 순서
 
-- [ ] **Task 1: 마이그레이션 + 계약** — Covers: AC-QUICKBREW-06
+- [x] **Task 1: 마이그레이션 + 계약** — Covers: AC-QUICKBREW-06
   새 컬럼 3개 · NOT NULL 해제 7개 · 인덱스. 계약 `docs/contracts/2026-11-14-quick-brew.json` 작성.
 
-- [ ] **Task 2: 생성 요청 필수값 축소** — Covers: AC-QUICKBREW-01, 05, 40, 51, 53
+- [x] **Task 2: 생성 요청 필수값 축소** — Covers: AC-QUICKBREW-01, 05, 40, 51, 53
   `BrewLogCreateRequest`의 `@NotNull`을 원두량·물량에만 남긴다. `brewedAt` null → `clock.instant()`. 그라인더 없는 분쇄도는 400. 추정 µm은 그라인더가 있을 때만.
 
   ```java
@@ -453,10 +453,10 @@ supersedes:
   Instant brewedAt = request.brewedAt() != null ? request.brewedAt() : clock.instant();
   ```
 
-- [ ] **Task 3: 원두 필드 3개** — Covers: AC-QUICKBREW-02, 03, 04, 41, 42, 50, 52
+- [x] **Task 3: 원두 필드 3개** — Covers: AC-QUICKBREW-02, 03, 04, 41, 42, 50, 52
   `beanProductId`·`beanName`(trim, 공백 → null, ≤100)·`roastedAt`. 경과일은 `roasted_at` → 배치 순서로 고른다.
 
-- [ ] **Task 4: 조회·수정 응답** — Covers: AC-QUICKBREW-07, 08
+- [x] **Task 4: 조회·수정 응답** — Covers: AC-QUICKBREW-07, 08
   `BrewLogResponse`·`BrewLogSummaryResponse`에 세 필드. `BrewLogPatchRequest`로 선택값 비우기.
 
 - [ ] **Task 5: 탭 바 · 웹 상단 바** — Covers: AC-QUICKBREW-29
@@ -498,6 +498,7 @@ supersedes:
 ## 열어둔 결정
 
 - **마이그레이션 번호** — `V19`(2026-11-14 확인: `origin/main`의 마지막은 `V18__create_crawl_runs.sql`). Task 1 시작 시 다시 확인한다.
+- **경과일의 날짜 기준(UTC vs KST)** — 기존 `computeDaysOffRoast`는 `brewedAt`의 **UTC 날짜**로 센다(`2026-08-17-brew-log.md`). KST 00:00~08:59에 내린 기록은 하루 적게 나온다. 이 스펙은 기존 규칙을 따르고(구현 중 정정, AC-04·42 예시를 UTC·KST 날짜가 같은 시각으로 바꿈), KST로 바꿀지는 도메인 숫자 변경이라 별도 이슈로 판단한다.
 - **수정에서 값 지우기** — 기존 PATCH는 null을 「변경 없음」으로 본다(AC-08). 잘못 고른 그라인더·원두를 비워야 하는 불편이 P1 실사용에서 나오면 JSON Merge Patch 방식으로 별도 스펙.
 - **카탈로그 검색 성능** — `GET /bean-products` 전체를 프론트가 거른다. 카탈로그가 1,000건을 넘으면 서버 검색(`?q=`)을 별도 스펙으로.
 - **기존 「원두 봉투」 화면** — 새 기록이 봉투를 쓰지 않게 된 뒤 남길지 숨길지는 P1 1주 실사용 뒤 불편 목록에서 정한다.

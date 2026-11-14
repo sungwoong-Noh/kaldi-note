@@ -187,17 +187,20 @@ test.describe("구조 — 빈 화면", () => {
   // 2026-09-19 정정: 홈이 달력으로 바뀌며 이 data-empty 패턴이 없어졌다 — /brews만 남긴다
   // (docs/specs/2026-09-15-structure.md AC-STRUCT-19 정정 주석 참조).
   for (const path of ["/brews"]) {
-    test(`AC-STRUCT-19 · ${path}의 빈 화면이 레시피로 보낸다`, async ({
+    test(`AC-STRUCT-19 · (정정) ${path}의 빈 화면이 빠른 기록을 연다`, async ({
       page,
     }) => {
       await installStubs(page, { empty: "brewLogs" });
       await page.goto(path);
       await page.waitForLoadState("networkidle");
 
-      const link = page.locator('[data-empty] a[href="/recipes"]');
-      await expect(link, path).toHaveCount(1);
+      // ADR 0011 — 빈 화면의 다음 행동은 레시피 고르기가 아니라 바로 기록하기다.
+      const cta = page
+        .locator("[data-empty]")
+        .getByRole("button", { name: "기록하기" });
+      await expect(cta, path).toHaveCount(1);
 
-      expect(await link.evaluateAll(undersized), path).toEqual([]);
+      expect(await cta.evaluateAll(undersized), path).toEqual([]);
     });
   }
 

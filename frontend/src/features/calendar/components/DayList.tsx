@@ -122,7 +122,11 @@ export function DayList({
               <li key={log.id}>
                 <DayCard
                   log={log}
-                  recipeLabel={recipeLabels?.get(log.recipeId)}
+                  recipeLabel={
+                    log.recipeId !== undefined
+                      ? recipeLabels?.get(log.recipeId)
+                      : log.beanName
+                  }
                 />
               </li>
             ))}
@@ -154,7 +158,11 @@ export function DayList({
           <DayListRow
             key={log.id}
             log={log}
-            recipeLabel={recipeLabels?.get(log.recipeId)}
+            recipeLabel={
+              log.recipeId !== undefined
+                ? recipeLabels?.get(log.recipeId)
+                : log.beanName
+            }
           />
         ))}
       </ul>

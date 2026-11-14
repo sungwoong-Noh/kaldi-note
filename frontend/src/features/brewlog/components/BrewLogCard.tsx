@@ -72,7 +72,12 @@ function summaryEntries(
   const entries = [
     { label: "내린 날", value: formatBrewedDate(log.brewedAt) },
     { label: "비율", value: log.brewRatio && formatRatio(log.brewRatio) },
-    { label: "물 온도", value: formatTemperature(log.actualWaterTempC) },
+    {
+      label: "물 온도",
+      value:
+        log.actualWaterTempC !== undefined &&
+        formatTemperature(log.actualWaterTempC),
+    },
     {
       label: "추출 시간",
       value:

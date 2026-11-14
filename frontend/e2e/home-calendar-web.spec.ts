@@ -92,15 +92,15 @@ test.describe("홈 달력 — 웹", () => {
 
     const header = page.locator("header");
     await expect(header.getByText("kaldi")).toBeVisible();
-    await expect(header.getByRole("link", { name: "홈" })).toBeVisible();
+    await expect(header.getByRole("link", { name: "오늘" })).toBeVisible();
     await expect(
       header.getByRole("link", { name: "레시피", exact: true }),
     ).toBeVisible();
     await expect(
-      header.getByRole("link", { name: "내 잔", exact: true }),
+      header.getByRole("link", { name: "기록", exact: true }),
     ).toBeVisible();
     await expect(
-      header.getByRole("link", { name: "이 레시피로 내렸다" }),
+      header.getByRole("button", { name: "기록하기" }),
     ).toBeVisible();
     await expect(header.getByRole("link", { name: "더보기" })).toBeVisible();
     await expect(page.locator("nav[aria-label='주요 화면']")).toBeHidden();
@@ -116,19 +116,21 @@ test.describe("홈 달력 — 웹", () => {
     await expect(page).toHaveURL("/more");
   });
 
-  test("AC-HOMECAL-60 · 상단 바 CTA는 레시피 선택으로 보낸다", async ({
+  test("AC-HOMECAL-60 · (정정) 상단 바 CTA 「기록하기」는 빠른 기록 시트를 연다", async ({
     page,
   }) => {
     await installStubs(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
 
+    // ADR 0011 — 레시피를 고르지 않고 바로 기록한다(docs/specs/2026-11-14-quick-brew.md AC-QUICKBREW-29).
     await page
       .locator("header")
-      .getByRole("link", { name: "이 레시피로 내렸다" })
+      .getByRole("button", { name: "기록하기" })
       .click();
 
-    await expect(page).toHaveURL("/recipes");
+    await expect(page.getByRole("dialog", { name: "빠른 기록" })).toBeVisible();
+    await expect(page).toHaveURL("/");
   });
 
   test("AC-HOMECAL-61 · 우측 하단 CTA도 레시피 선택으로 보낸다", async ({

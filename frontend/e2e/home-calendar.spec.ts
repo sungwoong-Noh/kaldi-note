@@ -174,10 +174,10 @@ test.describe("홈 달력 — 모바일", () => {
     await page.getByRole("button", { name: "기록하기" }).click();
 
     await expect(page).toHaveURL("/brews/99");
-    // 기록 상세에는 탭바가 없다 — 뒤로(내 잔)를 거쳐 홈으로 간다
+    // 기록 상세에는 탭바가 없다 — 뒤로(기록)를 거쳐 오늘로 간다
     // (docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-12).
     await page.getByRole("link", { name: "뒤로" }).click();
-    await page.getByRole("link", { name: "홈" }).click();
+    await page.getByRole("link", { name: "오늘" }).click();
 
     await expect(
       page.getByRole("button", { name: "9월 8일, 기록 1건" }),
@@ -205,12 +205,12 @@ test.describe("홈 달력 — 모바일", () => {
 
     const cell = page.getByRole("button", { name: "9월 2일, 기록 1건" });
     await expect(cell).not.toContainText("Hoffmann V60");
-    // 하단 탭바로 좁힌다 — 2026-09-20부터 상단 로고 헤더의 "홈" 네비게이션 링크도
+    // 하단 탭바로 좁힌다 — 2026-09-20부터 상단 로고 헤더의 "오늘" 네비게이션 링크도
     // (숨겨진 채로) DOM에 함께 있어 이름만으로 찾으면 두 개가 잡힌다.
     await expect(
       page
         .locator("nav[aria-label='주요 화면']")
-        .getByRole("link", { name: "홈" }),
+        .getByRole("link", { name: "오늘" }),
     ).toBeVisible();
   });
 });
@@ -238,10 +238,10 @@ test.describe("홈 달력 — 모바일 헤더", () => {
     await page.goto("/");
 
     const header = page.locator("header");
-    await expect(header.getByRole("link", { name: "홈" })).toBeHidden();
+    await expect(header.getByRole("link", { name: "오늘" })).toBeHidden();
     await expect(header.getByRole("link", { name: "레시피" })).toBeHidden();
     await expect(
-      header.getByRole("link", { name: "내 잔", exact: true }),
+      header.getByRole("link", { name: "기록", exact: true }),
     ).toBeHidden();
   });
 
@@ -251,7 +251,7 @@ test.describe("홈 달력 — 모바일 헤더", () => {
 
     const header = page.locator("header");
     await expect(
-      header.getByRole("link", { name: "이 레시피로 내렸다" }),
+      header.getByRole("button", { name: "기록하기" }),
     ).toBeHidden();
     await expect(header.getByRole("link", { name: "더보기" })).toBeHidden();
   });

@@ -7,6 +7,7 @@ import {
   type FocusEvent,
   type InputHTMLAttributes,
   type ReactNode,
+  type Ref,
 } from "react";
 import type { RoastLevel } from "@/features/catalog/schema";
 import { showToast } from "@/components/Toast";
@@ -338,7 +339,7 @@ export function BottomCta({
   href?: string;
 }) {
   const className =
-    "block w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-medium text-on-ink transition-transform duration-100 ease-out active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100";
+    "block w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-medium text-on-ink transition-transform duration-120 ease-out active:scale-[0.98] active:duration-80 motion-reduce:transition-none motion-reduce:active:scale-100";
   if (href !== undefined) {
     return (
       <Link href={href} className={className}>
@@ -380,10 +381,10 @@ export function BottomSheet({
         if (!open && e.target === e.currentTarget) onExitComplete?.();
       }}
       className={cx(
-        "flex flex-col gap-[20px] rounded-t-[18px] border-t border-border bg-paper px-[24px] pt-[14px] pb-[14px] shadow-[0_-1px_0_var(--border)] transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:animate-none",
+        "flex flex-col gap-[20px] rounded-t-[18px] border-t border-border bg-paper px-[24px] pt-[14px] pb-[14px] shadow-[0_-1px_0_var(--border)] transition-transform ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none motion-reduce:animate-none",
         open
-          ? "translate-y-0 animate-[sheet-slide-in_200ms_ease-out]"
-          : "pointer-events-none translate-y-full animate-[sheet-slide-out_200ms_ease-out_forwards]",
+          ? "duration-240 translate-y-0 animate-[sheet-slide-in_240ms_cubic-bezier(0.2,0.8,0.2,1)]"
+          : "duration-200 pointer-events-none translate-y-full animate-[sheet-slide-out_200ms_cubic-bezier(0.2,0.8,0.2,1)_forwards]",
       )}
     >
       <div className="flex justify-center">
@@ -400,7 +401,7 @@ export function BottomSheet({
   );
 }
 
-/** 사이드 패널 면. 오른쪽에서 200ms ease-out으로 슬라이드해 열리고 닫힌다. */
+/** 사이드 패널 면. 오른쪽에서 240/200ms cubic-bezier(0.2, 0.8, 0.2, 1)로 슬라이드해 열리고 닫힌다. */
 export function SidePanel({
   title,
   action,
@@ -426,10 +427,10 @@ export function SidePanel({
         if (!open && e.target === e.currentTarget) onExitComplete?.();
       }}
       className={cx(
-        "flex w-[320px] max-w-full flex-col gap-[16px] border-l border-border bg-paper px-[24px] py-[20px] transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:animate-none",
+        "flex w-[320px] max-w-full flex-col gap-[16px] border-l border-border bg-paper px-[24px] py-[20px] transition-transform ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none motion-reduce:animate-none",
         open
-          ? "translate-x-0 animate-[panel-slide-in_200ms_ease-out]"
-          : "pointer-events-none translate-x-full animate-[panel-slide-out_200ms_ease-out_forwards]",
+          ? "duration-240 translate-x-0 animate-[panel-slide-in_240ms_cubic-bezier(0.2,0.8,0.2,1)]"
+          : "duration-200 pointer-events-none translate-x-full animate-[panel-slide-out_200ms_cubic-bezier(0.2,0.8,0.2,1)_forwards]",
       )}
     >
       <div className="flex items-baseline justify-between">
@@ -578,6 +579,7 @@ export function NumberCell({
   label: string;
   accessibleName: string;
   unit?: string;
+  ref?: Ref<HTMLInputElement>;
 } & InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label

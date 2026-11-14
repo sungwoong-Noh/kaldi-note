@@ -24,7 +24,13 @@ export function useRecipeLabels(
   enabled: boolean,
   onSessionLost?: () => void,
 ): Map<number, string> {
-  const recipeIds = [...new Set(logs.map((log) => log.recipeId))];
+  const recipeIds = [
+    ...new Set(
+      logs
+        .map((log) => log.recipeId)
+        .filter((id): id is number => id !== undefined),
+    ),
+  ];
 
   const queries = useQueries({
     queries: recipeIds.map((id) => ({

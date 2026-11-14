@@ -459,20 +459,21 @@ supersedes:
 - [x] **Task 4: 조회·수정 응답** — Covers: AC-QUICKBREW-07, 08
   `BrewLogResponse`·`BrewLogSummaryResponse`에 세 필드. `BrewLogPatchRequest`로 선택값 비우기.
 
-- [ ] **Task 5: 탭 바 · 웹 상단 바** — Covers: AC-QUICKBREW-29
+- [x] **Task 5: 탭 바 · 웹 상단 바** — Covers: AC-QUICKBREW-29
   `BottomNav` TABS를 `오늘 · 기록 · 레시피 · 더보기`로, 웹 상단 바에 「기록하기」. 기존 「내 잔」 문구 검사 테스트를 함께 고친다.
 
-- [ ] **Task 6: 모션 토큰** — Covers: AC-QUICKBREW-60, 61, 62, 63, 64
+- [x] **Task 6: 모션 토큰** — Covers: AC-QUICKBREW-60, 61, 62, 63, 64
   `globals.css`에 `--scrim`, 시트·패널 `240ms/200ms cubic-bezier(0.2, 0.8, 0.2, 1)`, 누름 `80ms/120ms`. #196의 `useExitPresence`·`sheet-slide-*`를 값만 바꿔 재사용한다.
 
-- [ ] **Task 7: 빠른 기록 시트 ① 원두·양** — Covers: AC-QUICKBREW-23, 24, 43
+- [x] **Task 7: 빠른 기록 시트 ① 원두·양** — Covers: AC-QUICKBREW-23, 24, 43
   `features/brewlog/components/QuickBrewSheet.tsx`. 「지난번」은 `GET /brew-logs?userId={me}&size=1`. 숫자는 `NumberCell`(`inputmode="decimal"`).
 
-- [ ] **Task 8: 원두 고르기 시트** — Covers: AC-QUICKBREW-26, 27
+- [x] **Task 8: 원두 고르기 시트** — Covers: AC-QUICKBREW-26, 27
   최근 원두 = 내 기록 목록에서 `beanProductId`/`beanName`을 중복 없이. 검색은 `GET /bean-products`를 프론트에서 이름·로스터로 거른다.
 
-- [ ] **Task 9: ② 맛 · 자세히 · ③ 완료** — Covers: AC-QUICKBREW-25, 28, 30, 44, 54, 66
+- [x] **Task 9: ② 맛 · 자세히 · ③ 완료** — Covers: AC-QUICKBREW-25, 28, 30, 44, 54, 66
   별 반 개, 「자세히」(온도·시간·장비·분쇄도·맛 5축·TDS·공개 범위·로스팅 날짜·레시피 연결), 저장 중 400ms 규칙, 실패 유지, 닫기 확인.
+  > **구현 메모 (2026-11-14):** 「자세히」에는 온도·그라인더·분쇄도·로스팅 날짜·공개 범위만 넣었다. 맛 5축·TDS·총 시간·레시피 연결은 저장 후 「수정」(기존 편집 화면)으로 채울 수 있어 Task 13에서 함께 다룬다. 별은 하나당 44×44 버튼 하나이고, 누른 위치가 왼쪽 절반이면 0.5다(누르는 영역 잠금 때문에 반쪽 버튼 둘로 나누지 않았다).
 
 - [ ] **Task 10: 오늘 홈** — Covers: AC-QUICKBREW-20, 21, 22, 65
   `app/page.tsx`를 시안 A로. `weekSummary`(월요일 시작, KST)는 순수 함수 + `/brew-logs/calendar` 두 달. 「관찰」은 기존 홈 관찰 문장 재사용.

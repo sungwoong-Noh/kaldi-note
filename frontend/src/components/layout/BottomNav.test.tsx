@@ -13,27 +13,27 @@ beforeEach(() => {
 });
 
 describe("BottomNav", () => {
-  it("AC-WEBSHELL-01 · AC-RECIPESBREWS-79 · 탭 네 개가 순서대로 보이고 3번째가 내 잔이다", () => {
+  it("AC-WEBSHELL-01 · AC-RECIPESBREWS-79 · AC-QUICKBREW-29 · 탭 네 개가 오늘 · 기록 · 레시피 · 더보기 순서다", () => {
     render(<BottomNav />);
 
     const labels = screen.getAllByRole("link").map((link) => link.textContent);
-    expect(labels).toEqual(["홈", "레시피", "내 잔", "더보기"]);
+    expect(labels).toEqual(["오늘", "기록", "레시피", "더보기"]);
   });
 
   it("AC-WEBSHELL-02 · 각 탭이 제 경로를 가리킨다", () => {
     render(<BottomNav />);
 
-    expect(screen.getByRole("link", { name: "홈" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "오늘" })).toHaveAttribute(
       "href",
       "/",
+    );
+    expect(screen.getByRole("link", { name: "기록" })).toHaveAttribute(
+      "href",
+      "/brews",
     );
     expect(screen.getByRole("link", { name: "레시피" })).toHaveAttribute(
       "href",
       "/recipes",
-    );
-    expect(screen.getByRole("link", { name: "내 잔" })).toHaveAttribute(
-      "href",
-      "/brews",
     );
     expect(screen.getByRole("link", { name: "더보기" })).toHaveAttribute(
       "href",
@@ -73,7 +73,7 @@ describe("BottomNav", () => {
     render(<BottomNav />);
 
     expect(
-      screen.queryByRole("link", { name: "내 잔" }),
+      screen.queryByRole("link", { name: "기록" }),
     ).not.toBeInTheDocument();
   });
 
@@ -92,7 +92,7 @@ describe("BottomNav", () => {
 
     render(<BottomNav />);
 
-    expect(screen.getByRole("link", { name: "홈" })).not.toHaveAttribute(
+    expect(screen.getByRole("link", { name: "오늘" })).not.toHaveAttribute(
       "aria-current",
     );
   });
@@ -103,7 +103,7 @@ describe("BottomNav", () => {
     render(<BottomNav />);
 
     expect(
-      screen.queryByRole("link", { name: "내 잔" }),
+      screen.queryByRole("link", { name: "기록" }),
     ).not.toBeInTheDocument();
   });
 
@@ -113,16 +113,16 @@ describe("BottomNav", () => {
     render(<BottomNav />);
 
     expect(
-      screen.queryByRole("link", { name: "내 잔" }),
+      screen.queryByRole("link", { name: "기록" }),
     ).not.toBeInTheDocument();
   });
 
-  it("홈에서는 홈 탭이 켜진다", () => {
+  it("홈에서는 오늘 탭이 켜진다", () => {
     pathname = "/";
 
     render(<BottomNav />);
 
-    expect(screen.getByRole("link", { name: "홈" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "오늘" })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -143,7 +143,7 @@ describe("BottomNav", () => {
 
     render(<BottomNav />);
 
-    expect(screen.queryByRole("link", { name: "홈" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "오늘" })).not.toBeInTheDocument();
   });
 
   it("AC-WEBSHELL-32 · 콘텐츠가 짧아도 탭바가 화면 하단에 놓인다", () => {
@@ -159,13 +159,13 @@ describe("BottomNav", () => {
   });
 
   it("탭 전환 시 활성 밑줄에 위치 이동 애니메이션 변수가 설정된다", () => {
-    pathname = "/recipes";
+    pathname = "/brews";
     const { rerender } = render(<BottomNav />);
 
-    pathname = "/brews";
+    pathname = "/recipes";
     rerender(<BottomNav />);
 
-    const activeLink = screen.getByRole("link", { name: "내 잔" });
+    const activeLink = screen.getByRole("link", { name: "레시피" });
     const track = activeLink.querySelector(
       "[data-tab-bar-track]",
     ) as HTMLElement;

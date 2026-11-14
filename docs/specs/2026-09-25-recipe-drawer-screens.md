@@ -321,6 +321,8 @@ supersedes:
 - **Then** `이번 달` 칸만 `"0잔"`이고 나머지 칸은 전부 `"—"`이며, `"기록하기"` CTA가 표시된다. 그 CTA는 `/brews/new`가 아니라 **`/recipes`**로 이동한다(기록은 레시피를 고른 뒤 시작하므로 `recipeId` 없이 작성 화면을 열 수 없다)
 - **검증** 컴포넌트 테스트 `BrewsPage`
 
+> **정정 (2026-11-14):** ADR 0011(기록 먼저)로 「기록하기」는 `/recipes` 링크가 아니라 **빠른 기록 시트를 여는 버튼**이다(`docs/specs/2026-11-14-quick-brew.md` AC-QUICKBREW-23). 위 본문은 당시 결정의 기록으로 남기고, 테스트는 이 ID로 새 동작을 검증한다.
+
 #### AC-RECIPESBREWS-87 · TDS 없는 잔은 수율 칸이 빈다
 
 - **Given** `tdsPercent`가 없는 브루 로그

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { backendUrl } from "@/lib/api-client";
 import { authedRequest } from "@/lib/authed-fetch";
+import type { BrewLogCreateRequest } from "@/types/generated/2026-11-14-quick-brew";
 import type { BrewLogPatchBody, BrewLogRequestBody } from "./formState";
 import {
   brewLogPageSchema,
@@ -14,7 +15,7 @@ import {
 export const BREW_LOG_PAGE_SIZE = 20;
 
 export function createBrewLog(
-  body: BrewLogRequestBody,
+  body: BrewLogRequestBody | BrewLogCreateRequest,
   onSessionLost?: () => void,
 ): Promise<BrewLog> {
   return authedRequest(backendUrl("/api/v1/brew-logs"), {

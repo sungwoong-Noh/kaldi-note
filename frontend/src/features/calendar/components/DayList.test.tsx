@@ -214,7 +214,7 @@ describe("DayList", () => {
       <DayList
         date="2026-09-19"
         logs={[{ ...logA, id: 1, beanBatchId: undefined }]}
-        recipeLabels={new Map([[logA.recipeId, "V60 레시피"]])}
+        recipeLabels={new Map([[logA.recipeId!, "V60 레시피"]])}
         variant="web"
       />,
     );

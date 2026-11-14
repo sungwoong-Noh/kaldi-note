@@ -1,6 +1,7 @@
 "use client";
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { openQuickBrew } from "@/lib/quickBrew";
 import { Suspense } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
@@ -10,7 +11,10 @@ import {
   fetchBrewLogPage,
   fetchBrewLogStats,
 } from "@/features/brewlog/api";
-import { LedgerList, LedgerTable } from "@/features/brewlog/components/BrewLedger";
+import {
+  LedgerList,
+  LedgerTable,
+} from "@/features/brewlog/components/BrewLedger";
 import { StatsCards } from "@/features/brewlog/components/StatsCards";
 import { useRecipeLabels } from "@/features/brewlog/useRecipeLabels";
 import {
@@ -22,7 +26,7 @@ import { useMe, type Me } from "@/features/user/queries";
 import { BottomCta, PageHeader, PillFilter } from "@/components/kit";
 import { kstToday } from "@/lib/kstDate";
 import { useViewportWidth } from "@/lib/useViewportWidth";
-import { Avatar, ButtonLink, Shell } from "@/components/ui";
+import { Avatar, Button, Shell } from "@/components/ui";
 
 /** 레시피 목록과 같은 기준이다 — ≥760px가 웹(테이블), 그 아래가 모바일(2줄 원장). */
 const WEB_BREAKPOINT_PX = 760;
@@ -134,7 +138,10 @@ function BrewsPageContent() {
     return (
       <BrewsScreen {...shell}>
         {top}
-        <div data-empty className="flex flex-col items-center gap-[8px] py-[24px]">
+        <div
+          data-empty
+          className="flex flex-col items-center gap-[8px] py-[24px]"
+        >
           <p className="text-[14.5px] text-ink-3">조건에 맞는 잔이 없습니다</p>
           <button
             type="button"
@@ -155,15 +162,14 @@ function BrewsPageContent() {
         {top}
 
         {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md.
-            기록은 레시피를 고른 뒤 시작하므로 recipeId 없이 작성 화면을 열 수 없다
-            (AC-RECIPESBREWS-86) — /brews/new가 아니라 /recipes로 보낸다. */}
+            레시피 없이 기록하므로 빠른 기록 시트를 연다(ADR 0011, AC-RECIPESBREWS-86 정정). */}
         <div data-empty className="flex flex-col gap-3">
           <p className="py-6 text-center text-body text-ink-3">
             아직 기록이 없습니다
           </p>
-          <ButtonLink href="/recipes" variant="primary">
+          <Button variant="primary" onClick={() => openQuickBrew()}>
             기록하기
-          </ButtonLink>
+          </Button>
         </div>
       </BrewsScreen>
     );
@@ -193,9 +199,10 @@ function BrewsPageContent() {
         </div>
       )}
 
-      {/* 기록은 레시피를 고른 뒤 시작한다 — /recipes로 보낸다(AC-RECIPESBREWS-86과 같은 이유).
-          웹은 상단 바 CTA가 이 자리를 맡는다(AC-GRAMMAR-05). */}
-      {isMobile && <BottomCta href="/recipes">기록하기</BottomCta>}
+      {/* 빠른 기록 시트를 연다(ADR 0011 — 레시피 없이 기록). 웹은 상단 바 CTA가 이 자리를 맡는다(AC-GRAMMAR-05). */}
+      {isMobile && (
+        <BottomCta onClick={() => openQuickBrew()}>기록하기</BottomCta>
+      )}
     </BrewsScreen>
   );
 }
@@ -236,7 +243,10 @@ function BrewsScreen({
     />
   ) : (
     <div className="flex items-end justify-between gap-[24px]">
-      <PageHeader eyebrow={`My cups · ${kstToday().slice(0, 4)}`} title="내 잔" />
+      <PageHeader
+        eyebrow={`My cups · ${kstToday().slice(0, 4)}`}
+        title="내 잔"
+      />
       <div className="flex items-center gap-[10px]">
         {pills}
         {count !== undefined && (
@@ -250,7 +260,9 @@ function BrewsScreen({
   );
   return (
     <Shell wide>
-      <div className={`flex flex-col ${isMobile ? "gap-[16px]" : "gap-[24px]"}`}>
+      <div
+        className={`flex flex-col ${isMobile ? "gap-[16px]" : "gap-[24px]"}`}
+      >
         {header}
         {children}
       </div>

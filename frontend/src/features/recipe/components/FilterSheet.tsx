@@ -72,7 +72,11 @@ export function FilterSheet({
   }
 
   return (
-    <div role="dialog" aria-label="필터" className="flex flex-col gap-3">
+    <div
+      role="dialog"
+      aria-label="필터"
+      className="flex flex-col gap-3 transition-transform duration-200 ease-out animate-[sheet-slide-in_200ms_ease-out] motion-reduce:transition-none motion-reduce:animate-none"
+    >
       <div className="flex flex-wrap gap-2" role="group" aria-label="온도">
         <button
           type="button"

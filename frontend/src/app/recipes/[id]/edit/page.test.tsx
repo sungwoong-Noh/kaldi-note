@@ -92,6 +92,9 @@ describe("RecipeEditPage", () => {
     await waitFor(() => expect(body).not.toBeNull());
     expect(body!.steps).toHaveLength(hoffmann.steps.length - 1);
     expect(push).toHaveBeenCalledWith("/recipes/2");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "레시피를 저장했습니다.",
+    );
   });
 
   it("없는 레시피를 열면 안내가 보인다", async () => {

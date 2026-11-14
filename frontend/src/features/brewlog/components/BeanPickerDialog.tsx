@@ -39,7 +39,7 @@ export function BeanPickerDialog({
         aria-modal="true"
         aria-labelledby="bean-picker-title"
         className={cardClass(
-          "flex max-h-full w-full flex-col gap-3 overflow-y-auto min-[760px]:max-w-sm",
+          "flex max-h-full w-full flex-col gap-3 overflow-y-auto transition-transform duration-200 ease-out max-[759px]:animate-[sheet-slide-in_200ms_ease-out] min-[760px]:max-w-sm motion-reduce:transition-none motion-reduce:animate-none",
           { tone: "raised" },
         )}
       >

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
+import { showToast } from "@/components/Toast";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useBeanProducts, useRoasters } from "@/features/catalog/api";
 import { useUserGrinders } from "@/features/gear/queries";
@@ -131,6 +132,7 @@ function Fields({
       // 같이 지워지지 않는다. 홈으로 돌아왔을 때 새 점이 바로 보이려면 따로 무효화한다
       // (docs/specs/2026-09-19-home-calendar.md, AC-HOMECAL-49).
       void queryClient.invalidateQueries({ queryKey: ["calendar"] });
+      showToast("기록을 저장했습니다.");
       router.push(`/brews/${created.id}`);
     },
   });

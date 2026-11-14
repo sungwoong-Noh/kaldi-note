@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it } from "vitest";
@@ -169,6 +169,43 @@ describe("RecipeStepEditor", () => {
     expect(screen.getByText("(1:30)")).toBeInTheDocument();
   });
 
+  it("0초인 시간 칸에 40을 입력하면 앞자리 0 없이 '40'이 되고 (0:40)이 보인다", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.click(button("스텝 추가"));
+    const startInput = startValue(1) as HTMLInputElement;
+    expect(startInput.value).toBe("0");
+
+    fireEvent.change(startInput, { target: { value: "040" } });
+
+    expect(startInput.value).toBe("40");
+    expect(startInput).toHaveValue(40);
+    expect(screen.getByText("(0:40)")).toBeInTheDocument();
+  });
+
+  it("숫자 칸에 포커스하면 기존 값을 전체 선택하고 inputMode가 지정돼 있다", async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={[at(0, 10, { stepType: "POUR", waterG: 50 })]} />);
+
+    const startInput = startValue(1) as HTMLInputElement;
+    const durationInput = screen.getByLabelText("스텝 1 소요") as HTMLInputElement;
+    const waterInput = screen.getByLabelText("스텝 1 물량") as HTMLInputElement;
+
+    expect(startInput).toHaveAttribute("inputmode", "numeric");
+    expect(durationInput).toHaveAttribute("inputmode", "numeric");
+    expect(waterInput).toHaveAttribute("inputmode", "decimal");
+
+    let selected = false;
+    const origSelect = startInput.select.bind(startInput);
+    startInput.select = () => {
+      selected = true;
+      origSelect();
+    };
+
+    await user.click(startInput);
+    expect(selected).toBe(true);
+  });
 });
 
 describe("스텝 타입 변경", () => {

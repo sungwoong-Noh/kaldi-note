@@ -4,10 +4,12 @@ import Link from "next/link";
 import {
   useState,
   type ChangeEvent,
+  type FocusEvent,
   type InputHTMLAttributes,
   type ReactNode,
 } from "react";
 import type { RoastLevel } from "@/features/catalog/schema";
+import { showToast } from "@/components/Toast";
 import { RoastDot } from "@/components/ui";
 
 /**
@@ -62,25 +64,49 @@ export function Segmented<T extends string>({
   onChange?: (value: T) => void;
   label: string;
 }) {
+  const [internalValue, setInternalValue] = useState<T | null>(value);
+  const currentValue = onChange ? value : internalValue;
+  const activeIndex = options.findIndex(
+    (option) => option.value === currentValue,
+  );
+  const count = options.length;
   return (
     <div
       role="radiogroup"
       aria-label={label}
-      className="flex gap-[3px] rounded-[8px] bg-sunken p-[3px]"
+      className="relative grid gap-[3px] rounded-[8px] bg-sunken p-[3px]"
+      style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}
     >
+      {activeIndex >= 0 && count > 0 && (
+        <span
+          data-segment-indicator
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-[3px] left-[3px] rounded-[6px] border border-border bg-paper transition-transform duration-200 ease-out motion-reduce:transition-none"
+          style={{
+            width: `calc((100% - 6px - ${(count - 1) * 3}px) / ${count})`,
+            transform: `translateX(calc(${activeIndex} * (100% + 3px)))`,
+          }}
+        />
+      )}
       {options.map((option) => {
-        const active = option.value === value;
+        const active = option.value === currentValue;
         return (
           <button
             key={option.value}
             type="button"
             role="radio"
             aria-checked={active}
-            onClick={() => onChange?.(option.value)}
+            onClick={() => {
+              if (onChange) {
+                onChange(option.value);
+              } else {
+                setInternalValue(option.value);
+              }
+            }}
             className={cx(
-              "hit-44 flex-1 rounded-[6px] border py-[9px] text-center text-[13.5px]",
+              "hit-44 relative z-10 rounded-[6px] border px-[6px] py-[9px] text-center text-[13.5px] leading-[1.4] whitespace-nowrap transition-colors duration-200 ease-out motion-reduce:transition-none",
               active
-                ? "border-border bg-paper font-medium text-ink"
+                ? "border-transparent font-medium text-ink"
                 : "border-transparent text-ink-3",
             )}
           >
@@ -312,7 +338,7 @@ export function BottomCta({
   href?: string;
 }) {
   const className =
-    "block w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-medium text-on-ink";
+    "block w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-medium text-on-ink transition-transform duration-100 ease-out active:scale-[0.98] motion-reduce:transition-none motion-reduce:active:scale-100";
   if (href !== undefined) {
     return (
       <Link href={href} className={className}>
@@ -331,17 +357,26 @@ export function BottomCta({
 export function BottomSheet({
   title,
   action,
+  open = true,
   children,
 }: {
   title: string;
   action?: ReactNode;
+  open?: boolean;
   children: ReactNode;
 }) {
   return (
     <section
       role="dialog"
       aria-label={title}
-      className="flex flex-col gap-[20px] rounded-t-[18px] border-t border-border bg-paper px-[24px] pt-[14px] pb-[14px] shadow-[0_-1px_0_var(--border)]"
+      data-kit="bottom-sheet"
+      data-state={open ? "open" : "closed"}
+      className={cx(
+        "flex flex-col gap-[20px] rounded-t-[18px] border-t border-border bg-paper px-[24px] pt-[14px] pb-[14px] shadow-[0_-1px_0_var(--border)] transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:animate-none",
+        open
+          ? "translate-y-0 animate-[sheet-slide-in_200ms_ease-out]"
+          : "pointer-events-none translate-y-full",
+      )}
     >
       <div className="flex justify-center">
         <span className="h-[4px] w-[40px] rounded-full bg-border" />
@@ -354,6 +389,141 @@ export function BottomSheet({
       </div>
       {children}
     </section>
+  );
+}
+
+/** 사이드 패널 면. 오른쪽에서 200ms ease-out으로 슬라이드해 열리고 닫힌다. */
+export function SidePanel({
+  title,
+  action,
+  open = true,
+  children,
+}: {
+  title: string;
+  action?: ReactNode;
+  open?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <aside
+      aria-label={title}
+      data-kit="side-panel"
+      data-state={open ? "open" : "closed"}
+      className={cx(
+        "flex w-[320px] max-w-full flex-col gap-[16px] border-l border-border bg-paper px-[24px] py-[20px] transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:animate-none",
+        open
+          ? "translate-x-0 animate-[panel-slide-in_200ms_ease-out]"
+          : "pointer-events-none translate-x-full",
+      )}
+    >
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-[19px] font-semibold tracking-[-0.02em] text-ink">
+          {title}
+        </h2>
+        {action}
+      </div>
+      {children}
+    </aside>
+  );
+}
+
+const MOTION_SCOPES = [
+  { value: "drawer", label: "내 서랍" },
+  { value: "public", label: "둘러보기" },
+] as const;
+
+/** /dev/kit 모션 예시 — 세그먼트 위치 이동, 버튼 눌림 피드백, 바텀시트·사이드 패널 슬라이드. */
+export function MotionShowcase() {
+  const [scope, setScope] = useState<"drawer" | "public">("drawer");
+  const [sheetOpen, setSheetOpen] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(true);
+
+  return (
+    <div data-kit="motion-showcase" className="flex flex-col gap-[20px]">
+      <div className="flex flex-col gap-[8px]">
+        <SheetLabel>Tab · Segmented · 위치 이동</SheetLabel>
+        <div
+          role="tablist"
+          aria-label="모션 범위"
+          className="relative grid grid-cols-2 gap-[3px] rounded-[8px] bg-sunken p-[3px]"
+        >
+          <span
+            data-segment-indicator
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-[3px] left-[3px] rounded-[6px] border border-border bg-paper transition-transform duration-200 ease-out motion-reduce:transition-none"
+            style={{
+              width: "calc((100% - 9px) / 2)",
+              transform: `translateX(calc(${scope === "public" ? 1 : 0} * (100% + 3px)))`,
+            }}
+          />
+          {MOTION_SCOPES.map((option) => {
+            const active = option.value === scope;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setScope(option.value)}
+                className={cx(
+                  "hit-44 relative z-10 rounded-[6px] border border-transparent px-[6px] py-[9px] text-center text-[13.5px] leading-[1.4] whitespace-nowrap transition-colors duration-200 ease-out motion-reduce:transition-none",
+                  active ? "font-medium text-ink" : "text-ink-3",
+                )}
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-[8px]">
+        <SheetLabel>Button · 눌림 피드백</SheetLabel>
+        <BottomCta onClick={() => showToast("레시피를 저장했습니다.")}>
+          눌러 보기
+        </BottomCta>
+      </div>
+
+      <div className="flex flex-col gap-[8px]">
+        <div className="flex items-center justify-between">
+          <SheetLabel>Bottom sheet · 200ms ease-out</SheetLabel>
+          <button
+            type="button"
+            onClick={() => setSheetOpen((prev) => !prev)}
+            className="hit-44 text-[13px] font-medium text-accent"
+          >
+            {sheetOpen ? "시트 닫기" : "시트 열기"}
+          </button>
+        </div>
+        <div className="overflow-hidden rounded-[10px] border border-divider bg-sunken pt-[16px]">
+          <BottomSheet title="모션 시트" open={sheetOpen}>
+            <p className="text-[13.5px] text-ink-2">
+              열고 닫을 때 200ms ease-out으로 슬라이드합니다.
+            </p>
+          </BottomSheet>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-[8px]">
+        <div className="flex items-center justify-between">
+          <SheetLabel>Side panel · 200ms ease-out</SheetLabel>
+          <button
+            type="button"
+            onClick={() => setPanelOpen((prev) => !prev)}
+            className="hit-44 text-[13px] font-medium text-accent"
+          >
+            {panelOpen ? "패널 닫기" : "패널 열기"}
+          </button>
+        </div>
+        <div className="flex justify-end overflow-hidden rounded-[10px] border border-divider bg-sunken">
+          <SidePanel title="모션 패널" open={panelOpen}>
+            <p className="text-[13.5px] text-ink-2">
+              오른쪽에서 200ms ease-out으로 슬라이드합니다.
+            </p>
+          </SidePanel>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -386,6 +556,7 @@ export function NumberCell({
   label,
   accessibleName,
   unit,
+  onFocus,
   ...input
 }: {
   label: string;
@@ -406,6 +577,13 @@ export function NumberCell({
           aria-label={accessibleName}
           inputMode="decimal"
           className="w-full min-w-0 bg-transparent text-right font-mono text-[16px] font-medium text-ink tabular-nums outline-none"
+          onFocus={(e) => {
+            if (onFocus) {
+              onFocus(e);
+            } else if (input.type !== "datetime-local") {
+              e.currentTarget.select();
+            }
+          }}
           {...input}
         />
         {unit !== undefined && (
@@ -496,6 +674,11 @@ export function TasteDots({
   );
 }
 
+/** `040` → `40`, `00.5` → `0.5`. `0`이나 `0.5`의 첫 0은 남긴다. */
+export function stripLeadingZeros(text: string): string {
+  return text.replace(/^(-?)0+(?=\d)/, "$1");
+}
+
 /** 빈칸은 `null`, 숫자가 아니면 `null`. */
 function parseNumber(text: string): number | null {
   if (text === "") return null;
@@ -515,8 +698,12 @@ export function useNumberText(
   return {
     value:
       parseNumber(text) === value ? text : value === null ? "" : String(value),
+    onFocus: (e: FocusEvent<HTMLInputElement>) => {
+      e.currentTarget.select();
+    },
     onChange: (e: ChangeEvent<HTMLInputElement>) => {
-      const next = e.target.value.trim();
+      const next = stripLeadingZeros(e.target.value.trim());
+      if (next !== e.target.value) e.target.value = next;
       setText(next);
       onChange(parseNumber(next));
     },

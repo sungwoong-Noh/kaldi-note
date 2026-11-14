@@ -50,4 +50,11 @@ describe("마감 결함", () => {
     );
     expect(present).toEqual([]);
   });
+
+  it("prefers-reduced-motion: reduce이면 애니메이션과 트랜지션을 모두 끈다", () => {
+    const css = readFileSync(join("src", "app", "globals.css"), "utf8");
+    expect(css).toMatch(/@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)/);
+    expect(css).toMatch(/animation-duration:\s*0(?:\.01ms|s)\s*!important/);
+    expect(css).toMatch(/transition-duration:\s*0(?:\.01ms|s)\s*!important/);
+  });
 });

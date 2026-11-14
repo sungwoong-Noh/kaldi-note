@@ -204,6 +204,9 @@ describe("BrewEditPage — 저장", () => {
     await user.click(screen.getByRole("button", { name: "저장" }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/brews/42"));
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "기록을 저장했습니다.",
+    );
   });
 
   it("AC-WEBLOGEDIT-10 · 취소하면 그 로그 상세로 간다", async () => {

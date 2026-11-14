@@ -5,6 +5,7 @@ import {
   BottomSheet,
   LedgerField,
   LedgerRow,
+  MotionShowcase,
   NumberCell,
   PageHeader,
   PillFilter,
@@ -226,6 +227,10 @@ export default function KitPage() {
               <BottomCta>31개 결과 보기</BottomCta>
             </BottomSheet>
           </div>
+        </Part>
+
+        <Part name="Motion · 200ms ease-out">
+          <MotionShowcase />
         </Part>
       </div>
     </main>

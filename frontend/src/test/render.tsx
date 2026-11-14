@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, type RenderResult } from "@testing-library/react";
 import type { ReactElement } from "react";
+import { clearToast, ToastViewport } from "@/components/Toast";
 
 /**
  * TanStack Query가 필요한 화면을 렌더링한다.
@@ -9,6 +10,7 @@ import type { ReactElement } from "react";
  * 끈다. 실패를 기대하는 테스트가 재시도를 기다리며 느려진다.
  */
 export function renderWithQuery(ui: ReactElement): RenderResult {
+  clearToast();
   const client = new QueryClient({
     defaultOptions: {
       queries: { retry: false, gcTime: 0 },
@@ -17,6 +19,9 @@ export function renderWithQuery(ui: ReactElement): RenderResult {
   });
 
   return render(
-    <QueryClientProvider client={client}>{ui}</QueryClientProvider>,
+    <QueryClientProvider client={client}>
+      {ui}
+      <ToastViewport />
+    </QueryClientProvider>,
   );
 }

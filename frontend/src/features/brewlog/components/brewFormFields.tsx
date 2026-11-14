@@ -1,6 +1,11 @@
 "use client";
 
-import { NumberCell, TasteDots, useNumberText } from "@/components/kit";
+import {
+  NumberCell,
+  Segmented,
+  TasteDots,
+  useNumberText,
+} from "@/components/kit";
 import { SELECT_EXTRA } from "@/components/ui";
 import type { UserGrinder } from "@/features/gear/schema";
 import type { MappedFieldErrors } from "@/lib/fieldErrors";
@@ -278,24 +283,12 @@ const VISIBILITY_OPTIONS: ReadonlyArray<{
  */
 export function VisibilityField({ ctx }: { ctx: FieldContext }) {
   return (
-    <div
-      role="radiogroup"
-      aria-label="공개 범위"
-      className="flex gap-[3px] rounded-[7px] bg-sunken p-[3px]"
-    >
-      {VISIBILITY_OPTIONS.map((option) => (
-        <button
-          key={option.value}
-          type="button"
-          role="radio"
-          aria-checked={ctx.state.visibility === option.value}
-          onClick={() => ctx.set("visibility", option.value)}
-          className="hit-44 flex-1 rounded-[5px] border border-transparent px-[6px] py-[9px] text-center text-[13.5px] leading-[1.4] whitespace-nowrap text-ink-3 aria-checked:border-border aria-checked:bg-paper aria-checked:font-medium aria-checked:text-ink"
-        >
-          {option.label}
-        </button>
-      ))}
-    </div>
+    <Segmented
+      label="공개 범위"
+      options={VISIBILITY_OPTIONS}
+      value={ctx.state.visibility}
+      onChange={(v) => ctx.set("visibility", v)}
+    />
   );
 }
 

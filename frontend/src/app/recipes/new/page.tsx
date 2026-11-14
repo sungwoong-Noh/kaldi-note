@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { LoadingState } from "@/components/LoadingState";
+import { showToast } from "@/components/Toast";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { createRecipe } from "@/features/recipe/api";
 import { RecipeForm } from "@/features/recipe/components/RecipeForm";
@@ -21,6 +22,7 @@ export default function RecipeNewPage() {
     mutationFn: (body: RecipeRequestBody) => createRecipe(body, onSessionLost),
     onSuccess: (created) => {
       void queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      showToast("레시피를 저장했습니다.");
       router.push(`/recipes/${created.id}`);
     },
   });

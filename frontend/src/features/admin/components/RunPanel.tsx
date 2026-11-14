@@ -23,11 +23,13 @@ const FOLD = 5;
 export function RunPanel({
   id,
   sources,
+  open = true,
   onClose,
   onSessionLost,
 }: {
   id: number;
   sources: readonly CrawlSource[];
+  open?: boolean;
   onClose: () => void;
   onSessionLost: () => void;
 }) {
@@ -43,7 +45,12 @@ export function RunPanel({
       />
       <aside
         data-testid="run-panel"
-        className="z-20 flex w-[420px] max-w-full shrink-0 flex-col overflow-y-auto border-l border-border bg-paper max-[1279px]:fixed max-[1279px]:inset-y-0 max-[1279px]:right-0"
+        data-state={open ? "open" : "closed"}
+        className={`z-20 flex w-[420px] max-w-full shrink-0 flex-col overflow-y-auto border-l border-border bg-paper transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:animate-none max-[1279px]:fixed max-[1279px]:inset-y-0 max-[1279px]:right-0 ${
+          open
+            ? "translate-x-0 animate-[panel-slide-in_200ms_ease-out]"
+            : "pointer-events-none translate-x-full"
+        }`}
       >
         <div className="flex justify-end px-6 pt-5">
           <button

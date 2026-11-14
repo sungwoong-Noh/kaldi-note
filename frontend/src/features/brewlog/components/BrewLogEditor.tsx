@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorState, errorMessageOf } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
+import { showToast } from "@/components/Toast";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useUserGrinders } from "@/features/gear/queries";
 import { ApiError } from "@/lib/api-client";
@@ -104,6 +105,7 @@ function Fields({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["brew-logs"] });
       void queryClient.invalidateQueries({ queryKey: ["brew-log", log.id] });
+      showToast("기록을 저장했습니다.");
       router.push(`/brews/${log.id}`);
     },
   });

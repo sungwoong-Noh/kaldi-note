@@ -502,6 +502,9 @@ describe("BrewNewPage — 저장과 평가", () => {
     await user.click(await screen.findByRole("button", { name: "기록하기" }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/brews/42"));
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "기록을 저장했습니다.",
+    );
   });
 
   it("AC-WEBBREW-21 · 빈칸인 선택 항목은 본문에서 빠진다", async () => {

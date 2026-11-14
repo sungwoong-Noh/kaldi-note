@@ -933,9 +933,10 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 | `AC-HOMECAL-27~31·33·48~52·55~62·78~84·127·128`, `AC-HOMEFIT-05·08·09·13·18·19·22·23` (`09-19`, `09-20`, `10-11`) | 36 | **대체됨** → `AC-QUICKBREW-20~22·29·31·65` | 구 `/` 달력 홈 레이아웃·네비·CTA·e2e가 시안 A(오늘)·시안 G(탭 바)·시안 F(기록 탭)로 교체 |
 | `AC-HOMECAL-63~65·68~70·72·74·112~118·121~125`, `AC-HOMEFIT-07·10~12·15~17·21` (`09-19`, `09-20`, `10-11`) | 28 | **대체됨** (웹 2컬럼 홈 셀·우측 카드 `DayCard`) | 구 홈 웹 2컬럼(셀 내 레시피명 + 우측 420px `DayCard` 패널)이 시안 A(오늘) + FW(원장 + 300px 달력 카드)로 교체 |
 
-> **관련 스펙 비고:** [`2026-09-20-calendar-grid-responsive.md`](2026-09-20-calendar-grid-responsive.md)(`AC-HOMECAL-85~91`, `status: 구현완료`)는
-> 이슈 #210의 3개 목록에 없었으며 테스트가 `home-calendar-web.spec.ts`에만 있어 이번 커밋에서는 건드리지 않았다.
-> Task 10에서 `home-calendar-web.spec.ts`를 제거·교체할 때 함께 `대체됨` 처리 여부를 결정해야 한다.
+> **관련 스펙 비고 (2026-11-15):** [`2026-09-20-calendar-grid-responsive.md`](2026-09-20-calendar-grid-responsive.md)(`AC-HOMECAL-85~91`)는
+> 구 `/` 웹 2컬럼 풀높이 달력(`fillHeight`) 전용 요구사항으로 테스트가 `home-calendar-web.spec.ts`에만 존재했다.
+> Task 10에서 `/`를 「오늘」로 전환해 `home-calendar-web.spec.ts`를 제거하면서, `/brews` 웹 사이드바(시안 FW, 300px)는
+> 뷰포트 높이 채움 그리드를 쓰지 않으므로 함께 `status: 대체됨`으로 정리했다.
 
 ---
 
@@ -976,7 +977,7 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
   별 반 개, 「자세히」(온도·시간·장비·분쇄도·맛 5축·TDS·공개 범위·로스팅 날짜·레시피 연결), 저장 중 400ms 규칙, 실패 유지, 닫기 확인.
   > **구현 메모 (2026-11-14):** 「자세히」에는 온도·그라인더·분쇄도·로스팅 날짜·공개 범위만 넣었다. 맛 5축·TDS·총 시간·레시피 연결은 저장 후 「수정」(기존 편집 화면)으로 채울 수 있어 Task 13에서 함께 다룬다. 별은 하나당 44×44 버튼 하나이고, 누른 위치가 왼쪽 절반이면 0.5다(누르는 영역 잠금 때문에 반쪽 버튼 둘로 나누지 않았다).
 
-- [ ] **Task 10: 오늘 홈** — Covers: AC-QUICKBREW-20, 21, 22, 65
+- [x] **Task 10: 오늘 홈** — Covers: AC-QUICKBREW-20, 21, 22, 65
   `app/page.tsx`를 시안 A로. `weekSummary`(월요일 시작, KST)는 순수 함수 + `/brew-logs/calendar` 두 달. 「관찰」은 기존 홈 관찰 문장 재사용. 기존 달력 홈 테스트(`app/page.test.tsx`, `home-calendar*.spec.ts`, `home-fidelity.spec.ts`) 정리(별도 `2026-09-20-calendar-grid-responsive.md` 포함 확인).
 
 - [ ] **Task 11: 웹 패널** — Covers: AC-QUICKBREW-67, 68

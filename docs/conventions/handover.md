@@ -4,7 +4,7 @@
 대화를 보지 못한다. 저장소와 GitHub(이슈·PR)에 남은 것만 볼 수 있다.
 
 ```
-세션 시작:  /resume     → 상태 파악(ROADMAP + 이슈) + 테스트 실행 + 할 일 제안
+세션 시작:  /kickoff    → 상태 파악(ROADMAP + 이슈) + 테스트 실행 + 할 일 제안
 세션 종료:  /handover   → 검증 + 체크박스 갱신 + PR 본문 작성/갱신 + GOTCHAS + 이슈 닫기
 ```
 
@@ -31,7 +31,7 @@
 |---|---|
 | `superpowers:using-git-worktrees` | **항상** 격리 워크스페이스를 만든다. 순차 작업이면 불필요하고, 백엔드가 여러 워크스페이스로 갈라지면 5432 포트와 Testcontainers 재사용 컨테이너를 놓고 충돌한다 |
 | `superpowers:executing-plans` | Step 1의 첫 항목이 위 스킬 호출이다. 게다가 이 프로젝트는 계획 문서를 폐지했다 — 스펙의 「구현 순서」를 직접 실행한다 |
-| `superpowers:subagent-driven-development` | 태스크마다 서브에이전트를 띄운다. 이 프로젝트는 `/resume`·`/handover`로 세션을 나누는 쪽을 택했다. 둘을 섞으면 체크박스와 PR 본문을 누가 갱신하는지가 흐려진다 |
+| `superpowers:subagent-driven-development` | 태스크마다 서브에이전트를 띄운다. 이 프로젝트는 `/kickoff`·`/handover`로 세션을 나누는 쪽을 택했다. 둘을 섞으면 체크박스와 PR 본문을 누가 갱신하는지가 흐려진다 |
 
 **병렬 작업의 worktree는 `EnterWorktree`로 직접 만든다.** 아래 "병렬 작업" 절 참조.
 
@@ -140,9 +140,9 @@ fix/calendar-record-dot       버그 수정(C)
 
 ---
 
-## 세션 시작 — `/resume`
+## 세션 시작 — `/kickoff`
 
-새 세션은 **반드시 `/resume`으로 시작한다.** 커맨드가 하는 일:
+새 세션은 **반드시 `/kickoff`로 시작한다.** 커맨드가 하는 일:
 
 1. `git status`, `git branch --show-current`, `git log --oneline -5` — 어디에 있나
 2. `docs/ROADMAP.md`의 진행 현황 + `gh issue list`(열린 이슈) — 왜 지금 이 상태인가

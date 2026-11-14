@@ -4,7 +4,7 @@ Next.js PWA. **주 사용 환경은 "부엌에서 폰으로"** 다. 데스크톱
 
 **작업 전 필독:** 루트 `../CLAUDE.md` → **`../docs/conventions/workflow.md`**(스펙 → 코드) → 이 문서 → `../docs/conventions/frontend.md`
 
-> **세션은 `/resume`으로 시작하고 `/handover`로 끝낸다.** 상세는 `../docs/conventions/handover.md`.
+> **세션은 `/kickoff`로 시작하고 `/handover`로 끝낸다.** 상세는 `../docs/conventions/handover.md`.
 >
 > **스펙 없이 코드를 쓰지 않는다.** 기능 개발은 `docs/specs/`의 스펙(구현 순서 포함)이 승인된 뒤에 시작한다. 테스트에는 인수 조건 ID를 `it('AC-GRIND-08 · ...')` 형태로 반드시 남긴다.
 

@@ -7,7 +7,7 @@
 #   3. 진행 중인 로컬 브랜치 (origin/main 대비)
 #
 # 사용법: ./scripts/status.sh
-# SessionStart 훅과 /resume이 이 스크립트를 부른다 — 상세는 docs/conventions/workflow.md.
+# SessionStart 훅과 /kickoff가 이 스크립트를 부른다 — 상세는 docs/conventions/workflow.md.
 
 set -uo pipefail
 

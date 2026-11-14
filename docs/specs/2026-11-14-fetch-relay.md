@@ -312,7 +312,7 @@ Worker 자체 오류 응답 본문은 `{"code":"<CODE>"}`, `Content-Type: applic
   (빈 url·token, hosts=momos.co.kr) 그대로 — 기존 `MomosSourceTest`·`CrawlRunServiceTest`가
   실제 네트워크를 쓰지 않는지 확인한다.
 
-- [ ] **Task 3: 실행 실패 흐름** — Covers: AC-RELAY-27
+- [x] **Task 3: 실행 실패 흐름** — Covers: AC-RELAY-27
 
   `CrawlRunServiceTest`에 중계 설정이 빈 `PageFetcher`로 모모스를 실행하는 케이스 1개.
   `CrawlRunService` 코드는 바꾸지 않는다 — 기존 목록 실패 처리가 메시지를 만든다.

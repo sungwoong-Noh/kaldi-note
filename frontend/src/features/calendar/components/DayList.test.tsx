@@ -12,16 +12,27 @@ describe("DayList", () => {
   it("AC-HOMECAL-42 · 목록 헤더가 날짜·요일·건수를 담는다", () => {
     renderWithQuery(
       <DayList
-        date="2026-09-19"
-        logs={[
-          { ...logA, id: 1, beanBatchId: undefined },
-          { ...logA, id: 2, beanBatchId: undefined },
-        ]}
+        date="2026-11-14"
+        logs={[{ ...logA, id: 1, beanBatchId: undefined }]}
         variant="mobile"
       />,
     );
 
-    expect(screen.getByText("09.19 SAT · 2 BREWS")).toBeInTheDocument();
+    expect(screen.getByText("11.14 토 · 1잔")).toBeInTheDocument();
+  });
+
+  it("entryLabels가 주어지면 레시피·원두 fallback보다 우선해 행 제목으로 쓴다", () => {
+    renderWithQuery(
+      <DayList
+        date="2026-11-14"
+        logs={[{ ...logA, id: 1, recipeId: 12, beanBatchId: undefined }]}
+        entryLabels={new Map([[1, "에티오피아 예가체프"]])}
+        recipeLabels={new Map([[12, "V60 레시피"]])}
+        variant="mobile"
+      />,
+    );
+
+    expect(screen.getByText("에티오피아 예가체프")).toBeInTheDocument();
   });
 
   it("AC-HOMECAL-43 · 수율이 없으면 비율을 보여준다", () => {
@@ -72,7 +83,7 @@ describe("DayList", () => {
       />,
     );
 
-    expect(screen.getByText("09.19 SAT · 지연 · 1 BREW")).toBeInTheDocument();
+    expect(screen.getByText("09.19 토 · 지연 · 1잔")).toBeInTheDocument();
   });
 
   it("AC-HOMECAL-108 · 별점이 있으면 시각·별점 캡션이 text-caption으로 렌더된다", () => {
@@ -158,7 +169,7 @@ describe("DayList", () => {
     expect(dateEl).toHaveClass("text-[26px]", "font-semibold");
   });
 
-  it("AC-HOMECAL-125 · AC-HOMEFIT-10 · 웹 헤더 오른쪽에 mono 12px 소문자 「2 brews」가 있다", () => {
+  it("AC-HOMECAL-125 · AC-HOMEFIT-10 · 웹 헤더 오른쪽에 mono 12px 「2잔」이 있다", () => {
     renderWithQuery(
       <DayList
         date="2026-09-19"
@@ -171,7 +182,7 @@ describe("DayList", () => {
     );
 
     const count = screen.getByTestId("day-header-count");
-    expect(count).toHaveTextContent(/^2 brews$/);
+    expect(count).toHaveTextContent(/^2잔$/);
     expect(count).toHaveClass("font-mono", "text-[12px]");
   });
 

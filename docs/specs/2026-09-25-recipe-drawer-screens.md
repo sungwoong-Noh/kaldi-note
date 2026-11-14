@@ -227,7 +227,7 @@ supersedes:
 - **Then** "내 서랍에 담기" 버튼이 DOM에 없다(기존 `isMine` 분기 재사용 — 편집·삭제·"이 레시피로 내렸다"만 표시)
 - **검증** 컴포넌트 테스트 `RecipeDetail`(기존 테스트 확장)
 
-#### AC-RECIPESBREWS-76 · 통계 카드에 이번 달·평균 별점·최빈 원두량·즐겨 쓴 레시피가 있다
+**AC-RECIPESBREWS-76 (대체됨)** · 통계 카드에 이번 달·평균 별점·최빈 원두량·즐겨 쓴 레시피가 있다
 
 - **Given** `BrewLogStatsResponse { monthCount: 9, averageRating: 3.7, favoriteDoseG: 16.0, favoriteRecipeTitle: "케냐 94도 3푸어" }`
 - **When** 웹 `/brews`를 렌더한다
@@ -235,8 +235,9 @@ supersedes:
 - **검증** 컴포넌트 테스트 `BrewsPage`
 
 > **표기 갱신 (2026-09-27).** 수치 표기가 목업에 맞춰 바뀌었다 — [`2026-09-27-web-shell-grammar.md`](2026-09-27-web-shell-grammar.md) AC-GRAMMAR-06. 위 값은 갱신한 값이다.
+> **대체 (2026-11-15):** `/brews`가 시안 F로 전환되며 통계 카드가 제거됐다([`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md) `AC-QUICKBREW-31`).
 
-#### AC-RECIPESBREWS-77 · 내 잔 목록이 웹은 테이블, 모바일은 2줄 원장 행이다
+**AC-RECIPESBREWS-77 (대체됨)** · 내 잔 목록이 웹은 테이블, 모바일은 2줄 원장 행이다
 
 - **Given** 브루 로그 목록
 - **When** `≥760px`에서 렌더한다
@@ -244,6 +245,8 @@ supersedes:
 - **Given** `<760px`에서 렌더한다
 - **Then** 첫 줄에 레시피명+원두량, 둘째 줄에 날짜·온도·시간 / 수율·평가인 2줄 행이 렌더된다
 - **검증** 컴포넌트 테스트 `BrewsPage`
+
+> **대체 (2026-11-15):** `/brews`가 시안 F 날짜 그룹 원장으로 전환됐다([`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md) `AC-QUICKBREW-31`).
 
 #### AC-RECIPESBREWS-78 · 레시피/원두 열은 기존 useRecipeLabels로 채운다
 
@@ -314,7 +317,7 @@ supersedes:
 - **Then** 기존 빈 상태 문구 `"레시피가 없습니다"`와 `"새 레시피"` CTA(`/recipes/new`)가 렌더된다(기존 패턴 재사용, 새 카피 없음)
 - **검증** 컴포넌트 테스트 `RecipesPage`
 
-#### AC-RECIPESBREWS-86 · 내 잔 0건이면 통계가 전부 빈 값이다
+**AC-RECIPESBREWS-86 (대체됨)** · 내 잔 0건이면 통계가 전부 빈 값이다
 
 - **Given** `BrewLogStatsResponse { monthCount: 0, averageRating: null, favoriteDoseG: null, favoriteRecipeTitle: null }`
 - **When** `/brews`를 렌더한다
@@ -322,13 +325,16 @@ supersedes:
 - **검증** 컴포넌트 테스트 `BrewsPage`
 
 > **정정 (2026-11-14):** ADR 0011(기록 먼저)로 「기록하기」는 `/recipes` 링크가 아니라 **빠른 기록 시트를 여는 버튼**이다(`docs/specs/2026-11-14-quick-brew.md` AC-QUICKBREW-23). 위 본문은 당시 결정의 기록으로 남기고, 테스트는 이 ID로 새 동작을 검증한다.
+> **대체 (2026-11-15):** `/brews` 시안 F 전환으로 통계 타일이 사라졌다([`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md) `AC-QUICKBREW-31`, 빈 목록 동작은 `AC-WEBBREW-34`·`AC-STRUCT-19` 유지).
 
-#### AC-RECIPESBREWS-87 · TDS 없는 잔은 수율 칸이 빈다
+**AC-RECIPESBREWS-87 (대체됨)** · TDS 없는 잔은 수율 칸이 빈다
 
 - **Given** `tdsPercent`가 없는 브루 로그
 - **When** 웹 테이블 행을 렌더한다
 - **Then** 수율 칸이 `"—"`이고 열 자체는 유지된다(테이블 폭이 줄지 않음)
 - **검증** 컴포넌트 테스트 `BrewsPage`
+
+> **대체 (2026-11-15):** `/brews` 시안 FW 전환으로 웹 테이블과 수율 열이 사라졌다([`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md) `AC-QUICKBREW-31`, EY 없을 때 `%` 생략은 `AC-WEBBREW-36` 유지).
 
 #### AC-RECIPESBREWS-88 · 뷰포트 1280px에서 4열이다
 
@@ -349,11 +355,13 @@ supersedes:
 - **Then** 3열 그리드다
 - **검증** e2e
 
-#### AC-RECIPESBREWS-91 · 뷰포트 1023px에서 2열이고 수율 열이 숨는다
+#### AC-RECIPESBREWS-91 · 뷰포트 1023px에서 2열이다
 
 - **Given** 뷰포트 폭 `1023px`
-- **Then** 레시피 그리드는 2열이고, 내 잔 테이블은 수율 열이 렌더되지 않는다
+- **Then** 레시피 그리드는 2열이다
 - **검증** e2e
+
+> **일부 대체 (2026-11-15):** `/brews` 내 잔 테이블 수율 열 숨김 부분은 시안 F 전환([`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md) `AC-QUICKBREW-31`·`37`)으로 대체됐다.
 
 #### AC-RECIPESBREWS-92 · 뷰포트 760px에서 2열이다
 
@@ -361,11 +369,13 @@ supersedes:
 - **Then** 2열 그리드다
 - **검증** e2e
 
-#### AC-RECIPESBREWS-93 · 뷰포트 759px에서 1열·바텀시트·2줄 원장이다
+#### AC-RECIPESBREWS-93 · 뷰포트 759px에서 1열·바텀시트다
 
 - **Given** 뷰포트 폭 `759px`
-- **Then** 레시피 그리드는 1열, 필터는 바텀시트, 내 잔은 2줄 원장 행이다
+- **Then** 레시피 그리드는 1열, 필터는 바텀시트다
 - **검증** e2e
+
+> **일부 대체 (2026-11-15):** `/brews` 2줄 원장 행 부분은 시안 F 전환([`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md) `AC-QUICKBREW-31`)으로 대체됐다.
 
 ### 실패
 

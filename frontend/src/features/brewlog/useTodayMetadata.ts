@@ -12,21 +12,24 @@ import type { GrindSettingUnit } from "./todayPresentation";
 
 const STALE_MS = 5 * 60 * 1000;
 
-export interface TodayMetadata {
+export interface BeanMetadataSources {
   readonly productsById: ReadonlyMap<number, BeanProduct>;
   readonly batchesById: ReadonlyMap<number, BeanBatch>;
   readonly roastersById: ReadonlyMap<number, Roaster>;
+}
+
+export interface TodayMetadata extends BeanMetadataSources {
   readonly recipeTitlesById: ReadonlyMap<number, string>;
   readonly recipeGrindUnitsById: ReadonlyMap<number, GrindSettingUnit>;
   readonly grinders: ReturnType<typeof useUserGrinders>["data"];
 }
 
-/** 오늘 홈의 최근 기록 1~5건이 참조하는 원두·레시피·그라인더 정보만 선택적으로 모은다. */
-export function useTodayMetadata(
+/** 목록·홈 행의 원두명·배전도를 풀기 위한 배치·제품·로스터 조회를 묶는다(그라인더 제외). */
+export function useBeanMetadataSources(
   logs: readonly BrewLogSummary[],
   enabled: boolean,
   onSessionLost?: () => void,
-): TodayMetadata {
+): BeanMetadataSources {
   const batchIds = [
     ...new Set(
       logs
@@ -87,6 +90,21 @@ export function useTodayMetadata(
   for (const roaster of roastersQuery.data ?? []) {
     roastersById.set(roaster.id, roaster);
   }
+
+  return { productsById, batchesById, roastersById };
+}
+
+/** 오늘 홈의 최근 기록 1~5건이 참조하는 원두·레시피·그라인더 정보만 선택적으로 모은다. */
+export function useTodayMetadata(
+  logs: readonly BrewLogSummary[],
+  enabled: boolean,
+  onSessionLost?: () => void,
+): TodayMetadata {
+  const { productsById, batchesById, roastersById } = useBeanMetadataSources(
+    logs,
+    enabled,
+    onSessionLost,
+  );
 
   const recipeIds = [
     ...new Set(

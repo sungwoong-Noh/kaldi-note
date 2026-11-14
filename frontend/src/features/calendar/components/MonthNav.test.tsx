@@ -29,23 +29,45 @@ describe("MonthNav", () => {
     expect(screen.getByRole("button", { name: "다음 달" })).toBeEnabled();
   });
 
-  it("AC-HOMECAL-40 · 내 달력은 건수만, 남의 달력은 닉네임이 앞에 붙는다", () => {
-    render(
-      <MonthNav month="2026-09" totalCount={9} onPrev={() => {}} onNext={() => {}} />,
+  it("AC-HOMECAL-40 · 내 달력은 N일 · M잔, 남의 달력은 닉네임 · M잔이고 showCount=false면 건수를 생략한다", () => {
+    const { unmount } = render(
+      <MonthNav
+        month="2026-11"
+        totalCount={12}
+        activeDays={8}
+        onPrev={() => {}}
+        onNext={() => {}}
+      />,
     );
-    expect(screen.getByText("2026.09")).toBeInTheDocument();
-    expect(screen.getByText("9 BREWS")).toBeInTheDocument();
+    expect(screen.getByText("2026.11")).toBeInTheDocument();
+    expect(screen.getByText("8일 · 12잔")).toBeInTheDocument();
+    unmount();
 
-    render(
+    const { unmount: unmountFollow } = render(
       <MonthNav
         month="2026-09"
         totalCount={6}
+        activeDays={4}
         ownerNickname="지연"
         onPrev={() => {}}
         onNext={() => {}}
       />,
     );
-    expect(screen.getByText("지연 · 6 BREWS")).toBeInTheDocument();
+    expect(screen.getByText("지연 · 6잔")).toBeInTheDocument();
+    unmountFollow();
+
+    render(
+      <MonthNav
+        month="2026-11"
+        totalCount={12}
+        activeDays={8}
+        showCount={false}
+        onPrev={() => {}}
+        onNext={() => {}}
+      />,
+    );
+    expect(screen.getByText("2026.11")).toBeInTheDocument();
+    expect(screen.queryByText(/잔/)).not.toBeInTheDocument();
   });
 
   it("AC-HOMECAL-105 · AC-HOMEFIT-06 · 월 이동 버튼 누르는 영역이 hit-44다", () => {

@@ -24,7 +24,6 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
       />,
     );
 
@@ -41,7 +40,6 @@ describe("Calendar", () => {
         days={days}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
       />,
     );
 
@@ -64,7 +62,6 @@ describe("Calendar", () => {
         days={days}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
       />,
     );
 
@@ -83,37 +80,12 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate="2026-09-05"
         onSelect={() => {}}
-        variant="mobile"
       />,
     );
 
     const current = document.querySelectorAll('[aria-current="date"]');
     expect(current).toHaveLength(1);
     expect(current[0]).toHaveAccessibleName("9월 5일, 기록 없음");
-  });
-
-  it("AC-HOMECAL-63 · 웹 셀의 긴 레시피명은 잘려서 한 줄로 표시된다", () => {
-    const days = new Map([
-      [
-        "2026-09-05",
-        { count: 1, primaryRecipeName: "Tetsu Kasuya 4:6 Method" },
-      ],
-    ]);
-    render(
-      <Calendar
-        month="2026-09"
-        days={days}
-        selectedDate={null}
-        onSelect={() => {}}
-        variant="web"
-      />,
-    );
-
-    const cell = screen.getByRole("button", { name: "9월 5일, 기록 1건" });
-    expect(cell).toHaveTextContent("Tetsu Kasuya 4:6 Method");
-    const name = screen.getByText("Tetsu Kasuya 4:6 Method");
-    expect(name).toHaveClass("truncate");
-    expect(cell).toHaveClass("overflow-hidden");
   });
 
   it("AC-HOMECAL-35 · 화살표 키로 하루·일주일 이동한다", async () => {
@@ -124,7 +96,6 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate="2026-09-19"
         onSelect={onSelect}
-        variant="mobile"
       />,
     );
 
@@ -142,7 +113,6 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
       />,
     );
 
@@ -165,7 +135,6 @@ describe("Calendar", () => {
         onSelect={() => {}}
         onSwipeLeft={onSwipeLeft}
         onSwipeRight={onSwipeRight}
-        variant="mobile"
       />,
     );
 
@@ -192,7 +161,6 @@ describe("Calendar", () => {
         onSelect={() => {}}
         onSwipeLeft={onSwipeLeft}
         onSwipeRight={onSwipeRight}
-        variant="mobile"
       />,
     );
 
@@ -217,7 +185,6 @@ describe("Calendar", () => {
         selectedDate={null}
         onSelect={() => {}}
         onSwipeLeft={onSwipeLeft}
-        variant="mobile"
       />,
     );
 
@@ -239,7 +206,6 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
       />,
     );
 
@@ -258,7 +224,6 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
       />,
     );
 
@@ -278,7 +243,6 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
         today="2026-09-19"
       />,
     );
@@ -296,7 +260,6 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
         today="2026-09-19"
       />,
     );
@@ -314,7 +277,6 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
         today="2026-09-19"
       />,
     );
@@ -332,7 +294,6 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
         today="2026-09-19"
       />,
     );
@@ -349,7 +310,6 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
         today="2026-09-19"
       />,
     );
@@ -369,7 +329,6 @@ describe("Calendar", () => {
         days={days}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
       />,
     );
 
@@ -384,7 +343,6 @@ describe("Calendar", () => {
         days={new Map()}
         selectedDate={null}
         onSelect={() => {}}
-        variant="mobile"
       />,
     );
 
@@ -396,42 +354,46 @@ describe("Calendar", () => {
     expect(dot!.style.backgroundColor).toBe("transparent");
   });
 
-  it("AC-HOMECAL-118 · AC-HOMEFIT-07 · 웹에서 기록 점이 날짜 숫자 오른쪽 6px(gap-1.5)에 렌더된다", () => {
-    const days = new Map([["2026-09-05", { count: 1 }]]);
+  it("AC-QUICKBREW-37 · collapsedWeek면 이번 주 1행만 렌더하고 그 줄을 누르면 onExpandWeek가 불린다", async () => {
+    const onExpandWeek = vi.fn();
     render(
       <Calendar
-        month="2026-09"
-        days={days}
+        month="2026-11"
+        days={new Map([["2026-11-12", { count: 1 }]])}
         selectedDate={null}
+        today="2026-11-14"
+        collapsedWeek
+        onExpandWeek={onExpandWeek}
         onSelect={() => {}}
-        variant="web"
       />,
     );
 
-    const cell = screen.getByRole("button", { name: "9월 5일, 기록 1건" });
-    const row = within(cell).getByTestId("day-number-row");
-    expect(row).toHaveClass("flex-row", "gap-1.5");
+    const rows = screen.getAllByTestId("calendar-row");
+    expect(rows).toHaveLength(1);
+    expect(screen.getByText("14")).toBeInTheDocument();
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+
+    const expandTrigger = screen.getByRole("button", {
+      name: "이번 주 달력 펼치기",
+    });
+    await userEvent.click(expandTrigger);
+    expect(onExpandWeek).toHaveBeenCalledTimes(1);
   });
 
-  it("AC-HOMECAL-121 · 웹 달력 셀의 콘텐츠가 좌상단 정렬된다", () => {
-    const days = new Map([
-      ["2026-09-05", { count: 2, primaryRecipeName: "V60 레시피" }],
-    ]);
+  it("compact 달력 셀은 hit-44를 갖고 min-w-11으로 사이드 카드 폭을 넘지 않는다", () => {
     render(
       <Calendar
-        month="2026-09"
-        days={days}
-        selectedDate={null}
+        month="2026-11"
+        days={new Map([["2026-11-14", { count: 1 }]])}
+        selectedDate="2026-11-14"
+        compact
         onSelect={() => {}}
-        variant="web"
       />,
     );
 
-    const cell = screen.getByRole("button", { name: "9월 5일, 기록 2건" });
-    expect(cell).toHaveClass("items-start", "justify-start");
-    const summary = screen.getByText("V60 레시피");
-    expect(summary).not.toHaveClass("text-center");
-    expect(screen.getByText("외 1건")).not.toHaveClass("text-center");
+    const cell = screen.getByRole("button", { name: "11월 14일, 기록 1건" });
+    expect(cell).toHaveClass("hit-44");
+    expect(cell).not.toHaveClass("min-w-11");
   });
 
   it("AC-HOMECAL-98a · 다크 모드 날짜 색이 기존 ink 스케일을 재사용한다", () => {

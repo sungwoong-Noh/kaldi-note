@@ -15,22 +15,20 @@ class BrewLogMigrationTest extends AbstractIntegrationTest {
   @PersistenceContext private EntityManager entityManager;
 
   /**
-   * Testcontainers는 매번 빈 DB에 V1~V15를 한 번에 적용하므로, "마이그레이션 이전에 존재했던 실제 brew_logs 행"을 재현할 방법이 없다(백필 대상
-   * 자체가 없다). 그래서 이 테스트는 백필 UPDATE의 실행 결과 대신, V15가 끝에 거는 제약(recipe_snapshot NOT NULL)이 실제로 걸렸는지로
-   * 마이그레이션 완료를 검증한다 — 운영 DB(기존 행 존재)에서의 백필 자체는 AC-RECIPEV2-18~21(Task 5, 새로 생성되는 recipeSnapshot의
-   * 필드별 값)이 같은 JSON 구성 로직을 API 경로로 검증한다.
+   * V15의 백필 결과 — 레시피를 참조하는 기록은 스냅샷을 갖는다. V19(빠른 기록)부터 컬럼은 nullable이라 「컬럼 NOT NULL」로는 더 이상 확인할 수
+   * 없다(docs/specs/2026-09-20-recipe-v2-data-model.md AC-32 정정). 레시피 없이 쓴 기록만 스냅샷이 비어 있어야 한다.
    */
   @Test
-  @DisplayName("AC-RECIPEV2-32 · 마이그레이션 후 recipe_snapshot 컬럼은 NOT NULL이다")
-  void 마이그레이션_후_recipe_snapshot_컬럼은_NOT_NULL이다() {
-    String nullable =
-        (String)
+  @DisplayName("AC-RECIPEV2-32 · 레시피가 연결된 잔은 전부 recipeSnapshot이 채워져 있다")
+  void 레시피가_연결된_잔은_전부_recipeSnapshot이_채워져_있다() {
+    Number missing =
+        (Number)
             entityManager
                 .createNativeQuery(
-                    "select is_nullable from information_schema.columns"
-                        + " where table_name = 'brew_logs' and column_name = 'recipe_snapshot'")
+                    "select count(*) from brew_logs"
+                        + " where recipe_id is not null and recipe_snapshot is null")
                 .getSingleResult();
 
-    assertThat(nullable).isEqualTo("NO");
+    assertThat(missing.longValue()).isZero();
   }
 }

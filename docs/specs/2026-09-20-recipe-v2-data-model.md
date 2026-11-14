@@ -303,6 +303,8 @@ SELECT COUNT(*) FROM brew_logs WHERE recipe_id = :id AND deleted_at IS NULL;
   레시피의 `doseG`와 같다
 - **검증** 통합 테스트 `BrewLogMigrationTest`
 
+> **정정 (2026-11-14):** V19(`docs/specs/2026-11-14-quick-brew.md`)부터 `recipe_snapshot`은 nullable이다 — 레시피 없이 쓴 빠른 기록은 스냅샷이 없다(ADR 0011). 이 AC의 본문(기존 잔은 스냅샷이 채워져 있다)은 그대로 유효하고, 테스트는 「컬럼 NOT NULL」 대신 「레시피가 연결된 행에 스냅샷 없는 행이 0건」을 확인한다.
+
 ### 에러
 
 #### AC-RECIPEV2-40 · 잘못된 temperatureType은 400이다
@@ -319,6 +321,8 @@ SELECT COUNT(*) FROM brew_logs WHERE recipe_id = :id AND deleted_at IS NULL;
 - **Then** HTTP `400`과 `code: "INVALID_REQUEST"` (기존 규칙 유지 — nullable 전환은 저장값에만
   적용되고 요청 필드 자체는 여전히 필수다)
 - **검증** API 테스트 `BrewLogControllerTest`
+
+> **정정 (2026-11-14):** ADR 0011과 `AC-QUICKBREW-01`로 뒤집혔다 — `recipeId`는 이제 선택이고, 생략하면 201에 `recipeSnapshot`이 없다. 위 본문은 당시 결정의 기록으로 남기고, 테스트는 이 ID로 새 동작을 검증한다.
 
 #### AC-RECIPEV2-42 · 가시성이 없는 남의 레시피를 가리키면 여전히 403이다
 

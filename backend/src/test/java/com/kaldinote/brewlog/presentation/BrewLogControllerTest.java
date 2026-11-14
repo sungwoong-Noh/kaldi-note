@@ -310,8 +310,8 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  @DisplayName("AC-RECIPEV2-41 · recipeId를 생략하면 여전히 400이다")
-  void recipeId를_생략하면_여전히_400이다() throws Exception {
+  @DisplayName("AC-RECIPEV2-41 · (정정) recipeId를 생략해도 201이고 스냅샷이 없다 — ADR 0011")
+  void recipeId를_생략해도_201이고_스냅샷이_없다() throws Exception {
     String token = token("테스터");
     Long beanBatchId = beanBatchId(token, BREWED_AT, 6);
     Long userGrinderId = userGrinderId(token, c40Id());
@@ -325,8 +325,9 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
             .formatted(beanBatchId, BREWED_AT, userGrinderId);
 
     createBrewLog(token, body)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.recipeId").doesNotExist())
+        .andExpect(jsonPath("$.recipeSnapshot").doesNotExist());
   }
 
   @Test

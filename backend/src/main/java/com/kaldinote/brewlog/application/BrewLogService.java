@@ -13,6 +13,7 @@ import com.kaldinote.brewlog.presentation.dto.BrewLogResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogStatsResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogSummaryResponse;
 import com.kaldinote.brewlog.presentation.dto.CalendarDayResponse;
+import com.kaldinote.catalog.application.BeanCatalogService;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
 import com.kaldinote.common.response.PageParams;
@@ -80,6 +81,7 @@ public class BrewLogService {
   private final BrewLogRepository brewLogRepository;
   private final RecipeRepository recipeRepository;
   private final RecipeService recipeService;
+  private final BeanCatalogService beanCatalogService;
   private final BeanBatchRepository beanBatchRepository;
   private final UserGrinderRepository userGrinderRepository;
   private final GrinderModelRepository grinderModelRepository;
@@ -90,49 +92,72 @@ public class BrewLogService {
   @Transactional
   public BrewLogResponse create(Long userId, BrewLogCreateRequest request) {
     validateRatingStep(request.rating());
+    String beanName = normalizeBeanName(request.beanName());
+    validateBeanChoice(request.beanProductId(), beanName);
+    if (request.actualGrindSettingValue() != null && request.userGrinderId() == null) {
+      throw new BusinessException(ErrorCode.INVALID_REQUEST, "분쇄도는 그라인더와 함께 보내야 합니다.");
+    }
+    Instant brewedAt = request.brewedAt() != null ? request.brewedAt() : Instant.now();
 
-    Recipe recipe = recipeService.requireViewable(userId, request.recipeId());
-    Long storedRecipeId = recipe.isOwnedBy(userId) ? recipe.getId() : null;
-    BeanBatch beanBatch = requireOwnedBeanBatch(userId, request.beanBatchId());
-    UserGrinder userGrinder = requireOwnedUserGrinder(userId, request.userGrinderId());
-    GrinderModel grinderModel =
-        grinderModelRepository
-            .findById(userGrinder.getGrinderModelId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        ErrorCode.NOT_FOUND,
-                        "그라인더 모델을 찾을 수 없습니다: " + userGrinder.getGrinderModelId()));
-
-    BigDecimal micron =
-        computeActualGrindMicronEstimated(grinderModel, request.actualGrindSettingValue());
+    // 레시피·봉투·그라인더는 전부 선택이다(ADR 0011). 주어졌을 때만 지금까지의 소유·열람 규칙을 그대로 적용한다.
+    Recipe recipe =
+        request.recipeId() == null
+            ? null
+            : recipeService.requireViewable(userId, request.recipeId());
+    Long storedRecipeId = recipe != null && recipe.isOwnedBy(userId) ? recipe.getId() : null;
+    BeanBatch beanBatch =
+        request.beanBatchId() == null ? null : requireOwnedBeanBatch(userId, request.beanBatchId());
+    if (request.beanProductId() != null) {
+      beanCatalogService.getBeanProduct(request.beanProductId()); // 없으면 404
+    }
+    BigDecimal micron = null;
+    Long userGrinderId = null;
+    if (request.userGrinderId() != null) {
+      UserGrinder userGrinder = requireOwnedUserGrinder(userId, request.userGrinderId());
+      userGrinderId = userGrinder.getId();
+      if (request.actualGrindSettingValue() != null) {
+        micron =
+            computeActualGrindMicronEstimated(
+                requireGrinderModel(userGrinder), request.actualGrindSettingValue());
+      }
+    }
 
     // 물리적으로 불가능한 측정값(음료 > 물, EY > 30%)은 여기서 걸러진다.
     ExtractionAnalysis analysis = analyze(request);
 
-    int daysOffRoast = computeDaysOffRoast(request.brewedAt(), beanBatch.getRoastedAt());
-    RecipeSnapshot snapshot = buildSnapshot(recipe);
+    LocalDate roastedAt =
+        request.roastedAt() != null
+            ? request.roastedAt()
+            : beanBatch == null ? null : beanBatch.getRoastedAt();
+    Integer daysOffRoast = null;
+    if (roastedAt != null) {
+      daysOffRoast = computeDaysOffRoast(brewedAt, roastedAt);
+      if (request.roastedAt() != null && daysOffRoast < 0) {
+        throw new BusinessException(
+            ErrorCode.INVALID_REQUEST, "로스팅 날짜는 기록 날짜보다 늦을 수 없습니다: " + request.roastedAt());
+      }
+    }
 
     BrewLog log =
         BrewLog.create(
             userId,
             storedRecipeId,
-            snapshot,
-            beanBatch.getId(),
-            request.brewedAt(),
+            recipe == null ? null : buildSnapshot(recipe),
+            beanBatch == null ? null : beanBatch.getId(),
+            brewedAt,
             request.visibility(),
             request.actualDoseG(),
             request.actualWaterG(),
             request.actualWaterTempC(),
             request.actualTotalTimeSeconds(),
             request.actualDrawdownSeconds(),
-            userGrinder.getId(),
+            userGrinderId,
             request.actualGrindSettingValue(),
             micron,
             request.beverageWeightG(),
             request.tdsPercent(),
             daysOffRoast,
-            DegassingStatus.of(daysOffRoast).name(),
+            daysOffRoast == null ? null : DegassingStatus.of(daysOffRoast).name(),
             request.rating(),
             request.acidity(),
             request.sweetness(),
@@ -140,8 +165,34 @@ public class BrewLogService {
             request.bitterness(),
             request.aftertaste(),
             request.overallNote());
+    log.recordBean(request.beanProductId(), beanName, request.roastedAt());
 
     return BrewLogResponse.from(brewLogRepository.save(log), analysis);
+  }
+
+  /** 앞뒤 공백을 걷는다. 공백뿐이면 「적지 않음」이다(AC-QUICKBREW-41). */
+  private static String normalizeBeanName(String raw) {
+    if (raw == null || raw.isBlank()) {
+      return null;
+    }
+    return raw.strip();
+  }
+
+  /** 원두는 카탈로그 상품이거나 직접 입력 이름이다. 둘 다면 어느 쪽인지 알 수 없다(AC-QUICKBREW-50). */
+  private static void validateBeanChoice(Long beanProductId, String beanName) {
+    if (beanProductId != null && beanName != null) {
+      throw new BusinessException(
+          ErrorCode.INVALID_REQUEST, "beanProductId와 beanName은 함께 보낼 수 없습니다.");
+    }
+  }
+
+  private GrinderModel requireGrinderModel(UserGrinder userGrinder) {
+    return grinderModelRepository
+        .findById(userGrinder.getGrinderModelId())
+        .orElseThrow(
+            () ->
+                new BusinessException(
+                    ErrorCode.NOT_FOUND, "그라인더 모델을 찾을 수 없습니다: " + userGrinder.getGrinderModelId()));
   }
 
   public BrewLogResponse get(Long userId, Long brewLogId) {
@@ -292,23 +343,39 @@ public class BrewLogService {
   @Transactional
   public BrewLogResponse patch(Long userId, Long brewLogId, BrewLogPatchRequest request) {
     validateRatingStep(request.rating());
+    String beanName = normalizeBeanName(request.beanName());
+    validateBeanChoice(request.beanProductId(), beanName);
     BrewLog log = requireOwnedLog(userId, brewLogId);
+    if (request.beanProductId() != null) {
+      beanCatalogService.getBeanProduct(request.beanProductId()); // 없으면 404
+    }
 
     BigDecimal micron = recomputeMicron(userId, log, request);
     Integer daysOffRoast = null;
     String degassingStatus = null;
-    if (request.brewedAt() != null) {
-      // 재고가 이미 삭제됐으면 다시 셀 수 없다. 과거 기록을 보존하려고 기존 값을 그대로 둔다.
-      BeanBatch batch =
-          beanBatchRepository.findByIdAndDeletedAtIsNull(log.getBeanBatchId()).orElse(null);
-      if (batch != null) {
-        int recomputed = computeDaysOffRoast(request.brewedAt(), batch.getRoastedAt());
+    if (request.brewedAt() != null || request.roastedAt() != null) {
+      Instant brewedAt = request.brewedAt() != null ? request.brewedAt() : log.getBrewedAt();
+      LocalDate roastedAt = request.roastedAt() != null ? request.roastedAt() : log.getRoastedAt();
+      if (roastedAt == null && log.getBeanBatchId() != null) {
+        // 재고가 이미 삭제됐으면 다시 셀 수 없다. 과거 기록을 보존하려고 기존 값을 그대로 둔다.
+        roastedAt =
+            beanBatchRepository
+                .findByIdAndDeletedAtIsNull(log.getBeanBatchId())
+                .map(BeanBatch::getRoastedAt)
+                .orElse(null);
+      }
+      if (roastedAt != null) {
+        int recomputed = computeDaysOffRoast(brewedAt, roastedAt);
+        if (request.roastedAt() != null && recomputed < 0) {
+          throw new BusinessException(
+              ErrorCode.INVALID_REQUEST, "로스팅 날짜는 기록 날짜보다 늦을 수 없습니다: " + request.roastedAt());
+        }
         daysOffRoast = recomputed;
         degassingStatus = DegassingStatus.of(recomputed).name();
       }
     }
 
-    log.applyPatch(toDomainPatch(request), micron, daysOffRoast, degassingStatus);
+    log.applyPatch(toDomainPatch(request, beanName), micron, daysOffRoast, degassingStatus);
     return BrewLogResponse.from(log, analyze(log));
   }
 
@@ -323,20 +390,18 @@ public class BrewLogService {
         request.actualGrindSettingValue() != null
             ? request.actualGrindSettingValue()
             : log.getActualGrindSettingValue();
+    if (grinderId == null) {
+      throw new BusinessException(ErrorCode.INVALID_REQUEST, "분쇄도는 그라인더와 함께 보내야 합니다.");
+    }
 
     UserGrinder userGrinder = requireOwnedUserGrinder(userId, grinderId);
-    GrinderModel grinderModel =
-        grinderModelRepository
-            .findById(userGrinder.getGrinderModelId())
-            .orElseThrow(
-                () ->
-                    new BusinessException(
-                        ErrorCode.NOT_FOUND,
-                        "그라인더 모델을 찾을 수 없습니다: " + userGrinder.getGrinderModelId()));
-    return computeActualGrindMicronEstimated(grinderModel, setting);
+    if (setting == null) {
+      return null;
+    }
+    return computeActualGrindMicronEstimated(requireGrinderModel(userGrinder), setting);
   }
 
-  private BrewLogPatch toDomainPatch(BrewLogPatchRequest r) {
+  private BrewLogPatch toDomainPatch(BrewLogPatchRequest r, String beanName) {
     return new BrewLogPatch(
         r.brewedAt(),
         r.visibility(),
@@ -355,7 +420,10 @@ public class BrewLogService {
         r.body(),
         r.bitterness(),
         r.aftertaste(),
-        r.overallNote());
+        r.overallNote(),
+        r.beanProductId(),
+        beanName,
+        r.roastedAt());
   }
 
   @Transactional

@@ -5,6 +5,7 @@ import com.kaldinote.brewlog.domain.RecipeSnapshot;
 import com.kaldinote.extraction.domain.ExtractionAnalysis;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 /**
  * 저장된 스냅샷과 조회 시점에 재계산한 추출 분석을 함께 담는다.
@@ -17,6 +18,9 @@ public record BrewLogResponse(
     Long recipeId,
     RecipeSnapshot recipeSnapshot,
     Long beanBatchId,
+    Long beanProductId,
+    String beanName,
+    LocalDate roastedAt,
     Instant brewedAt,
     String visibility,
     BigDecimal actualDoseG,
@@ -53,6 +57,9 @@ public record BrewLogResponse(
         log.getRecipeId(),
         log.getRecipeSnapshot(),
         log.getBeanBatchId(),
+        log.getBeanProductId(),
+        log.getBeanName(),
+        log.getRoastedAt(),
         log.getBrewedAt(),
         log.getVisibility().name(),
         log.getActualDoseG(),

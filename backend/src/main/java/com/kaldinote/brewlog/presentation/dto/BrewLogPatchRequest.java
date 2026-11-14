@@ -10,6 +10,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 
 /**
  * 부분 수정 요청. null은 언제나 "변경 없음"이고 값 지우기는 지원하지 않는다.
@@ -35,4 +36,7 @@ public record BrewLogPatchRequest(
     @Min(1) @Max(5) Short body,
     @Min(1) @Max(5) Short bitterness,
     @Min(1) @Max(5) Short aftertaste,
-    @Size(max = 1000) String overallNote) {}
+    @Size(max = 1000) String overallNote,
+    Long beanProductId,
+    @Size(max = 100) String beanName,
+    LocalDate roastedAt) {}

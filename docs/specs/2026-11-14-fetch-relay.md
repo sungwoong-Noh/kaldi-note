@@ -237,7 +237,7 @@ Worker 자체 오류 응답 본문은 `{"code":"<CODE>"}`, `Content-Type: applic
 
 - **Given** `.github/workflows/spec.yml`
 - **When** PR
-- **Then** `node --test infra/fetch-relay/` 단계가 있고, 테스트가 하나라도 실패하면 job이 실패한다
+- **Then** `node --test infra/fetch-relay/index.test.js` 단계가 있고, 테스트가 하나라도 실패하면 job이 실패한다
 - **검증** CI `spec` job
 
 ---
@@ -321,7 +321,7 @@ Worker 자체 오류 응답 본문은 `{"code":"<CODE>"}`, `Content-Type: applic
 
   - `scripts/check-spec-coverage.sh`의 검사 경로 목록(`for path in ...`)과 상단 주석에
     `infra/fetch-relay` 추가
-  - `.github/workflows/spec.yml`에 단계 추가: `node --test infra/fetch-relay/`
+  - `.github/workflows/spec.yml`에 단계 추가: `node --test infra/fetch-relay/index.test.js`
     (ubuntu-latest의 Node 사용, `actions/setup-node`로 Node 24 고정)
 
 - [x] **Task 5: 배포 절차 문서** — Covers: (문서)

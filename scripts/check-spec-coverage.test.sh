@@ -86,7 +86,7 @@ SPEC_DIR="$TMP/relay" "$SCRIPT" >/dev/null 2>&1
 check "AC-RELAY-31 · 커버리지 검사가 Worker 테스트를 본다" "0" "$?"
 
 # ── AC-RELAY-32 · CI가 Worker 테스트를 돌린다 ───────────────────────────
-spec_wf=$(grep -c 'node --test infra/fetch-relay/' "$HERE/../.github/workflows/spec.yml" || true)
+spec_wf=$(grep -c 'node --test infra/fetch-relay/index.test.js' "$HERE/../.github/workflows/spec.yml" || true)
 check "AC-RELAY-32 · CI가 Worker 테스트를 돌린다" "1" "$spec_wf"
 
 echo

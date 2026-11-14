@@ -50,4 +50,4 @@ jobs:
           node-version: '24'
 
       - name: 크롤러 중계 Worker 테스트
-        run: node --test infra/fetch-relay/
+        run: node --test infra/fetch-relay/index.test.js

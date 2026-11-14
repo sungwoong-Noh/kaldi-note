@@ -43,3 +43,11 @@ jobs:
       # bash만 쓰므로 별도 설치가 없다.
       - name: 배포 스크립트 테스트
         run: ./infra/scripts/deploy.test.sh
+
+      - name: Node 24 설치
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: 크롤러 중계 Worker 테스트
+        run: node --test infra/fetch-relay/

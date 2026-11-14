@@ -317,7 +317,7 @@ Worker 자체 오류 응답 본문은 `{"code":"<CODE>"}`, `Content-Type: applic
   `CrawlRunServiceTest`에 중계 설정이 빈 `PageFetcher`로 모모스를 실행하는 케이스 1개.
   `CrawlRunService` 코드는 바꾸지 않는다 — 기존 목록 실패 처리가 메시지를 만든다.
 
-- [ ] **Task 4: CI·커버리지** — Covers: AC-RELAY-31, 32
+- [x] **Task 4: CI·커버리지** — Covers: AC-RELAY-31, 32
 
   - `scripts/check-spec-coverage.sh`의 검사 경로 목록(`for path in ...`)과 상단 주석에
     `infra/fetch-relay` 추가

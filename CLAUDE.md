@@ -32,7 +32,7 @@ Issues/Project 보드가 안다.** 이 파일은 지도만 담는다 — 상태�
 ## ★ 세션 핸드오버
 
 ```
-세션 시작:  /resume     상태 파악 + 테스트 실행 + 할 일 제안 → 승인 후 시작
+세션 시작:  /kickoff    상태 파악 + 테스트 실행 + 할 일 제안 → 승인 후 시작
 세션 종료:  /handover   검증 + 체크박스 갱신 + PR 본문 작성 + 커밋/PR
 ```
 
@@ -51,7 +51,7 @@ Issues/Project 보드가 안다.** 이 파일은 지도만 담는다 — 상태�
 ```
 kaldi-note/
 ├── CLAUDE.md                 이 파일. 지도만
-├── .claude/commands/         /interview · /resume · /handover · /fix
+├── .claude/commands/         /interview · /kickoff · /handover · /fix
 ├── .claude/agents/           explorer · mockup-checker · reviewer (서브에이전트)
 ├── backend/                  Spring Boot 4.1 API 서버 — 작업 전 backend/CLAUDE.md
 ├── frontend/                 Next.js PWA — 작업 전 frontend/CLAUDE.md
@@ -82,7 +82,7 @@ GitHub Issues + [Project 보드](https://github.com/users/sungwoong-Noh/projects
 
 | 하려는 일 | 읽을 문서 |
 |---|---|
-| **세션을 시작할 때** | **`/resume`** (그 전에 아무것도 하지 않는다) |
+| **세션을 시작할 때** | **`/kickoff`** (그 전에 아무것도 하지 않는다) |
 | **무엇이든** | 이 파일 → **`docs/conventions/workflow.md`** → `docs/conventions/git.md` |
 | 세션을 마칠 때 | **`/handover`** |
 | 기능 스펙 작성 | `docs/specs/README.md` |

@@ -201,53 +201,42 @@ export default function BrewsPage() {
     </div>
   );
 
-  const pageHeader = (
-    <div className="flex flex-col gap-[14px]">
-      <div
+  const titleBlock = (
+    <div className="flex flex-col gap-[7px]">
+      {totalCount !== undefined && (
+        <span className="font-mono text-[10px] font-medium tracking-[0.12em] text-ink-3 uppercase">
+          {totalCount}잔
+        </span>
+      )}
+      <h1
         className={
-          isWide ? "flex items-end justify-between gap-[24px]" : undefined
+          isWide
+            ? "text-[32px] leading-[1.1] font-semibold tracking-[-0.03em] text-ink"
+            : "text-[27px] leading-[1.15] font-semibold tracking-[-0.03em] text-ink"
         }
       >
-        <div className="flex flex-col gap-[7px]">
-          {totalCount !== undefined && (
-            <span className="font-mono text-[10px] font-medium tracking-[0.12em] text-ink-3 uppercase">
-              {totalCount}잔
-            </span>
-          )}
-          <h1
-            className={
-              isWide
-                ? "text-[32px] leading-[1.1] font-semibold tracking-[-0.03em] text-ink"
-                : "text-[27px] leading-[1.15] font-semibold tracking-[-0.03em] text-ink"
-            }
-          >
-            기록
-          </h1>
-        </div>
-        {isWide && totalCount !== undefined && headerSegment}
-      </div>
-
-      {!isWide && totalCount !== undefined && (
-        <div className="flex flex-col gap-[12px]">
-          {!(mode === "list" && listLogs.length === 0) && (
-            <button
-              type="button"
-              onClick={() => openQuickBrew("record")}
-              className="hit-44 kn-press w-full rounded-[8px] border border-ink bg-ink px-4 py-[15px] text-center text-[15px] font-semibold tracking-[-0.01em] text-on-ink"
-            >
-              기록하기
-            </button>
-          )}
-          {headerSegment}
-        </div>
-      )}
+        기록
+      </h1>
     </div>
   );
 
+  const mobileCta =
+    !isWide &&
+    totalCount !== undefined &&
+    !(mode === "list" && listLogs.length === 0) ? (
+      <button
+        type="button"
+        onClick={() => openQuickBrew("record")}
+        className="hit-44 kn-press w-full rounded-[8px] border border-ink bg-ink px-4 py-[15px] text-center text-[15px] font-semibold tracking-[-0.01em] text-on-ink"
+      >
+        기록하기
+      </button>
+    ) : null;
+
   if (me.error) {
     return (
-      <Shell wide stack className="max-w-[1080px]">
-        {pageHeader}
+      <Shell wide stack>
+        {titleBlock}
         <ErrorState error={me.error} onRetry={() => void me.refetch()} />
       </Shell>
     );
@@ -255,8 +244,8 @@ export default function BrewsPage() {
 
   if (!ready || me.isPending || isPending) {
     return (
-      <Shell wide stack className="max-w-[1080px]">
-        {pageHeader}
+      <Shell wide stack>
+        {titleBlock}
         <LoadingState />
       </Shell>
     );
@@ -264,14 +253,64 @@ export default function BrewsPage() {
 
   if (error) {
     return (
-      <Shell wide stack className="max-w-[1080px]">
-        {pageHeader}
+      <Shell wide stack>
+        {titleBlock}
         <ErrorState error={error} onRetry={() => void refetch()} />
       </Shell>
     );
   }
 
   const showAside = isWide && mode === "list";
+
+  const calendarAside = (
+    <aside
+      className={
+        isTablet
+          ? "flex flex-col gap-[14px]"
+          : "flex w-[280px] shrink-0 flex-col gap-[14px] pt-[70px] min-[1280px]:w-[300px]"
+      }
+    >
+      <div className="flex flex-col gap-3 rounded-[12px] border border-border p-4">
+        {calendar.isPending ? (
+          <LoadingState />
+        ) : calendar.error ? (
+          <ErrorState
+            error={calendar.error}
+            onRetry={() => void calendar.refetch()}
+          />
+        ) : (
+          <>
+            <MonthNav
+              month={month}
+              totalCount={calendar.data.totalCount}
+              activeDays={calendar.data.days.length}
+              onPrev={handlePrevMonth}
+              onNext={handleNextMonth}
+            />
+            <Calendar
+              month={month}
+              days={dayMap}
+              selectedDate={
+                selectedDate !== null && selectedDate.startsWith(month)
+                  ? selectedDate
+                  : null
+              }
+              onSelect={handleSidebarDateSelect}
+              onSwipeLeft={handleNextMonth}
+              onSwipeRight={handlePrevMonth}
+              compact
+              collapsedWeek={isTablet && !tabletExpanded}
+              onExpandWeek={() => setTabletExpanded(true)}
+              today={today}
+            />
+          </>
+        )}
+      </div>
+      <p className="hidden text-[12.5px] leading-[1.6] text-ink-3 min-[1024px]:block">
+        날짜를 누르면 왼쪽 목록이 그 날로 스크롤됩니다.
+      </p>
+    </aside>
+  );
 
   const calendarSection = (
     <div className="flex flex-col gap-6">
@@ -336,103 +375,75 @@ export default function BrewsPage() {
   );
 
   return (
-    <Shell wide stack className="max-w-[1080px]">
-      <div
-        className={
-          showAside
-            ? "grid grid-cols-1 gap-6 min-[1024px]:grid-cols-[minmax(0,1fr)_280px] min-[1024px]:items-start min-[1024px]:gap-x-[40px] min-[1024px]:gap-y-6 min-[1280px]:grid-cols-[minmax(0,1fr)_300px]"
-            : "grid grid-cols-1 gap-6"
-        }
-      >
-        <div className="min-[1024px]:col-start-1 min-[1024px]:row-start-1">
-          {pageHeader}
-        </div>
+    <Shell wide stack>
+      <div className="mx-auto flex w-full max-w-[1080px] flex-col gap-6 min-[1024px]:flex-row min-[1024px]:items-start min-[1024px]:gap-[40px]">
+        <div className="flex min-w-0 flex-1 flex-col gap-4">
+          {isWide ? (
+            <div className="sticky top-0 z-10 -my-1 flex items-end justify-between gap-[24px] bg-paper py-1">
+              {titleBlock}
+              {totalCount !== undefined && headerSegment}
+            </div>
+          ) : (
+            <>
+              {titleBlock}
+              {mobileCta}
+              {totalCount !== undefined && (
+                <div className="sticky top-0 z-10 -my-1 bg-paper py-1">
+                  {headerSegment}
+                </div>
+              )}
+            </>
+          )}
 
-        {showAside && (
-          <aside className="flex flex-col gap-[14px] min-[1024px]:col-start-2 min-[1024px]:row-span-2 min-[1024px]:pt-[70px]">
-            <div className="flex flex-col gap-3 rounded-[12px] border border-border p-4">
-              {calendar.isPending ? (
-                <LoadingState />
-              ) : calendar.error ? (
-                <ErrorState
-                  error={calendar.error}
-                  onRetry={() => void calendar.refetch()}
-                />
+          {showAside && isTablet && calendarAside}
+
+          {mode === "calendar" ? (
+            <div className={isWide ? "w-full max-w-[720px] pt-2" : "w-full pt-2"}>
+              {calendarSection}
+            </div>
+          ) : (
+            <div className="min-w-0 pt-2">
+              {listLogs.length === 0 ? (
+                <div data-empty className="flex flex-col gap-3">
+                  <p className="py-6 text-center text-body text-ink-3">
+                    아직 기록이 없습니다
+                  </p>
+                  <Button
+                    variant="primary"
+                    onClick={() => openQuickBrew("record")}
+                  >
+                    기록하기
+                  </Button>
+                </div>
               ) : (
-                <>
-                  <MonthNav
-                    month={month}
-                    totalCount={calendar.data.totalCount}
-                    activeDays={calendar.data.days.length}
-                    onPrev={handlePrevMonth}
-                    onNext={handleNextMonth}
-                  />
-                  <Calendar
-                    month={month}
-                    days={dayMap}
-                    selectedDate={
-                      selectedDate !== null && selectedDate.startsWith(month)
-                        ? selectedDate
-                        : null
-                    }
-                    onSelect={handleSidebarDateSelect}
-                    onSwipeLeft={handleNextMonth}
-                    onSwipeRight={handlePrevMonth}
-                    compact
-                    collapsedWeek={isTablet && !tabletExpanded}
-                    onExpandWeek={() => setTabletExpanded(true)}
+                <div className="flex flex-col">
+                  <BrewLedger
+                    groups={groupedLogs}
+                    isWide={isWide}
                     today={today}
+                    recipeLabels={recipeLabels}
+                    beanSources={beanSources}
+                    registerDateGroupRef={registerDateGroupRef}
                   />
-                </>
+                  {hasNextPage && (
+                    <div className="flex justify-center pt-[10px]">
+                      <button
+                        type="button"
+                        onClick={() => void fetchNextPage()}
+                        disabled={isFetchingNextPage}
+                        className="hit-44 border-b border-border pb-[2px] text-[13.5px] text-ink-2 disabled:text-ink-3"
+                      >
+                        더 보기
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
-            <p className="hidden text-[12.5px] leading-[1.6] text-ink-3 min-[1024px]:block">
-              날짜를 누르면 왼쪽 목록이 그 날로 스크롤됩니다.
-            </p>
-          </aside>
-        )}
+          )}
+        </div>
 
-        {mode === "calendar" ? (
-          <div className={isWide ? "w-full max-w-[720px]" : "w-full"}>
-            {calendarSection}
-          </div>
-        ) : (
-          <div className="min-w-0 min-[1024px]:col-start-1 min-[1024px]:row-start-2">
-            {listLogs.length === 0 ? (
-              <div data-empty className="flex flex-col gap-3">
-                <p className="py-6 text-center text-body text-ink-3">
-                  아직 기록이 없습니다
-                </p>
-                <Button variant="primary" onClick={() => openQuickBrew("record")}>
-                  기록하기
-                </Button>
-              </div>
-            ) : (
-              <div className="flex flex-col">
-                <BrewLedger
-                  groups={groupedLogs}
-                  isWide={isWide}
-                  today={today}
-                  recipeLabels={recipeLabels}
-                  beanSources={beanSources}
-                  registerDateGroupRef={registerDateGroupRef}
-                />
-                {hasNextPage && (
-                  <div className="flex justify-center pt-[10px]">
-                    <button
-                      type="button"
-                      onClick={() => void fetchNextPage()}
-                      disabled={isFetchingNextPage}
-                      className="hit-44 border-b border-border pb-[2px] text-[13.5px] text-ink-2 disabled:text-ink-3"
-                    >
-                      더 보기
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+        {showAside && !isTablet && calendarAside}
       </div>
     </Shell>
   );

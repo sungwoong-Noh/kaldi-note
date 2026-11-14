@@ -37,6 +37,7 @@ export function BrewLedger({
           key={group.date}
           data-date-group={group.date}
           ref={registerDateGroupRef(group.date)}
+          className="scroll-mt-[88px]"
         >
           <h2
             className={

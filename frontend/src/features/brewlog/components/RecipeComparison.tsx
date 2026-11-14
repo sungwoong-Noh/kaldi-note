@@ -64,14 +64,20 @@ function buildRows(
         targets.waterTempC === undefined
           ? undefined
           : formatTemperature(targets.waterTempC),
-      actual: formatTemperature(log.actualWaterTempC),
+      actual:
+        log.actualWaterTempC === undefined
+          ? "—"
+          : formatTemperature(log.actualWaterTempC),
       differs: targets.waterTempC !== log.actualWaterTempC,
-      phrase: diffPhrase(
-        "temperature",
-        "물",
-        targets.waterTempC,
-        log.actualWaterTempC,
-      ),
+      phrase:
+        log.actualWaterTempC === undefined
+          ? null
+          : diffPhrase(
+              "temperature",
+              "물",
+              targets.waterTempC,
+              log.actualWaterTempC,
+            ),
     },
   ];
   if (grind !== null) {

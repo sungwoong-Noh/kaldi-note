@@ -74,7 +74,11 @@ export function LedgerTable({
             <TableRow
               key={log.id}
               log={log}
-              label={labels.get(log.recipeId) ?? ""}
+              label={
+                (log.recipeId !== undefined
+                  ? labels.get(log.recipeId)
+                  : log.beanName) ?? ""
+              }
               today={today}
             />
           ))}
@@ -130,7 +134,9 @@ function TableRow({
         {formatGrams(log.actualDoseG)}
       </td>
       <td className={`${NUM} text-[13px] text-ink-2`}>
-        {formatTemperature(log.actualWaterTempC)}
+        {log.actualWaterTempC !== undefined
+          ? formatTemperature(log.actualWaterTempC)
+          : "—"}
       </td>
       <td className={`${NUM} text-[13px] text-ink-2`}>
         {log.actualTotalTimeSeconds !== undefined
@@ -175,7 +181,11 @@ export function LedgerList({
         <li key={log.id}>
           <MobileRow
             log={log}
-            label={labels.get(log.recipeId) ?? ""}
+            label={
+              (log.recipeId !== undefined
+                ? labels.get(log.recipeId)
+                : log.beanName) ?? ""
+            }
             today={today}
           />
         </li>
@@ -197,7 +207,9 @@ function MobileRow({
   const { date, weekday } = formatLedgerDate(log.brewedAt, today);
   const meta = [
     `${date} ${weekday}`,
-    formatTemperatureCompact(log.actualWaterTempC),
+    log.actualWaterTempC !== undefined
+      ? formatTemperatureCompact(log.actualWaterTempC)
+      : undefined,
     log.actualTotalTimeSeconds !== undefined
       ? formatDuration(log.actualTotalTimeSeconds)
       : undefined,

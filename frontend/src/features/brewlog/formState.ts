@@ -120,14 +120,14 @@ export type BrewLogEditState = BrewLogFormState;
  */
 export function formStateFromLog(log: BrewLog): BrewLogEditState {
   return {
-    recipeId: log.recipeId,
+    recipeId: log.recipeId ?? 0,
     brewedAt: toDateTimeLocal(new Date(log.brewedAt)),
     beanBatchId: log.beanBatchId ?? null,
     userGrinderId: log.userGrinderId ?? null,
     actualGrindSettingValue: log.actualGrindSettingValue ?? null,
     actualDoseG: log.actualDoseG,
     actualWaterG: log.actualWaterG,
-    actualWaterTempC: log.actualWaterTempC,
+    actualWaterTempC: log.actualWaterTempC ?? null,
     actualTotalTimeSeconds: minSecOf(log.actualTotalTimeSeconds),
     actualDrawdownSeconds: minSecOf(log.actualDrawdownSeconds),
     beverageWeightG: log.beverageWeightG ?? null,

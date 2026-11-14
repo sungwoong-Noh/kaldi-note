@@ -16,7 +16,7 @@ import { formatRatio, formatTemperature } from "@/lib/format";
 /** `BrewLogSummary`와 `BrewLog`가 둘 다 만족하도록 구조로 좁힌다. */
 export interface HeadlineSource {
   readonly brewRatio?: number;
-  readonly actualWaterTempC: number;
+  readonly actualWaterTempC?: number;
 }
 
 export interface Headline {
@@ -27,7 +27,13 @@ export interface Headline {
 export function headline(log: HeadlineSource): Headline {
   return log.brewRatio !== undefined
     ? { label: "비율", value: formatRatio(log.brewRatio) }
-    : { label: "물 온도", value: formatTemperature(log.actualWaterTempC) };
+    : {
+        label: "물 온도",
+        value:
+          log.actualWaterTempC !== undefined
+            ? formatTemperature(log.actualWaterTempC)
+            : "—",
+      };
 }
 
 /**
@@ -46,5 +52,11 @@ export function detailHeadline(
     };
   if (log.brewRatio !== undefined)
     return { label: "Ratio", value: formatRatio(log.brewRatio) };
-  return { label: "물 온도", value: formatTemperature(log.actualWaterTempC) };
+  return {
+    label: "물 온도",
+    value:
+      log.actualWaterTempC !== undefined
+        ? formatTemperature(log.actualWaterTempC)
+        : "—",
+  };
 }

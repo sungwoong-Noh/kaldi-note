@@ -57,7 +57,9 @@ export function DayCard({
         {log.brewRatio !== undefined && (
           <Badge tone="accent">{formatRatio(log.brewRatio)}</Badge>
         )}
-        <Badge>{formatTemperatureCompact(log.actualWaterTempC)}</Badge>
+        {log.actualWaterTempC !== undefined && (
+          <Badge>{formatTemperatureCompact(log.actualWaterTempC)}</Badge>
+        )}
         {log.actualTotalTimeSeconds !== undefined && (
           <Badge>{formatDuration(log.actualTotalTimeSeconds)}</Badge>
         )}

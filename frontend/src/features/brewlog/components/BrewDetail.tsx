@@ -209,7 +209,10 @@ export function BrewDetail({ id }: { id: number }) {
       {[
         { label: "원두량", value: formatGrams(log.actualDoseG) },
         { label: "물량", value: formatGrams(log.actualWaterG) },
-        { label: "물 온도", value: formatTemperature(log.actualWaterTempC) },
+        log.actualWaterTempC !== undefined && {
+          label: "물 온도",
+          value: formatTemperature(log.actualWaterTempC),
+        },
         log.actualTotalTimeSeconds !== undefined && {
           label: "추출 시간",
           value: formatDuration(log.actualTotalTimeSeconds),

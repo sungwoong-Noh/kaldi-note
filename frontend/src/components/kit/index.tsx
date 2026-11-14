@@ -7,6 +7,7 @@ import {
   type FocusEvent,
   type InputHTMLAttributes,
   type ReactNode,
+  type Ref,
 } from "react";
 import type { RoastLevel } from "@/features/catalog/schema";
 import { showToast } from "@/components/Toast";
@@ -578,6 +579,7 @@ export function NumberCell({
   label: string;
   accessibleName: string;
   unit?: string;
+  ref?: Ref<HTMLInputElement>;
 } & InputHTMLAttributes<HTMLInputElement>) {
   return (
     <label

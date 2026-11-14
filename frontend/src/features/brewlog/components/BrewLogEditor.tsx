@@ -96,7 +96,11 @@ function Fields({
 
   // 이름은 로그가 가리키는 id로 따로 읽는다. 실패해도 저장을 막지 않는다 —
   // 레시피·원두는 PATCH 본문에 들어가지 않아 저장과 아무 관계가 없다.
-  const recipe = useRecipeLabel(log.recipeId, true, onSessionLost);
+  const recipe = useRecipeLabel(
+    log.recipeId,
+    log.recipeId !== undefined,
+    onSessionLost,
+  );
   const bean = useBeanLabel(log.beanBatchId, true, onSessionLost);
 
   const save = useMutation({

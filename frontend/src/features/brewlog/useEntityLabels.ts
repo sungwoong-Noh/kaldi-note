@@ -135,8 +135,9 @@ export function useBrewSubParts(log: BrewLogSummary): string[] {
   const bean = useBeanLabel(log.beanBatchId, log.beanBatchId !== undefined);
   const recipe = useQuery({
     queryKey: ["recipe", log.recipeId],
-    queryFn: () => fetchRecipe(log.recipeId),
+    queryFn: () => fetchRecipe(log.recipeId!),
     staleTime: NAME_STALE_MS,
+    enabled: log.recipeId !== undefined,
   });
   const brewers = useBrewers();
   const brewer = brewers.data?.find(

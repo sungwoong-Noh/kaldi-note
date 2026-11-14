@@ -246,7 +246,7 @@ Worker 자체 오류 응답 본문은 `{"code":"<CODE>"}`, `Content-Type: applic
 
 각 태스크는 TDD 사이클 하나(실패 테스트 → 실패 확인 → 최소 구현 → 통과 확인 → 커밋).
 
-- [ ] **Task 1: Worker** — Covers: AC-RELAY-01, 02, 03, 10, 11, 12, 20, 21, 22, 23, 24, 25, 30
+- [x] **Task 1: Worker** — Covers: AC-RELAY-01, 02, 03, 10, 11, 12, 20, 21, 22, 23, 24, 25, 30
 
   의존성 없이 Node 24 내장 `node:test`·`fetch`·`Response`로 테스트한다. 테스트는
   `globalThis.fetch`를 가짜로 바꿔 원본 호출 횟수·URL·헤더를 기록한다.

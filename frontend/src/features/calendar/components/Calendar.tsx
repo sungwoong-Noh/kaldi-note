@@ -8,13 +8,6 @@ const WEEKDAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"] as cons
 /** 손가락이 우연히 스치는 것과 실제 스와이프를 가르는 최소 이동 거리. */
 const SWIPE_THRESHOLD_PX = 50;
 
-/**
- * 웹 그리드의 고정 총 높이(px). 5주·6주 달 모두 이 높이를 나눠 갖는다 —
- * `gridTemplateRows: repeat(주 수, 1fr)`로 주 수가 늘면 행 하나의 높이만 줄어든다
- * (AC-HOMECAL-68).
- */
-const WEB_GRID_HEIGHT_PX = 420;
-
 export interface CalendarDayInfo {
   readonly count: number;
   readonly primaryRecipeName?: string;
@@ -29,15 +22,15 @@ function chunkIntoWeeks<T>(items: T[]): T[][] {
 }
 
 /**
- * 선택·오늘 날짜 숫자를 감싸는 원 스타일. 웹은 24px, 모바일은 28px — 나머지 규칙은 같다:
+ * 선택·오늘 날짜 숫자를 감싸는 원 스타일.
  * 선택되면 `ink` 배경 원, 선택 안 됐지만 오늘이면 `border` 링만(배경 없음).
  */
 function dayNumberClassName(
-  isWeb: boolean,
+  compact: boolean,
   selected: boolean,
   isToday: boolean,
 ): string | undefined {
-  const size = isWeb ? "h-6 w-6" : "h-7 w-7";
+  const size = compact ? "h-6 w-6" : "h-7 w-7";
   if (selected) {
     return `flex ${size} items-center justify-center rounded-full bg-ink text-on-ink`;
   }
@@ -70,9 +63,8 @@ function dateColorVar(
 }
 
 /**
- * 달력 그리드. 모바일·웹이 같은 컴포넌트를 쓰고 `variant`로 CSS만 가른다
- * (docs/specs/2026-09-19-home-calendar.md) — 두 벌로 만들면 aria-label·키보드 이동 같은
- * 규칙이 한쪽에만 적용되는 사고가 난다.
+ * 달력 그리드. 모든 화면 폭(모바일 F2·웹 300px 카드·웹 720px 달력·태블릿 1주 스트립)이
+ * 동일한 점 기반 컴포넌트를 쓴다(B-1·B-2·B-4).
  */
 export function Calendar({
   month,
@@ -81,8 +73,9 @@ export function Calendar({
   onSelect,
   onSwipeLeft,
   onSwipeRight,
-  variant,
-  fillHeight = false,
+  compact = false,
+  collapsedWeek = false,
+  onExpandWeek,
   today,
 }: {
   month: string;
@@ -93,16 +86,13 @@ export function Calendar({
   onSwipeLeft?: () => void;
   /** 오른쪽으로 스와이프 — 이전 달로 넘긴다. */
   onSwipeRight?: () => void;
-  variant: "mobile" | "web";
-  /**
-   * `≥1100px` 2컬럼에서만 true. 남는 세로 공간을 채우는 flex 체인을 켠다 — 어떤 조상에도
-   * `min-height:0`을 주지 않으므로, flexbox의 자동 최소 크기(`min-height:auto`)가
-   * `64px×주 수`를 콘텐츠 최소 크기로 잡아 바닥 역할을 한다. 공간이 부족하면 그리드가 이
-   * 바닥 밑으로 눌리는 대신 넘쳐서 페이지가 스크롤된다(docs/specs/2026-09-20-calendar-grid-responsive.md
-   * AC-HOMECAL-85·86).
-   */
-  fillHeight?: boolean;
-  /** `kstToday()`. 선택되지 않은 오늘 날짜에 링을 그리는 데만 쓴다(웹 AC-HOMECAL-90, 모바일). */
+  /** 300px/280px 사이드 카드나 태블릿 1주 스트립 등 좁은 폭용. */
+  compact?: boolean;
+  /** 760–1023px에서 이번 주 1행만 접어 보여준다(AC-QUICKBREW-37). */
+  collapsedWeek?: boolean;
+  /** 접힌 주 줄을 눌렀을 때 한 달 전체로 펼친다(AC-QUICKBREW-37). */
+  onExpandWeek?: () => void;
+  /** `kstToday()`. 선택되지 않은 오늘 날짜에 링을 그리는 데만 쓴다(AC-HOMECAL-99). */
   today?: string;
 }) {
   const grid = buildMonthGrid(month);
@@ -140,22 +130,35 @@ export function Calendar({
     else if (delta >= SWIPE_THRESHOLD_PX) onSwipeRight?.();
   }
 
-  const isWeb = variant === "web";
+  let visibleWeeks = weeks;
+  if (collapsedWeek && weeks.length > 0) {
+    const todayIndex =
+      today !== undefined
+        ? weeks.findIndex((w) => w.some((c) => c.inMonth && c.date === today))
+        : -1;
+    const selectedIndex =
+      todayIndex === -1 && selectedDate !== null
+        ? weeks.findIndex((w) =>
+            w.some((c) => c.inMonth && c.date === selectedDate),
+          )
+        : -1;
+    const targetIndex =
+      todayIndex !== -1 ? todayIndex : selectedIndex !== -1 ? selectedIndex : 0;
+    visibleWeeks = [weeks[targetIndex]];
+  }
 
   return (
     <div
       role="grid"
-      data-variant={variant}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
-      className={fillHeight ? "flex flex-1 flex-col" : undefined}
     >
       <div role="row" className="grid grid-cols-7">
         {WEEKDAY_LABELS.map((label, index) => (
           <div
             key={label}
             role="columnheader"
-            className="text-label"
+            className="text-label text-center"
             style={{
               // text-label의 자간은 0.12em이다 — 이 헤더만 목업 값 0.08em으로 덮어쓴다.
               letterSpacing: "0.08em",
@@ -169,128 +172,162 @@ export function Calendar({
           </div>
         ))}
       </div>
-      <div
-        data-testid="calendar-week-grid"
-        className={isWeb ? "border-t border-divider-strong" : undefined}
-        style={
-          isWeb
-            ? fillHeight
-              ? {
-                  flex: "1 1 auto",
-                  display: "grid",
-                  gridTemplateRows: `repeat(${weeks.length}, minmax(64px, 1fr))`,
-                }
-              : {
-                  height: WEB_GRID_HEIGHT_PX,
-                  display: "grid",
-                  gridTemplateRows: `repeat(${weeks.length}, 1fr)`,
-                }
-            : undefined
-        }
-      >
-        {weeks.map((week, weekIndex) => (
-          <div
-            key={weekIndex}
-            data-testid="calendar-row"
-            role="row"
-            className={`grid grid-cols-7 ${
-              isWeb && weekIndex > 0 ? "border-t border-sunken" : ""
-            }`}
-          >
-            {week.map((cell, columnIndex) => {
-              const lineClass =
-                isWeb && columnIndex > 0 ? "border-l border-sunken" : "";
-              if (!cell.inMonth) {
-                return (
-                  <div
-                    key={cell.date}
-                    data-testid="calendar-out-of-month"
-                    aria-hidden
-                    className={`${isWeb ? "bg-surface" : ""} ${lineClass}`}
-                  />
-                );
-              }
-
-              const info = days.get(cell.date);
-              const count = info?.count ?? 0;
-              const day = Number(cell.date.slice(8, 10));
-              const month1 = Number(cell.date.slice(5, 7));
-              const label =
-                count > 0
-                  ? `${month1}월 ${day}일, 기록 ${count}건`
-                  : `${month1}월 ${day}일, 기록 없음`;
-              const selected = cell.date === selectedDate;
-              const isToday = cell.date === today;
-
-              return (
-                <button
-                  key={cell.date}
-                  type="button"
-                  data-date={cell.date}
-                  aria-label={label}
-                  aria-current={selected ? "date" : undefined}
-                  onClick={() => onSelect(cell.date)}
-                  onKeyDown={(event) => handleKeyDown(event, cell.date)}
-                  style={
-                    isWeb && selected
-                      ? { boxShadow: "inset 0 0 0 2px var(--ink)" }
-                      : undefined
+      <div data-testid="calendar-week-grid">
+        {visibleWeeks.map((week, weekIndex) =>
+          collapsedWeek ? (
+            <div
+              key={weekIndex}
+              data-testid="calendar-row"
+              role="row"
+              className="grid grid-cols-7"
+            >
+              <button
+                type="button"
+                aria-label="이번 주 달력 펼치기"
+                onClick={onExpandWeek}
+                className="col-span-7 grid min-h-11 w-full cursor-pointer grid-cols-7 text-left"
+              >
+                {week.map((cell, columnIndex) => {
+                  if (!cell.inMonth) {
+                    return (
+                      <span
+                        key={cell.date}
+                        data-testid="calendar-out-of-month"
+                        aria-hidden
+                      />
+                    );
                   }
-                  className={`flex h-full w-full min-h-11 min-w-11 flex-col gap-1 overflow-hidden ${
-                    isWeb
-                      ? "items-start justify-start px-3 py-2"
-                      : "items-center justify-center"
-                  } ${isWeb && selected ? "bg-surface" : ""} ${lineClass}`}
-                >
-                  <span
-                    data-testid="day-number-row"
-                    className={`flex items-center ${isWeb ? "flex-row gap-1.5" : "flex-col gap-1"}`}
+                  const info = days.get(cell.date);
+                  const count = info?.count ?? 0;
+                  const day = Number(cell.date.slice(8, 10));
+                  const selected = cell.date === selectedDate;
+                  const isToday = cell.date === today;
+
+                  return (
+                    <span
+                      key={cell.date}
+                      data-date={cell.date}
+                      className="flex h-full w-full min-h-11 flex-col items-center justify-center gap-1"
+                    >
+                      <span
+                        data-testid="day-number-row"
+                        className="flex flex-col items-center gap-1"
+                      >
+                        <span
+                          data-testid="day-number"
+                          className={dayNumberClassName(compact, selected, isToday)}
+                          style={{
+                            color: dateColorVar(
+                              cell.date,
+                              today,
+                              columnIndex,
+                              selected,
+                              isToday,
+                            ),
+                          }}
+                        >
+                          {day}
+                        </span>
+                        <span
+                          data-record-dot
+                          aria-hidden
+                          style={{
+                            display: "inline-block",
+                            width: 5,
+                            height: 5,
+                            borderRadius: "50%",
+                            backgroundColor:
+                              count > 0 ? "var(--signal-record)" : "transparent",
+                          }}
+                        />
+                      </span>
+                    </span>
+                  );
+                })}
+              </button>
+            </div>
+          ) : (
+            <div
+              key={weekIndex}
+              data-testid="calendar-row"
+              role="row"
+              className="grid grid-cols-7"
+            >
+              {week.map((cell, columnIndex) => {
+                if (!cell.inMonth) {
+                  return (
+                    <div
+                      key={cell.date}
+                      data-testid="calendar-out-of-month"
+                      aria-hidden
+                    />
+                  );
+                }
+
+                const info = days.get(cell.date);
+                const count = info?.count ?? 0;
+                const day = Number(cell.date.slice(8, 10));
+                const month1 = Number(cell.date.slice(5, 7));
+                const label =
+                  count > 0
+                    ? `${month1}월 ${day}일, 기록 ${count}건`
+                    : `${month1}월 ${day}일, 기록 없음`;
+                const selected = cell.date === selectedDate;
+                const isToday = cell.date === today;
+
+                return (
+                  <button
+                    key={cell.date}
+                    type="button"
+                    data-date={cell.date}
+                    aria-label={label}
+                    aria-current={selected ? "date" : undefined}
+                    onClick={() => onSelect(cell.date)}
+                    onKeyDown={(event) => handleKeyDown(event, cell.date)}
+                    className={
+                      compact
+                        ? "hit-44 relative flex h-9 w-full flex-col items-center justify-center gap-1"
+                        : "flex h-full w-full min-h-11 min-w-11 flex-col items-center justify-center gap-1 overflow-hidden"
+                    }
                   >
                     <span
-                      data-testid="day-number"
-                      className={dayNumberClassName(isWeb, selected, isToday)}
-                      style={{
-                        color: dateColorVar(
-                          cell.date,
-                          today,
-                          columnIndex,
-                          selected,
-                          isToday,
-                        ),
-                      }}
+                      data-testid="day-number-row"
+                      className="flex flex-col items-center gap-1"
                     >
-                      {day}
+                      <span
+                        data-testid="day-number"
+                        className={dayNumberClassName(compact, selected, isToday)}
+                        style={{
+                          color: dateColorVar(
+                            cell.date,
+                            today,
+                            columnIndex,
+                            selected,
+                            isToday,
+                          ),
+                        }}
+                      >
+                        {day}
+                      </span>
+                      <span
+                        data-record-dot
+                        aria-hidden
+                        style={{
+                          display: "inline-block",
+                          width: 5,
+                          height: 5,
+                          borderRadius: "50%",
+                          backgroundColor:
+                            count > 0 ? "var(--signal-record)" : "transparent",
+                        }}
+                      />
                     </span>
-                    <span
-                      data-record-dot
-                      aria-hidden
-                      style={{
-                        display: "inline-block",
-                        width: 5,
-                        height: 5,
-                        borderRadius: "50%",
-                        backgroundColor:
-                          count > 0 ? "var(--signal-record)" : "transparent",
-                      }}
-                    />
-                  </span>
-                  {/* 요약 줄은 목업 CW1 값이다 — 레시피명 11.5px 한 줄, 「외 N건」 11px
-                      (docs/specs/2026-10-11-home-fidelity.md AC-HOMEFIT-07). */}
-                  {isWeb && info?.primaryRecipeName && (
-                    <span className="w-full truncate px-1 text-left text-[11.5px] text-ink-2">
-                      {info.primaryRecipeName}
-                    </span>
-                  )}
-                  {isWeb && count > 1 && (
-                    <span className="w-full truncate px-1 text-left text-[11px] text-ink-3">
-                      외 {count - 1}건
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        ))}
+                  </button>
+                );
+              })}
+            </div>
+          ),
+        )}
       </div>
     </div>
   );

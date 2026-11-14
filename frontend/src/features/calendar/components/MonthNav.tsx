@@ -14,30 +14,38 @@ const NAV_BUTTON =
 export function MonthNav({
   month,
   totalCount,
+  activeDays,
   ownerNickname,
+  showCount = true,
   onPrev,
   onNext,
 }: {
   month: string;
   totalCount: number;
+  /** 기록이 있는 날 수(`days.length`). 주어지면 `N일 · M잔`으로 묶어 표시한다. */
+  activeDays?: number;
   /** 남의 달력일 때만 준다. 없으면 내 달력이다. */
   ownerNickname?: string;
+  /** 모바일 F2 월 헤더는 건수 라벨을 생략한다(AC-HOMECAL-40). */
+  showCount?: boolean;
   onPrev: () => void;
   onNext: () => void;
 }) {
   const isCurrentMonth = month === kstMonthOf(kstToday());
   const label = ownerNickname
     ? `${ownerNickname} · ${brewCountLabel(totalCount)}`
-    : brewCountLabel(totalCount);
+    : brewCountLabel(totalCount, activeDays);
   const [year, mon] = month.split("-");
 
   return (
     <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         <p className="text-month-label">
           {year}.{mon}
         </p>
-        <p className="text-label text-ink-3">{label}</p>
+        {showCount && (
+          <p className="text-label whitespace-nowrap text-ink-3">{label}</p>
+        )}
       </div>
       <div className="flex gap-2">
         <button

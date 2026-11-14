@@ -7,9 +7,9 @@ import { useRoastLevel } from "../useRoastLevel";
 import { DayCard } from "./DayCard";
 import { RoastDot } from "@/components/ui";
 
-const WEEKDAY_EN = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] as const;
+const WEEKDAY_KO = ["월", "화", "수", "목", "금", "토", "일"] as const;
 
-/** 웹 우측 컬럼 헤더 전용 — 모바일 목록 헤더의 3글자 약어와 다르다(AC-HOMECAL-123). */
+/** 웹 우측 컬럼 헤더 전용 — 모바일 목록 헤더의 한 글자 약어와 다르다(AC-HOMECAL-123). */
 const WEEKDAY_EN_FULL = [
   "MONDAY",
   "TUESDAY",
@@ -28,7 +28,7 @@ function formatDayHeader(date: string): string {
 /** JS `Date.getUTCDay()`는 일요일이 0이다 — 월요일을 0으로 다시 세팅한다. */
 function weekdayOf(date: string): string {
   const d = new Date(`${date}T00:00:00Z`);
-  return WEEKDAY_EN[(d.getUTCDay() + 6) % 7];
+  return WEEKDAY_KO[(d.getUTCDay() + 6) % 7];
 }
 
 function weekdayEnglishOf(date: string): string {
@@ -63,6 +63,7 @@ export function DayList({
   date,
   logs,
   recipeLabels,
+  entryLabels,
   ownerNickname,
   variant,
 }: {
@@ -70,6 +71,8 @@ export function DayList({
   logs: BrewLogSummary[];
   /** recipeId → 레시피 제목. 페이지가 `useRecipeLabels`로 미리 묶어 온다. */
   recipeLabels?: Map<number, string>;
+  /** log.id → 행 대표 라벨(원두명·레시피명 등). 주어지면 recipeLabels·beanName보다 우선한다. */
+  entryLabels?: Map<number, string>;
   ownerNickname?: string;
   variant: "mobile" | "web";
 }) {
@@ -123,9 +126,10 @@ export function DayList({
                 <DayCard
                   log={log}
                   recipeLabel={
-                    log.recipeId !== undefined
+                    entryLabels?.get(log.id) ??
+                    (log.recipeId !== undefined
                       ? recipeLabels?.get(log.recipeId)
-                      : log.beanName
+                      : log.beanName)
                   }
                 />
               </li>
@@ -159,9 +163,10 @@ export function DayList({
             key={log.id}
             log={log}
             recipeLabel={
-              log.recipeId !== undefined
+              entryLabels?.get(log.id) ??
+              (log.recipeId !== undefined
                 ? recipeLabels?.get(log.recipeId)
-                : log.beanName
+                : log.beanName)
             }
           />
         ))}

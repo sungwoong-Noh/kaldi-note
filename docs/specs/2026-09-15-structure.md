@@ -319,6 +319,8 @@ AC-RECIPESBREWS-69, 상세 히어로는 AC-RECIPESBREWS-73(Task 6)이 원두량�
 - **Then** **`/recipes`로 가는 링크가 정확히 1개** 있고, 그 탭 영역이 44×44px 이상이다
 - **검증** e2e `structure.spec.ts`
 
+> **정정 (2026-11-14):** ADR 0011(기록 먼저)로 이 진입점은 **빠른 기록 시트를 여는 「기록하기」 버튼**이 됐다(`docs/specs/2026-11-14-quick-brew.md` AC-QUICKBREW-29). 위 본문은 당시 결정의 기록으로 남기고, 테스트는 이 ID로 새 동작을 검증한다.
+
 #### AC-STRUCT-20 · 빈 레시피 화면이 작성으로 보낸다
 
 - **Given** `GET /recipes`가 빈 목록을 주는 상태에서 `/recipes`를 연다

@@ -44,15 +44,19 @@ async function open(
 }
 
 test.describe("내 잔 — 모바일 390", () => {
-  test("AC-MYCUPS-06 · 머리는 개수 eyebrow·제목·장식 아바타다", async ({ page }) => {
+  test("AC-MYCUPS-06 · 머리는 개수 eyebrow·제목·장식 아바타다", async ({
+    page,
+  }) => {
     await open(page, MOBILE);
 
     const eyebrow = page.getByText("My cups · 2", { exact: true });
     await expect(eyebrow).toBeVisible();
-    expect(await eyebrow.evaluate((el) => getComputedStyle(el).textTransform)).toBe(
-      "uppercase",
-    );
-    await expect(page.getByRole("heading", { level: 1, name: "내 잔" })).toBeVisible();
+    expect(
+      await eyebrow.evaluate((el) => getComputedStyle(el).textTransform),
+    ).toBe("uppercase");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "내 잔" }),
+    ).toBeVisible();
 
     // 숨겨진 웹 상단 바에도 「내 잔」 글자가 있다 — h1을 가진 머리만 잡는다.
     const header = page
@@ -76,29 +80,49 @@ test.describe("내 잔 — 모바일 390", () => {
   test("AC-MYCUPS-10 · 통계 값은 Mono 22px다", async ({ page }) => {
     await open(page, MOBILE);
 
-    const value = page.locator("[data-stat-label]").first().locator("xpath=following-sibling::*[1]");
-    expect(await value.evaluate((el) => getComputedStyle(el).fontSize)).toBe("22px");
-    expect(await value.evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/^"?IBM Plex Mono/);
+    const value = page
+      .locator("[data-stat-label]")
+      .first()
+      .locator("xpath=following-sibling::*[1]");
+    expect(await value.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
+      "22px",
+    );
+    expect(
+      await value.evaluate((el) => getComputedStyle(el).fontFamily),
+    ).toMatch(/^"?IBM Plex Mono/);
   });
 
-  test("AC-MYCUPS-11 · 전폭 「기록하기」가 /recipes로 간다", async ({ page }) => {
+  test("AC-MYCUPS-11 · (정정) 전폭 「기록하기」가 빠른 기록을 연다", async ({
+    page,
+  }) => {
     await open(page, MOBILE);
 
-    const cta = page.getByRole("link", { name: "기록하기" });
-    await expect(cta).toHaveAttribute("href", "/recipes");
-    const tiles = page.locator("[data-stat-label]").first().locator("xpath=../..");
-    const [ctaBox, tilesBox] = [await cta.boundingBox(), await tiles.boundingBox()];
+    // ADR 0011 — /recipes 링크가 아니라 빠른 기록 시트를 여는 버튼이다.
+    const cta = page.getByRole("button", { name: "기록하기" });
+    await expect(cta).toBeVisible();
+    const tiles = page
+      .locator("[data-stat-label]")
+      .first()
+      .locator("xpath=../..");
+    const [ctaBox, tilesBox] = [
+      await cta.boundingBox(),
+      await tiles.boundingBox(),
+    ];
     expect(ctaBox!.width).toBe(tilesBox!.width);
   });
 
-  test("AC-MYCUPS-12 · 행을 누르면 기록 상세로 간다 (모바일)", async ({ page }) => {
+  test("AC-MYCUPS-12 · 행을 누르면 기록 상세로 간다 (모바일)", async ({
+    page,
+  }) => {
     await open(page, MOBILE);
 
     await page.getByText("08.31 월 · 92°C · 3:30").click();
     await expect(page).toHaveURL(/\/brews\/2$/);
   });
 
-  test("AC-MYCUPS-22 · 알약과 더 보기의 누르는 영역이 44×44 이상이다", async ({ page }) => {
+  test("AC-MYCUPS-22 · 알약과 더 보기의 누르는 영역이 44×44 이상이다", async ({
+    page,
+  }) => {
     await open(page, MOBILE, { ...brewLogPage, hasNext: true, totalPages: 2 });
 
     const controls = page
@@ -111,39 +135,71 @@ test.describe("내 잔 — 모바일 390", () => {
 });
 
 test.describe("내 잔 — 웹 1440", () => {
-  test("AC-MYCUPS-07 · 머리는 연도 eyebrow와 알약·개수가 한 줄이다", async ({ page }) => {
+  test("AC-MYCUPS-07 · 머리는 연도 eyebrow와 알약·개수가 한 줄이다", async ({
+    page,
+  }) => {
     await open(page, WEB);
 
-    await expect(page.getByText("My cups · 2026", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("My cups · 2026", { exact: true }),
+    ).toBeVisible();
     const pills = page.getByRole("group", { name: "내 잔 필터" });
     // 통계 「이번 달」 값과 글자가 같을 수 있다 — 알약 옆의 것만 잡는다.
     const count = pills.locator("xpath=..").getByText("2잔", { exact: true });
-    await expect(pills.getByRole("button")).toHaveText(["전체", "이번 달", "★ 4 이상"]);
+    await expect(pills.getByRole("button")).toHaveText([
+      "전체",
+      "이번 달",
+      "★ 4 이상",
+    ]);
     const [p, c] = [await pills.boundingBox(), await count.boundingBox()];
-    expect(Math.abs(p!.y + p!.height / 2 - (c!.y + c!.height / 2))).toBeLessThan(4);
+    expect(
+      Math.abs(p!.y + p!.height / 2 - (c!.y + c!.height / 2)),
+    ).toBeLessThan(4);
   });
 
-  test("AC-MYCUPS-09 · 표는 BW1의 열 순서·폭·정렬·보조줄을 갖는다", async ({ page }) => {
+  test("AC-MYCUPS-09 · 표는 BW1의 열 순서·폭·정렬·보조줄을 갖는다", async ({
+    page,
+  }) => {
     await open(page, WEB);
 
     const headers = page.getByRole("columnheader");
-    await expect(headers).toHaveText(["날짜", "레시피 / 원두", "원두량", "온도", "시간", "수율", "평가"]);
+    await expect(headers).toHaveText([
+      "날짜",
+      "레시피 / 원두",
+      "원두량",
+      "온도",
+      "시간",
+      "수율",
+      "평가",
+    ]);
     const widths = await headers.evaluateAll((els) =>
       els.map((el) => Math.round(el.getBoundingClientRect().width)),
     );
-    expect([widths[0], ...widths.slice(2)]).toEqual([108, 100, 90, 90, 100, 70]);
+    expect([widths[0], ...widths.slice(2)]).toEqual([
+      108, 100, 90, 90, 100, 70,
+    ]);
 
     const firstRow = page.getByRole("row").nth(1);
     const aligns = await firstRow
       .getByRole("cell")
       .evaluateAll((els) => els.map((el) => getComputedStyle(el).textAlign));
-    expect(aligns.slice(2)).toEqual(["right", "right", "right", "right", "right"]);
+    expect(aligns.slice(2)).toEqual([
+      "right",
+      "right",
+      "right",
+      "right",
+      "right",
+    ]);
     await expect(firstRow).toContainText("James Hoffmann Ultimate V60");
-    await expect(firstRow.locator("[data-ledger-sub]")).toHaveText("프릿츠 예가체프 · Hario V60 02");
+    await expect(firstRow.locator("[data-ledger-sub]")).toHaveText(
+      "프릿츠 예가체프 · Hario V60 02",
+    );
     await expect(firstRow.locator("[data-roast-dot]")).toHaveCount(1);
   });
 
-  test("AC-MYCUPS-10 · 통계 값은 Mono 24px, 즐겨 쓴 레시피는 Sans 15px다", async ({ page }) => {
+  test("AC-MYCUPS-10 · 통계 값은 Mono 24px, 즐겨 쓴 레시피는 Sans 15px다", async ({
+    page,
+  }) => {
     await open(page, WEB);
 
     // 알약 「이번 달」과 글자가 같다 — 통계 라벨에서만 찾는다.
@@ -153,17 +209,28 @@ test.describe("내 잔 — 웹 1440", () => {
         .filter({ hasText: new RegExp(`^${label}$`) })
         .locator("xpath=following-sibling::*[1]");
     const month = valueOf("이번 달");
-    expect(await month.evaluate((el) => getComputedStyle(el).fontSize)).toBe("24px");
-    expect(await month.evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/^"?IBM Plex Mono/);
+    expect(await month.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
+      "24px",
+    );
+    expect(
+      await month.evaluate((el) => getComputedStyle(el).fontFamily),
+    ).toMatch(/^"?IBM Plex Mono/);
     const recipe = valueOf("즐겨 쓴 레시피");
-    expect(await recipe.evaluate((el) => getComputedStyle(el).fontSize)).toBe("15px");
-    expect(await recipe.evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/^"?IBM Plex Sans KR/);
+    expect(await recipe.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
+      "15px",
+    );
+    expect(
+      await recipe.evaluate((el) => getComputedStyle(el).fontFamily),
+    ).toMatch(/^"?IBM Plex Sans KR/);
   });
 
-  test("AC-MYCUPS-11 · 웹 본문에는 「기록하기」가 없다(상단 바 CTA 하나뿐)", async ({ page }) => {
+  test("AC-MYCUPS-11 · 웹 본문에는 「기록하기」가 없다(상단 바 CTA 하나뿐)", async ({
+    page,
+  }) => {
     await open(page, WEB);
 
-    await expect(page.getByRole("link", { name: "기록하기" })).toHaveCount(1);
+    // ADR 0011 — 「기록하기」는 빠른 기록 시트를 여는 버튼이다. 상단 바의 하나뿐.
+    await expect(page.getByRole("button", { name: "기록하기" })).toHaveCount(1);
   });
 
   /**
@@ -175,7 +242,9 @@ test.describe("내 잔 — 웹 1440", () => {
     [1, 2, "08.31"],
     [2, 3, "08.30"],
   ] as const) {
-    test(`AC-MYCUPS-12 · ${row}번째 행의 날짜를 누르면 /brews/${id}로 간다 (웹)`, async ({ page }) => {
+    test(`AC-MYCUPS-12 · ${row}번째 행의 날짜를 누르면 /brews/${id}로 간다 (웹)`, async ({
+      page,
+    }) => {
       await open(page, WEB);
 
       const box = await page
@@ -188,7 +257,9 @@ test.describe("내 잔 — 웹 1440", () => {
     });
   }
 
-  test("AC-MYCUPS-15 · 점이 없는 행도 제목의 왼쪽 선이 같다", async ({ page }) => {
+  test("AC-MYCUPS-15 · 점이 없는 행도 제목의 왼쪽 선이 같다", async ({
+    page,
+  }) => {
     const [first, second] = brewLogPage.content;
     const { beanBatchId: _omit, ...withoutBean } = second;
     void _omit;
@@ -200,15 +271,17 @@ test.describe("내 잔 — 웹 1440", () => {
       els.map((el) => Math.round(el.getBoundingClientRect().left)),
     );
     expect(xs[0]).toBe(xs[1]);
-    await expect(page.getByRole("row").nth(2).locator("[data-ledger-sub]")).toHaveText(
-      "Hario V60 02",
-    );
+    await expect(
+      page.getByRole("row").nth(2).locator("[data-ledger-sub]"),
+    ).toHaveText("Hario V60 02");
   });
 });
 
 test.describe("내 잔 — 가로 스크롤", () => {
   for (const viewport of [MOBILE, WEB]) {
-    test(`AC-MYCUPS-23 · ${viewport.width}px에서 가로 스크롤이 없다`, async ({ page }) => {
+    test(`AC-MYCUPS-23 · ${viewport.width}px에서 가로 스크롤이 없다`, async ({
+      page,
+    }) => {
       await open(page, viewport);
 
       expect(
@@ -217,7 +290,10 @@ test.describe("내 잔 — 가로 스크롤", () => {
       const table = page.locator("table");
       if ((await table.count()) > 0) {
         const wrapper = table.locator("xpath=..");
-        const [scroll, client] = await wrapper.evaluate((el) => [el.scrollWidth, el.clientWidth]);
+        const [scroll, client] = await wrapper.evaluate((el) => [
+          el.scrollWidth,
+          el.clientWidth,
+        ]);
         expect(scroll).toBe(client);
       }
     });

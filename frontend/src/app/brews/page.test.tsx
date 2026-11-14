@@ -94,7 +94,9 @@ describe("내 잔 — 범위와 필터 (docs/specs/2026-10-10-my-cups-ledger.md)
     captureListQuery();
     renderWithQuery(<BrewsPage />);
 
-    await userEvent.click(await screen.findByRole("button", { name: "이번 달" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "이번 달" }),
+    );
 
     expect(replace).toHaveBeenCalledWith("/brews?filter=month");
   });
@@ -118,7 +120,9 @@ describe("내 잔 — 범위와 필터 (docs/specs/2026-10-10-my-cups-ledger.md)
     captureListQuery();
     renderWithQuery(<BrewsPage />);
 
-    await userEvent.click(await screen.findByRole("button", { name: "★ 4 이상" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "★ 4 이상" }),
+    );
     expect(replace).toHaveBeenLastCalledWith("/brews?filter=rated");
 
     await userEvent.click(screen.getByRole("button", { name: "전체" }));
@@ -198,7 +202,7 @@ describe("BrewsPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("AC-WEBBREW-34 · AC-RECIPESBREWS-86 · 기록이 없으면 통계는 0잔·—고 기록하기가 /recipes로 간다", async () => {
+  it("AC-WEBBREW-34 · AC-RECIPESBREWS-86 · (정정) 기록이 없으면 통계는 0잔·—고 기록하기가 빠른 기록을 연다", async () => {
     server.use(
       http.get(LIST_URL, () => HttpResponse.json(pageOf([]))),
       http.get(`${BASE}/brew-logs/stats`, () =>
@@ -210,13 +214,16 @@ describe("BrewsPage", () => {
 
     expect(await screen.findByText("아직 기록이 없습니다")).toBeInTheDocument();
     // 웹 머리의 개수(`0잔`, AC-MYCUPS-07)와 글자가 같다 — 통계 타일 안에서 찾는다.
-    const monthTile = screen.getByText("이번 달", { selector: "[data-stat-label]" }).parentElement!;
+    const monthTile = screen.getByText("이번 달", {
+      selector: "[data-stat-label]",
+    }).parentElement!;
     expect(within(monthTile).getByText("0잔")).toBeInTheDocument();
     expect(screen.getAllByText("—")).toHaveLength(3);
-    expect(screen.getByRole("link", { name: "기록하기" })).toHaveAttribute(
-      "href",
-      "/recipes",
-    );
+    // ADR 0011 — 기록은 레시피 없이 시작한다. 링크가 아니라 빠른 기록 시트를 여는 버튼이다(AC-QUICKBREW-23).
+    expect(screen.queryByRole("link", { name: "기록하기" })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "기록하기" }),
+    ).toBeInTheDocument();
   });
 
   it("AC-WEBBREW-35 · AC-MYCUPS-13 · 항목에 날짜·레시피 제목·별점이 있다", async () => {
@@ -346,8 +353,15 @@ describe("BrewsPage", () => {
     expect(screen.getByText("★ 3.7")).toBeInTheDocument();
     expect(screen.getByText("16 g")).toBeInTheDocument();
     expect(screen.getByText("케냐 94도 3푸어")).toBeInTheDocument();
-    for (const label of ["이번 달", "평균 별점", "가장 많이 쓴 원두량", "즐겨 쓴 레시피"]) {
-      expect(screen.getByText(label, { selector: "[data-stat-label]" })).toBeInTheDocument();
+    for (const label of [
+      "이번 달",
+      "평균 별점",
+      "가장 많이 쓴 원두량",
+      "즐겨 쓴 레시피",
+    ]) {
+      expect(
+        screen.getByText(label, { selector: "[data-stat-label]" }),
+      ).toBeInTheDocument();
     }
   });
 });
@@ -369,14 +383,18 @@ describe("내 잔 — 헤더·통계·빈 결과", () => {
   it("AC-MYCUPS-07 · 웹 헤더는 연도 eyebrow와 알약·개수다", async () => {
     server.use(
       http.get(LIST_URL, () =>
-        HttpResponse.json(pageOf([brewLogWithTds, { ...brewLogWithTds, id: 3 }])),
+        HttpResponse.json(
+          pageOf([brewLogWithTds, { ...brewLogWithTds, id: 3 }]),
+        ),
       ),
     );
 
     renderWithQuery(<BrewsPage />);
 
     expect(await screen.findByText("My cups · 2026")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 1, name: "내 잔" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: "내 잔" }),
+    ).toBeInTheDocument();
     expect(await screen.findByText("2잔")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "레시피" })).toBeNull();
   });
@@ -385,7 +403,9 @@ describe("내 잔 — 헤더·통계·빈 결과", () => {
     window.innerWidth = 390;
     server.use(
       http.get(LIST_URL, () =>
-        HttpResponse.json(pageOf([brewLogWithTds, { ...brewLogWithTds, id: 3 }])),
+        HttpResponse.json(
+          pageOf([brewLogWithTds, { ...brewLogWithTds, id: 3 }]),
+        ),
       ),
     );
 
@@ -420,7 +440,9 @@ describe("내 잔 — 헤더·통계·빈 결과", () => {
 
     renderWithQuery(<BrewsPage />);
 
-    expect(await screen.findByText("조건에 맞는 잔이 없습니다")).toBeInTheDocument();
+    expect(
+      await screen.findByText("조건에 맞는 잔이 없습니다"),
+    ).toBeInTheDocument();
     expect(screen.getByText("9잔")).toBeInTheDocument();
     expect(screen.queryByText("아직 기록이 없습니다")).toBeNull();
 
@@ -609,17 +631,18 @@ describe("내 잔 — 모바일 원장 행", () => {
     expect(document.querySelectorAll("[data-ledger-accent]")).toHaveLength(1);
   });
 
-  it("AC-MYCUPS-11 · 모바일은 목록 아래 전폭 「기록하기」가 /recipes로 간다", async () => {
+  it("AC-MYCUPS-11 · (정정) 모바일은 목록 아래 전폭 「기록하기」가 빠른 기록을 연다", async () => {
     server.use(
       http.get(LIST_URL, () => HttpResponse.json(pageOf([brewLogWithTds]))),
     );
 
     renderWithQuery(<BrewsPage />);
 
-    expect(await screen.findByRole("link", { name: "기록하기" })).toHaveAttribute(
-      "href",
-      "/recipes",
-    );
+    // ADR 0011 — /recipes로 보내지 않고 빠른 기록 시트를 연다.
+    expect(
+      await screen.findByRole("button", { name: "기록하기" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "기록하기" })).toBeNull();
   });
 });
 
@@ -642,14 +665,28 @@ describe("내 잔 — 웹 표 보조줄", () => {
       http.get(`${BASE}/gear/brewers`, () => HttpResponse.json(brewers)),
       // grindedRecipe에는 brewerId가 없다 — 보조줄의 드리퍼를 보려고 2(Hario V60 02)를 준다.
       http.get(`${BASE}/recipes/12`, () =>
-        HttpResponse.json({ ...grindedRecipe, id: 12, title: "Kasuya 4:6", brewerId: 2 }),
+        HttpResponse.json({
+          ...grindedRecipe,
+          id: 12,
+          title: "Kasuya 4:6",
+          brewerId: 2,
+        }),
       ),
-      http.get(`${BASE}/bean-batches/3`, () => HttpResponse.json(yirgacheffeBatch)),
-      http.get(`${BASE}/bean-products/:id`, () => HttpResponse.json(yirgacheffeProduct)),
+      http.get(`${BASE}/bean-batches/3`, () =>
+        HttpResponse.json(yirgacheffeBatch),
+      ),
+      http.get(`${BASE}/bean-products/:id`, () =>
+        HttpResponse.json(yirgacheffeProduct),
+      ),
       http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
       // 드리퍼도 원두도 없는 경우를 만들려고 brewerId 없는 레시피를 둔다.
       http.get(`${BASE}/recipes/17`, () =>
-        HttpResponse.json({ ...grindedRecipe, id: 17, title: "드리퍼 없음", brewerId: undefined }),
+        HttpResponse.json({
+          ...grindedRecipe,
+          id: 17,
+          title: "드리퍼 없음",
+          brewerId: undefined,
+        }),
       ),
     );
   });
@@ -669,7 +706,9 @@ describe("내 잔 — 웹 표 보조줄", () => {
 
     renderWithQuery(<BrewsPage />);
 
-    expect(await screen.findByText("프릿츠 예가체프 · Hario V60 02")).toBeInTheDocument();
+    expect(
+      await screen.findByText("프릿츠 예가체프 · Hario V60 02"),
+    ).toBeInTheDocument();
     expect(screen.getByText("Hario V60 02")).toBeInTheDocument();
     expect(await screen.findByText("드리퍼 없음")).toBeInTheDocument();
     expect(document.querySelectorAll("[data-ledger-sub]")).toHaveLength(2);
@@ -688,7 +727,9 @@ describe("내 잔 — 웹 표 보조줄", () => {
     );
 
     renderWithQuery(<BrewsPage />);
-    expect(await screen.findByText("프릿츠 예가체프 · Hario V60 02")).toBeInTheDocument();
+    expect(
+      await screen.findByText("프릿츠 예가체프 · Hario V60 02"),
+    ).toBeInTheDocument();
     server.events.removeListener("request:start", record);
 
     const allowed = [
@@ -701,6 +742,8 @@ describe("내 잔 — 웹 표 보조줄", () => {
       /^\/api\/v1\/bean-products\/\d+$/,
       /^\/api\/v1\/roasters$/,
     ];
-    expect([...paths].filter((path) => !allowed.some((re) => re.test(path)))).toEqual([]);
+    expect(
+      [...paths].filter((path) => !allowed.some((re) => re.test(path))),
+    ).toEqual([]);
   });
 });

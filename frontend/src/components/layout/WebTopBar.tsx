@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { openQuickBrew } from "@/lib/quickBrew";
 import { usePathname } from "next/navigation";
 import { useMe } from "@/features/user/queries";
 import {
@@ -117,7 +118,9 @@ export function WebTopBar() {
               </ButtonLink>
             )}
             {cta?.kind === "button" && (
-              <Button variant="primary">{cta.label}</Button>
+              <Button variant="primary" onClick={() => openQuickBrew()}>
+                {cta.label}
+              </Button>
             )}
             {me.data && (
               <Link href="/more" aria-label="더보기" className="hit-44 flex">

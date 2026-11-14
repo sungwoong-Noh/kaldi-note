@@ -151,6 +151,8 @@ supersedes:
 - **Then** 본문에 `기록하기`가 없다(상단 바 CTA만 있다 — AC-GRAMMAR-05)
 - **검증** e2e `my-cups.spec.ts`
 
+> **정정 (2026-11-14):** ADR 0011(기록 먼저)로 「기록하기」는 `/recipes` 링크가 아니라 **빠른 기록 시트를 여는 버튼**이다(`docs/specs/2026-11-14-quick-brew.md` AC-QUICKBREW-23). 위 본문은 당시 결정의 기록으로 남기고, 테스트는 이 ID로 새 동작을 검증한다.
+
 #### AC-MYCUPS-12 · 행 전체가 기록 상세 링크다
 
 - **Given** 모바일·웹 각각

@@ -58,12 +58,15 @@ export function Segmented<T extends string>({
   value,
   onChange,
   label,
+  role = "radio",
 }: {
   options: readonly { value: T; label: string }[];
   /** `null`이면 고른 칸이 없다(분쇄도 단위처럼 비워 둘 수 있는 값). */
   value: T | null;
   onChange?: (value: T) => void;
   label: string;
+  /** 기본은 라디오 그룹이며, 화면 뷰 전환 탭이면 `"tab"`을 넘긴다. */
+  role?: "radio" | "tab";
 }) {
   const [internalValue, setInternalValue] = useState<T | null>(value);
   const currentValue = onChange ? value : internalValue;
@@ -71,9 +74,10 @@ export function Segmented<T extends string>({
     (option) => option.value === currentValue,
   );
   const count = options.length;
+  const isTab = role === "tab";
   return (
     <div
-      role="radiogroup"
+      role={isTab ? "tablist" : "radiogroup"}
       aria-label={label}
       className="relative grid gap-[3px] rounded-[8px] bg-sunken p-[3px]"
       style={{ gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))` }}
@@ -95,8 +99,9 @@ export function Segmented<T extends string>({
           <button
             key={option.value}
             type="button"
-            role="radio"
-            aria-checked={active}
+            role={role}
+            aria-checked={isTab ? undefined : active}
+            aria-selected={isTab ? active : undefined}
             onClick={() => {
               if (onChange) {
                 onChange(option.value);

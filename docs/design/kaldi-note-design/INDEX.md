@@ -34,11 +34,12 @@ kaldi-note-design/
 
 | 파일 | 라우트 | 담긴 화면 | 상태 |
 |---|---|---|---|
-| `01 Home - Mobile` | `/` | 달력 · 팔로우 레일 · 날짜별 목록 | 현행 |
-| `01 Home - Web` | `/` | 달력 박스 셀 · 우측 날짜 목록 | 현행 |
-| `02 Recipes and Cups - Mobile` | `/recipes` `/brews` | 내 서랍 · 둘러보기 · 필터 시트 · 레시피 상세 · 담기 · 내 잔 | 현행 |
-| `02 Recipes and Cups - Web` | `/recipes` `/brews` | 결정 패널 · 둘러보기 · 내 서랍 · 레시피 상세 · 내 잔 테이블 | 현행 |
-| `03 Recipe Edit` | `/recipes/new` `/[id]/edit` | 웹 · 모바일 · 스텝 시트 · 다크 · 상태 8 | 현행 |
+| `01 Home - Mobile` | `/` | 달력 · 팔로우 레일 · 날짜별 목록 | **대체됨** → 10 (A 오늘, F 기록 탭 달력) |
+| `01 Home - Web` | `/` | 달력 박스 셀 · 우측 날짜 목록 | **대체됨** → 10 (A 오늘, F 기록 탭 달력) |
+| `02 Recipes and Cups - Mobile` | `/recipes` `/brews` | 내 서랍 · 둘러보기 · 필터 시트 · 레시피 상세 · 담기 · 내 잔 | 레시피는 현행 · **내 잔 목록(BM1)은 대체됨** → 10 (F) |
+| `02 Recipes and Cups - Web` | `/recipes` `/brews` | 결정 패널 · 둘러보기 · 내 서랍 · 레시피 상세 · 내 잔 테이블 | 레시피는 현행 · **내 잔 테이블(BW1)은 대체됨** → 10 (F) |
+| `03 Recipe Edit` | `/recipes/new` `/[id]/edit` | 웹 · 모바일 · 스텝 시트 · 다크 · 상태 8 | **대체됨** → 10 (D 레시피로 저장, E 레시피 작성) |
+| `10 Brew First` | `/` `/brews` `/brews/new` 외 | **「기록 먼저」 재구성** — A 오늘 · B 빠른 기록 · C 기록 상세 · D 레시피로 저장 · E 레시피 작성 · F 「기록」 탭 · G 탭 바 · H 규격(모션) | **현행 (2026-11-14)** |
 | `04 Profile` | `/u/[id]` | 웹 · 모바일 · 관계 4종 · 404 · 상태 | 현행 |
 | `05 More and Settings` | `/more` `/settings` | 모바일 · 웹 아바타 메뉴 · 설정 · 상태 | 현행 |
 | `06 Gear` | `/more/gear` | 그라인더 목록 · 추가 · 상세 · 상태 | 현행 |
@@ -47,17 +48,20 @@ kaldi-note-design/
 | `08 Other Screens - Web` | 여러 개 | **W3 잔 상세**만 현행 | 부분 현행 |
 
 `07`, `08`의 나머지 프레임은 01–06으로 대체되었습니다. 겹치면 **번호가 작은 파일**을 따르세요.
+**예외: `10 Brew First`는 01 · 02의 내 잔 목록 · 03을 대체합니다** — 이 셋과 겹치면 10을 따릅니다
+(요청문 `../requests/2026-11-14-brew-first-design-request.md`).
 
 ### 라우트 → 파일
 
 | 라우트 | 모바일 | 웹 |
 |---|---|---|
-| `/` 홈 | 01 Home - Mobile | 01 Home - Web |
+| `/` 홈(오늘) | 10 Brew First (A) | 10 Brew First (A) |
+| 빠른 기록 시트 | 10 Brew First (B) | 10 Brew First (B) |
+| `/brews` 기록 탭(목록 · 달력) | 10 Brew First (F) | 10 Brew First (F · FW) |
 | `/recipes` 내 서랍 · 둘러보기 | 02 … Mobile (RM1–RM3) | 02 … Web (RW1–RW2) |
 | `/recipes/[id]` | 02 … Mobile (RM4) | 02 … Web (RW3) |
-| `/recipes/new` · `/[id]/edit` | 03 Recipe Edit (M1–M3) | 03 Recipe Edit (W) |
-| `/brews` 내 잔 | 02 … Mobile (BM1) | 02 … Web (BW1) |
-| `/brews/[id]` 잔 상세 | 08 Other - Mobile (B2) | 08 Other - Web (W3) |
+| `/recipes/new` · `/[id]/edit` | 10 Brew First (D · E) | 10 Brew First (D · E) |
+| `/brews/[id]` 잔 상세 | 08 Other - Mobile (B2) · 10 Brew First (C) 참고 | 08 Other - Web (W3) |
 | 타이머 | 07 Timer and Feed (03) | — |
 | `/u/[id]` | 04 Profile (M1–M3) | 04 Profile (W) |
 | `/more` · `/settings` | 05 More (M1–M2) | 05 More (W) |

@@ -2,7 +2,7 @@
 
 이 문서가 **갈래·흐름·문서 수명·완료 정의의 유일한 원본**이다. `CLAUDE.md`는 지도만 담고
 여기로 링크한다. 규칙 본문이 여러 곳에 흩어지면 반드시 어긋난다 — 그게 2026-09-25 개정의
-이유였다(`docs/design/2026-09-25-workflow-revision.md`).
+이유였다(`docs/archive/2026-09-25-workflow-revision.md`).
 
 ---
 

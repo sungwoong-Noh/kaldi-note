@@ -199,6 +199,9 @@
 /*
  * 누르는 영역만 44×44로 넓힌다 — 보이는 크기는 목업대로 둔다(docs/decisions/0010).
  * 의사 요소는 그 요소의 히트 테스트에 포함되고, e2e/hitArea.ts가 박스와 이것 중 큰 쪽을 잰다.
+ *
+ * 라벨이 `<select>`를 감쌀 때는 select를 의사 요소 위로 올린다(#197) — 클릭이 라벨에 떨어지면
+ * `<input>`과 달리 포커스만 가고 네이티브 드롭다운이 열리지 않는다.
  */
 @utility hit-44 {
   position: relative;
@@ -210,6 +213,10 @@
     width: max(100%, 44px);
     height: max(100%, 44px);
     transform: translate(-50%, -50%);
+  }
+  & > select {
+    position: relative;
+    z-index: 1;
   }
 }
 

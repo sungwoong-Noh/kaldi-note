@@ -166,7 +166,12 @@ describe("BottomNav", () => {
     rerender(<BottomNav />);
 
     const activeLink = screen.getByRole("link", { name: "내 잔" });
+    const track = activeLink.querySelector(
+      "[data-tab-bar-track]",
+    ) as HTMLElement;
     const bar = activeLink.querySelector("[data-tab-bar]") as HTMLElement;
+    expect(track).not.toBeNull();
+    expect(track.className).toContain("w-full");
     expect(bar).not.toBeNull();
     expect(bar.style.getPropertyValue("--tab-delta")).toBe("-1");
   });

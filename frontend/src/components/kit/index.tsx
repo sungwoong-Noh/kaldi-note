@@ -358,11 +358,13 @@ export function BottomSheet({
   title,
   action,
   open = true,
+  onExitComplete,
   children,
 }: {
   title: string;
   action?: ReactNode;
   open?: boolean;
+  onExitComplete?: () => void;
   children: ReactNode;
 }) {
   return (
@@ -371,11 +373,17 @@ export function BottomSheet({
       aria-label={title}
       data-kit="bottom-sheet"
       data-state={open ? "open" : "closed"}
+      onAnimationEnd={(e) => {
+        if (!open && e.target === e.currentTarget) onExitComplete?.();
+      }}
+      onTransitionEnd={(e) => {
+        if (!open && e.target === e.currentTarget) onExitComplete?.();
+      }}
       className={cx(
         "flex flex-col gap-[20px] rounded-t-[18px] border-t border-border bg-paper px-[24px] pt-[14px] pb-[14px] shadow-[0_-1px_0_var(--border)] transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:animate-none",
         open
           ? "translate-y-0 animate-[sheet-slide-in_200ms_ease-out]"
-          : "pointer-events-none translate-y-full",
+          : "pointer-events-none translate-y-full animate-[sheet-slide-out_200ms_ease-out_forwards]",
       )}
     >
       <div className="flex justify-center">
@@ -397,11 +405,13 @@ export function SidePanel({
   title,
   action,
   open = true,
+  onExitComplete,
   children,
 }: {
   title: string;
   action?: ReactNode;
   open?: boolean;
+  onExitComplete?: () => void;
   children: ReactNode;
 }) {
   return (
@@ -409,11 +419,17 @@ export function SidePanel({
       aria-label={title}
       data-kit="side-panel"
       data-state={open ? "open" : "closed"}
+      onAnimationEnd={(e) => {
+        if (!open && e.target === e.currentTarget) onExitComplete?.();
+      }}
+      onTransitionEnd={(e) => {
+        if (!open && e.target === e.currentTarget) onExitComplete?.();
+      }}
       className={cx(
         "flex w-[320px] max-w-full flex-col gap-[16px] border-l border-border bg-paper px-[24px] py-[20px] transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:animate-none",
         open
           ? "translate-x-0 animate-[panel-slide-in_200ms_ease-out]"
-          : "pointer-events-none translate-x-full",
+          : "pointer-events-none translate-x-full animate-[panel-slide-out_200ms_ease-out_forwards]",
       )}
     >
       <div className="flex items-baseline justify-between">

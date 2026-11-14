@@ -402,6 +402,15 @@ body {
   }
 }
 
+@keyframes sheet-slide-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
 @keyframes panel-slide-in {
   from {
     transform: translateX(100%);
@@ -411,9 +420,18 @@ body {
   }
 }
 
+@keyframes panel-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
 @keyframes tab-bar-slide {
   from {
-    transform: translateX(calc(var(--tab-delta, 0) * 25vw));
+    transform: translateX(calc(var(--tab-delta, 0) * 100%));
   }
   to {
     transform: translateX(0);

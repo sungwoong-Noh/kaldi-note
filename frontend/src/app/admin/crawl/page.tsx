@@ -14,6 +14,7 @@ import {
   useStartCrawl,
 } from "@/features/admin/queries";
 import { ApiError } from "@/lib/api-client";
+import { useExitPresence } from "@/lib/useExitPresence";
 
 const PATH = "/admin/crawl";
 const ALREADY_RUNNING =
@@ -45,6 +46,11 @@ function CrawlConsole() {
   const sources = useCrawlSources(onSessionLost);
   const runs = useCrawlRuns(source, page, onSessionLost);
   const start = useStartCrawl(onSessionLost);
+  const isWideColumn =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(min-width: 1280px)").matches;
+  const panelPresence = useExitPresence(runId, isWideColumn);
 
   function select(id: number | undefined) {
     setRunId(id);
@@ -125,9 +131,11 @@ function CrawlConsole() {
           <ErrorState error={runs.error} onRetry={() => void runs.refetch()} />
         ) : null}
       </main>
-      {runId !== undefined && (
+      {panelPresence.present && panelPresence.rendered !== undefined && (
         <RunPanel
-          id={runId}
+          id={panelPresence.rendered}
+          open={panelPresence.open}
+          onExitComplete={panelPresence.onExitComplete}
           sources={sources.data}
           onClose={() => select(undefined)}
           onSessionLost={onSessionLost}

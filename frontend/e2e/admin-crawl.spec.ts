@@ -43,12 +43,18 @@ test("AC-ADMIN-41 · 960–1279px은 패널이 오른쪽 오버레이, 1440px은
   expect(await panel.evaluate((el) => getComputedStyle(el).position)).toBe(
     "fixed",
   );
+  await panel.evaluate((el) =>
+    Promise.all(el.getAnimations().map((a) => a.finished)),
+  );
   const box = await panel.boundingBox();
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBe(1100);
 
   await page.setViewportSize({ width: 1440, height: 900 });
   expect(await panel.evaluate((el) => getComputedStyle(el).position)).not.toBe(
     "fixed",
+  );
+  await panel.evaluate((el) =>
+    Promise.all(el.getAnimations().map((a) => a.finished)),
   );
   const wide = await panel.boundingBox();
   expect(wide?.width).toBe(420);

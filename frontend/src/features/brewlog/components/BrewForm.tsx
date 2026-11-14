@@ -14,6 +14,7 @@ import type { UserGrinder } from "@/features/gear/schema";
 import type { MappedFieldErrors } from "@/lib/fieldErrors";
 import { focusFirstInvalidField } from "@/lib/focusFirstError";
 import { formatGrams, formatTemperature } from "@/lib/format";
+import { useExitPresence } from "@/lib/useExitPresence";
 import { useIsWide } from "@/lib/useIsWide";
 import { diffPhrases } from "../diffPhrase";
 import {
@@ -111,6 +112,7 @@ function sheetOf(field: string): SheetId | undefined {
 export function BrewForm(props: BrewFormProps) {
   const wide = useIsWide();
   const [sheet, setSheet] = useState<SheetId | null>(null);
+  const sheetPresence = useExitPresence(!wide ? sheet : null, wide);
   const closeSheet = useCallback(() => setSheet(null), []);
 
   // 오류가 새로 생기면(값 중 하나가 바뀌고 그중 참인 것이 있으면) 포커스를 요청한다. 렌더 중에 상태를
@@ -154,9 +156,14 @@ export function BrewForm(props: BrewFormProps) {
       ) : (
         <MobileForm {...props} ctx={ctx} onOpenSheet={setSheet} />
       )}
-      {!wide && sheet !== null && (
-        <FormSheet title={sheet} onClose={closeSheet}>
-          <SheetFields id={sheet} {...props} ctx={ctx} />
+      {sheetPresence.present && sheetPresence.rendered !== null && (
+        <FormSheet
+          title={sheetPresence.rendered}
+          open={sheetPresence.open}
+          onClose={closeSheet}
+          onExitComplete={sheetPresence.onExitComplete}
+        >
+          <SheetFields id={sheetPresence.rendered} {...props} ctx={ctx} />
         </FormSheet>
       )}
       {props.children}
@@ -732,18 +739,22 @@ function SheetFields(
  */
 function FormSheet({
   title,
+  open = true,
   onClose,
+  onExitComplete,
   children,
 }: {
   title: string;
+  open?: boolean;
   onClose: () => void;
+  onExitComplete?: () => void;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    focusFirstInvalidField(ref.current);
-  }, []);
+    if (open) focusFirstInvalidField(ref.current);
+  }, [open]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -764,6 +775,8 @@ function FormSheet({
       <div ref={ref} className="relative max-h-[85dvh] overflow-y-auto">
         <BottomSheet
           title={title}
+          open={open}
+          onExitComplete={onExitComplete}
           action={
             <button
               type="button"

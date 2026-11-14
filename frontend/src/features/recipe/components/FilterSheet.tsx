@@ -29,12 +29,16 @@ export interface FilterSheetApplied {
 export function FilterSheet({
   q,
   applied,
+  open = true,
   onApply,
+  onExitComplete,
   onSessionLost,
 }: {
   q: string;
   applied: FilterSheetApplied;
+  open?: boolean;
   onApply: (patch: Partial<FilterSheetApplied>) => void;
+  onExitComplete?: () => void;
   onSessionLost?: () => void;
 }) {
   const [staged, setStaged] = useState<FilterSheetApplied>(applied);
@@ -75,7 +79,18 @@ export function FilterSheet({
     <div
       role="dialog"
       aria-label="필터"
-      className="flex flex-col gap-3 transition-transform duration-200 ease-out animate-[sheet-slide-in_200ms_ease-out] motion-reduce:transition-none motion-reduce:animate-none"
+      data-state={open ? "open" : "closed"}
+      onAnimationEnd={(e) => {
+        if (!open && e.target === e.currentTarget) onExitComplete?.();
+      }}
+      onTransitionEnd={(e) => {
+        if (!open && e.target === e.currentTarget) onExitComplete?.();
+      }}
+      className={`flex flex-col gap-3 transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:animate-none ${
+        open
+          ? "translate-y-0 animate-[sheet-slide-in_200ms_ease-out]"
+          : "pointer-events-none translate-y-full animate-[sheet-slide-out_200ms_ease-out_forwards]"
+      }`}
     >
       <div className="flex flex-wrap gap-2" role="group" aria-label="온도">
         <button

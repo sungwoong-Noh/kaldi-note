@@ -15,6 +15,7 @@ import { fetchRecipe } from "@/features/recipe/api";
 import type { Recipe } from "@/features/recipe/schema";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
+import { useExitPresence } from "@/lib/useExitPresence";
 import { createBrewLog } from "../api";
 import {
   initialFormState,
@@ -122,6 +123,10 @@ function Fields({
   const [addingGrinder, setAddingGrinder] = useState(false);
   // 원두는 고르기 → (없으면) 새로 등록의 두 단계다. 등록 단계는 기존 `BeanBatchDialog`가 맡는다.
   const [beanDialog, setBeanDialog] = useState<"pick" | "create" | null>(null);
+  const pickerPresence = useExitPresence(
+    beanDialog === "pick",
+    beanDialog === "create",
+  );
   const router = useRouter();
 
   const save = useMutation({
@@ -225,8 +230,10 @@ function Fields({
         />
       )}
 
-      {beanDialog === "pick" && (
+      {pickerPresence.present && (
         <BeanPickerDialog
+          open={pickerPresence.open}
+          onExitComplete={pickerPresence.onExitComplete}
           batches={batches.data ?? []}
           products={products.data ?? []}
           roasters={roasters.data ?? []}

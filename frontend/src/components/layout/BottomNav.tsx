@@ -63,15 +63,21 @@ export function BottomNav() {
             <span data-tab-label>{tab.label}</span>
             {active && (
               <span
-                data-tab-bar
+                data-tab-bar-track
                 aria-hidden
                 style={{ "--tab-delta": String(delta) } as CSSProperties}
-                className={`mt-2 h-0.5 w-[18px] rounded-tag bg-ink ${
+                className={`mt-2 flex w-full justify-center ${
                   delta !== 0
                     ? "animate-[tab-bar-slide_200ms_ease-out] motion-reduce:animate-none"
                     : ""
                 }`}
-              />
+              >
+                <span
+                  data-tab-bar
+                  style={{ "--tab-delta": String(delta) } as CSSProperties}
+                  className="h-0.5 w-[18px] rounded-tag bg-ink"
+                />
+              </span>
             )}
           </Link>
         );

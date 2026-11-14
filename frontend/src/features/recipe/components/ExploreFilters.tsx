@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui";
+import { useExitPresence } from "@/lib/useExitPresence";
 import { useViewportWidth } from "@/lib/useViewportWidth";
 import { DoseRangeFilter } from "./DoseRangeFilter";
 import { FilterSheet } from "./FilterSheet";
@@ -28,6 +29,7 @@ export function ExploreFilters({
   const width = useViewportWidth();
   const isMobile = width !== null && width < WEB_BREAKPOINT_PX;
   const [sheetOpen, setSheetOpen] = useState(false);
+  const filterPresence = useExitPresence(isMobile && sheetOpen, !isMobile);
 
   return (
     <div className="mb-4 flex flex-col gap-3">
@@ -104,9 +106,11 @@ export function ExploreFilters({
         </Button>
       )}
 
-      {isMobile && sheetOpen && (
+      {filterPresence.present && (
         <FilterSheet
           q={state.q}
+          open={filterPresence.open}
+          onExitComplete={filterPresence.onExitComplete}
           applied={{
             temp: state.temp,
             roast: state.roast,

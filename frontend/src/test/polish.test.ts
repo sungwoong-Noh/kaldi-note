@@ -56,5 +56,7 @@ describe("마감 결함", () => {
     expect(css).toMatch(/@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)/);
     expect(css).toMatch(/animation-duration:\s*0(?:\.01ms|s)\s*!important/);
     expect(css).toMatch(/transition-duration:\s*0(?:\.01ms|s)\s*!important/);
+    expect(css).toContain("translateX(calc(var(--tab-delta, 0) * 100%))");
+    expect(css).not.toContain("25vw");
   });
 });

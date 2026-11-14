@@ -25,12 +25,14 @@ export function RunPanel({
   sources,
   open = true,
   onClose,
+  onExitComplete,
   onSessionLost,
 }: {
   id: number;
   sources: readonly CrawlSource[];
   open?: boolean;
   onClose: () => void;
+  onExitComplete?: () => void;
   onSessionLost: () => void;
 }) {
   const run = useCrawlRun(id, onSessionLost);
@@ -46,10 +48,16 @@ export function RunPanel({
       <aside
         data-testid="run-panel"
         data-state={open ? "open" : "closed"}
-        className={`z-20 flex w-[420px] max-w-full shrink-0 flex-col overflow-y-auto border-l border-border bg-paper transition-transform duration-200 ease-out motion-reduce:transition-none motion-reduce:animate-none max-[1279px]:fixed max-[1279px]:inset-y-0 max-[1279px]:right-0 ${
+        onAnimationEnd={(e) => {
+          if (!open && e.target === e.currentTarget) onExitComplete?.();
+        }}
+        onTransitionEnd={(e) => {
+          if (!open && e.target === e.currentTarget) onExitComplete?.();
+        }}
+        className={`z-20 flex w-[420px] max-w-full shrink-0 flex-col overflow-y-auto border-l border-border bg-paper max-[1279px]:fixed max-[1279px]:inset-y-0 max-[1279px]:right-0 max-[1279px]:transition-transform max-[1279px]:duration-200 max-[1279px]:ease-out motion-reduce:transition-none motion-reduce:animate-none ${
           open
-            ? "translate-x-0 animate-[panel-slide-in_200ms_ease-out]"
-            : "pointer-events-none translate-x-full"
+            ? "max-[1279px]:translate-x-0 max-[1279px]:animate-[panel-slide-in_200ms_ease-out]"
+            : "max-[1279px]:pointer-events-none max-[1279px]:translate-x-full max-[1279px]:animate-[panel-slide-out_200ms_ease-out_forwards]"
         }`}
       >
         <div className="flex justify-end px-6 pt-5">

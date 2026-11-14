@@ -288,7 +288,7 @@ Worker 자체 오류 응답 본문은 `{"code":"<CODE>"}`, `Content-Type: applic
 
   `infra/fetch-relay/package.json`은 `{"type":"module"}` 한 줄만 둔다(테스트가 ESM을 import).
 
-- [ ] **Task 2: PageFetcher 중계 분기** — Covers: AC-RELAY-04, 05, 13, 26
+- [x] **Task 2: PageFetcher 중계 분기** — Covers: AC-RELAY-04, 05, 13, 26
 
   `@Value`로 `kaldi.crawler.relay.url`·`token`·`hosts`를 받는다. 테스트용 생성자
   `PageFetcher(RestClient, RelaySettings)` 형태로 MockRestServiceServer와 함께 주입한다

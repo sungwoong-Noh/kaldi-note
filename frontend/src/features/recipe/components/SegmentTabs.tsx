@@ -16,8 +16,21 @@ export function SegmentTabs({
     { scope: "PUBLIC", label: "둘러보기" },
   ];
 
+  const activeIndex = tabs.findIndex((tab) => tab.scope === state.scope);
+
   return (
-    <div className="mb-4 flex gap-2" role="tablist">
+    <div className="relative mb-4 grid grid-cols-2 gap-2" role="tablist">
+      {activeIndex >= 0 && (
+        <span
+          data-segment-indicator
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 rounded-tag bg-ink transition-transform duration-200 ease-out motion-reduce:transition-none"
+          style={{
+            width: "calc((100% - 8px) / 2)",
+            transform: `translateX(calc(${activeIndex} * (100% + 8px)))`,
+          }}
+        />
+      )}
       {tabs.map((tab) => (
         <button
           key={tab.scope}
@@ -25,7 +38,7 @@ export function SegmentTabs({
           role="tab"
           aria-selected={state.scope === tab.scope}
           onClick={() => setState({ scope: tab.scope })}
-          className="min-h-11 flex-1 rounded-tag border border-border px-3 py-2 text-body font-medium aria-selected:border-ink aria-selected:bg-ink aria-selected:text-on-ink"
+          className="relative z-10 min-h-11 rounded-tag border border-border px-3 py-2 text-body font-medium transition-colors duration-200 ease-out aria-selected:border-ink aria-selected:text-on-ink motion-reduce:transition-none"
         >
           {tab.label}
         </button>

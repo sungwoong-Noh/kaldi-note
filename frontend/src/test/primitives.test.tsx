@@ -51,6 +51,8 @@ describe("UI 프리미티브", () => {
     expect(new Set(all).size, "세 변형이 서로 달라야 한다").toBe(3);
     // disabled는 변형이 아니라 상태다 — 어느 변형에든 붙는다.
     expect(disabled).toMatch(/disabled:/);
+    // 눌림 피드백(active:)이 있다.
+    expect(primary).toMatch(/active:scale-\[0\.98\]/);
   });
 
   it("AC-BTN-15 · ButtonLink가 변형 색 테이블을 자체 선언하지 않는다", () => {

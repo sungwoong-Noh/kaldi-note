@@ -157,4 +157,22 @@ describe("BottomNav", () => {
       expect(nav).toHaveClass(className);
     }
   });
+
+  it("탭 전환 시 활성 밑줄에 위치 이동 애니메이션 변수가 설정된다", () => {
+    pathname = "/recipes";
+    const { rerender } = render(<BottomNav />);
+
+    pathname = "/brews";
+    rerender(<BottomNav />);
+
+    const activeLink = screen.getByRole("link", { name: "내 잔" });
+    const track = activeLink.querySelector(
+      "[data-tab-bar-track]",
+    ) as HTMLElement;
+    const bar = activeLink.querySelector("[data-tab-bar]") as HTMLElement;
+    expect(track).not.toBeNull();
+    expect(track.className).toContain("w-full");
+    expect(bar).not.toBeNull();
+    expect(bar.style.getPropertyValue("--tab-delta")).toBe("-1");
+  });
 });

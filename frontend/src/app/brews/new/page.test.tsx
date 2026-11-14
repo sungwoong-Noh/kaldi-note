@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -285,6 +285,9 @@ describe("BrewNewPage", () => {
       picker.getAllByRole("button", { name: /프릿츠 예가체프/ })[1],
     );
 
+    const dialog = screen.getByRole("dialog", { name: "원두 고르기" });
+    expect(dialog).toHaveAttribute("data-state", "closed");
+    fireEvent.transitionEnd(dialog);
     expect(screen.queryByRole("dialog", { name: "원두 고르기" })).toBeNull();
     // 원장 행 — 값 `프릿츠 예가체프`, 보조줄에 로스팅일·경과일(docs/specs/2026-10-11-brew-form-fidelity.md)
     const beanRow = ledgerRow("원두");
@@ -502,6 +505,9 @@ describe("BrewNewPage — 저장과 평가", () => {
     await user.click(await screen.findByRole("button", { name: "기록하기" }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/brews/42"));
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "기록을 저장했습니다.",
+    );
   });
 
   it("AC-WEBBREW-21 · 빈칸인 선택 항목은 본문에서 빠진다", async () => {
@@ -1283,6 +1289,9 @@ describe("BrewNewPage — 모바일 원장·시트", () => {
     await user.type(sheet.getByLabelText("드로다운 시간"), "0:40");
     await user.click(sheet.getByRole("button", { name: "완료" }));
 
+    const closingSheet = screen.getByRole("dialog", { name: "온도·시간" });
+    expect(closingSheet).toHaveAttribute("data-state", "closed");
+    fireEvent.transitionEnd(closingSheet);
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(ledgerRow("온도·시간")).toHaveTextContent("96 °C · 3:45");
     expect(ledgerRow("온도·시간")).toHaveTextContent("드로다운 0:40");
@@ -1305,12 +1314,38 @@ describe("BrewNewPage — 모바일 원장·시트", () => {
           document.querySelector<HTMLElement>("[data-sheet-dim]")!,
         );
 
+      const closingDialog = screen.getByRole("dialog", { name: "결과" });
+      expect(closingDialog).toHaveAttribute("data-state", "closed");
+      fireEvent.transitionEnd(closingDialog);
       expect(screen.queryByRole("dialog")).toBeNull();
       expect(ledgerRow("결과")).toHaveTextContent("225 g · TDS —");
       await user.click(screen.getByRole("button", { name: "기록하기" }));
       await waitFor(() => expect(captured.body?.beverageWeightG).toBe(225));
     },
   );
+
+  it("모바일 시트와 원두 고르기는 reduced-motion이면 닫을 때 즉시 언마운트한다", async () => {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query.includes("prefers-reduced-motion"),
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }));
+    const user = userEvent.setup();
+    await renderNewPage();
+
+    const sheet = await openRow(user, "결과");
+    await user.click(sheet.getByRole("button", { name: "완료" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    const picker = await openBeanPicker(user);
+    await user.click(picker.getByRole("button", { name: "닫기" }));
+    expect(screen.queryByRole("dialog", { name: "원두 고르기" })).toBeNull();
+  });
 
   it("AC-BREWFIT-15 · 모바일은 5축이 시트 안에 있다", async () => {
     const user = userEvent.setup();

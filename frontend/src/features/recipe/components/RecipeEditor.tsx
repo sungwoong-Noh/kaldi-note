@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { LoadingState } from "@/components/LoadingState";
+import { showToast } from "@/components/Toast";
 import { useRequireSession } from "@/features/auth/useRequireSession";
 import { useMe } from "@/features/user/queries";
 import { ApiError } from "@/lib/api-client";
@@ -45,6 +46,7 @@ export function RecipeEditor({ id: recipeId }: { id: number }) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["recipe", recipeId] });
       void queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      showToast("레시피를 저장했습니다.");
       router.push(`/recipes/${recipeId}`);
     },
   });

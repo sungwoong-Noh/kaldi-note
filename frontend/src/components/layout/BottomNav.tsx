@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, type CSSProperties } from "react";
 import { backHref, isActive, isHidden } from "@/lib/navScreens";
 
 interface Tab {
@@ -18,6 +19,15 @@ const TABS: Tab[] = [
 
 export function BottomNav() {
   const pathname = usePathname();
+  const activeIndex = TABS.findIndex((tab) => isActive(tab.href, pathname));
+  const [history, setHistory] = useState({ current: activeIndex, delta: 0 });
+  if (activeIndex >= 0 && history.current !== activeIndex) {
+    setHistory({
+      current: activeIndex,
+      delta: history.current >= 0 ? history.current - activeIndex : 0,
+    });
+  }
+  const delta = history.delta;
 
   // 상세·도구 화면은 탭바 대신 상단의 「뒤로」를 쓴다(AC-GRAMMAR-12).
   if (isHidden(pathname) || backHref(pathname) !== null) {
@@ -53,10 +63,21 @@ export function BottomNav() {
             <span data-tab-label>{tab.label}</span>
             {active && (
               <span
-                data-tab-bar
+                data-tab-bar-track
                 aria-hidden
-                className="mt-2 h-0.5 w-[18px] rounded-tag bg-ink"
-              />
+                style={{ "--tab-delta": String(delta) } as CSSProperties}
+                className={`mt-2 flex w-full justify-center ${
+                  delta !== 0
+                    ? "animate-[tab-bar-slide_200ms_ease-out] motion-reduce:animate-none"
+                    : ""
+                }`}
+              >
+                <span
+                  data-tab-bar
+                  style={{ "--tab-delta": String(delta) } as CSSProperties}
+                  className="h-0.5 w-[18px] rounded-tag bg-ink"
+                />
+              </span>
             )}
           </Link>
         );

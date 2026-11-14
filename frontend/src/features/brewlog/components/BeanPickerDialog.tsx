@@ -16,16 +16,20 @@ export function BeanPickerDialog({
   batches,
   products,
   roasters,
+  open = true,
   onPick,
   onAddNew,
   onCancel,
+  onExitComplete,
 }: {
   batches: readonly BeanBatch[];
   products: readonly BeanProduct[];
   roasters: readonly Roaster[];
+  open?: boolean;
   onPick: (id: number) => void;
   onAddNew: () => void;
   onCancel: () => void;
+  onExitComplete?: () => void;
 }) {
   // 로스팅일 최신순. 같은 날 볶은 것은 나중에 등록한(id가 큰) 것이 먼저다.
   const sorted = [...batches].sort(
@@ -38,8 +42,19 @@ export function BeanPickerDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="bean-picker-title"
+        data-state={open ? "open" : "closed"}
+        onAnimationEnd={(e) => {
+          if (!open && e.target === e.currentTarget) onExitComplete?.();
+        }}
+        onTransitionEnd={(e) => {
+          if (!open && e.target === e.currentTarget) onExitComplete?.();
+        }}
         className={cardClass(
-          "flex max-h-full w-full flex-col gap-3 overflow-y-auto min-[760px]:max-w-sm",
+          `flex max-h-full w-full flex-col gap-3 overflow-y-auto transition-transform duration-200 ease-out min-[760px]:max-w-sm motion-reduce:transition-none motion-reduce:animate-none ${
+            open
+              ? "translate-y-0 animate-[sheet-slide-in_200ms_ease-out]"
+              : "pointer-events-none translate-y-full animate-[sheet-slide-out_200ms_ease-out_forwards]"
+          }`,
           { tone: "raised" },
         )}
       >

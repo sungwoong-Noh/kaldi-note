@@ -108,6 +108,9 @@ describe("RecipeNewPage", () => {
     await user.click(screen.getByRole("button", { name: "레시피 저장" }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/recipes/1"));
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "레시피를 저장했습니다.",
+    );
     expect(body).toEqual({
       title: "아침 레시피",
       doseG: 15,

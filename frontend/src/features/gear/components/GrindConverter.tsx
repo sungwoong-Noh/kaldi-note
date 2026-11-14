@@ -3,6 +3,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { errorMessageOf } from "@/components/ErrorState";
+import { stripLeadingZeros } from "@/components/kit";
 import { convertGrind } from "../api";
 import type { GrinderModel } from "../schema";
 import { Button, SELECT_EXTRA, controlClass } from "@/components/ui";
@@ -52,9 +53,15 @@ export function GrindConverter({
         <span className="w-28 shrink-0 text-ink-3">설정값</span>
         <input
           type="number"
+          inputMode="decimal"
           aria-label="설정값"
           value={setting}
-          onChange={(e) => setSetting(e.target.value)}
+          onFocus={(e) => e.currentTarget.select()}
+          onChange={(e) => {
+            const clean = stripLeadingZeros(e.currentTarget.value);
+            if (clean !== e.currentTarget.value) e.currentTarget.value = clean;
+            setSetting(clean);
+          }}
           className={controlClass()}
         />
       </label>

@@ -16,7 +16,7 @@ export type ButtonVariant = "primary" | "secondary" | "ghost";
  * `opacity-50`은 쓰지 않는다 — `bg-sunken`과 겹치면 목업보다 흐려진다(AC-BTN-07).
  */
 export const BUTTON_BASE =
-  "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-control px-3 py-2 text-body disabled:bg-sunken disabled:text-ink-disabled";
+  "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-control px-3 py-2 text-body transition-transform duration-100 ease-out active:scale-[0.98] disabled:bg-sunken disabled:text-ink-disabled disabled:active:scale-100 motion-reduce:transition-none motion-reduce:active:scale-100";
 
 /**
  * `enabled:hover:`을 쓰는 이유는 그냥 `hover:`면 비활성 버튼에 포인터를 올렸을 때도

@@ -14,6 +14,7 @@ import type { BeanBatch } from "@/features/inventory/schema";
 import { ApiError } from "@/lib/api-client";
 import { mapFieldErrors } from "@/lib/fieldErrors";
 import { focusFirstInvalidField } from "@/lib/focusFirstError";
+import { stripLeadingZeros } from "@/components/kit";
 import { Button, SELECT_EXTRA, cardClass, controlClass } from "@/components/ui";
 
 /** 스펙 「원두 등록 모달」이 정한 네 가지. 서버 enum의 `DARK`는 이번 화면에 두지 않는다. */
@@ -206,11 +207,15 @@ export function BeanBatchDialog({
           <span className="shrink-0 text-ink-3">중량</span>
           <input
             type="number"
+            inputMode="numeric"
             aria-label="중량"
             value={weightG ?? ""}
-            onChange={(e) =>
-              setWeightG(e.target.value === "" ? null : Number(e.target.value))
-            }
+            onFocus={(e) => e.currentTarget.select()}
+            onChange={(e) => {
+              const clean = stripLeadingZeros(e.currentTarget.value);
+              if (clean !== e.currentTarget.value) e.currentTarget.value = clean;
+              setWeightG(clean === "" ? null : Number(clean));
+            }}
             aria-describedby={
               mapped?.byField.weightG ? "bean-batch-weight-error" : undefined
             }

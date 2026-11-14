@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ExploreFilters } from "./ExploreFilters";
 import { FilterSheet } from "./FilterSheet";
 import { clearSession, setAccessToken } from "@/lib/session";
 import { hoffmannSummary, pageOf } from "@/test/fixtures";
@@ -173,5 +174,63 @@ describe("FilterSheet", () => {
     expect(onApply).toHaveBeenCalledWith(
       expect.objectContaining({ doseMin: 15 }),
     );
+  });
+
+  it("모바일에서 필터 시트를 닫을 때 닫힘 애니메이션이 끝날 때까지 마운트를 유지하다가 언마운트하고, reduced-motion이면 즉시 언마운트한다", async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      value: 390,
+    });
+    server.use(
+      http.get(LIST_URL, () =>
+        HttpResponse.json(pageOf([hoffmannSummary], { totalElements: 2 })),
+      ),
+    );
+    const setState = vi.fn();
+
+    render(
+      <ExploreFilters
+        state={{ scope: "PUBLIC", q: "", roast: [], dripper: [] }}
+        setState={setState}
+        onSessionLost={() => {}}
+      />,
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "필터" }));
+    const sheet = screen.getByRole("dialog", { name: "필터" });
+    expect(sheet).toHaveAttribute("data-state", "open");
+
+    await userEvent.click(screen.getByRole("button", { name: /결과 보기/ }));
+    expect(screen.getByRole("dialog", { name: "필터" })).toHaveAttribute(
+      "data-state",
+      "closed",
+    );
+
+    fireEvent.transitionEnd(sheet);
+    expect(screen.queryByRole("dialog", { name: "필터" })).toBeNull();
+
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query.includes("prefers-reduced-motion"),
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }));
+
+    await userEvent.click(screen.getByRole("button", { name: "필터" }));
+    expect(screen.getByRole("dialog", { name: "필터" })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: /결과 보기/ }));
+    expect(screen.queryByRole("dialog", { name: "필터" })).toBeNull();
+
+    vi.unstubAllGlobals();
+    Object.defineProperty(window, "innerWidth", {
+      configurable: true,
+      value: originalWidth,
+    });
   });
 });

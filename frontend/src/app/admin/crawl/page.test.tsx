@@ -1,4 +1,4 @@
-import { act, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -383,10 +383,36 @@ describe("실행 상세 패널", () => {
       await within(panel).findByText("Run #131 · unspecialty"),
     ).toBeInTheDocument();
     expect(count(`${RUNS_URL}/131`)).toBe(1);
+    expect(panel.className).toContain(
+      "max-[1279px]:animate-[panel-slide-in_200ms_ease-out]",
+    );
 
     await userEvent.click(within(panel).getByRole("button", { name: "닫기" }));
     expect(replace).toHaveBeenLastCalledWith("/admin/crawl");
+    expect(panel).toHaveAttribute("data-state", "closed");
+    fireEvent.transitionEnd(panel);
     expect(screen.queryByTestId("run-panel")).not.toBeInTheDocument();
+  });
+
+  it("RunPanel은 reduced-motion이면 닫을 때 즉시 언마운트한다", async () => {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query.includes("prefers-reduced-motion"),
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }));
+    currentSearch = "run=131";
+    stub({ run: unspecialty });
+    renderWithQuery(<CrawlPage />);
+
+    const panel = await screen.findByTestId("run-panel");
+    await userEvent.click(within(panel).getByRole("button", { name: "닫기" }));
+    expect(screen.queryByTestId("run-panel")).not.toBeInTheDocument();
+    vi.unstubAllGlobals();
   });
 
   it("AC-ADMIN-21 · 건너뜀·미매핑 0건 — 문장 + 이력의 0은 흐리게", async () => {

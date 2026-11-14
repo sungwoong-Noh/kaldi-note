@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { stripLeadingZeros } from "@/components/kit";
 import { formatDuration } from "@/lib/format";
 import { gramsText, waterObservation } from "../preview";
 import {
@@ -231,6 +233,8 @@ function NumberField({
   step?: string;
   onChange: (value: number | null) => void;
 }) {
+  const [cleared, setCleared] = useState(false);
+
   return (
     <span className="flex items-baseline gap-1">
       {/*
@@ -248,11 +252,24 @@ function NumberField({
         id={id}
         aria-label={label}
         type="number"
+        inputMode={step ? "decimal" : "numeric"}
         step={step}
-        value={value ?? ""}
-        onChange={(e) =>
-          onChange(e.target.value === "" ? null : Number(e.target.value))
-        }
+        value={cleared ? "" : (value ?? "")}
+        onFocus={(e) => e.currentTarget.select()}
+        onBlur={() => setCleared(false)}
+        onChange={(e) => {
+          const clean = stripLeadingZeros(e.currentTarget.value);
+          if (clean !== e.currentTarget.value) {
+            e.currentTarget.value = clean;
+          }
+          if (clean === "") {
+            setCleared(true);
+            onChange(null);
+            return;
+          }
+          setCleared(false);
+          onChange(Number(clean));
+        }}
         className={controlClass("w-20 text-body")}
       />
       <span className="shrink-0 text-body whitespace-nowrap text-ink-3">

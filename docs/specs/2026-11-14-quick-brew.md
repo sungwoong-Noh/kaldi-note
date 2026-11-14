@@ -295,6 +295,27 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 - **Then** 오류 없이 열리고 원두량 16 · 물량 250이 채워져 있다. 그대로 저장하면 `PATCH`가 200
 - **검증** 페이지 테스트
 
+#### AC-QUICKBREW-35 · 웹 「달력」 모드는 720px 달력 카드와 선택 날짜 목록이다
+
+- **Given** 뷰포트 `1440×900`, `/brews`, `2026-11` 달력(`days` 8일 · `totalCount` 12)과 선택 날짜 `2026-11-14` 기록 1건
+- **When** 세그먼트 `달력`을 누른다
+- **Then** 우측 `300px` 사이드 카드가 사라지고 본문에 최대 폭 `720px`의 점 기반 달력 카드(`2026.11` · `8일 · 12잔`)가 렌더되며, 그 아래 선택 날짜 목록 헤더 `11.14 토 · 1잔`과 해당 날짜의 기록 행이 모바일 F2와 같은 구성으로 보인다
+- **검증** 페이지 테스트 `brews/page.test.tsx` + e2e
+
+#### AC-QUICKBREW-36 · 웹 300px 달력 카드의 월 이동과 날짜 클릭 스크롤·전환
+
+- **Given** 뷰포트 `1440×900`, `/brews` 목록 모드(우측 `300px` 달력 카드, 로드된 목록에 `2026-11-12` 기록 있음 · `2026-10-05` 기록은 로드된 목록에 없음)
+- **When** 카드 헤더의 `‹` / `›` 버튼을 누른다 / 로드된 날짜 `2026-11-12`를 누른다 / 로드된 목록에 없는 날짜 `2026-10-05`를 누른다
+- **Then** `‹` / `›`를 누르면 `GET /api/v1/brew-logs/calendar?month=…`를 불러 달력 월이 바뀐다. 로드된 날짜 `2026-11-12`를 누르면 `목록` 모드를 유지한 채 왼쪽 원장의 `11.12 목` 날짜 그룹으로 `scrollIntoView` 한다. 로드된 목록에 없는 날짜 `2026-10-05`를 누르면 추가 `GET /api/v1/brew-logs` 페이지 요청 없이 `달력` 모드로 전환해 `10.05` `DayList`를 보여준다
+- **검증** 페이지 테스트 `brews/page.test.tsx` + e2e
+
+#### AC-QUICKBREW-37 · 760–1023px에서 달력 카드는 이번 주 한 줄로 접혀 시작해 탭으로 펼친다
+
+- **Given** 뷰포트 `900×900`, `/brews` 목록 모드(참고: `1280px` 이상은 우측 사이드 `300px`, `1024–1279px`은 `280px`)
+- **When** `900×900`에서 `/brews`를 열고, 이어서 접힌 이번 주 줄을 누른다
+- **Then** 처음에는 1열 배치로 원장 위에 **이번 주 한 줄(7일 셀 1행)** 만 접힌 상태로 보이며 별도 펼치기 토글 버튼은 없다. 그 주 줄을 누르면 해당 달 전체 달력 그리드로 펼쳐진다
+- **검증** 페이지 테스트 `brews/page.test.tsx` + e2e
+
 ### 엣지 (경계값)
 
 #### AC-QUICKBREW-40 · 원두량·물량 경계
@@ -586,19 +607,25 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 - **Then** 다음 달 버튼이 `disabled`다
 - **검증** 컴포넌트 테스트 `MonthNav.test.tsx`
 
-#### AC-HOMECAL-40 · 월 헤더 라벨이 달력 주인에 따라 다르다
+#### AC-HOMECAL-40 · 월 헤더 라벨이 달력 주인과 표시 모드에 따라 다르다
 
-- **Given** 9월 `totalCount`가 `9`
-- **When** 내 달력과 `지연`의 달력을 각각 본다(`ownerNickname` prop)
-- **Then** 각각 `9 BREWS`, `지연 · 6 BREWS`다(P1에서는 내 달력만 쓰지만 `MonthNav` 부품 API는 M4까지 유지)
+- **Given** `2026-11` 달력(`days` 길이 `8`, `totalCount` `12`)과 팔로우 대상 `지연`의 달력(`days` 길이 `4`, `totalCount` `6`)
+- **When** 웹 카드/확장 헤더로 내 달력과 `지연`의 달력을 각각 본다(`ownerNickname` prop)
+- **Then** 각각 `8일 · 12잔`(`{days.length}일 · {totalCount}잔`), `지연 · 6잔`이다(P1에서는 내 달력만 쓰지만 `MonthNav` 부품 API는 M4까지 유지)
+- **When** 모바일 `/brews` 달력(시안 F2)으로 `MonthNav`를 본다
+- **Then** `2026.11`과 `‹` `›` 이동 버튼만 보이고 건수 라벨(`8일 · 12잔`)은 생략된다
 - **검증** 컴포넌트 테스트 `MonthNav.test.tsx`
 
-#### AC-HOMECAL-41 · 1건은 `1 BREW`, 0건은 `0 BREWS`다
+> **표기 갱신 (2026-11-15):** 시안 F(F2·FW)에 맞춰 월 헤더 건수 라벨을 한국어(`8일 · 12잔`, 팔로우 대상 `지연 · 6잔`)로 바꾸고 모바일 F2에서는 건수를 생략한다.
 
-- **Given** `totalCount`가 각각 `1`, `0`인 달력 응답
+#### AC-HOMECAL-41 · 1건은 `1잔`, 0건은 `0잔`이다
+
+- **Given** `totalCount`가 각각 `1`, `0`인 달력 응답(또는 `activeDays: 8`, `totalCount: 12`)
 - **When** `brewCountLabel`로 월 헤더 건수를 포맷한다
-- **Then** 각각 `1 BREW`, `0 BREWS`다
+- **Then** 각각 `1잔`, `0잔`이며 `activeDays`가 함께 주어지면 `8일 · 12잔`이다
 - **검증** 단위 테스트 `brewCountLabel.test.ts`
+
+> **표기 갱신 (2026-11-15):** 시안 F(FW) 한국어 일괄 교체에 맞춰 영문 `1 BREW` / `0 BREWS`를 `1잔` / `0잔`과 `{activeDays}일 · {totalCount}잔`으로 갱신했다.
 
 #### AC-HOMECAL-105 · 월 이동 버튼의 클릭 영역이 44×44px다
 
@@ -623,10 +650,12 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 
 #### AC-HOMECAL-42 · 목록 헤더가 날짜·요일·건수를 담는다
 
-- **Given** `2026-09-19`(토)에 기록 2건
+- **Given** `2026-11-14`(토)에 기록 1건
 - **When** 모바일 `DayList`를 렌더한다
-- **Then** 목록 헤더가 `09.19 SAT · 2 BREWS`다
+- **Then** 목록 헤더가 `11.14 토 · 1잔`이다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`
+
+> **표기 갱신 (2026-11-15):** 시안 F2에 맞춰 영문 `09.19 SAT · 2 BREWS`를 한국어 `11.14 토 · 1잔` 형식으로 갱신했다.
 
 #### AC-HOMECAL-43 · 수율이 없으면 비율을 보여준다
 
@@ -658,8 +687,8 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 
 ### 기능 — 이전 스펙에서 승계한 현행 AC
 
-> 달력 부품 30건 외에, 아래 34건(백엔드 달력·목록·맞팔로우 API 27건 + 공용 `kstDate`·`RoastDot`·`Avatar` 및 프로필 `/u/[id]` 7건)도
-> 이 스펙으로 대체되지 않고 코드·테스트가 현행 유지된다. 기존 3개 스펙을 `status: 대체됨`으로 닫으면서
+> 달력 부품 30건 외에, 아래 45건(백엔드 달력·목록·맞팔로우 API 33건 + 공용 `kstDate`·`RoastDot`·`Avatar`·`formatLedgerDate` 및 프로필 `/u/[id]`·`/brews` 현행 규칙 12건)도
+> 이 스펙으로 대체되지 않고 코드·테스트가 현행 유지된다. 기존 4개 스펙(`home-calendar` 3종 + `my-cups-ledger`)을 `status: 대체됨`으로 닫으면서
 > [`check-spec-coverage.sh`](../../scripts/check-spec-coverage.sh) 감시에서 빠지지 않도록 원래 ID 그대로 이 소절로 옮겨 소유한다.
 
 #### AC-HOMECAL-01 · 기록이 있는 날짜만 담는다
@@ -906,32 +935,116 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 - **Then** `img`가 사라지고 닉네임 첫 글자 원이 같은 `size`로 그려진다
 - **검증** 컴포넌트 테스트 `Avatar.test.tsx`
 
+#### AC-MYCUPS-01 · 목록은 본인 잔만 부른다
+
+- **Given** 로그인 사용자 `me.id = 11`
+- **When** `/brews`를 연다
+- **Then** 목록 요청 URL에 `userId=11`이 있다
+- **검증** 페이지 테스트 `app/brews/page.test.tsx`
+
+#### AC-MYCUPS-02 · month는 KST 그 달의 잔만 준다
+
+- **Given** 같은 사용자의 잔 `2026-09-30T14:59:59Z`(KST 9/30 23:59:59) · `2026-09-30T15:00:00Z`(KST 10/01 00:00) · `2026-10-31T14:59:59Z` · `2026-10-31T15:00:00Z`
+- **When** `GET /api/v1/brew-logs?month=2026-10`
+- **Then** 가운데 둘(`2026-09-30T15:00:00Z`, `2026-10-31T14:59:59Z`)만 온다
+- **검증** API 테스트 `BrewLogControllerTest`
+
+#### AC-MYCUPS-03 · minRating은 그 값 이상만 주고 별점 없는 잔은 뺀다
+
+- **Given** 별점 `5` · `4` · `3` · 없음인 잔 4개
+- **When** `GET /api/v1/brew-logs?minRating=4`
+- **Then** `5`·`4` 두 개만 오고 `totalElements`가 `2`다
+- **검증** API 테스트 `BrewLogControllerTest`
+
+#### AC-MYCUPS-12 · 행 전체가 기록 상세 링크다
+
+- **Given** 모바일·웹 `/brews` (시안 F 목록 원장 행 및 달력 `DayList` 행)
+- **When** 첫 행(id 2)의 날짜/시각·제목 영역을 누른다
+- **Then** `/brews/2`로 이동한다
+- **검증** 페이지 테스트 + e2e
+- **(해석 갱신 2026-11-15):** BM1/BW1 표 행에서 시안 F1/F2/FW 원장 행 전체 링크 기준으로 해석한다.
+
+#### AC-MYCUPS-13 · 올해가 아닌 잔은 연도를 붙인다
+
+- **Given** `brewedAt: "2025-09-19T00:00:00Z"`, 오늘 `2026-10-10`
+- **When** `formatLedgerDate`로 날짜를 포맷한다
+- **Then** 날짜가 `2025.09.19 금`이다. 올해 잔은 `08.31 월`(연도 없음)이다
+- **검증** 단위 테스트 `format.test.ts`
+
+#### AC-MYCUPS-16 · minRating·month의 양끝은 허용된다
+
+- **Given** 로그인 사용자
+- **When** `minRating=1`, `minRating=5`, `month=2026-01`, `month=2026-12`로 각각 부른다
+- **Then** 넷 다 `200`이다
+- **검증** API 테스트 `BrewLogControllerTest`
+
+#### AC-MYCUPS-17 · date가 month 밖이면 빈 목록이다
+
+- **Given** 로그인 사용자
+- **When** `GET /api/v1/brew-logs?month=2026-10&date=2026-09-30`
+- **Then** `200`, `content: []`, `totalElements: 0`
+- **검증** API 테스트 `BrewLogControllerTest`
+
+#### AC-MYCUPS-19 · month 형식이 틀리면 400이다
+
+- **Given** 로그인 사용자
+- **When** `month=2026-13`, `month=2026-1`, `month=202610`으로 각각 부른다
+- **Then** 셋 다 HTTP `400`과 `code: "INVALID_REQUEST"`를 반환한다
+- **검증** API 테스트 `BrewLogControllerTest`
+
+#### AC-MYCUPS-20 · minRating이 범위 밖이거나 정수가 아니면 400이다
+
+- **Given** 로그인 사용자
+- **When** `minRating=0`, `minRating=6`, `minRating=abc`로 각각 부른다
+- **Then** 셋 다 HTTP `400`과 `code: "INVALID_REQUEST"`를 반환한다
+- **검증** API 테스트 `BrewLogControllerTest`
+
+#### AC-MYCUPS-23 · 가로 스크롤이 없다
+
+- **Given** 로그인 사용자
+- **When** `390×844`와 `1440×900`(및 `760×1024`)에서 `/brews`를 연다
+- **Then** `document.documentElement.scrollWidth`가 각각 뷰포트 폭 이하이고, 시안 F 원장·달력 카드 컨테이너의 가로 넘침이 없다
+- **검증** e2e
+- **(해석 갱신 2026-11-15):** 웹 `<table>` 대신 시안 F 원장·달력 카드 레이아웃 기준으로 해석한다.
+
+#### AC-MYCUPS-24 · 라벨 표시에 새 API를 만들지 않는다
+
+- **Given** `/brews` 시안 F 구현
+- **When** 목록 한 페이지를 렌더한다
+- **Then** 레시피·원두 라벨은 기존 조회 훅·캐시(`useRecipeLabels`·`useBeanBatchLabels`·카탈로그 목록 등)만 쓰고, `/brew-logs`·`/brew-logs/calendar` 외 새 백엔드 API를 부르지 않는다
+- **검증** 페이지 테스트 `app/brews/page.test.tsx`(등록되지 않은 경로 요청 시 실패)
+- **(해석 갱신 2026-11-15):** 시안 F 행에서 배전도 점·드리퍼 보조줄이 빠졌으나 원두·레시피명 표시에 기존 캐시 재사용·백엔드 무추가 원칙을 유지한다.
+
 ---
 
 ## 대체하는 이전 스펙과 AC
 
-이 스펙이 `/`를 시안 A(「오늘」)로, `/brews`를 시안 F(「기록」 목록/달력)로 바꾸므로 기존 달력 홈 스펙 3개를 모두
+이 스펙이 `/`를 시안 A(「오늘」)로, `/brews`를 시안 F(「기록」 목록/달력)로 바꾸므로 기존 달력 홈 스펙 3개와 내 잔 목록 스펙을 모두
 `status: 대체됨`으로 닫는다. (`check-docs.sh`가 frontmatter `supersedes:`에 경로 하나만 허용하므로
-대표 스펙 `docs/specs/2026-09-19-home-calendar.md`만 frontmatter에 적고, 3개 전체 관계를 여기에 명시한다.)
+대표 스펙 `docs/specs/2026-09-19-home-calendar.md`만 frontmatter에 적고, 4개 전체 관계를 여기에 명시한다.)
 
 - [`2026-09-19-home-calendar.md`](2026-09-19-home-calendar.md) (`status: 대체됨`, 83개 + 기 대체 `AC-HOMECAL-77`)
 - [`2026-09-20-home-calendar-mockup-fidelity.md`](2026-09-20-home-calendar-mockup-fidelity.md) (`status: 대체됨`, 39개)
 - [`2026-10-11-home-fidelity.md`](2026-10-11-home-fidelity.md) (`status: 대체됨`, 23개)
+- [`2026-10-10-my-cups-ledger.md`](2026-10-10-my-cups-ledger.md) (`status: 대체됨`, 24개)
 
 ### 어떤 AC가 어디로 가는지
 
 | 이전 AC (출발 스펙) | 개수 | 처리 | 근거 · 현재 테스트 위치 |
 |---|---|---|---|
 | `AC-HOMECAL-25·26·34·35·45·46·53·92~101·98a·98b` (`09-19`, `09-20`) | 19 | **승계 (살림)** → 이 스펙 `Calendar` 부품 | Task 12 「기록」 탭 달력 재사용. `Calendar.test.tsx`, `signalRecordToken.test.ts` |
-| `AC-HOMECAL-32·40·41·105·106·107` (`09-19`, `09-20`) | 6 | **승계 (살림)** → 이 스펙 `MonthNav` 부품 | Task 12 월 헤더 재사용. `MonthNav.test.tsx`, `brewCountLabel.test.ts` |
+| `AC-HOMECAL-32·40·41·105·106·107` (`09-19`, `09-20`) | 6 | **승계 (살림)** → 이 스펙 `MonthNav` 부품 | Task 12 월 헤더 재사용(`40·41` 시안 F 한국어 헤더 일괄 교체 반영). `MonthNav.test.tsx`, `brewCountLabel.test.ts` |
 | `AC-HOMEFIT-06` (`10-11`) | 1 | **통합 유지** → `AC-HOMECAL-105·106` | `MonthNav.test.tsx`가 `AC-HOMECAL-105·106`에 함께 태그해 동일 규칙 검증 |
-| `AC-HOMECAL-42·43·76·108·109` (`09-19`, `09-20`) | 5 | **승계 (살림)** → 이 스펙 `DayList` 모바일 | Task 12 시안 F2 날짜별 원장 행 재사용. `DayList.test.tsx` |
+| `AC-HOMECAL-42·43·76·108·109` (`09-19`, `09-20`) | 5 | **승계 (살림)** → 이 스펙 `DayList` 모바일 | Task 12 시안 F2·FW 날짜별 원장 행 재사용(`42` 시안 F2 한국어 헤더 `11.14 토 · 1잔` 반영). `DayList.test.tsx` |
 | `AC-HOMECAL-01~17·66·67·73` (`09-19`) | 20 | **승계 (살림)** → 이 스펙 「이전 스펙에서 승계한 현행 AC」 | `/` 오늘·`/brews` 달력이 계약 그대로 사용. `BrewLogCalendarControllerTest`, `BrewLogControllerTest`, `CalendarMonthTest` |
 | `AC-HOMECAL-18~24` (`09-19`) | 7 | **승계 (살림)** → 이 스펙 「이전 스펙에서 승계한 현행 AC」 | UI 팔로우 레일은 M4 보류, 백엔드 API·`MutualFollowControllerTest`는 유지 |
 | `AC-HOMECAL-54·75·111·119·120`, `AC-HOMEFIT-14·20` (`09-19`, `09-20`, `10-11`) | 7 | **승계 (살림)** → 이 스펙 「이전 스펙에서 승계한 현행 AC」 | KST 표기(`kstDate.test.ts`, `BrewLogCard`, `/brews/[id]`), `RoastDot`, `Avatar`, `/u/[id]`(`UserProfile`) 현행 유지 |
+| `AC-MYCUPS-01·02·03·12·13·16·17·19·20·23·24` (`10-10`) | 11 | **승계 (살림)** → 이 스펙 「이전 스펙에서 승계한 현행 AC」 | 본인 `userId` 조회, 백엔드 필터 계약 6건(`BrewLogControllerTest`), `formatLedgerDate`(`format.test.ts`), 행 상세 링크·가로 스크롤·무추가 API(`12·23·24` 시안 F 기준) |
+| `AC-MYCUPS-04·05·06·07·08·09·10·11·14·15·18·21·22` (`10-10`) | 13 | **대체됨** → `AC-QUICKBREW-31·35~37` | BM1·BW1 `내 잔` 헤더·알약 필터·통계 타일·7열 테이블·모바일 2줄 행·하단 CTA가 시안 F1·F2·FW(날짜 그룹 원장·`목록`/`달력`·상단 `기록하기`·우측 달력 카드)로 교체 |
+| `AC-RECIPESBREWS-76·77·86·87` + `91·93`의 `/brews` 부분 (`09-25`) | 4+2일부 | **대체됨 (개별 AC 정리)** → `AC-QUICKBREW-31·37` | `recipe-drawer-screens.md`는 `구현완료` 유지. 통계·내 잔 테이블·수율 열/2줄 행만 대체(그리드 `/recipes` 부분 유지). `AC-GRAMMAR-22`는 `/brews` `table` → FW 원장 `20 g`로 본문 갱신 |
 | `AC-HOMECAL-36~39·44·47·71·102~104·110·126`, `AC-HOMEFIT-01~04` (`09-19`, `09-20`, `10-11`) | 16 | **대체됨 (M4 보류)** | 팔로우 레일·남의 달력 UI. `quick-brew` Non-goals(M4 친구 피드로 이동). `FollowRail.test.tsx`, `DayList.test.tsx`, `page.test.tsx`, e2e |
 | `AC-HOMECAL-27~31·33·48~52·55~62·78~84·127·128`, `AC-HOMEFIT-05·08·09·13·18·19·22·23` (`09-19`, `09-20`, `10-11`) | 36 | **대체됨** → `AC-QUICKBREW-20~22·29·31·65` | 구 `/` 달력 홈 레이아웃·네비·CTA·e2e가 시안 A(오늘)·시안 G(탭 바)·시안 F(기록 탭)로 교체 |
-| `AC-HOMECAL-63~65·68~70·72·74·112~118·121~125`, `AC-HOMEFIT-07·10~12·15~17·21` (`09-19`, `09-20`, `10-11`) | 28 | **대체됨** (웹 2컬럼 홈 셀·우측 카드 `DayCard`) | 구 홈 웹 2컬럼(셀 내 레시피명 + 우측 420px `DayCard` 패널)이 시안 A(오늘) + FW(원장 + 300px 달력 카드)로 교체 |
+| `AC-HOMECAL-63~65·68~70·72·74·112~118·121~125`, `AC-HOMEFIT-07·10~12·15~17·21` (`09-19`, `09-20`, `10-11`) | 28 | **대체됨** (웹 2컬럼 홈 셀·우측 카드 `DayCard`) | 구 홈 웹 2컬럼(셀 내 레시피명 + 우측 420px `DayCard` 패널)이 시안 A(오늘) + FW(원장 + 300px/720px 점 달력 카드)로 교체 (`Calendar variant="web"` 및 `Calendar.test.tsx` 잔존 `63·118·121` 제거) |
 
 > **관련 스펙 비고 (2026-11-15):** [`2026-09-20-calendar-grid-responsive.md`](2026-09-20-calendar-grid-responsive.md)(`AC-HOMECAL-85~91`)는
 > 구 `/` 웹 2컬럼 풀높이 달력(`fillHeight`) 전용 요구사항으로 테스트가 `home-calendar-web.spec.ts`에만 존재했다.
@@ -983,8 +1096,8 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 - [x] **Task 11: 웹 패널** — Covers: AC-QUICKBREW-67, 68
   같은 `QuickBrewSheet`를 1024px 이상에서 오른쪽 패널로. Esc · 바깥 클릭 · Enter. 모바일 끌어 닫기 30%.
 
-- [ ] **Task 12: 「기록」 탭** — Covers: AC-QUICKBREW-31 (승계 부품 AC 30건 `AC-HOMECAL-25~109` 재사용)
-  `/brews`를 시안 F로. 목록/달력 세그먼트, 모드별 스크롤 유지, 웹은 오른쪽 300px 달력 카드.
+- [ ] **Task 12: 「기록」 탭** — Covers: AC-QUICKBREW-31, 35, 36, 37 (승계 부품 AC 30건 `AC-HOMECAL-25~109` 재사용 + 승계 `AC-MYCUPS-01·02·03·12·13·16·17·19·20·23·24`)
+  `/brews`를 시안 F(F1·F2·FW·H)로. 목록/달력 세그먼트, 모드별 스크롤 유지, 웹 300px(1024px~ 280px) 우측 달력 카드(‹ › 월 이동, 날짜 클릭 시 로드분 내 스크롤 / 미로드 시 달력 모드 전환), 웹 「달력」 모드 720px 카드+`DayList`, 760–1023px 이번 주 한 줄 접힘(탭 시 펼침), `MonthNav`·`DayList` 헤더 한국어 일괄 교체(`AC-HOMECAL-40~42`), `Calendar variant="web"` 및 `63·118·121` 제거.
 
 - [ ] **Task 13: 기록 상세 · 편집** — Covers: AC-QUICKBREW-32, 33, 34
   C1/C2 분기, 「다시 내리기」 → 빠른 기록 ①, 편집 화면이 선택값 null을 견딘다. DECISIONS 4절 「스냅샷 항상 채움」 문구 갱신.

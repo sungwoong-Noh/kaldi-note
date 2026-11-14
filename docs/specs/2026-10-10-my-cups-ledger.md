@@ -1,12 +1,22 @@
 ---
 id: MYCUPS
 title: 내 잔 목록 — 목업 BM1·BW1 정합 + 이번 달·별점 필터
-status: 구현완료
+status: 대체됨
 milestone: M2
 supersedes:
 ---
 
 # 내 잔 목록 스펙
+
+> ## ★ 2026-11-15 — 대체됨
+>
+> [ADR 0011](../decisions/0011-brew-first-minimal-input.md) 및 시안 F(`10 Brew First.dc.html` F1·F2·FW)에 따라
+> `/brews`가 「내 잔」(BM1·BW1)에서 「기록」(목록/달력)으로 바뀌어
+> [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)가 이 스펙을 대체한다.
+>
+> - **현행 승계 11개 (`AC-MYCUPS-01·02·03·12·13·16·17·19·20·23·24`)**: [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)
+>   「이전 스펙에서 승계한 현행 AC」로 `#### AC-` 헤딩을 옮겨 살린다(`12·23·24`는 시안 F 화면 기준 해석 반영).
+> - **대체됨 13개 (`AC-MYCUPS-04·05·06·07·08·09·10·11·14·15·18·21·22`)**: 시안 F의 날짜 그룹 원장·`목록`/`달력` 세그먼트·모바일 상단 `기록하기`·웹 우측 달력 카드(`AC-QUICKBREW-31·35~37`)로 대체됐다.
 
 > 작성 규칙은 [`docs/specs/README.md`](README.md) 참조.
 > **모든 인수 조건은 자동화된 테스트로 옮길 수 있어야 한다.**
@@ -65,35 +75,35 @@ supersedes:
 
 ### 기능
 
-#### AC-MYCUPS-01 · 목록은 본인 잔만 부른다
+**AC-MYCUPS-01 (승계 → quick-brew)** · 목록은 본인 잔만 부른다
 
 - **Given** 로그인 사용자 `me.id = 11`
 - **When** `/brews`를 연다
 - **Then** 목록 요청 URL에 `userId=11`이 있다
 - **검증** 컴포넌트 테스트 `BrewsPage`(MSW 요청 캡처)
 
-#### AC-MYCUPS-02 · month는 KST 그 달의 잔만 준다
+**AC-MYCUPS-02 (승계 → quick-brew)** · month는 KST 그 달의 잔만 준다
 
 - **Given** 같은 사용자의 잔 `2026-09-30T14:59:59Z`(KST 9/30 23:59:59) · `2026-09-30T15:00:00Z`(KST 10/01 00:00) · `2026-10-31T14:59:59Z` · `2026-10-31T15:00:00Z`
 - **When** `GET /api/v1/brew-logs?month=2026-10`
 - **Then** 가운데 둘(`2026-09-30T15:00:00Z`, `2026-10-31T14:59:59Z`)만 온다
 - **검증** API 테스트 `BrewLogControllerTest`
 
-#### AC-MYCUPS-03 · minRating은 그 값 이상만 주고 별점 없는 잔은 뺀다
+**AC-MYCUPS-03 (승계 → quick-brew)** · minRating은 그 값 이상만 주고 별점 없는 잔은 뺀다
 
 - **Given** 별점 `5` · `4` · `3` · 없음인 잔 4개
 - **When** `GET /api/v1/brew-logs?minRating=4`
 - **Then** `5`·`4` 두 개만 오고 `totalElements`가 `2`다
 - **검증** API 테스트 `BrewLogControllerTest`
 
-#### AC-MYCUPS-04 · 「이번 달」 알약은 month를 붙이고 URL에 남는다
+**AC-MYCUPS-04 (대체됨)** · 「이번 달」 알약은 month를 붙이고 URL에 남는다
 
 - **Given** `/brews`
 - **When** 알약 `이번 달`을 누른다
 - **Then** URL이 `/brews?filter=month`가 되고, 목록 요청에 `month=2026-10`과 `userId=11`이 함께 있다. 그 알약이 `aria-pressed="true"`다
 - **검증** 컴포넌트 테스트 `BrewsPage`
 
-#### AC-MYCUPS-05 · 「★ 4 이상」은 minRating=4, 「전체」는 쿼리를 지운다
+**AC-MYCUPS-05 (대체됨)** · 「★ 4 이상」은 minRating=4, 「전체」는 쿼리를 지운다
 
 - **Given** `/brews?filter=month`
 - **When** `★ 4 이상`을 누른다
@@ -102,35 +112,35 @@ supersedes:
 - **Then** URL이 `/brews`, 요청에 `month`·`minRating`이 둘 다 없다
 - **검증** 컴포넌트 테스트 `BrewsPage`
 
-#### AC-MYCUPS-06 · 모바일 헤더는 eyebrow·제목·아바타다
+**AC-MYCUPS-06 (대체됨)** · 모바일 헤더는 eyebrow·제목·아바타다
 
 - **Given** 뷰포트 `390×844`, 목록 `totalElements: 2`
 - **When** `/brews`를 렌더한다
 - **Then** eyebrow 텍스트가 `My cups · 2`(CSS `text-transform: uppercase`), `h1`이 `내 잔`, 오른쪽에 36×36 아바타가 있다. 아바타는 링크·버튼이 아니다. 기존의 헤더 `레시피` 링크는 없다
 - **검증** e2e `my-cups.spec.ts`
 
-#### AC-MYCUPS-07 · 웹 헤더는 연도 eyebrow와 알약·개수다
+**AC-MYCUPS-07 (대체됨)** · 웹 헤더는 연도 eyebrow와 알약·개수다
 
 - **Given** 뷰포트 `1440×900`, `totalElements: 2`
 - **When** `/brews`를 렌더한다
 - **Then** eyebrow가 `My cups · 2026`, 제목 오른쪽에 알약 `전체`·`이번 달`·`★ 4 이상`과 `2잔`이 한 줄에 있다
 - **검증** e2e `my-cups.spec.ts`
 
-#### AC-MYCUPS-08 · 모바일 행은 2줄 원장이다
+**AC-MYCUPS-08 (대체됨)** · 모바일 행은 2줄 원장이다
 
 - **Given** 뷰포트 `390×844`
 - **When** 첫 행(id 2)을 읽는다
 - **Then** 1줄 왼쪽 `James Hoffmann Ultimate V60`, 오른쪽 `20 g`. 2줄 왼쪽 `08.31 월 · 92°C · 3:30`, 오른쪽 `17.6 % · ★ 4`(색 `accent`). 행 왼쪽에 `MEDIUM_LIGHT` 배전도 점(10px)이 있다
 - **검증** 컴포넌트 테스트 `BrewsPage` + e2e(점 크기)
 
-#### AC-MYCUPS-09 · 웹 표는 BW1의 열과 보조줄을 갖는다
+**AC-MYCUPS-09 (대체됨)** · 웹 표는 BW1의 열과 보조줄을 갖는다
 
 - **Given** 뷰포트 `1440×900`
 - **When** 표를 읽는다
 - **Then** 머리글이 `날짜`·`레시피 / 원두`·`원두량`·`온도`·`시간`·`수율`·`평가` 순이고, 날짜 열 폭 `108`, 원두량 `100`, 온도 `90`, 시간 `90`, 수율 `100`, 평가 `70`px(레시피 열이 나머지). 원두량·온도·시간·수율·평가는 `text-align: right`. 첫 행 레시피 칸이 배전도 점 + `James Hoffmann Ultimate V60` + 보조줄 `프릿츠 예가체프 · Hario V60 02`다
 - **검증** e2e `my-cups.spec.ts`
 
-#### AC-MYCUPS-10 · 통계 타일은 웹 4칸·모바일 2칸이다
+**AC-MYCUPS-10 (대체됨)** · 통계 타일은 웹 4칸·모바일 2칸이다
 
 - **Given** `BrewLogStatsResponse { monthCount: 9, averageRating: 3.7, favoriteDoseG: 16.0, favoriteRecipeTitle: "케냐 94도 3푸어" }`
 - **When** 웹(`≥760px`)에서 렌더한다
@@ -142,7 +152,7 @@ supersedes:
 > AC-RECIPESBREWS-76의 라벨 `최빈 원두량`을 이 AC가 `가장 많이 쓴 원두량`으로 갱신한다(목업 BW1). 값은 그대로다.
 > AC-WEBBREW-35의 날짜 `2026-08-31`은 AC-MYCUPS-13 표기 `08.31`로 갱신했다(구현 중 발견해 추가).
 
-#### AC-MYCUPS-11 · 모바일만 하단 전폭 「기록하기」가 있다
+**AC-MYCUPS-11 (대체됨)** · 모바일만 하단 전폭 「기록하기」가 있다
 
 - **Given** 목록 1건 이상
 - **When** `390×844`에서 렌더한다
@@ -153,7 +163,7 @@ supersedes:
 
 > **정정 (2026-11-14):** ADR 0011(기록 먼저)로 「기록하기」는 `/recipes` 링크가 아니라 **빠른 기록 시트를 여는 버튼**이다(`docs/specs/2026-11-14-quick-brew.md` AC-QUICKBREW-23). 위 본문은 당시 결정의 기록으로 남기고, 테스트는 이 ID로 새 동작을 검증한다.
 
-#### AC-MYCUPS-12 · 행 전체가 기록 상세 링크다
+**AC-MYCUPS-12 (승계 → quick-brew)** · 행 전체가 기록 상세 링크다
 
 - **Given** 모바일·웹 각각
 - **When** 첫 행의 날짜 글자를 누른다
@@ -162,14 +172,14 @@ supersedes:
 
 ### 엣지 (경계값)
 
-#### AC-MYCUPS-13 · 올해가 아닌 잔은 연도를 붙인다
+**AC-MYCUPS-13 (승계 → quick-brew)** · 올해가 아닌 잔은 연도를 붙인다
 
 - **Given** `brewedAt: "2025-09-19T00:00:00Z"`, 오늘 `2026-10-10`
 - **When** 행을 렌더한다
 - **Then** 날짜가 `2025.09.19 금`이다. 올해 잔은 `08.31 월`(연도 없음)이다
 - **검증** 단위 테스트 `formatLedgerDate`
 
-#### AC-MYCUPS-14 · 없는 값은 그 조각만 빠진다
+**AC-MYCUPS-14 (대체됨)** · 없는 값은 그 조각만 빠진다
 
 - **Given** id 3(시간·수율 없음, ★ 3)
 - **When** 모바일 행을 렌더한다
@@ -178,28 +188,28 @@ supersedes:
 - **Then** 시간·수율 칸이 `—`다(AC-RECIPESBREWS-87 유지)
 - **검증** 컴포넌트 테스트 `BrewsPage`
 
-#### AC-MYCUPS-15 · 보조줄은 있는 것만 잇고, 점 자리는 비워도 유지한다
+**AC-MYCUPS-15 (대체됨)** · 보조줄은 있는 것만 잇고, 점 자리는 비워도 유지한다
 
 - **Given** `beanBatchId`가 없는 잔, 레시피 드리퍼 `Hario V60 02`
 - **When** 웹 표를 렌더한다
 - **Then** 보조줄이 `Hario V60 02`다. 원두도 드리퍼도 없으면 보조줄 요소가 없다. 어느 경우든 제목의 왼쪽 x좌표가 점이 있는 행과 같다
 - **검증** 컴포넌트 테스트(텍스트) + e2e(x좌표)
 
-#### AC-MYCUPS-16 · minRating·month의 양끝은 허용된다
+**AC-MYCUPS-16 (승계 → quick-brew)** · minRating·month의 양끝은 허용된다
 
 - **Given** 로그인 사용자
 - **When** `minRating=1`, `minRating=5`, `month=2026-01`, `month=2026-12`로 각각 부른다
 - **Then** 넷 다 `200`이다
 - **검증** API 테스트 `BrewLogControllerTest`
 
-#### AC-MYCUPS-17 · date가 month 밖이면 빈 목록이다
+**AC-MYCUPS-17 (승계 → quick-brew)** · date가 month 밖이면 빈 목록이다
 
 - **Given** 로그인 사용자
 - **When** `GET /api/v1/brew-logs?month=2026-10&date=2026-09-30`
 - **Then** `200`, `content: []`, `totalElements: 0`
 - **검증** API 테스트 `BrewLogControllerTest`
 
-#### AC-MYCUPS-18 · 필터 결과 0건이면 안내와 해제 링크가 뜬다
+**AC-MYCUPS-18 (대체됨)** · 필터 결과 0건이면 안내와 해제 링크가 뜬다
 
 - **Given** `/brews?filter=rated`, 목록 응답 `totalElements: 0`, 통계는 AC-10의 값
 - **When** 렌더한다
@@ -208,21 +218,21 @@ supersedes:
 
 ### 실패
 
-#### AC-MYCUPS-19 · month 형식이 틀리면 400이다
+**AC-MYCUPS-19 (승계 → quick-brew)** · month 형식이 틀리면 400이다
 
 - **Given** 로그인 사용자
 - **When** `month=2026-13`, `month=2026-1`, `month=202610`으로 각각 부른다
 - **Then** 셋 다 HTTP `400`과 `code: "INVALID_REQUEST"`를 반환한다
 - **검증** API 테스트 `BrewLogControllerTest`
 
-#### AC-MYCUPS-20 · minRating이 범위 밖이거나 정수가 아니면 400이다
+**AC-MYCUPS-20 (승계 → quick-brew)** · minRating이 범위 밖이거나 정수가 아니면 400이다
 
 - **Given** 로그인 사용자
 - **When** `minRating=0`, `minRating=6`, `minRating=abc`로 각각 부른다
 - **Then** 셋 다 HTTP `400`과 `code: "INVALID_REQUEST"`를 반환한다
 - **검증** API 테스트 `BrewLogControllerTest`
 
-#### AC-MYCUPS-21 · 모르는 filter 값은 전체로 본다
+**AC-MYCUPS-21 (대체됨)** · 모르는 filter 값은 전체로 본다
 
 - **Given** 로그인 사용자
 - **When** `/brews?filter=xyz`를 연다
@@ -231,21 +241,21 @@ supersedes:
 
 ### 비기능
 
-#### AC-MYCUPS-22 · 알약과 「더 보기」의 누르는 영역이 44×44 이상이다
+**AC-MYCUPS-22 (대체됨)** · 알약과 「더 보기」의 누르는 영역이 44×44 이상이다
 
 - **Given** `390×844`, `hasNext: true`
 - **When** 알약 3개와 `더 보기` 버튼을 잰다
 - **Then** `e2e/hitArea.ts`의 `undersized`가 빈 배열이다(보이는 높이는 목업대로 44 미만일 수 있다 — ADR 0010)
 - **검증** e2e `my-cups.spec.ts`
 
-#### AC-MYCUPS-23 · 가로 스크롤이 없다
+**AC-MYCUPS-23 (승계 → quick-brew)** · 가로 스크롤이 없다
 
 - **Given** 로그인 사용자
 - **When** `390×844`와 `1440×900`에서 `/brews`를 연다
 - **Then** `document.documentElement.scrollWidth`가 각각 뷰포트 폭 이하이고, 웹 표를 감싼 요소의 `scrollWidth`가 `clientWidth`와 같다
 - **검증** e2e `my-cups.spec.ts`
 
-#### AC-MYCUPS-24 · 보조줄·점에 새 API를 만들지 않는다
+**AC-MYCUPS-24 (승계 → quick-brew)** · 보조줄·점에 새 API를 만들지 않는다
 
 - **Given** `/brews` 구현
 - **When** 목록 한 페이지를 렌더한다

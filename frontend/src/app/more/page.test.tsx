@@ -115,6 +115,25 @@ describe("MorePage", () => {
     ).toHaveAttribute("href", "/gear/grind-converter");
   });
 
+  it("환산기와 관리자 링크는 오른쪽 화살표가 있는 44px 목록 행이며 접근성 이름을 유지한다", async () => {
+    server.use(
+      http.get(ME_URL, () => HttpResponse.json({ ...me, role: "ADMIN" })),
+    );
+    renderWithQuery(<MorePage />);
+
+    for (const label of ["분쇄도 환산기", "관리자"]) {
+      const link = await screen.findByRole("link", { name: label });
+      expect(link).toHaveAccessibleName(label);
+      expect(link.className).toContain("min-h-11");
+      expect(link.className).toContain("justify-between");
+      expect(link.closest("li")?.className).toContain("border-b");
+
+      const arrow = link.querySelector('[aria-hidden="true"]');
+      expect(arrow).not.toBeNull();
+      expect(arrow?.textContent).toBe("›");
+    }
+  });
+
   it("AC-WEBFOLLOW-04 · 내 초대 링크와 복사 버튼이 보인다", async () => {
     renderWithQuery(<MorePage />);
 

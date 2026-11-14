@@ -77,25 +77,28 @@ export default function MorePage() {
         )}
       </div>
 
-      <ul className="flex flex-col py-2">
-        <li>
-          <Link
-            href="/gear/grind-converter"
-            className="flex min-h-11 min-w-11 items-center justify-center block py-3 text-body underline-offset-4 hover:underline"
-          >
-            분쇄도 환산기
-          </Link>
-        </li>
-        {me.data.role === "ADMIN" && (
-          <li>
+      <ul className="flex flex-col">
+        {[
+          { href: "/gear/grind-converter", label: "분쇄도 환산기" },
+          ...(me.data.role === "ADMIN"
+            ? [{ href: "/admin", label: "관리자" }]
+            : []),
+        ].map((item) => (
+          <li key={item.href} className="border-b border-border">
             <Link
-              href="/admin"
-              className="flex min-h-11 min-w-11 items-center justify-center block py-3 text-body underline-offset-4 hover:underline"
+              href={item.href}
+              className="flex min-h-11 w-full items-center justify-between gap-3 py-3 text-body text-ink transition-colors hover:text-ink-2"
             >
-              관리자
+              <span>{item.label}</span>
+              <span
+                aria-hidden="true"
+                className="shrink-0 font-mono text-[14px] text-ink-3"
+              >
+                ›
+              </span>
             </Link>
           </li>
-        )}
+        ))}
       </ul>
 
       <ThemeToggle />

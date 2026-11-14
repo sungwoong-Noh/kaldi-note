@@ -980,7 +980,7 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 - [x] **Task 10: 오늘 홈** — Covers: AC-QUICKBREW-20, 21, 22, 65
   `app/page.tsx`를 시안 A로. `weekSummary`(월요일 시작, KST)는 순수 함수 + `/brew-logs/calendar` 두 달. 「관찰」은 기존 홈 관찰 문장 재사용. 기존 달력 홈 테스트(`app/page.test.tsx`, `home-calendar*.spec.ts`, `home-fidelity.spec.ts`) 정리(별도 `2026-09-20-calendar-grid-responsive.md` 포함 확인).
 
-- [ ] **Task 11: 웹 패널** — Covers: AC-QUICKBREW-67, 68
+- [x] **Task 11: 웹 패널** — Covers: AC-QUICKBREW-67, 68
   같은 `QuickBrewSheet`를 1024px 이상에서 오른쪽 패널로. Esc · 바깥 클릭 · Enter. 모바일 끌어 닫기 30%.
 
 - [ ] **Task 12: 「기록」 탭** — Covers: AC-QUICKBREW-31 (승계 부품 AC 30건 `AC-HOMECAL-25~109` 재사용)

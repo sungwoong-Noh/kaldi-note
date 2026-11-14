@@ -1,7 +1,14 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { NumberCell, Segmented, useNumberText } from "@/components/kit";
 import { SELECT_EXTRA } from "@/components/ui/Field";
 import { useBeanProducts, useRoasters } from "@/features/catalog/api";
@@ -112,12 +119,19 @@ function recentBeans(logs: BrewLogSummary[]): BeanChoice[] {
   return out;
 }
 
+/** 높이의 이 비율보다 더 아래로 끌어 놓으면 시트를 닫는다(AC-QUICKBREW-68). */
+const DRAG_DISMISS_RATIO = 0.3;
+
 export function QuickBrewSheet({
   start,
+  open = true,
   onClose,
+  onExitComplete,
 }: {
   start: QuickBrewStart;
+  open?: boolean;
   onClose: () => void;
+  onExitComplete?: () => void;
 }) {
   const me = useMe();
   const logs = useQuery({
@@ -126,17 +140,34 @@ export function QuickBrewSheet({
     queryFn: () =>
       fetchBrewLogPage(0, RECENT_LOGS, undefined, { userId: me.data?.id }),
   });
+
+  useEffect(() => {
+    if (!open && !logs.data) onExitComplete?.();
+  }, [open, logs.data, onExitComplete]);
+
   if (!logs.data) return null;
-  return <Sheet start={start} onClose={onClose} logs={logs.data.content} />;
+  return (
+    <Sheet
+      start={start}
+      open={open}
+      onClose={onClose}
+      onExitComplete={onExitComplete}
+      logs={logs.data.content}
+    />
+  );
 }
 
 function Sheet({
   start,
+  open,
   onClose,
+  onExitComplete,
   logs,
 }: {
   start: QuickBrewStart;
+  open: boolean;
   onClose: () => void;
+  onExitComplete?: () => void;
   logs: BrewLogSummary[];
 }) {
   const last = logs[0];
@@ -169,6 +200,7 @@ function Sheet({
   });
   const lastBody = useRef<BrewLogCreateRequest | null>(null);
   const submit = () => {
+    if (save.isPending) return;
     lastBody.current = lastBody.current ?? toBody(draft);
     save.mutate(lastBody.current);
   };
@@ -179,6 +211,159 @@ function Sheet({
     if (step !== "done" && dirty) setConfirmingClose(true);
     else onClose();
   };
+
+  const sheetRef = useRef<HTMLElement>(null);
+  const amountPrimaryRef = useRef<(() => void) | null>(null);
+  const registerAmountPrimary = useCallback((fn: (() => void) | null) => {
+    amountPrimaryRef.current = fn;
+  }, []);
+
+  useEffect(() => {
+    const prev = document.activeElement as HTMLElement | null;
+    if (
+      sheetRef.current &&
+      !sheetRef.current.contains(document.activeElement)
+    ) {
+      sheetRef.current.focus({ preventScroll: true });
+    }
+    return () => {
+      if (prev && prev.isConnected && prev !== document.body) {
+        prev.focus({ preventScroll: true });
+      }
+    };
+  }, []);
+
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [hasDragged, setHasDragged] = useState(false);
+  const [dragDismissed, setDragDismissed] = useState(false);
+  const dragSessionRef = useRef<{ startY: number; pointerId: number } | null>(
+    null,
+  );
+  const dragCallbacksRef = useRef({ dirty, step, onClose });
+  useEffect(() => {
+    dragCallbacksRef.current = { dirty, step, onClose };
+  });
+
+  useEffect(() => {
+    if (!dragging) return;
+    const onMove = (e: PointerEvent) => {
+      const session = dragSessionRef.current;
+      if (
+        !session ||
+        (session.pointerId !== 0 &&
+          e.pointerId !== 0 &&
+          e.pointerId !== session.pointerId)
+      ) {
+        return;
+      }
+      setDragY(Math.max(0, e.clientY - session.startY));
+    };
+    const onEnd = (e: PointerEvent) => {
+      const session = dragSessionRef.current;
+      if (
+        !session ||
+        (session.pointerId !== 0 &&
+          e.pointerId !== 0 &&
+          e.pointerId !== session.pointerId)
+      ) {
+        return;
+      }
+      const dy = Math.max(0, e.clientY - session.startY);
+      dragSessionRef.current = null;
+      setDragging(false);
+
+      const height = sheetRef.current?.getBoundingClientRect().height ?? 0;
+      if (height > 0 && dy > height * DRAG_DISMISS_RATIO) {
+        const {
+          dirty: isDirty,
+          step: currentStep,
+          onClose: closeNow,
+        } = dragCallbacksRef.current;
+        if (currentStep !== "done" && isDirty) {
+          setDragY(0);
+          setConfirmingClose(true);
+        } else {
+          setDragDismissed(true);
+          closeNow();
+        }
+        return;
+      }
+      setDragY(0);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onEnd);
+    window.addEventListener("pointercancel", onEnd);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onEnd);
+      window.removeEventListener("pointercancel", onEnd);
+    };
+  }, [dragging]);
+
+  const startDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (!open || (e.pointerType === "mouse" && e.button !== 0)) return;
+    e.preventDefault();
+    try {
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+    } catch {
+      // jsdom 등 합성 이벤트에는 포인터 캡처가 없을 수 있다
+    }
+    dragSessionRef.current = { startY: e.clientY, pointerId: e.pointerId };
+    setHasDragged(true);
+    setDragging(true);
+    setDragY(0);
+  };
+
+  const keyHandlerRef = useRef<(e: KeyboardEvent) => void>(() => {});
+  useEffect(() => {
+    keyHandlerRef.current = (e: KeyboardEvent) => {
+      if (!open || e.defaultPrevented || e.isComposing || e.keyCode === 229) {
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (confirmingClose) {
+          setConfirmingClose(false);
+          return;
+        }
+        close();
+        return;
+      }
+      if (e.key === "Enter") {
+        if (e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return;
+        const target = e.target as HTMLElement | null;
+        if (
+          target?.closest(
+            'button:not([role="radio"]), a[href], select, textarea, [contenteditable="true"]',
+          )
+        ) {
+          return;
+        }
+        const primary: (() => void) | null = confirmingClose
+          ? () => setConfirmingClose(false)
+          : step === "confirm"
+            ? () => setStep("taste")
+            : step === "amount"
+              ? amountPrimaryRef.current
+              : step === "taste"
+                ? submit
+                : step === "done"
+                  ? onClose
+                  : null;
+        if (!primary) return;
+        e.preventDefault();
+        primary();
+      }
+    };
+  });
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => keyHandlerRef.current(e);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
   const progress =
     step === "taste" ? "2 / 3" : step === "done" ? null : "1 / 3";
@@ -192,18 +377,59 @@ function Sheet({
           }
         : null;
 
+  const motionClass = !open
+    ? dragDismissed
+      ? "pointer-events-none transition-transform duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+      : "pointer-events-none animate-[sheet-slide-out_200ms_cubic-bezier(0.2,0.8,0.2,1)_forwards] min-[760px]:animate-[panel-slide-out_200ms_cubic-bezier(0.2,0.8,0.2,1)_forwards]"
+    : dragging
+      ? ""
+      : hasDragged
+        ? "transition-transform duration-200 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+        : "animate-[sheet-slide-in_240ms_cubic-bezier(0.2,0.8,0.2,1)] min-[760px]:animate-[panel-slide-in_240ms_cubic-bezier(0.2,0.8,0.2,1)]";
+
+  const dragStyle = dragging
+    ? { transform: `translateY(${dragY}px)` }
+    : !open && dragDismissed
+      ? { transform: "translateY(100%)" }
+      : hasDragged
+        ? { transform: "translateY(0px)" }
+        : undefined;
+
   return (
-    <div className="fixed inset-0 z-40 flex flex-col justify-end">
+    <div className="fixed inset-0 z-40 flex flex-col justify-end min-[760px]:flex-row min-[760px]:justify-end">
       <div
         aria-hidden="true"
-        onClick={close}
-        className="kn-scrim-in absolute inset-0 bg-scrim"
+        onClick={open ? close : undefined}
+        className={`absolute inset-0 bg-scrim ${open ? "kn-scrim-in" : "kn-scrim-out pointer-events-none"}`}
       />
       <section
+        ref={sheetRef}
+        tabIndex={-1}
         role="dialog"
+        aria-modal="true"
         aria-label="빠른 기록"
-        className="relative flex max-h-[92dvh] flex-col gap-[18px] overflow-y-auto rounded-t-[18px] border-t border-border bg-paper px-[24px] pt-[14px] pb-[20px] animate-[sheet-slide-in_240ms_cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:animate-none"
+        data-state={open ? "open" : "closed"}
+        onAnimationEnd={(e) => {
+          if (!open && !dragDismissed && e.target === e.currentTarget) {
+            onExitComplete?.();
+          }
+        }}
+        onTransitionEnd={(e) => {
+          if (!open && dragDismissed && e.target === e.currentTarget) {
+            onExitComplete?.();
+          }
+        }}
+        style={dragStyle}
+        className={`relative flex max-h-[92dvh] w-full flex-col gap-[18px] overflow-y-auto rounded-t-[18px] border-t border-border bg-paper px-[24px] pt-[10px] pb-[20px] outline-none min-[760px]:h-full min-[760px]:max-h-none min-[760px]:w-[min(100vw,520px)] min-[760px]:rounded-none min-[760px]:border-t-0 min-[760px]:border-l min-[760px]:px-[28px] min-[760px]:py-[22px] min-[1024px]:w-[400px] min-[1280px]:w-[440px] motion-reduce:animate-none motion-reduce:transition-none ${motionClass}`}
       >
+        <div
+          data-sheet-handle
+          aria-hidden="true"
+          onPointerDown={startDrag}
+          className="mx-auto -mt-[2px] -mb-[10px] flex h-[28px] w-[120px] shrink-0 cursor-grab items-center justify-center touch-none select-none active:cursor-grabbing min-[760px]:hidden"
+        >
+          <span className="h-[4px] w-[36px] rounded-full bg-border" />
+        </div>
         <div className="flex items-center justify-between text-[13px] text-ink-3">
           {back ? (
             <button type="button" onClick={back} className="hit-44">
@@ -234,6 +460,7 @@ function Sheet({
             draft={draft}
             beanLabel={beanLabel}
             patch={patch}
+            registerPrimary={registerAmountPrimary}
             onPickBean={() => setStep("bean")}
             onNext={() => setStep("taste")}
           />
@@ -419,6 +646,7 @@ function AmountStep({
   draft,
   beanLabel,
   patch,
+  registerPrimary,
   onPickBean,
   onNext,
 }: {
@@ -426,6 +654,7 @@ function AmountStep({
   draft: Draft;
   beanLabel: string | null;
   patch: (p: Partial<Draft>) => void;
+  registerPrimary: (fn: (() => void) | null) => void;
   onPickBean: () => void;
   onNext: () => void;
 }) {
@@ -436,6 +665,21 @@ function AmountStep({
   const [missing, setMissing] = useState<"dose" | "water" | null>(null);
   const ready = !!draft.doseG && !!draft.waterG;
   const bothEmpty = draft.doseG === null && draft.waterG === null;
+
+  const next = () => {
+    if (ready) {
+      onNext();
+      return;
+    }
+    const empty = !draft.doseG ? "dose" : "water";
+    setMissing(empty);
+    (empty === "dose" ? doseRef : waterRef).current?.focus();
+  };
+
+  useEffect(() => {
+    registerPrimary(next);
+    return () => registerPrimary(null);
+  });
 
   return (
     <>
@@ -484,18 +728,7 @@ function AmountStep({
           ? "비율은 두 칸을 채우면 나와요"
           : ratioText(draft.doseG, draft.waterG)}
       </p>
-      <PrimaryButton
-        disabled={!ready}
-        onClick={() => {
-          if (ready) {
-            onNext();
-            return;
-          }
-          const empty = !draft.doseG ? "dose" : "water";
-          setMissing(empty);
-          (empty === "dose" ? doseRef : waterRef).current?.focus();
-        }}
-      >
+      <PrimaryButton disabled={!ready} onClick={next}>
         다음
       </PrimaryButton>
     </>

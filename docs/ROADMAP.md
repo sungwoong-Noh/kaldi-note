@@ -7,7 +7,7 @@
 > **GitHub Project 보드**: https://github.com/users/sungwoong-Noh/projects/3 — 이슈·PR의
 > 실시간 상태(Backlog/Next/In progress/Review/Done)는 이 문서가 아니라 보드가 정본이다.
 
-작성: 2026-09-23 (Claude 앱 세션) · 상태: **확정** (2026-09-25 `docs/design/2026-09-25-workflow-revision.md` 승인으로 `docs/design/`에서 이 경로로 이동)
+작성: 2026-09-23 (Claude 앱 세션) · 상태: **확정** (2026-09-25 `docs/archive/2026-09-25-workflow-revision.md` 승인으로 `docs/design/`에서 이 경로로 이동)
 
 ---
 
@@ -40,7 +40,7 @@
 ### M0 · 정리 (반나절, 코드 없음)
 
 **완료 정의:** 이 문서가 확정되고, 아래 충돌·중복이 전부 처리됐다.
-**`docs/design/2026-09-25-workflow-revision.md` 정리 세션 ①(브랜치 `chore/workflow-revision`)이 아래 항목을 실행한다.**
+**`docs/archive/2026-09-25-workflow-revision.md` 정리 세션 ①(브랜치 `chore/workflow-revision`)이 아래 항목을 실행한다.**
 
 - [x] `product-direction.md` 결정 1에 「R1로 보류됨 → 로드맵 참조」 주석, 「단계와 스펙」 표에 이 문서 링크
 - [x] `AC-RECIPESBREWS-54`(비로그인 `GET /recipes` = 401)에 「2부 P2에서 교체 예정」 주석 — 지금 구현은 그대로 간다

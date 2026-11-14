@@ -20,8 +20,8 @@ ADMIN 권한을 가진 사람이 데스크톱 브라우저에서 `/admin/crawl`�
 화면은 이미 있는 API(`docs/contracts/2026-10-14-bean-crawler.json`)에만 붙는다. 서버 변경은 크롤러
 스펙의 AC-CRAWL-37·38(수집 0건이면 FAILED) 하나뿐이다.
 
-디자인 입력: `docs/design/design_handoff_admin_console/` (`README.md`, `design/Admin.dc.html`).
-요청문: `docs/design/2026-10-14-admin-design-request.md`.
+디자인 입력: `docs/design/admin/` (`README.md`, `design/Admin.dc.html`).
+요청문: `docs/design/requests/2026-10-14-admin-design-request.md`.
 
 ### 범위 밖 (Non-goals)
 

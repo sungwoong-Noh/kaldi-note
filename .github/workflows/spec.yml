@@ -31,7 +31,7 @@ jobs:
       - name: 커버리지 스크립트 테스트
         run: ./scripts/check-spec-coverage.test.sh
 
-      # 문서 규칙 검사 — docs/design/2026-09-25-workflow-revision.md §6
+      # 문서 규칙 검사 — docs/archive/2026-09-25-workflow-revision.md §6
       # milestone·supersedes 정합성, CLAUDE.md/GOTCHAS.md 줄 수 상한, 상대 링크 깨짐.
       - name: 문서 규칙 검사
         run: ./scripts/check-docs.sh

@@ -11,9 +11,9 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
-  { href: "/", label: "홈" },
+  { href: "/", label: "오늘" },
+  { href: "/brews", label: "기록" },
   { href: "/recipes", label: "레시피" },
-  { href: "/brews", label: "내 잔" },
   { href: "/more", label: "더보기" },
 ];
 

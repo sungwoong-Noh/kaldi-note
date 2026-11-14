@@ -87,7 +87,7 @@ test.describe("모바일 탭 바", () => {
     expect(withinTolerance(active.bar?.gap ?? -1, 8)).toBe(true);
 
     const inkThree = await tokenColor(page, "ink-3");
-    for (const name of ["홈", "내 잔", "더보기"]) {
+    for (const name of ["오늘", "기록", "더보기"]) {
       expect(await tab(name)).toEqual({
         size: "13px",
         weight: "400",
@@ -140,12 +140,12 @@ test.describe("뒤로 경계", () => {
     await page.setViewportSize({ width: 1100, height: 900 });
     await page.goto("/recipes/12");
     const header = page.locator("header");
-    await expect(header.getByRole("link", { name: "홈" })).toBeVisible();
+    await expect(header.getByRole("link", { name: "오늘" })).toBeVisible();
     await expect(page.getByRole("link", { name: "뒤로" })).toBeHidden();
 
     await page.setViewportSize({ width: 1099, height: 900 });
     await expect(page.getByRole("link", { name: "뒤로" })).toBeVisible();
-    await expect(header.getByRole("link", { name: "홈" })).toBeHidden();
+    await expect(header.getByRole("link", { name: "오늘" })).toBeHidden();
   });
 });
 
@@ -186,26 +186,26 @@ test.describe("웹 상단 바", () => {
     const box = async (name: string) =>
       (await header.getByRole("link", { name, exact: true }).boundingBox())!;
     const logo = (await header.getByRole("link").first().boundingBox())!;
-    const [home, recipes, cups, cta] = [
-      await box("홈"),
+    const [home, cups, recipes, cta] = [
+      await box("오늘"),
+      await box("기록"),
       await box("레시피"),
-      await box("내 잔"),
       await box("새 레시피"),
     ];
     const face = (await avatar.boundingBox())!;
 
     expect(withinTolerance(home.x - (logo.x + logo.width), 40)).toBe(true);
-    expect(withinTolerance(recipes.x - (home.x + home.width), 24)).toBe(true);
-    expect(withinTolerance(cups.x - (recipes.x + recipes.width), 24)).toBe(
+    expect(withinTolerance(cups.x - (home.x + home.width), 24)).toBe(true);
+    expect(withinTolerance(recipes.x - (cups.x + cups.width), 24)).toBe(
       true,
     );
-    expect(cups.x + cups.width).toBeLessThan(cta.x);
+    expect(recipes.x + recipes.width).toBeLessThan(cta.x);
     expect(withinTolerance(face.x - (cta.x + cta.width), 16)).toBe(true);
     expect(swapped).toBeGreaterThan(0);
     expect(face).toMatchObject({ width: 34, height: 34 });
     expect(
       await header
-        .getByRole("link", { name: "홈", exact: true })
+        .getByRole("link", { name: "오늘", exact: true })
         .evaluate((el) => getComputedStyle(el).fontSize),
     ).toBe("15px");
   });
@@ -227,7 +227,7 @@ test.describe("웹 상단 바", () => {
       weight: "500",
     });
     const inkThree = await tokenColor(page, "ink-3");
-    for (const name of ["홈", "내 잔"]) {
+    for (const name of ["오늘", "기록"]) {
       expect(await style(name)).toEqual({ color: inkThree, weight: "400" });
     }
   });

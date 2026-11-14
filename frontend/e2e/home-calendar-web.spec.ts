@@ -92,15 +92,15 @@ test.describe("홈 달력 — 웹", () => {
 
     const header = page.locator("header");
     await expect(header.getByText("kaldi")).toBeVisible();
-    await expect(header.getByRole("link", { name: "홈" })).toBeVisible();
+    await expect(header.getByRole("link", { name: "오늘" })).toBeVisible();
     await expect(
       header.getByRole("link", { name: "레시피", exact: true }),
     ).toBeVisible();
     await expect(
-      header.getByRole("link", { name: "내 잔", exact: true }),
+      header.getByRole("link", { name: "기록", exact: true }),
     ).toBeVisible();
     await expect(
-      header.getByRole("link", { name: "이 레시피로 내렸다" }),
+      header.getByRole("button", { name: "기록하기" }),
     ).toBeVisible();
     await expect(header.getByRole("link", { name: "더보기" })).toBeVisible();
     await expect(page.locator("nav[aria-label='주요 화면']")).toBeHidden();

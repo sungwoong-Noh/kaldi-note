@@ -10,26 +10,29 @@ import {
   isFormWithTopBar,
   isHidden,
 } from "@/lib/navScreens";
-import { Avatar, ButtonLink } from "@/components/ui";
+import { Avatar, Button, ButtonLink } from "@/components/ui";
 
 /** 기록 폼의 동작 버튼이 들어올 자리. */
 export const TOPBAR_ACTIONS_ID = "topbar-actions";
 
 const NAV_LINKS = [
-  { href: "/", label: "홈" },
+  { href: "/", label: "오늘" },
+  { href: "/brews", label: "기록" },
   { href: "/recipes", label: "레시피" },
-  { href: "/brews", label: "내 잔" },
 ];
+
+type TopBarCta =
+  | { kind: "button"; label: string }
+  | { kind: "link"; label: string; href: string };
 
 /**
  * 화면별 CTA. 정확히 일치하는 경로에만 붙는다 — 상세 화면의 CTA(담기·수정·공유)는 데이터에
  * 따라 달라져 각 화면 스펙이 넣는다(docs/specs/2026-09-27-web-shell-grammar.md AC-GRAMMAR-05·14).
- * 기록은 레시피를 고른 뒤에만 시작하므로 `기록하기`도 `/recipes`로 간다.
  */
-const CTA: Record<string, { label: string; href: string }> = {
-  "/": { label: "이 레시피로 내렸다", href: "/recipes" },
-  "/recipes": { label: "새 레시피", href: "/recipes/new" },
-  "/brews": { label: "기록하기", href: "/recipes" },
+const CTA: Record<string, TopBarCta> = {
+  "/": { kind: "button", label: "기록하기" },
+  "/recipes": { kind: "link", label: "새 레시피", href: "/recipes/new" },
+  "/brews": { kind: "button", label: "기록하기" },
 };
 
 /**
@@ -108,10 +111,13 @@ export function WebTopBar() {
             <div id={TOPBAR_ACTIONS_ID} className="flex items-center gap-2" />
           )}
           <div className="hidden items-center gap-4 min-[1100px]:flex">
-            {cta && (
+            {cta?.kind === "link" && (
               <ButtonLink href={cta.href} variant="primary">
                 {cta.label}
               </ButtonLink>
+            )}
+            {cta?.kind === "button" && (
+              <Button variant="primary">{cta.label}</Button>
             )}
             {me.data && (
               <Link href="/more" aria-label="더보기" className="hit-44 flex">

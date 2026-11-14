@@ -39,9 +39,9 @@ test.describe("웹 헤더 롤아웃", () => {
     await page.goto("/recipes");
 
     const header = page.locator("header");
-    await expect(header.getByRole("link", { name: "홈" })).toBeHidden();
+    await expect(header.getByRole("link", { name: "오늘" })).toBeHidden();
     await expect(
-      header.getByRole("link", { name: "이 레시피로 내렸다" }),
+      header.getByRole("link", { name: "새 레시피" }),
     ).toBeHidden();
     await expect(header.getByRole("link", { name: "더보기" })).toBeHidden();
   });
@@ -54,12 +54,12 @@ test.describe("웹 헤더 롤아웃", () => {
     await page.goto("/recipes");
 
     const header = page.locator("header");
-    await expect(header.getByRole("link", { name: "홈" })).toBeVisible();
+    await expect(header.getByRole("link", { name: "오늘" })).toBeVisible();
     await expect(
       header.getByRole("link", { name: "레시피", exact: true }),
     ).toBeVisible();
     await expect(
-      header.getByRole("link", { name: "내 잔", exact: true }),
+      header.getByRole("link", { name: "기록", exact: true }),
     ).toBeVisible();
     // CTA는 화면별이다 — /recipes는 `새 레시피`(docs/specs/2026-09-27-web-shell-grammar.md
     // AC-GRAMMAR-05가 이 AC의 CTA 부분을 대체했다).
@@ -80,12 +80,12 @@ test.describe("웹 헤더 롤아웃", () => {
     await expect(
       header.getByRole("link", { name: "레시피", exact: true }),
     ).toHaveAttribute("aria-current", "page");
-    await expect(header.getByRole("link", { name: "홈" })).not.toHaveAttribute(
-      "aria-current",
-    );
+    await expect(
+      header.getByRole("link", { name: "오늘" }),
+    ).not.toHaveAttribute("aria-current");
   });
 
-  test("AC-WEBHDR-05 · AC-RECIPESBREWS-79 · /brews에서는 「내 잔」이 감전다", async ({
+  test("AC-WEBHDR-05 · AC-RECIPESBREWS-79 · /brews에서는 「기록」이 감전다", async ({
     page,
   }) => {
     await installStubs(page);
@@ -94,7 +94,7 @@ test.describe("웹 헤더 롤아웃", () => {
 
     const header = page.locator("header");
     await expect(
-      header.getByRole("link", { name: "내 잔", exact: true }),
+      header.getByRole("link", { name: "기록", exact: true }),
     ).toHaveAttribute("aria-current", "page");
   });
 

@@ -15,10 +15,12 @@ import {
   POUR_TECHNIQUE_LABELS,
   pouredWaterTotal,
   removeStep,
+  type Agitation,
   type EditableStep,
+  type PourTechnique,
   type StepType,
 } from "../stepSequence";
-import { Button, cardClass, controlClass } from "@/components/ui";
+import { Button, SELECT_EXTRA, cardClass, controlClass } from "@/components/ui";
 
 type Props = {
   steps: EditableStep[];
@@ -190,6 +192,15 @@ function StepRows({ steps, onChange, errors, atLimit, update }: ViewProps) {
                 />
               )}
             </div>
+            {isPouringStep(step) && (
+              <div className="grid grid-cols-2 gap-2">
+                <PourSelects
+                  step={step}
+                  number={number}
+                  onChange={(p) => update(index, p)}
+                />
+              </div>
+            )}
 
             {errors[index] && (
               <p className="whitespace-pre-line text-body text-danger">
@@ -475,6 +486,13 @@ function StepPanel({
           seconds={step.durationSeconds}
           onChange={(durationSeconds) => update(index, { durationSeconds })}
         />
+        {isPouringStep(step) && (
+          <PourSelects
+            step={step}
+            number={number}
+            onChange={(p) => update(index, p)}
+          />
+        )}
       </div>
       <button
         type="button"
@@ -486,6 +504,70 @@ function StepPanel({
         여기 아래에 추가
       </button>
     </section>
+  );
+}
+
+/**
+ * 붓는 방식 · 교반(AC-RECIPEEDIT-45, 목업 03 스텝 시트). 붓는 스텝에만 보인다 — 「부으면서 돌리기」는
+ * 「돌리기」 스텝이 아니라 「붓기」 + 교반 「돌리기」다. 고르지 않으면 요청에 싣지 않는다.
+ */
+function PourSelects({
+  step,
+  number,
+  onChange,
+}: {
+  step: EditableStep;
+  number: number;
+  onChange: (
+    patch:
+      Pick<EditableStep, "pourTechnique"> | Pick<EditableStep, "agitation">,
+  ) => void;
+}) {
+  const cell =
+    "flex min-h-[52px] items-center justify-between gap-[8px] rounded-[7px] border border-border bg-paper px-[14px]";
+  return (
+    <>
+      <label className={cell}>
+        <span className="text-[13.5px] text-ink-3">방식</span>
+        <select
+          aria-label={`스텝 ${number} 붓는 방식`}
+          value={step.pourTechnique ?? ""}
+          onChange={(e) =>
+            onChange({
+              pourTechnique: (e.target.value || null) as PourTechnique | null,
+            })
+          }
+          className={`${SELECT_EXTRA} bg-transparent pr-[24px]! text-right text-[14px] text-ink`}
+        >
+          <option value="">선택 안 함</option>
+          {Object.entries(POUR_TECHNIQUE_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className={cell}>
+        <span className="text-[13.5px] text-ink-3">교반</span>
+        <select
+          aria-label={`스텝 ${number} 교반`}
+          value={step.agitation ?? ""}
+          onChange={(e) =>
+            onChange({
+              agitation: (e.target.value || null) as Agitation | null,
+            })
+          }
+          className={`${SELECT_EXTRA} bg-transparent pr-[24px]! text-right text-[14px] text-ink`}
+        >
+          <option value="">선택 안 함</option>
+          {Object.entries(AGITATION_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </label>
+    </>
   );
 }
 

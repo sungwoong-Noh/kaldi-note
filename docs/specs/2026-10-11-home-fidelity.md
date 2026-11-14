@@ -16,7 +16,8 @@ supersedes:
 > - **달력 부품 `AC-HOMEFIT-06`(달 이동 버튼 32×32 한 겹 · hit area 44×44)**: 이미 갱신 내용이 반영되고
 >   `MonthNav.test.tsx`에 함께 태그된 `AC-HOMECAL-105·106`으로 일원화해
 >   [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)에서 유지한다.
-> - **공용 `Avatar`(`AC-HOMEFIT-14·20`)**: 코드와 테스트는 현행 유지된다.
+> - **공용 `Avatar` AC 2개(`AC-HOMEFIT-14·20`)**: 대체되지 않았으므로
+>   [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)로 `#### AC-` 헤딩을 옮겨 `check-spec-coverage.sh` 감시를 유지한다.
 > - **홈(`/`)·팔로우 레일·웹 2컬럼 홈(`DayCard`·우측 칼럼·웹 셀) AC**: `quick-brew`로 대체됐다(팔로우 레일은 M4 보류).
 
 > 작성 규칙은 [`docs/specs/README.md`](README.md) 참조.
@@ -154,7 +155,7 @@ API 변경 없음. 캡션은 기존 조회만 쓴다 — 원두 `useBeanLabel`(�
 - **Then** 각 행 위에 `1px` 구분선이 있고 마지막 행 아래에도 `1px` 구분선이 있다. 레시피명 `14.5px`·`500`, 캡션 `11.5px`, 대표 수치 Mono `14px`, 배전도 점 `9px`다
 - **검증** e2e
 
-**AC-HOMEFIT-14 (대체됨 · 코드/테스트 현행 유지)** · 아바타 사진은 고정 박스다
+**AC-HOMEFIT-14 (승계 → quick-brew)** · 아바타 사진은 고정 박스다
 
 - **Given** `profileImageUrl`이 있는 아바타, `size` `32`·`36`·`50` 각각
 - **When** 렌더한다
@@ -200,7 +201,7 @@ API 변경 없음. 캡션은 기존 조회만 쓴다 — 원두 `useBeanLabel`(�
 
 ### 실패
 
-**AC-HOMEFIT-20 (대체됨 · 코드/테스트 현행 유지)** · 아바타 사진이 실패하면 이니셜 원이다
+**AC-HOMEFIT-20 (승계 → quick-brew)** · 아바타 사진이 실패하면 이니셜 원이다
 
 - **Given** `profileImageUrl`이 있지만 이미지 로드가 실패한다(`error` 이벤트)
 - **When** 아바타를 렌더한다

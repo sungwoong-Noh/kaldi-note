@@ -12,10 +12,10 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 > [ADR 0011](../decisions/0011-brew-first-minimal-input.md)에 따라 홈(`/`)이 달력에서
 > 「오늘」 화면으로 바뀌어 [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)가 홈 목업 정합 스펙을 대체한다.
 >
-> - **달력 부품(`Calendar`·`MonthNav`·`DayList` 모바일) AC 17개**(`AC-HOMECAL-92~101·98a·98b·105~109`):
->   「기록」 탭(`/brews` 달력, Task 12)에서 재사용하므로 [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)로
->   `#### AC-` 헤딩을 옮겨 살렸다.
-> - **공용 `Avatar`·프로필(`/u/[id]`)(`AC-HOMECAL-111·119·120`)**: 코드와 테스트는 현행 유지된다.
+> - **달력 부품(`Calendar`·`MonthNav`·`DayList` 모바일) AC 17개**(`AC-HOMECAL-92~101·98a·98b·105~109`)와
+>   **공용 `Avatar`·프로필(`/u/[id]`) AC 3개**(`AC-HOMECAL-111·119·120`):
+>   대체되지 않았으므로 [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md)로 `#### AC-` 헤딩을 옮겨
+>   `check-spec-coverage.sh` 감시를 유지한다.
 > - **팔로우 레일·웹 2컬럼 홈(`DayCard`·우측 칼럼·웹 셀)·전역 CTA·모바일 60vh**:
 >   `quick-brew`로 대체됐다(팔로우 레일은 M4 보류).
 
@@ -243,7 +243,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   화면에 로드된 팔로우 레일 데이터에서 클라이언트가 보간한다 — 새 백엔드 필드 없음)
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`
 
-**AC-HOMECAL-111 (대체됨 · 코드/테스트 현행 유지)** · 프로필 화면의 관계 문구도 동일하게 닉네임을 보간한다
+**AC-HOMECAL-111 (승계 → quick-brew)** · 프로필 화면의 관계 문구도 동일하게 닉네임을 보간한다
 
 - **Given** `/u/[id]` 프로필 화면, 맞팔로우 상태
 - **When** 관계 문구를 렌더한다
@@ -341,7 +341,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
 
 ### 아바타 색조
 
-**AC-HOMECAL-119 (대체됨 · 코드/테스트 현행 유지)** · 아바타 배경색이 userId 기반으로 3색 중 하나로 결정된다
+**AC-HOMECAL-119 (승계 → quick-brew)** · 아바타 배경색이 userId 기반으로 3색 중 하나로 결정된다
 
 - **Given** 프로필 사진이 없는 사용자 A(id=1)·B(id=2)·C(id=3)
 - **When** 각각의 이니셜 아바타를 렌더한다
@@ -349,7 +349,7 @@ plan: docs/archive/plans/2026-09-20-plan-home-calendar-mockup-fidelity.md
   하나이고, 계산식은 `userId % 3`이다(백엔드 필드 추가 없음, 프론트에서만 계산)
 - **검증** 컴포넌트 테스트 `Avatar.test.tsx`
 
-**AC-HOMECAL-120 (대체됨 · 코드/테스트 현행 유지)** · 같은 사용자는 항상 같은 아바타 색을 받는다
+**AC-HOMECAL-120 (승계 → quick-brew)** · 같은 사용자는 항상 같은 아바타 색을 받는다
 
 - **Given** 사용자 A(id=1)
 - **When** 아바타를 두 번(예: 팔로우 레일과 프로필 화면) 렌더한다

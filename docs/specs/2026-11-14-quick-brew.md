@@ -656,6 +656,256 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 - **Then** 캡션 줄이 `{HH:mm}`만 표시하고 `· ★`는 생략된다
 - **검증** 컴포넌트 테스트 `DayList.test.tsx`
 
+### 기능 — 이전 스펙에서 승계한 현행 AC
+
+> 달력 부품 30건 외에, 아래 34건(백엔드 달력·목록·맞팔로우 API 27건 + 공용 `kstDate`·`RoastDot`·`Avatar` 및 프로필 `/u/[id]` 7건)도
+> 이 스펙으로 대체되지 않고 코드·테스트가 현행 유지된다. 기존 3개 스펙을 `status: 대체됨`으로 닫으면서
+> [`check-spec-coverage.sh`](../../scripts/check-spec-coverage.sh) 감시에서 빠지지 않도록 원래 ID 그대로 이 소절로 옮겨 소유한다.
+
+#### AC-HOMECAL-01 · 기록이 있는 날짜만 담는다
+
+- **Given** 2026-09에 `2026-09-02`와 `2026-09-05`(KST)에만 기록이 있는 사용자
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
+- **Then** `days`의 길이가 `2`이고 `date`가 각각 `"2026-09-02"`, `"2026-09-05"`다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-02 · UTC 전날 23시 기록은 KST 다음 날에 집계된다
+
+- **Given** `brewedAt`이 `2026-09-18T23:00:00Z`인 기록 1건만 있는 사용자
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
+- **Then** `days`가 `[{ "date": "2026-09-19", "count": 1, ... }]`다 — `2026-09-18`이 아니다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-03 · KST 자정 경계가 `15:00:00Z`에서 갈린다
+
+- **Given** `brewedAt`이 각각 `2026-09-19T14:59:59Z`, `2026-09-19T15:00:00Z`인 기록 2건
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
+- **Then** `days`가 `[{"date":"2026-09-19","count":1,...},{"date":"2026-09-20","count":1,...}]`다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-04 · 같은 날 2건이면 항목은 1개이고 count가 2다
+
+- **Given** `2026-09-05`(KST)에 기록 2건이 있는 사용자
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
+- **Then** `date`가 `"2026-09-05"`인 항목이 **1개**이고 그 `count`가 `2`다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-05 · totalCount는 그 달 전체 건수다
+
+- **Given** `2026-09-02`에 1건, `2026-09-05`에 2건이 있는 사용자
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
+- **Then** `totalCount`가 `3`이고 `month`가 `"2026-09"`다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-06 · days는 date 오름차순이다
+
+- **Given** `2026-09-20`, `2026-09-02`, `2026-09-11` 순으로 저장된 기록 3건
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
+- **Then** `days[*].date`가 `["2026-09-02", "2026-09-11", "2026-09-20"]`이다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-07 · 소프트 삭제된 기록은 집계되지 않는다
+
+- **Given** `2026-09-02`에 기록 2건이 있고 그중 1건의 `deleted_at`이 `NULL`이 아니다
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
+- **Then** `date`가 `"2026-09-02"`인 항목의 `count`가 `1`이고 `totalCount`가 `1`이다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-08 · 맞팔로우 상대의 FRIENDS 기록이 집계된다
+
+- **Given** 호출자와 상호 팔로우한 사용자 `12`가 `2026-09-05`에 `visibility=FRIENDS` 기록 1건
+- **When** `GET /api/v1/brew-logs/calendar?userId=12&month=2026-09`
+- **Then** `totalCount`가 `1`이고 `days`에 `"2026-09-05"`가 있다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-09 · 맞팔로우가 아니면 PUBLIC만 집계된다
+
+- **Given** 호출자와 팔로우 관계가 없는 사용자 `12`가 `2026-09-05`에 `PUBLIC` 1건,
+  `2026-09-06`에 `FRIENDS` 1건, `2026-09-07`에 `PRIVATE` 1건
+- **When** `GET /api/v1/brew-logs/calendar?userId=12&month=2026-09`
+- **Then** `totalCount`가 `1`이고 `days`가 `2026-09-05` 하나뿐이다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-10 · 존재하지 않는 userId는 200과 빈 결과다
+
+- **Given** 어떤 사용자도 갖지 않는 `userId=999999`
+- **When** `GET /api/v1/brew-logs/calendar?userId=999999&month=2026-09`
+- **Then** HTTP `200`, `days`가 `[]`, `totalCount`가 `0`이다 — `403`도 `404`도 아니다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-11 · month 형식이 틀리면 400이다
+
+- **Given** 인증된 호출자
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-13`
+- **Then** HTTP `400`과 `code: "INVALID_REQUEST"`를 반환한다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-12 · 미래 달은 200과 빈 결과다
+
+- **Given** 오늘이 `2026-09-19`
+- **When** `GET /api/v1/brew-logs/calendar?month=2027-01`
+- **Then** HTTP `200`, `days`가 `[]`, `totalCount`가 `0`이다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-13 · 토큰이 없으면 401이다
+
+- **Given** `Authorization` 헤더 없음
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
+- **Then** HTTP `401`을 반환한다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-14 · userId를 생략하면 호출자 본인의 달력이다
+
+- **Given** 호출자가 `2026-09-02`에 기록 1건, 다른 사용자가 `2026-09-03`에 `PUBLIC` 1건
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-09` (`userId` 없음)
+- **Then** `days`가 `2026-09-02` 하나뿐이다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-66 · primaryRecipeName은 그날 가장 늦게 내린 기록의 레시피명이다
+
+- **Given** `2026-09-05`(KST)에 `08:00`에 「Hoffmann V60」, `14:00`에 「Kasuya 4:6」으로 내린 기록 2건
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
+- **Then** `date`가 `"2026-09-05"`인 항목의 `primaryRecipeName`이 `"Kasuya 4:6"`이다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-67 · 기록이 없는 날은 days에 항목 자체가 없다
+
+- **Given** `2026-09-02`에만 기록이 있는 사용자
+- **When** `GET /api/v1/brew-logs/calendar?month=2026-09`
+- **Then** `days`에 `"2026-09-03"`을 `date`로 갖는 항목이 없다 — `count: 0` 항목이 아니다
+- **검증** API 테스트 `BrewLogCalendarControllerTest`
+
+#### AC-HOMECAL-15 · date는 KST 기준 하루로 필터한다
+
+- **Given** `brewedAt`이 `2026-09-18T23:00:00Z`, `2026-09-19T14:59:59Z`,
+  `2026-09-19T15:00:00Z`인 기록 3건
+- **When** `GET /api/v1/brew-logs?date=2026-09-19`
+- **Then** `content`의 길이가 `2`이고 `2026-09-19T15:00:00Z` 기록이 빠진다
+- **검증** API 테스트 `BrewLogControllerTest`
+
+#### AC-HOMECAL-16 · date와 userId는 AND로 결합된다
+
+- **Given** `2026-09-19`에 호출자 기록 1건, 맞팔로우 사용자 `12`의 기록 1건
+- **When** `GET /api/v1/brew-logs?userId=12&date=2026-09-19`
+- **Then** `content`의 길이가 `1`이고 그 `userId`가 `12`다
+- **검증** API 테스트 `BrewLogControllerTest`
+
+#### AC-HOMECAL-17 · date 형식이 틀리면 400이다
+
+- **Given** 인증된 호출자
+- **When** `GET /api/v1/brew-logs?date=2026-9-19`
+- **Then** HTTP `400`과 `code: "INVALID_REQUEST"`를 반환한다
+- **검증** API 테스트 `BrewLogControllerTest`
+
+#### AC-HOMECAL-73 · 목록 요약 응답에 overallNote가 담긴다
+
+- **Given** `overallNote`가 `"산미가 강했다"`인 기록 1건
+- **When** `GET /api/v1/brew-logs`
+- **Then** `content[0].overallNote`가 `"산미가 강했다"`다
+- **검증** API 테스트 `BrewLogControllerTest`
+
+#### AC-HOMECAL-18 · 맞팔로우인 사람만 담긴다
+
+- **Given** 호출자가 `12`와 상호 팔로우, `13`을 일방 팔로우, `14`에게 일방 팔로우당한 상태
+- **When** `GET /api/v1/users/me/mutual-follows`
+- **Then** 배열의 길이가 `1`이고 `[0].id`가 `12`다
+- **검증** API 테스트 `MutualFollowControllerTest`
+
+#### AC-HOMECAL-19 · 마지막 기록이 최근인 순으로 정렬된다
+
+- **Given** 맞팔로우 `12`의 마지막 기록이 `2026-09-10`, `13`의 마지막 기록이 `2026-09-18`
+- **When** `GET /api/v1/users/me/mutual-follows`
+- **Then** `[*].id`가 `[13, 12]`다
+- **검증** API 테스트 `MutualFollowControllerTest`
+
+#### AC-HOMECAL-20 · 기록이 없는 맞팔로우는 맨 뒤에 닉네임 오름차순으로 놓인다
+
+- **Given** 맞팔로우 `12`(닉네임 `지연`, 기록 있음), `13`(닉네임 `하은`, 기록 없음),
+  `14`(닉네임 `민재`, 기록 없음)
+- **When** `GET /api/v1/users/me/mutual-follows`
+- **Then** `[*].id`가 `[12, 14, 13]`이다 — 무기록자끼리 `민재` → `하은` 순이다
+- **검증** API 테스트 `MutualFollowControllerTest`
+
+#### AC-HOMECAL-21 · 마지막 기록 시각이 같으면 닉네임 오름차순이다
+
+- **Given** 맞팔로우 `12`(닉네임 `하은`), `13`(닉네임 `민재`)의 마지막 기록 `brewedAt`이 동일하다
+- **When** `GET /api/v1/users/me/mutual-follows`
+- **Then** `[*].id`가 `[13, 12]`다
+- **검증** API 테스트 `MutualFollowControllerTest`
+
+#### AC-HOMECAL-22 · 응답에 email과 role이 없다
+
+- **Given** `email`과 `role`을 가진 맞팔로우 사용자 1명
+- **When** `GET /api/v1/users/me/mutual-follows`
+- **Then** `[0]`의 키가 `id`·`nickname`·`profileImageUrl`뿐이고 `email`·`role`·`createdAt` 키가 없다
+- **검증** API 테스트 `MutualFollowControllerTest`
+
+#### AC-HOMECAL-23 · 자기 자신은 목록에 없다
+
+- **Given** 맞팔로우가 `12` 한 명인 호출자 `11`
+- **When** `GET /api/v1/users/me/mutual-follows`
+- **Then** `[*].id`에 `11`이 없다
+- **검증** API 테스트 `MutualFollowControllerTest`
+
+#### AC-HOMECAL-24 · 맞팔로우 목록도 토큰이 없으면 401이다
+
+- **Given** `Authorization` 헤더 없음
+- **When** `GET /api/v1/users/me/mutual-follows`
+- **Then** HTTP `401`을 반환한다
+- **검증** API 테스트 `MutualFollowControllerTest`
+
+#### AC-HOMECAL-54 · 기존 목록과 상세가 KST 날짜로 표시된다
+
+- **Given** `brewedAt`이 `2026-09-18T23:00:00Z`인 기록
+- **When** `/brews` 목록과 `/brews/[id]` 상세를 본다
+- **Then** 두 곳 모두 `2026-09-19`를 보여준다 — `2026-09-18`이 아니다
+- **검증** 단위·컴포넌트 테스트 `kstDate.test.ts`, `BrewLogCard.test.tsx`, `app/brews/[id]/page.test.tsx`
+- **(일부 대체됨)** 상세 쪽 표기는 `09.19 토 · 08:00`(KST)이다 — [`2026-10-11-brew-detail-fidelity.md`](2026-10-11-brew-detail-fidelity.md) `AC-BDETAIL-04`. KST로 바꾼다는 요점은 그대로다.
+
+#### AC-HOMECAL-75 · roast dot 색이 로스팅 강도에 따라 다르다
+
+- **Given** `roastLevel`이 각각 `LIGHT`, `DARK`인 원두를 쓴 기록 2건
+- **When** 목록을 본다
+- **Then** 두 행의 roast dot `background-color`가 서로 다르다
+- **검증** 컴포넌트 테스트 `RoastDot.test.tsx`
+
+#### AC-HOMECAL-111 · 프로필 화면의 관계 문구도 동일하게 닉네임을 보간한다
+
+- **Given** `/u/[id]` 프로필 화면, 맞팔로우 상태
+- **When** 관계 문구를 렌더한다
+- **Then** 문구가 `"맞팔로우 상태여서 {닉네임} 님의 기록이 보입니다."` 형식으로 렌더된다(기존
+  고정 문구 `"맞팔로우 — 서로의 기록이 보입니다"`를 대체)
+- **검증** 페이지 테스트 `app/u/[id]/page.test.tsx`
+
+#### AC-HOMECAL-119 · 아바타 배경색이 userId 기반으로 3색 중 하나로 결정된다
+
+- **Given** 프로필 사진이 없는 사용자 A(id=1)·B(id=2)·C(id=3)
+- **When** 각각의 이니셜 아바타를 렌더한다
+- **Then** 배경색이 `oklch(0.88 0.02 60)`·`oklch(0.88 0.008 80)`·`oklch(0.88 0.015 70)` 중
+  하나이고, 계산식은 `userId % 3`이다(백엔드 필드 추가 없음, 프론트에서만 계산)
+- **검증** 컴포넌트 테스트 `Avatar.test.tsx`
+
+#### AC-HOMECAL-120 · 같은 사용자는 항상 같은 아바타 색을 받는다
+
+- **Given** 사용자 A(id=1)
+- **When** 아바타를 두 번(예: 팔로우 레일과 프로필 화면) 렌더한다
+- **Then** 두 렌더링의 배경색이 같다(같은 `userId → color` 함수 사용)
+- **검증** 컴포넌트 테스트 `Avatar.test.tsx`
+
+#### AC-HOMEFIT-14 · 아바타 사진은 고정 박스다
+
+- **Given** `profileImageUrl`이 있는 아바타, `size` `32`·`36`·`50` 각각
+- **When** 렌더한다
+- **Then** `img`의 computed `width`·`height`가 각각 `size`px이고 `object-fit`이 `cover`다(#179)
+- **검증** 컴포넌트 테스트 `Avatar.test.tsx`
+
+#### AC-HOMEFIT-20 · 아바타 사진이 실패하면 이니셜 원이다
+
+- **Given** `profileImageUrl`이 있지만 이미지 로드가 실패한다(`error` 이벤트)
+- **When** 아바타를 렌더한다
+- **Then** `img`가 사라지고 닉네임 첫 글자 원이 같은 `size`로 그려진다
+- **검증** 컴포넌트 테스트 `Avatar.test.tsx`
+
 ---
 
 ## 대체하는 이전 스펙과 AC
@@ -676,9 +926,9 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 | `AC-HOMECAL-32·40·41·105·106·107` (`09-19`, `09-20`) | 6 | **승계 (살림)** → 이 스펙 `MonthNav` 부품 | Task 12 월 헤더 재사용. `MonthNav.test.tsx`, `brewCountLabel.test.ts` |
 | `AC-HOMEFIT-06` (`10-11`) | 1 | **통합 유지** → `AC-HOMECAL-105·106` | `MonthNav.test.tsx`가 `AC-HOMECAL-105·106`에 함께 태그해 동일 규칙 검증 |
 | `AC-HOMECAL-42·43·76·108·109` (`09-19`, `09-20`) | 5 | **승계 (살림)** → 이 스펙 `DayList` 모바일 | Task 12 시안 F2 날짜별 원장 행 재사용. `DayList.test.tsx` |
-| `AC-HOMECAL-01~17·66·67·73` (`09-19`) | 20 | **대체 표기 · 코드/테스트 유지** (`GET /brew-logs/calendar`, `?date=`) | `/` 오늘·`/brews` 달력이 계약 그대로 사용. `BrewLogCalendarControllerTest`, `BrewLogControllerTest`, `CalendarMonthTest` |
-| `AC-HOMECAL-18~24` (`09-19`) | 7 | **대체 표기 · API/테스트 유지** (`GET /users/me/mutual-follows`) | UI 팔로우 레일은 M4 보류, 백엔드 API·`MutualFollowControllerTest`는 유지 |
-| `AC-HOMECAL-54·75·111·119·120`, `AC-HOMEFIT-14·20` (`09-19`, `09-20`, `10-11`) | 7 | **대체 표기 · 공용/타 화면 테스트 유지** | KST 표기(`kstDate.test.ts`, `BrewLogCard`, `/brews/[id]`), `RoastDot`, `Avatar`, `/u/[id]` 프로필(`UserProfile`) 현행 유지 |
+| `AC-HOMECAL-01~17·66·67·73` (`09-19`) | 20 | **승계 (살림)** → 이 스펙 「이전 스펙에서 승계한 현행 AC」 | `/` 오늘·`/brews` 달력이 계약 그대로 사용. `BrewLogCalendarControllerTest`, `BrewLogControllerTest`, `CalendarMonthTest` |
+| `AC-HOMECAL-18~24` (`09-19`) | 7 | **승계 (살림)** → 이 스펙 「이전 스펙에서 승계한 현행 AC」 | UI 팔로우 레일은 M4 보류, 백엔드 API·`MutualFollowControllerTest`는 유지 |
+| `AC-HOMECAL-54·75·111·119·120`, `AC-HOMEFIT-14·20` (`09-19`, `09-20`, `10-11`) | 7 | **승계 (살림)** → 이 스펙 「이전 스펙에서 승계한 현행 AC」 | KST 표기(`kstDate.test.ts`, `BrewLogCard`, `/brews/[id]`), `RoastDot`, `Avatar`, `/u/[id]`(`UserProfile`) 현행 유지 |
 | `AC-HOMECAL-36~39·44·47·71·102~104·110·126`, `AC-HOMEFIT-01~04` (`09-19`, `09-20`, `10-11`) | 16 | **대체됨 (M4 보류)** | 팔로우 레일·남의 달력 UI. `quick-brew` Non-goals(M4 친구 피드로 이동). `FollowRail.test.tsx`, `DayList.test.tsx`, `page.test.tsx`, e2e |
 | `AC-HOMECAL-27~31·33·48~52·55~62·78~84·127·128`, `AC-HOMEFIT-05·08·09·13·18·19·22·23` (`09-19`, `09-20`, `10-11`) | 36 | **대체됨** → `AC-QUICKBREW-20~22·29·31·65` | 구 `/` 달력 홈 레이아웃·네비·CTA·e2e가 시안 A(오늘)·시안 G(탭 바)·시안 F(기록 탭)로 교체 |
 | `AC-HOMECAL-63~65·68~70·72·74·112~118·121~125`, `AC-HOMEFIT-07·10~12·15~17·21` (`09-19`, `09-20`, `10-11`) | 28 | **대체됨** (웹 2컬럼 홈 셀·우측 카드 `DayCard`) | 구 홈 웹 2컬럼(셀 내 레시피명 + 우측 420px `DayCard` 패널)이 시안 A(오늘) + FW(원장 + 300px 달력 카드)로 교체 |

@@ -18,9 +18,11 @@ export function useCalendar(
   userId: number | undefined,
   month: string,
   onSessionLost?: () => void,
+  enabled = true,
 ) {
   return useQuery({
     queryKey: ["calendar", userId ?? "me", month],
+    enabled,
     queryFn: () =>
       authedRequest(backendUrl(`/api/v1/brew-logs/calendar?${calendarQuery(userId, month)}`), {
         schema: calendarSchema,

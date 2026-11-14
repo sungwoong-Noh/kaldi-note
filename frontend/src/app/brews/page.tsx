@@ -1,59 +1,60 @@
 "use client";
 
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { openQuickBrew } from "@/lib/quickBrew";
-import { Suspense } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useLayoutEffect, useRef, useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
+import { Button, Shell } from "@/components/ui";
 import { useRequireSession } from "@/features/auth/useRequireSession";
+import { BREW_LOG_PAGE_SIZE, fetchBrewLogPage } from "@/features/brewlog/api";
 import {
-  BREW_LOG_PAGE_SIZE,
-  fetchBrewLogPage,
-  fetchBrewLogStats,
-} from "@/features/brewlog/api";
-import {
-  LedgerList,
-  LedgerTable,
-} from "@/features/brewlog/components/BrewLedger";
-import { StatsCards } from "@/features/brewlog/components/StatsCards";
+  groupLogsByKstDate,
+  resolveLedgerEntryPresentation,
+} from "@/features/brewlog/brewLedgerPresentation";
+import { BrewLedger } from "@/features/brewlog/components/BrewLedger";
 import { useRecipeLabels } from "@/features/brewlog/useRecipeLabels";
+import { useBeanMetadataSources } from "@/features/brewlog/useTodayMetadata";
+import { useCalendar, useDayLogs } from "@/features/calendar/api";
 import {
-  MY_CUPS_FILTERS,
-  toListFilter,
-  useMyCupsFilter,
-} from "@/features/brewlog/useMyCupsFilter";
-import { useMe, type Me } from "@/features/user/queries";
-import { BottomCta, PageHeader, PillFilter } from "@/components/kit";
-import { kstToday } from "@/lib/kstDate";
+  Calendar,
+  type CalendarDayInfo,
+} from "@/features/calendar/components/Calendar";
+import { DayList } from "@/features/calendar/components/DayList";
+import { MonthNav } from "@/features/calendar/components/MonthNav";
+import { useMe } from "@/features/user/queries";
+import { addMonths, kstMonthOf, kstToday } from "@/lib/kstDate";
+import { openQuickBrew } from "@/lib/quickBrew";
 import { useViewportWidth } from "@/lib/useViewportWidth";
-import { Avatar, Button, Shell } from "@/components/ui";
 
-/** 레시피 목록과 같은 기준이다 — ≥760px가 웹(테이블), 그 아래가 모바일(2줄 원장). */
+type BrewsMode = "list" | "calendar";
+
 const WEB_BREAKPOINT_PX = 760;
+const TABLET_MAX_WIDTH_PX = 1023;
 
-/** `useSearchParams()`가 CSR bailout을 일으키므로 Next가 요구하는 Suspense 경계를 둔다. */
 export default function BrewsPage() {
-  return (
-    <Suspense fallback={<LoadingState />}>
-      <BrewsPageContent />
-    </Suspense>
-  );
-}
-
-function BrewsPageContent() {
   const { ready, onSessionLost } = useRequireSession();
   const me = useMe(onSessionLost);
-  const { filter, setFilter } = useMyCupsFilter();
-  // 「내 잔」은 본인 것만이다 — userId 없이 부르면 맞팔 친구의 잔까지 섞인다(AC-MYCUPS-01).
-  const listFilter = { userId: me.data?.id, ...toListFilter(filter) };
   const width = useViewportWidth();
-  const isMobile = width !== null && width < WEB_BREAKPOINT_PX;
+  const isWide = width !== null && width >= WEB_BREAKPOINT_PX;
+  const isTablet =
+    width !== null &&
+    width >= WEB_BREAKPOINT_PX &&
+    width <= TABLET_MAX_WIDTH_PX;
 
-  const stats = useQuery({
-    queryKey: ["brew-logs", "stats"],
-    queryFn: () => fetchBrewLogStats(onSessionLost),
-    enabled: ready,
+  const today = kstToday();
+  const currentMonth = kstMonthOf(today);
+
+  const [mode, setMode] = useState<BrewsMode>("list");
+  const [month, setMonth] = useState<string>(currentMonth);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [tabletExpanded, setTabletExpanded] = useState<boolean>(false);
+
+  const scrollByModeRef = useRef<Record<BrewsMode, number>>({
+    list: 0,
+    calendar: 0,
   });
+  const prevModeRef = useRef<BrewsMode>(mode);
+  const dateGroupRefs = useRef<Map<string, HTMLElement>>(new Map());
 
   const {
     data,
@@ -64,207 +65,374 @@ function BrewsPageContent() {
     fetchNextPage,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ["brew-logs", "mine", listFilter],
+    queryKey: ["brew-logs", "mine", { userId: me.data?.id }],
     initialPageParam: 0,
     queryFn: ({ pageParam }) =>
-      fetchBrewLogPage(
-        pageParam,
-        BREW_LOG_PAGE_SIZE,
-        onSessionLost,
-        listFilter,
-      ),
+      fetchBrewLogPage(pageParam, BREW_LOG_PAGE_SIZE, onSessionLost, {
+        userId: me.data?.id,
+      }),
     getNextPageParam: (lastPage) =>
       lastPage.hasNext ? lastPage.page + 1 : undefined,
     enabled: ready && me.data !== undefined,
   });
 
-  const logs = data?.pages.flatMap((page) => page.content) ?? [];
-  const labels = useRecipeLabels(logs, ready, onSessionLost);
-
-  const count = data?.pages[0]?.totalElements;
-  const pills = (
-    <PillFilter
-      label="내 잔 필터"
-      options={MY_CUPS_FILTERS}
-      value={filter}
-      onChange={setFilter}
-    />
+  const calendar = useCalendar(
+    me.data?.id,
+    month,
+    onSessionLost,
+    ready && me.data !== undefined,
   );
 
-  const shell = { isMobile, count, me: me.data, pills };
+  const monthDays = calendar.data?.days ?? [];
+  const dayMap = new Map<string, CalendarDayInfo>(
+    monthDays.map((d) => [d.date, { count: d.count, primaryRecipeName: d.primaryRecipeName }]),
+  );
+  const latestActiveDay =
+    monthDays.length > 0 ? monthDays[monthDays.length - 1].date : undefined;
 
-  // me가 실패하면 목록은 영영 enabled가 되지 않는다 — 로딩에 갇히지 않게 먼저 본다.
+  const effectiveCalendarDate =
+    selectedDate !== null && selectedDate.startsWith(month)
+      ? selectedDate
+      : month === currentMonth
+        ? today
+        : (latestActiveDay ?? `${month}-01`);
+
+  const dayLogsQuery = useDayLogs(
+    me.data?.id,
+    mode === "calendar" ? effectiveCalendarDate : null,
+    onSessionLost,
+  );
+
+  const listLogs = data?.pages.flatMap((page) => page.content) ?? [];
+  const dayLogs = dayLogsQuery.data?.content ?? [];
+  const visibleLogs =
+    mode === "calendar" ? [...listLogs, ...dayLogs] : listLogs;
+
+  const recipeLabels = useRecipeLabels(
+    visibleLogs,
+    ready && me.data !== undefined,
+    onSessionLost,
+  );
+  const beanOnlyLogs = visibleLogs.filter((log) => log.recipeId === undefined);
+  const beanSources = useBeanMetadataSources(
+    beanOnlyLogs,
+    ready && me.data !== undefined,
+    onSessionLost,
+  );
+
+  const groupedLogs = groupLogsByKstDate(listLogs);
+  const totalCount = data?.pages[0]?.totalElements;
+
+  useLayoutEffect(() => {
+    if (prevModeRef.current === mode) return;
+    prevModeRef.current = mode;
+    window.scrollTo(0, scrollByModeRef.current[mode]);
+  }, [mode]);
+
+  function switchMode(nextMode: BrewsMode) {
+    if (nextMode === mode) return;
+    scrollByModeRef.current[mode] = window.scrollY;
+    setMode(nextMode);
+  }
+
+  function handlePrevMonth() {
+    setMonth((prev) => addMonths(prev, -1));
+  }
+
+  function handleNextMonth() {
+    setMonth((prev) => (prev < currentMonth ? addMonths(prev, 1) : prev));
+  }
+
+  function handleSidebarDateSelect(date: string) {
+    setSelectedDate(date);
+    const hasLoadedDate = groupedLogs.some((group) => group.date === date);
+    if (hasLoadedDate) {
+      dateGroupRefs.current.get(date)?.scrollIntoView?.({ block: "start" });
+      return;
+    }
+    switchMode("calendar");
+  }
+
+  function registerDateGroupRef(date: string) {
+    return (el: HTMLElement | null) => {
+      if (el === null) dateGroupRefs.current.delete(date);
+      else dateGroupRefs.current.set(date, el);
+    };
+  }
+
+  const dayEntryLabels = new Map<number, string>(
+    dayLogs.map((log) => [
+      log.id,
+      resolveLedgerEntryPresentation(log, { recipeLabels, beanSources }).title,
+    ]),
+  );
+
+  const headerSegment = (
+    <div
+      className={
+        isWide
+          ? "flex w-[220px] shrink-0 gap-[3px] rounded-[8px] bg-sunken p-[3px]"
+          : "flex w-full gap-[3px] rounded-[8px] bg-sunken p-[3px]"
+      }
+    >
+      {(
+        [
+          { id: "list", label: "목록" },
+          { id: "calendar", label: "달력" },
+        ] as const
+      ).map((item) => {
+        const active = mode === item.id;
+        return (
+          <button
+            key={item.id}
+            type="button"
+            aria-pressed={active}
+            onClick={() => switchMode(item.id)}
+            className={`hit-44 flex-1 rounded-[6px] px-[6px] py-[9px] text-[13.5px] ${
+              active
+                ? "border border-border bg-paper font-medium text-ink"
+                : "border border-transparent bg-transparent text-ink-3"
+            }`}
+          >
+            {item.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  const pageHeader = (
+    <div className="flex flex-col gap-[14px]">
+      <div
+        className={
+          isWide ? "flex items-end justify-between gap-[24px]" : undefined
+        }
+      >
+        <div className="flex flex-col gap-[7px]">
+          {totalCount !== undefined && (
+            <span className="font-mono text-[10px] font-medium tracking-[0.12em] text-ink-3 uppercase">
+              {totalCount}잔
+            </span>
+          )}
+          <h1
+            className={
+              isWide
+                ? "text-[32px] leading-[1.1] font-semibold tracking-[-0.03em] text-ink"
+                : "text-[27px] leading-[1.15] font-semibold tracking-[-0.03em] text-ink"
+            }
+          >
+            기록
+          </h1>
+        </div>
+        {isWide && totalCount !== undefined && headerSegment}
+      </div>
+
+      {!isWide && totalCount !== undefined && (
+        <div className="flex flex-col gap-[12px]">
+          {!(mode === "list" && listLogs.length === 0) && (
+            <button
+              type="button"
+              onClick={() => openQuickBrew("record")}
+              className="hit-44 kn-press w-full rounded-[8px] border border-ink bg-ink px-4 py-[15px] text-center text-[15px] font-semibold tracking-[-0.01em] text-on-ink"
+            >
+              기록하기
+            </button>
+          )}
+          {headerSegment}
+        </div>
+      )}
+    </div>
+  );
+
   if (me.error) {
     return (
-      <BrewsScreen {...shell}>
+      <Shell wide stack className="max-w-[1080px]">
+        {pageHeader}
         <ErrorState error={me.error} onRetry={() => void me.refetch()} />
-      </BrewsScreen>
+      </Shell>
     );
   }
 
-  if (!ready || isPending || stats.isPending) {
+  if (!ready || me.isPending || isPending) {
     return (
-      <BrewsScreen {...shell}>
+      <Shell wide stack className="max-w-[1080px]">
+        {pageHeader}
         <LoadingState />
-      </BrewsScreen>
+      </Shell>
     );
   }
 
   if (error) {
     return (
-      <BrewsScreen {...shell}>
+      <Shell wide stack className="max-w-[1080px]">
+        {pageHeader}
         <ErrorState error={error} onRetry={() => void refetch()} />
-      </BrewsScreen>
+      </Shell>
     );
   }
 
-  if (stats.error) {
-    return (
-      <BrewsScreen {...shell}>
-        <ErrorState error={stats.error} onRetry={() => void stats.refetch()} />
-      </BrewsScreen>
-    );
-  }
+  const showAside = isWide && mode === "list";
 
-  const top = (
-    <>
-      <StatsCards stats={stats.data} isMobile={isMobile} />
-      {isMobile && pills}
-    </>
-  );
-
-  // 걸러서 0건이면 「없다」가 아니라 「조건에 맞는 게 없다」다 — 통계는 그대로 둔다(AC-MYCUPS-18).
-  if (logs.length === 0 && filter !== "all") {
-    return (
-      <BrewsScreen {...shell}>
-        {top}
-        <div
-          data-empty
-          className="flex flex-col items-center gap-[8px] py-[24px]"
-        >
-          <p className="text-[14.5px] text-ink-3">조건에 맞는 잔이 없습니다</p>
-          <button
-            type="button"
-            onClick={() => setFilter("all")}
-            className="hit-44 border-b border-border pb-[2px] text-[13.5px] text-ink-2"
-          >
-            전체 보기
-          </button>
-        </div>
-      </BrewsScreen>
-    );
-  }
-
-  if (logs.length === 0) {
-    return (
-      <BrewsScreen {...shell}>
-        {/* 0건이어도 통계는 보여준다 — 이번 달만 0잔, 나머지는 —(AC-RECIPESBREWS-86). */}
-        {top}
-
-        {/* 빈 화면은 다음 행동을 제안한다 — docs/specs/2026-09-15-structure.md.
-            레시피 없이 기록하므로 빠른 기록 시트를 연다(ADR 0011, AC-RECIPESBREWS-86 정정). */}
-        <div data-empty className="flex flex-col gap-3">
-          <p className="py-6 text-center text-body text-ink-3">
-            아직 기록이 없습니다
-          </p>
-          <Button variant="primary" onClick={() => openQuickBrew()}>
-            기록하기
-          </Button>
-        </div>
-      </BrewsScreen>
-    );
-  }
-
-  return (
-    <BrewsScreen {...shell}>
-      {top}
-
-      {isMobile ? (
-        <LedgerList logs={logs} labels={labels} />
+  const calendarSection = (
+    <div className="flex flex-col gap-6">
+      {calendar.isPending ? (
+        <LoadingState />
+      ) : calendar.error ? (
+        <ErrorState
+          error={calendar.error}
+          onRetry={() => void calendar.refetch()}
+        />
       ) : (
-        <LedgerTable logs={logs} labels={labels} />
-      )}
-
-      {/* 목업 BM1·BW1 — 버튼이 아니라 밑줄 글자다. 페이지를 더 부르는 동작이라 링크가 아니라 button이다. */}
-      {hasNextPage && (
-        <div className="flex justify-center pt-[10px]">
-          <button
-            type="button"
-            onClick={() => void fetchNextPage()}
-            disabled={isFetchingNextPage}
-            className="hit-44 border-b border-border pb-[2px] text-[13.5px] text-ink-2 disabled:text-ink-3"
+        <>
+          <div
+            className={
+              isWide
+                ? "flex flex-col gap-4 rounded-[12px] border border-border p-6"
+                : "flex flex-col gap-3"
+            }
           >
-            더 보기
-          </button>
-        </div>
-      )}
-
-      {/* 빠른 기록 시트를 연다(ADR 0011 — 레시피 없이 기록). 웹은 상단 바 CTA가 이 자리를 맡는다(AC-GRAMMAR-05). */}
-      {isMobile && (
-        <BottomCta onClick={() => openQuickBrew()}>기록하기</BottomCta>
-      )}
-    </BrewsScreen>
-  );
-}
-
-/**
- * 목업 BM1(모바일)·BW1(웹)의 머리. 모바일은 eyebrow에 개수·오른쪽에 아바타, 웹은 eyebrow에
- * 연도·오른쪽에 알약과 개수다(AC-MYCUPS-06·07). 개수는 현재 필터의 totalElements다.
- */
-function BrewsScreen({
-  isMobile,
-  count,
-  me,
-  pills,
-  children,
-}: {
-  isMobile: boolean;
-  count: number | undefined;
-  me: Me | undefined;
-  pills: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  const header = isMobile ? (
-    <PageHeader
-      eyebrow={count === undefined ? "My cups" : `My cups · ${count}`}
-      title="내 잔"
-      aside={
-        me && (
-          <span className="text-[13.5px] font-semibold text-ink-2">
-            <Avatar
-              nickname={me.nickname}
-              profileImageUrl={me.profileImageUrl}
-              size={36}
-              userId={me.id}
+            <MonthNav
+              month={month}
+              totalCount={calendar.data.totalCount}
+              activeDays={calendar.data.days.length}
+              showCount={isWide}
+              onPrev={handlePrevMonth}
+              onNext={handleNextMonth}
             />
-          </span>
-        )
-      }
-    />
-  ) : (
-    <div className="flex items-end justify-between gap-[24px]">
-      <PageHeader
-        eyebrow={`My cups · ${kstToday().slice(0, 4)}`}
-        title="내 잔"
-      />
-      <div className="flex items-center gap-[10px]">
-        {pills}
-        {count !== undefined && (
-          <>
-            <span aria-hidden className="mx-[4px] h-[20px] w-px bg-divider" />
-            <span className="font-mono text-[12px] text-ink-3">{`${count}잔`}</span>
-          </>
-        )}
-      </div>
+            <Calendar
+              month={month}
+              days={dayMap}
+              selectedDate={effectiveCalendarDate}
+              onSelect={setSelectedDate}
+              onSwipeLeft={handleNextMonth}
+              onSwipeRight={handlePrevMonth}
+              today={today}
+            />
+          </div>
+
+          {dayLogsQuery.isPending ? (
+            <LoadingState />
+          ) : dayLogsQuery.error ? (
+            <ErrorState
+              error={dayLogsQuery.error}
+              onRetry={() => void dayLogsQuery.refetch()}
+            />
+          ) : dayLogs.length === 0 ? (
+            <p className="py-6 text-center text-body text-ink-3">
+              이 날에는 기록이 없습니다.
+            </p>
+          ) : (
+            <DayList
+              date={effectiveCalendarDate}
+              logs={dayLogs}
+              entryLabels={dayEntryLabels}
+              recipeLabels={recipeLabels}
+              variant="mobile"
+            />
+          )}
+        </>
+      )}
     </div>
   );
+
   return (
-    <Shell wide>
+    <Shell wide stack className="max-w-[1080px]">
       <div
-        className={`flex flex-col ${isMobile ? "gap-[16px]" : "gap-[24px]"}`}
+        className={
+          showAside
+            ? "grid grid-cols-1 gap-6 min-[1024px]:grid-cols-[minmax(0,1fr)_280px] min-[1024px]:items-start min-[1024px]:gap-x-[40px] min-[1024px]:gap-y-6 min-[1280px]:grid-cols-[minmax(0,1fr)_300px]"
+            : "grid grid-cols-1 gap-6"
+        }
       >
-        {header}
-        {children}
+        <div className="min-[1024px]:col-start-1 min-[1024px]:row-start-1">
+          {pageHeader}
+        </div>
+
+        {showAside && (
+          <aside className="flex flex-col gap-[14px] min-[1024px]:col-start-2 min-[1024px]:row-span-2 min-[1024px]:pt-[70px]">
+            <div className="flex flex-col gap-3 rounded-[12px] border border-border p-4">
+              {calendar.isPending ? (
+                <LoadingState />
+              ) : calendar.error ? (
+                <ErrorState
+                  error={calendar.error}
+                  onRetry={() => void calendar.refetch()}
+                />
+              ) : (
+                <>
+                  <MonthNav
+                    month={month}
+                    totalCount={calendar.data.totalCount}
+                    activeDays={calendar.data.days.length}
+                    onPrev={handlePrevMonth}
+                    onNext={handleNextMonth}
+                  />
+                  <Calendar
+                    month={month}
+                    days={dayMap}
+                    selectedDate={
+                      selectedDate !== null && selectedDate.startsWith(month)
+                        ? selectedDate
+                        : null
+                    }
+                    onSelect={handleSidebarDateSelect}
+                    onSwipeLeft={handleNextMonth}
+                    onSwipeRight={handlePrevMonth}
+                    compact
+                    collapsedWeek={isTablet && !tabletExpanded}
+                    onExpandWeek={() => setTabletExpanded(true)}
+                    today={today}
+                  />
+                </>
+              )}
+            </div>
+            <p className="hidden text-[12.5px] leading-[1.6] text-ink-3 min-[1024px]:block">
+              날짜를 누르면 왼쪽 목록이 그 날로 스크롤됩니다.
+            </p>
+          </aside>
+        )}
+
+        {mode === "calendar" ? (
+          <div className={isWide ? "w-full max-w-[720px]" : "w-full"}>
+            {calendarSection}
+          </div>
+        ) : (
+          <div className="min-w-0 min-[1024px]:col-start-1 min-[1024px]:row-start-2">
+            {listLogs.length === 0 ? (
+              <div data-empty className="flex flex-col gap-3">
+                <p className="py-6 text-center text-body text-ink-3">
+                  아직 기록이 없습니다
+                </p>
+                <Button variant="primary" onClick={() => openQuickBrew("record")}>
+                  기록하기
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                <BrewLedger
+                  groups={groupedLogs}
+                  isWide={isWide}
+                  today={today}
+                  recipeLabels={recipeLabels}
+                  beanSources={beanSources}
+                  registerDateGroupRef={registerDateGroupRef}
+                />
+                {hasNextPage && (
+                  <div className="flex justify-center pt-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => void fetchNextPage()}
+                      disabled={isFetchingNextPage}
+                      className="hit-44 border-b border-border pb-[2px] text-[13.5px] text-ink-2 disabled:text-ink-3"
+                    >
+                      더 보기
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </Shell>
   );

@@ -195,3 +195,222 @@ test.describe("AC-QUICKBREW-65 · 오늘 홈 300ms 지연 로딩 뼈대 규칙",
     expect(fadeDuration).toBe("0.12s");
   });
 });
+
+async function setupQuickBrewPanelStubs(
+  page: Parameters<typeof installStubs>[0],
+) {
+  const postedBodies: Array<Record<string, unknown>> = [];
+  await installStubs(page);
+  await page.route("**/api/v1/gear/user-grinders", async (route: Route) => {
+    await route.fulfill({ json: [{ ...myComandante, id: 3 }] });
+  });
+  await page.route("**/api/v1/bean-products/**", async (route: Route) => {
+    await route.fulfill({ json: { ...yirgacheffeProduct, id: 41 } });
+  });
+  await page.route("**/api/v1/bean-products", async (route: Route) => {
+    await route.fulfill({ json: [{ ...yirgacheffeProduct, id: 41 }] });
+  });
+  await page.route("**/api/v1/brew-logs*", async (route: Route) => {
+    const req = route.request();
+    const url = new URL(req.url());
+    if (req.method() === "POST" && url.pathname === "/api/v1/brew-logs") {
+      const body = req.postDataJSON() as Record<string, unknown>;
+      postedBodies.push(body);
+      await route.fulfill({
+        status: 201,
+        json: {
+          ...LAST_LOG,
+          id: 502,
+          rating: body.rating,
+        },
+      });
+      return;
+    }
+    if (url.pathname === "/api/v1/brew-logs") {
+      await route.fulfill({
+        json: {
+          ...brewLogPage,
+          ...pageOf([LAST_LOG]),
+        },
+      });
+      return;
+    }
+    await route.fallback();
+  });
+  return postedBodies;
+}
+
+async function waitForMotionSettled(locator: Locator) {
+  await locator.evaluate((el) =>
+    Promise.all(el.getAnimations().map((animation) => animation.finished)),
+  );
+}
+
+test.describe("AC-QUICKBREW-67 · 웹 오른쪽 패널 폭 · Esc · 바깥 클릭 · Enter", () => {
+  for (const { width, height, expectedWidth } of [
+    { width: 1440, height: 900, expectedWidth: 440 },
+    { width: 1100, height: 900, expectedWidth: 400 },
+    { width: 900, height: 900, expectedWidth: 520 },
+  ]) {
+    test(`${width}×${height}에서 오른쪽 패널 폭 ${expectedWidth}px와 Esc·바깥 클릭·Enter가 동작한다`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height });
+      const postedBodies = await setupQuickBrewPanelStubs(page);
+
+      await page.goto("/");
+      const trigger = page
+        .locator("button:visible", { hasText: "기록하기" })
+        .first();
+      await expect(trigger).toBeVisible();
+      await trigger.click();
+
+      const dialog = page.getByRole("dialog", { name: "빠른 기록" });
+      await expect(dialog).toBeVisible();
+      await waitForMotionSettled(dialog);
+
+      const box = await dialog.boundingBox();
+      expect(box).not.toBeNull();
+      expect(Math.round(box!.width)).toBe(expectedWidth);
+      expect(Math.round(box!.x + box!.width)).toBe(width);
+      expect(Math.round(box!.y)).toBe(0);
+      expect(Math.round(box!.height)).toBe(height);
+      await expect(dialog.locator("[data-sheet-handle]")).toBeHidden();
+
+      // 바뀐 입력 없이 Esc → 즉시 닫힘
+      await page.keyboard.press("Escape");
+      await expect(dialog).toHaveCount(0);
+
+      // 다시 열고 Enter로 ① → ② 진행 후 별점 선택
+      await trigger.click();
+      await expect(dialog).toBeVisible();
+      await waitForMotionSettled(dialog);
+      await expect(
+        dialog.getByRole("heading", { name: "지난번과 같은가요?" }),
+      ).toBeVisible();
+      await page.keyboard.press("Enter");
+      await expect(
+        dialog.getByRole("heading", { name: "맛은 어땠나요?" }),
+      ).toBeVisible();
+
+      await dialog.getByRole("radio", { name: "별 4" }).click();
+
+      // 입력 변경 뒤 Esc → 확인 카드 → 다시 Esc로 계속 쓰기
+      await page.keyboard.press("Escape");
+      const alertDialog = dialog.getByRole("alertdialog", {
+        name: "기록을 그만둘까요?",
+      });
+      await expect(alertDialog).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(alertDialog).toBeHidden();
+
+      // 바깥(스크림) 클릭 → 확인 카드 → Enter로 「계속 쓰기」
+      await page.mouse.click(20, 20);
+      await expect(alertDialog).toBeVisible();
+      await page.keyboard.press("Enter");
+      await expect(alertDialog).toBeHidden();
+
+      // Enter로 「저장」 → 「기록했어요」 → Enter로 「확인」 닫기
+      await page.keyboard.press("Enter");
+      await expect(
+        dialog.getByRole("heading", { name: "기록했어요" }),
+      ).toBeVisible();
+      expect(postedBodies).toHaveLength(1);
+      await page.keyboard.press("Enter");
+      await expect(dialog).toHaveCount(0);
+    });
+  }
+
+  test("AC-QUICKBREW-61 · reduced-motion이면 닫을 때 즉시 언마운트된다", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await setupQuickBrewPanelStubs(page);
+
+    await page.goto("/");
+    await page
+      .locator("button:visible", { hasText: "기록하기" })
+      .first()
+      .click();
+    const dialog = page.getByRole("dialog", { name: "빠른 기록" });
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+  });
+});
+
+test.describe("AC-QUICKBREW-68 · 모바일 바텀시트 손잡이 끌어 닫기", () => {
+  test("바뀐 입력이 없으면 시트 높이의 29%에서 복귀하고 31%에서 닫히며, 바뀐 입력이 있으면 확인 카드를 연다", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await setupQuickBrewPanelStubs(page);
+
+    await page.goto("/");
+    const recordButton = page
+      .locator("button:visible", { hasText: "기록하기" })
+      .first();
+    await expect(recordButton).toBeVisible();
+    await recordButton.click();
+
+    const dialog = page.getByRole("dialog", { name: "빠른 기록" });
+    const handle = dialog.locator("[data-sheet-handle]");
+    await expect(dialog).toBeVisible();
+    await expect(handle).toBeVisible();
+    await waitForMotionSettled(dialog);
+
+    const sheetBox = await dialog.boundingBox();
+    const handleBox = await handle.boundingBox();
+    expect(sheetBox).not.toBeNull();
+    expect(handleBox).not.toBeNull();
+    expect(Math.round(sheetBox!.y + sheetBox!.height)).toBe(844);
+
+    const cx = handleBox!.x + handleBox!.width / 2;
+    const cy = handleBox!.y + handleBox!.height / 2;
+
+    // 29% 드래그 → 제자리 복귀
+    const dy29 = Math.floor(sheetBox!.height * 0.29);
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    await page.mouse.move(cx, cy + dy29, { steps: 10 });
+    await page.mouse.up();
+    await waitForMotionSettled(dialog);
+    await expect(dialog).toBeVisible();
+    const restoredBox = await dialog.boundingBox();
+    expect(restoredBox).not.toBeNull();
+    expect(Math.abs(restoredBox!.y - sheetBox!.y)).toBeLessThanOrEqual(1);
+
+    // 31% 드래그 → 닫힘
+    const dy31 = Math.ceil(sheetBox!.height * 0.31);
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    await page.mouse.move(cx, cy + dy31, { steps: 10 });
+    await page.mouse.up();
+    await expect(dialog).toHaveCount(0);
+
+    // 입력이 바뀐 상태에서 31% 드래그 → 확인 카드 표시 후 「그만두기」로 닫기
+    await page.getByRole("button", { name: "이대로 기록" }).click();
+    await expect(dialog).toBeVisible();
+    await waitForMotionSettled(dialog);
+    await dialog.getByRole("radio", { name: "별 4" }).click();
+
+    const dirtySheetBox = await dialog.boundingBox();
+    const dirtyHandleBox = await handle.boundingBox();
+    const dcx = dirtyHandleBox!.x + dirtyHandleBox!.width / 2;
+    const dcy = dirtyHandleBox!.y + dirtyHandleBox!.height / 2;
+    await page.mouse.move(dcx, dcy);
+    await page.mouse.down();
+    await page.mouse.move(dcx, dcy + Math.ceil(dirtySheetBox!.height * 0.31), {
+      steps: 10,
+    });
+    await page.mouse.up();
+
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByRole("alertdialog", { name: "기록을 그만둘까요?" }),
+    ).toBeVisible();
+    await dialog.getByRole("button", { name: "그만두기" }).click();
+    await expect(dialog).toHaveCount(0);
+  });
+});

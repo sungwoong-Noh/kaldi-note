@@ -67,6 +67,28 @@ done
 
 check "AC-READ-20 · 합계가 헤딩 총합과 같다" "$expected" "$total"
 
+# ── AC-RELAY-31 · 커버리지 검사가 Worker 테스트를 본다 ──────────────────
+#
+# infra/fetch-relay/index.test.js에만 있는 AC ID를 리터럴로 쓰면 이 파일(scripts/)에서
+# 매칭되므로 이어 붙여 만든다.
+mkdir -p "$TMP/relay"
+RELAY_ONLY_ID="AC-RELAY-""01"
+cat > "$TMP/relay/2099-01-01-relay.md" <<SPEC
+---
+id: RELAY
+title: 중계 픽스처
+status: 구현완료
+---
+#### ${RELAY_ONLY_ID} · Worker에만 있는 AC
+SPEC
+
+SPEC_DIR="$TMP/relay" "$SCRIPT" >/dev/null 2>&1
+check "AC-RELAY-31 · 커버리지 검사가 Worker 테스트를 본다" "0" "$?"
+
+# ── AC-RELAY-32 · CI가 Worker 테스트를 돌린다 ───────────────────────────
+spec_wf=$(grep -c 'node --test infra/fetch-relay/index.test.js' "$HERE/../.github/workflows/spec.yml" || true)
+check "AC-RELAY-32 · CI가 Worker 테스트를 돌린다" "1" "$spec_wf"
+
 echo
 if [ "$failed" -eq 0 ]; then
   echo "전부 통과"

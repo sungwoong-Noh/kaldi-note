@@ -72,3 +72,8 @@ kaldi:
     region: ${OCI_REGION:ap-chuncheon-1}
     namespace: ${OCI_NAMESPACE}
     bucket-name: ${OCI_BUCKET_NAME}
+  crawler:
+    relay:
+      url: ${KALDI_CRAWLER_RELAY_URL:}
+      token: ${KALDI_CRAWLER_RELAY_TOKEN:}
+      hosts: momos.co.kr

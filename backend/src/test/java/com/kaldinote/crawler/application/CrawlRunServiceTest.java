@@ -14,6 +14,7 @@ import com.kaldinote.crawler.infrastructure.CrawlRunRepository;
 import com.kaldinote.crawler.infrastructure.CrawlerFixtures;
 import com.kaldinote.crawler.infrastructure.MomosSource;
 import com.kaldinote.crawler.infrastructure.PageFetcher;
+import com.kaldinote.crawler.infrastructure.PageFetcher.RelaySettings;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -166,5 +167,28 @@ class CrawlRunServiceTest extends AbstractIntegrationTest {
 
     assertThat(reload(id).getStatus()).isEqualTo(CrawlRunStatus.INTERRUPTED);
     assertThat(reload(id).getFinishedAt()).isNotNull();
+  }
+
+  @Test
+  @DisplayName("AC-RELAY-27 · 중계 설정이 비어 있으면 모모스 실행은 FAILED")
+  void 중계_설정이_비어_있으면_모모스_실행은_FAILED다() {
+    RestClient.Builder relayBuilder = RestClient.builder();
+    MockRestServiceServer relayServer = MockRestServiceServer.bindTo(relayBuilder).build();
+    CrawlRunService unconfigured =
+        new CrawlRunService(
+            List.of(new MomosSource()),
+            runRepository,
+            importService,
+            new PageFetcher(
+                relayBuilder.build(), new RelaySettings("", "t0ken", List.of("momos.co.kr"))),
+            Runnable::run,
+            sleeps::add);
+
+    Long id = unconfigured.start("momos", null).id();
+
+    CrawlRun run = reload(id);
+    assertThat(run.getStatus()).isEqualTo(CrawlRunStatus.FAILED);
+    assertThat(run.getErrorMessage()).isEqualTo("목록 요청 실패: 중계 설정 없음: momos.co.kr");
+    relayServer.verify();
   }
 }

@@ -3,7 +3,7 @@
 # 스펙의 인수 조건(AC)이 실제 테스트에 존재하는지 검사한다.
 #
 #   docs/specs/*.md 에서 AC-XXX-NN 형태의 ID를 뽑아
-#   backend/src/test/, frontend/src/, frontend/e2e/, infra/scripts/ 에서 찾는다.
+#   backend/src/test/, frontend/src/, frontend/e2e/, infra/scripts/, infra/fetch-relay/ 에서 찾는다.
 #   (infra/scripts는 배포 스크립트의 셸 테스트 — docs/specs/2026-09-05-build-info.md)
 #
 # 스펙 frontmatter의 status에 따라 검사 강도가 다르다:
@@ -26,7 +26,7 @@ AC_PATTERN='AC-[A-Z][A-Z0-9_]*-[0-9]+[a-z]?'
 # scripts도 포함한다 — 이 스크립트 자신의 집계 로직을 검사하는 셸 테스트가 여기 산다
 # (docs/specs/2026-09-15-readability.md의 AC-READ-19·20).
 SEARCH_PATHS=()
-for path in backend/src/test frontend/src frontend/e2e infra/scripts scripts; do
+for path in backend/src/test frontend/src frontend/e2e infra/scripts infra/fetch-relay scripts; do
   [ -d "$path" ] && SEARCH_PATHS+=("$path")
 done
 

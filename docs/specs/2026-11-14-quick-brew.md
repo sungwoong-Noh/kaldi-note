@@ -3,7 +3,7 @@ id: QUICKBREW
 title: 빠른 기록 — 오늘 홈 · 빠른 기록 시트 · 기록 탭
 status: 구현중
 milestone: P1
-supersedes:
+supersedes: docs/specs/2026-09-19-home-calendar.md
 ---
 
 # 빠른 기록 스펙
@@ -436,6 +436,257 @@ supersedes:
 - **Then** 제자리로 돌아온다 / 닫힌다
 - **검증** e2e (`page.mouse` 드래그)
 
+### 기능 — 달력 부품 (기존 홈 스펙에서 승계)
+
+> 홈(`/`) 달력은 「오늘」 화면(시안 A)으로 대체되지만, 기존 달력 부품(`Calendar`·`MonthNav`·`DayList` 모바일)은
+> 「기록」 탭(`/brews` 달력, Task 12 시안 F2·FW)에서 다시 쓴다. 테스트 코드의 기존 AC ID 역참조를 유지하기 위해
+> 원래 ID(`AC-HOMECAL-*`) 그대로 아래 30건(`Calendar` 19 · `MonthNav` 6 · `DayList` 모바일 5)을 이 스펙으로 옮겨
+> 살린다. 원래 조건에 적힌 「홈」 맥락은 `/brews` 달력 부품 기준으로 해석한다.
+
+#### AC-HOMECAL-25 · 주 시작이 월요일이다
+
+- **Given** 달력 부품
+- **When** 달력을 렌더한다
+- **Then** 요일 헤더의 첫 칸이 `월`이고 마지막 칸이 `일`이다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-26 · 기록이 2건인 날에도 점은 1개다
+
+- **Given** `2026-09-05`의 `count`가 `2`인 달력 응답
+- **When** 달력을 렌더한다
+- **Then** `2026-09-05` 셀 안의 점 요소가 `1`개다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-34 · 좌우 스와이프로 월이 바뀐다
+
+- **Given** `2026-09`를 보는 중
+- **When** 달력 영역에서 좌우로 스와이프한다
+- **Then** `onSwipeLeft`·`onSwipeRight`가 불려 월 헤더가 바뀐다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx` (Task 12 e2e 포함)
+
+#### AC-HOMECAL-35 · 화살표 키로 날짜가 이동한다
+
+- **Given** `2026-09-19` 셀에 포커스가 있다
+- **When** `→`를 한 번, `↓`를 한 번 누른다
+- **Then** 포커스가 `2026-09-20`을 거쳐 `2026-09-27`에 있다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-45 · 날짜 셀의 aria-label이 건수를 말한다
+
+- **Given** `2026-09-19`에 기록 2건, `2026-09-03`에 기록 없음
+- **When** 두 셀의 `aria-label`을 읽는다
+- **Then** 각각 `"9월 19일, 기록 2건"`, `"9월 3일, 기록 없음"`이다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-46 · 선택된 셀에 aria-current가 있다
+
+- **Given** `2026-09-05`를 선택한 상태
+- **When** DOM을 본다
+- **Then** `aria-current="date"`인 요소가 정확히 1개이고 그것이 `2026-09-05` 셀이다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-53 · signal-record 토큰이 라이트·다크에서 각각 지정값이다
+
+- **Given** `globals.css`
+- **When** 라이트와 다크에서 `--signal-record`를 읽는다
+- **Then** 각각 `oklch(0.55 0.16 30)`, `oklch(0.65 0.17 30)`이다
+- **검증** 단위 테스트 `signalRecordToken.test.ts`
+
+#### AC-HOMECAL-92 · 요일 헤더가 mono 10px·대문자·자간 0.08em으로 렌더된다
+
+- **Given** 달력 부품(모바일)
+- **When** 요일 헤더(`월 화 수 목 금 토 일`) 7칸을 렌더한다
+- **Then** 각 칸의 `font-family`가 mono, `font-size`가 10px, `text-transform`이 uppercase,
+  `letter-spacing`이 0.08em이다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-93 · 요일 헤더 평일 색이 oklch(0.58 0.02 70)이다
+
+- **Given** 요일 헤더의 월~금 칸
+- **When** 렌더한다
+- **Then** 글자 색이 `oklch(0.58 0.02 70)`(라이트)이다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-94 · 요일 헤더 주말 색이 oklch(0.62 0.02 70)이다
+
+- **Given** 요일 헤더의 토·일 칸
+- **When** 렌더한다
+- **Then** 글자 색이 `oklch(0.62 0.02 70)`(라이트)이다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-95 · 이번 달 지난 날짜(평일) 색이 oklch(0.3 0.015 60)이다
+
+- **Given** 이번 달 안의 오늘보다 이전 날짜이고 평일(월~금)인 셀
+- **When** 렌더한다
+- **Then** 날짜 숫자 색이 `oklch(0.3 0.015 60)`이다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-96 · 이번 달 지난 날짜(주말) 색이 oklch(0.5 0.015 60)이다
+
+- **Given** 이번 달 안의 오늘보다 이전 날짜이고 주말(토·일)인 셀
+- **When** 렌더한다
+- **Then** 날짜 숫자 색이 `oklch(0.5 0.015 60)`이다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-97 · 미래 날짜(평일) 색이 oklch(0.72 0.012 70)이다
+
+- **Given** 오늘보다 미래인 날짜이고 평일인 셀(같은 달 안)
+- **When** 렌더한다
+- **Then** 날짜 숫자 색이 `oklch(0.72 0.012 70)`이다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-98 · 미래 날짜(주말) 색이 oklch(0.78 0.012 70)이다
+
+- **Given** 오늘보다 미래인 날짜이고 주말인 셀(같은 달 안)
+- **When** 렌더한다
+- **Then** 날짜 숫자 색이 `oklch(0.78 0.012 70)`이다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-98a · 다크 모드 날짜 색은 기존 ink 스케일을 재사용한다
+
+- **Given** 다크 모드
+- **When** AC-HOMECAL-95~98의 4가지 상태를 각각 렌더한다
+- **Then** 지난날-평일은 `--ink`(다크, `oklch(0.95 0.005 85)`), 지난날-주말은 `--ink-2`(다크,
+  `oklch(0.82 0.008 78)`), 미래-평일은 `--ink-3`(다크, `oklch(0.68 0.01 70)`), 미래-주말은
+  새 토큰 `--date-future-weekend`(다크, `oklch(0.55 0.012 70)`)를 쓴다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-98b · 다크 모드 요일 헤더 색은 평일·주말 모두 ink-3를 쓴다
+
+- **Given** 다크 모드
+- **When** 요일 헤더를 렌더한다
+- **Then** 평일·주말 모두 `--ink-3`(다크, `oklch(0.68 0.01 70)`)를 쓴다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-99 · 오늘 날짜는 위 4색 규칙을 따르지 않고 선택/오늘 스타일이 우선한다
+
+- **Given** 오늘 날짜 셀
+- **When** 선택되지 않은 상태로 렌더한다
+- **Then** AC-HOMECAL-95~98의 색 대신 28px 원 + 1px `border` 링 스타일이 적용된다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-100 · 기록 점과 날짜 숫자 사이 gap이 4px다(선택 여부 무관)
+
+- **Given** 기록이 1건 이상인 날짜 셀(모바일)
+- **When** 렌더한다
+- **Then** 날짜 숫자와 기록 점 사이 `gap`이 선택 여부와 관계없이 4px다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-101 · 기록이 없는 날짜도 점과 같은 크기의 투명 자리를 유지한다
+
+- **Given** 기록이 0건인 날짜 셀
+- **When** 렌더한다
+- **Then** 점 위치에 5px 크기의 요소가 존재하되 `background`가 없다 — 기록 있는 날과 없는 날의 날짜 숫자 baseline이 같다
+- **검증** 컴포넌트 테스트 `Calendar.test.tsx`
+
+#### AC-HOMECAL-32 · 이번 달에서 다음 달 버튼이 비활성이다
+
+- **Given** 오늘이 `2026-09-19`이고 `2026-09`를 보는 중
+- **When** `MonthNav`를 렌더한다
+- **Then** 다음 달 버튼이 `disabled`다
+- **검증** 컴포넌트 테스트 `MonthNav.test.tsx`
+
+#### AC-HOMECAL-40 · 월 헤더 라벨이 달력 주인에 따라 다르다
+
+- **Given** 9월 `totalCount`가 `9`
+- **When** 내 달력과 `지연`의 달력을 각각 본다(`ownerNickname` prop)
+- **Then** 각각 `9 BREWS`, `지연 · 6 BREWS`다(P1에서는 내 달력만 쓰지만 `MonthNav` 부품 API는 M4까지 유지)
+- **검증** 컴포넌트 테스트 `MonthNav.test.tsx`
+
+#### AC-HOMECAL-41 · 1건은 `1 BREW`, 0건은 `0 BREWS`다
+
+- **Given** `totalCount`가 각각 `1`, `0`인 달력 응답
+- **When** `brewCountLabel`로 월 헤더 건수를 포맷한다
+- **Then** 각각 `1 BREW`, `0 BREWS`다
+- **검증** 단위 테스트 `brewCountLabel.test.ts`
+
+#### AC-HOMECAL-105 · 월 이동 버튼의 클릭 영역이 44×44px다
+
+- **Given** 월 이동 버튼(‹, ›) 2개
+- **When** `MonthNav`를 렌더한다
+- **Then** 각 버튼(`<button>`)의 누르는 영역(`hit-44`)이 44px 이상이다(2026-10-11 `AC-HOMEFIT-06`으로 hit area 기준 갱신)
+- **검증** 컴포넌트 테스트 `MonthNav.test.tsx`
+
+#### AC-HOMECAL-106 · 월 이동 버튼의 시각 박스가 32×32px다
+
+- **Given** 월 이동 버튼
+- **When** `MonthNav`를 렌더한다
+- **Then** 버튼 자신의 `height`·`width`가 32px, `border-radius`가 7px이고 안쪽 테두리 상자 없는 한 겹이다(2026-10-11 `AC-HOMEFIT-06` 반영)
+- **검증** 컴포넌트 테스트 `MonthNav.test.tsx`
+
+#### AC-HOMECAL-107 · 월 라벨이 새 타입 스케일 `month-label`(mono 22px)로 렌더된다
+
+- **Given** 월 헤더의 `2026.09` 라벨
+- **When** `MonthNav`를 렌더한다
+- **Then** `font-family`가 mono, `font-size`가 22px, `font-weight`가 500, `letter-spacing`이 -0.03em이다
+- **검증** 컴포넌트 테스트 `MonthNav.test.tsx` + `src/test/typography.test.ts`
+
+#### AC-HOMECAL-42 · 목록 헤더가 날짜·요일·건수를 담는다
+
+- **Given** `2026-09-19`(토)에 기록 2건
+- **When** 모바일 `DayList`를 렌더한다
+- **Then** 목록 헤더가 `09.19 SAT · 2 BREWS`다
+- **검증** 컴포넌트 테스트 `DayList.test.tsx`
+
+#### AC-HOMECAL-43 · 수율이 없으면 비율을 보여준다
+
+- **Given** `extractionYieldPercent`가 `20.4`인 기록과, 그 키가 없고 `brewRatio`가 `15.6`인 기록
+- **When** `DayList` 목록을 본다
+- **Then** 각각 `20.4 %`, `1:15.6`이다
+- **검증** 컴포넌트 테스트 `DayList.test.tsx`
+
+#### AC-HOMECAL-76 · 원두를 연결하지 않은 기록은 roast dot이 없다
+
+- **Given** `beanBatchId` 키가 없는 기록 1건
+- **When** `DayList` 목록을 본다
+- **Then** 그 행에 roast dot 요소가 없다
+- **검증** 컴포넌트 테스트 `DayList.test.tsx`
+
+#### AC-HOMECAL-108 · 목록 행에 시각·별점 캡션 줄이 새 타입 스케일 `caption`(sans 11.5px)으로 렌더된다
+
+- **Given** 날짜별 목록의 브루 로그 행 1개(별점이 있는 경우)
+- **When** 모바일 `DayList`를 렌더한다
+- **Then** 레시피명 아래에 `{HH:mm} · ★ {rating}` 형식의 캡션 줄이 `font-size` 11.5px, 색 `ink-3`로 렌더된다
+- **검증** 컴포넌트 테스트 `DayList.test.tsx` + `src/test/typography.test.ts`
+
+#### AC-HOMECAL-109 · 별점이 없으면 캡션 줄에 시각만 렌더된다
+
+- **Given** 별점이 `null`인 브루 로그 행
+- **When** 모바일 `DayList`를 렌더한다
+- **Then** 캡션 줄이 `{HH:mm}`만 표시하고 `· ★`는 생략된다
+- **검증** 컴포넌트 테스트 `DayList.test.tsx`
+
+---
+
+## 대체하는 이전 스펙과 AC
+
+이 스펙이 `/`를 시안 A(「오늘」)로, `/brews`를 시안 F(「기록」 목록/달력)로 바꾸므로 기존 달력 홈 스펙 3개를 모두
+`status: 대체됨`으로 닫는다. (`check-docs.sh`가 frontmatter `supersedes:`에 경로 하나만 허용하므로
+대표 스펙 `docs/specs/2026-09-19-home-calendar.md`만 frontmatter에 적고, 3개 전체 관계를 여기에 명시한다.)
+
+- [`2026-09-19-home-calendar.md`](2026-09-19-home-calendar.md) (`status: 대체됨`, 83개 + 기 대체 `AC-HOMECAL-77`)
+- [`2026-09-20-home-calendar-mockup-fidelity.md`](2026-09-20-home-calendar-mockup-fidelity.md) (`status: 대체됨`, 39개)
+- [`2026-10-11-home-fidelity.md`](2026-10-11-home-fidelity.md) (`status: 대체됨`, 23개)
+
+### 어떤 AC가 어디로 가는지
+
+| 이전 AC (출발 스펙) | 개수 | 처리 | 근거 · 현재 테스트 위치 |
+|---|---|---|---|
+| `AC-HOMECAL-25·26·34·35·45·46·53·92~101·98a·98b` (`09-19`, `09-20`) | 19 | **승계 (살림)** → 이 스펙 `Calendar` 부품 | Task 12 「기록」 탭 달력 재사용. `Calendar.test.tsx`, `signalRecordToken.test.ts` |
+| `AC-HOMECAL-32·40·41·105·106·107` (`09-19`, `09-20`) | 6 | **승계 (살림)** → 이 스펙 `MonthNav` 부품 | Task 12 월 헤더 재사용. `MonthNav.test.tsx`, `brewCountLabel.test.ts` |
+| `AC-HOMEFIT-06` (`10-11`) | 1 | **통합 유지** → `AC-HOMECAL-105·106` | `MonthNav.test.tsx`가 `AC-HOMECAL-105·106`에 함께 태그해 동일 규칙 검증 |
+| `AC-HOMECAL-42·43·76·108·109` (`09-19`, `09-20`) | 5 | **승계 (살림)** → 이 스펙 `DayList` 모바일 | Task 12 시안 F2 날짜별 원장 행 재사용. `DayList.test.tsx` |
+| `AC-HOMECAL-01~17·66·67·73` (`09-19`) | 20 | **대체 표기 · 코드/테스트 유지** (`GET /brew-logs/calendar`, `?date=`) | `/` 오늘·`/brews` 달력이 계약 그대로 사용. `BrewLogCalendarControllerTest`, `BrewLogControllerTest`, `CalendarMonthTest` |
+| `AC-HOMECAL-18~24` (`09-19`) | 7 | **대체 표기 · API/테스트 유지** (`GET /users/me/mutual-follows`) | UI 팔로우 레일은 M4 보류, 백엔드 API·`MutualFollowControllerTest`는 유지 |
+| `AC-HOMECAL-54·75·111·119·120`, `AC-HOMEFIT-14·20` (`09-19`, `09-20`, `10-11`) | 7 | **대체 표기 · 공용/타 화면 테스트 유지** | KST 표기(`kstDate.test.ts`, `BrewLogCard`, `/brews/[id]`), `RoastDot`, `Avatar`, `/u/[id]` 프로필(`UserProfile`) 현행 유지 |
+| `AC-HOMECAL-36~39·44·47·71·102~104·110·126`, `AC-HOMEFIT-01~04` (`09-19`, `09-20`, `10-11`) | 16 | **대체됨 (M4 보류)** | 팔로우 레일·남의 달력 UI. `quick-brew` Non-goals(M4 친구 피드로 이동). `FollowRail.test.tsx`, `DayList.test.tsx`, `page.test.tsx`, e2e |
+| `AC-HOMECAL-27~31·33·48~52·55~62·78~84·127·128`, `AC-HOMEFIT-05·08·09·13·18·19·22·23` (`09-19`, `09-20`, `10-11`) | 36 | **대체됨** → `AC-QUICKBREW-20~22·29·31·65` | 구 `/` 달력 홈 레이아웃·네비·CTA·e2e가 시안 A(오늘)·시안 G(탭 바)·시안 F(기록 탭)로 교체 |
+| `AC-HOMECAL-63~65·68~70·72·74·112~118·121~125`, `AC-HOMEFIT-07·10~12·15~17·21` (`09-19`, `09-20`, `10-11`) | 28 | **대체됨** (웹 2컬럼 홈 셀·우측 카드 `DayCard`) | 구 홈 웹 2컬럼(셀 내 레시피명 + 우측 420px `DayCard` 패널)이 시안 A(오늘) + FW(원장 + 300px 달력 카드)로 교체 |
+
+> **관련 스펙 비고:** [`2026-09-20-calendar-grid-responsive.md`](2026-09-20-calendar-grid-responsive.md)(`AC-HOMECAL-85~91`, `status: 구현완료`)는
+> 이슈 #210의 3개 목록에 없었으며 테스트가 `home-calendar-web.spec.ts`에만 있어 이번 커밋에서는 건드리지 않았다.
+> Task 10에서 `home-calendar-web.spec.ts`를 제거·교체할 때 함께 `대체됨` 처리 여부를 결정해야 한다.
+
 ---
 
 ## 구현 순서
@@ -476,12 +727,12 @@ supersedes:
   > **구현 메모 (2026-11-14):** 「자세히」에는 온도·그라인더·분쇄도·로스팅 날짜·공개 범위만 넣었다. 맛 5축·TDS·총 시간·레시피 연결은 저장 후 「수정」(기존 편집 화면)으로 채울 수 있어 Task 13에서 함께 다룬다. 별은 하나당 44×44 버튼 하나이고, 누른 위치가 왼쪽 절반이면 0.5다(누르는 영역 잠금 때문에 반쪽 버튼 둘로 나누지 않았다).
 
 - [ ] **Task 10: 오늘 홈** — Covers: AC-QUICKBREW-20, 21, 22, 65
-  `app/page.tsx`를 시안 A로. `weekSummary`(월요일 시작, KST)는 순수 함수 + `/brew-logs/calendar` 두 달. 「관찰」은 기존 홈 관찰 문장 재사용.
+  `app/page.tsx`를 시안 A로. `weekSummary`(월요일 시작, KST)는 순수 함수 + `/brew-logs/calendar` 두 달. 「관찰」은 기존 홈 관찰 문장 재사용. 기존 달력 홈 테스트(`app/page.test.tsx`, `home-calendar*.spec.ts`, `home-fidelity.spec.ts`) 정리(별도 `2026-09-20-calendar-grid-responsive.md` 포함 확인).
 
 - [ ] **Task 11: 웹 패널** — Covers: AC-QUICKBREW-67, 68
   같은 `QuickBrewSheet`를 1024px 이상에서 오른쪽 패널로. Esc · 바깥 클릭 · Enter. 모바일 끌어 닫기 30%.
 
-- [ ] **Task 12: 「기록」 탭** — Covers: AC-QUICKBREW-31
+- [ ] **Task 12: 「기록」 탭** — Covers: AC-QUICKBREW-31 (승계 부품 AC 30건 `AC-HOMECAL-25~109` 재사용)
   `/brews`를 시안 F로. 목록/달력 세그먼트, 모드별 스크롤 유지, 웹은 오른쪽 300px 달력 카드.
 
 - [ ] **Task 13: 기록 상세 · 편집** — Covers: AC-QUICKBREW-32, 33, 34

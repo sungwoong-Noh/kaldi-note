@@ -1,0 +1,894 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "빠른 기록 — 오늘 홈 · 빠른 기록 시트 · 기록 탭",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/brew-logs": {
+      "post": {
+        "operationId": "createBrewLog",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrewLogCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "생성됨 — brewedAt이 없으면 서버 시각",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrewLog"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "원두량·물량 누락·0 이하, beanProductId+beanName 동시, beanName 101자 이상, roastedAt이 기록 날짜보다 늦음, 그라인더 없는 분쇄도 — code INVALID_REQUEST"
+          },
+          "401": {
+            "description": "인증 없음"
+          },
+          "403": {
+            "description": "남의 그라인더·원두 봉투·볼 수 없는 레시피 — code FORBIDDEN"
+          },
+          "404": {
+            "description": "없는 beanProductId·recipeId·userGrinderId — code NOT_FOUND"
+          }
+        }
+      },
+      "get": {
+        "operationId": "listBrewLogs",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "recipeId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "beanBatchId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minRating",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공 — 「지난번」은 ?userId={me}&size=1의 첫 항목",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageOfBrewLogSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "파라미터 형식·범위 위반 — code INVALID_REQUEST"
+          },
+          "401": {
+            "description": "인증 없음"
+          }
+        }
+      }
+    },
+    "/api/v1/brew-logs/{id}": {
+      "get": {
+        "operationId": "getBrewLog",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrewLogDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 없음"
+          },
+          "404": {
+            "description": "없거나 볼 수 없음 — code NOT_FOUND"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patchBrewLog",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrewLogPatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공 — null은 「변경 없음」",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrewLogDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "원두량·물량 누락·0 이하, beanProductId+beanName 동시, beanName 101자 이상, roastedAt이 기록 날짜보다 늦음, 그라인더 없는 분쇄도 — code INVALID_REQUEST"
+          },
+          "401": {
+            "description": "인증 없음"
+          },
+          "403": {
+            "description": "남의 그라인더·원두 봉투·볼 수 없는 레시피 — code FORBIDDEN"
+          },
+          "404": {
+            "description": "없는 beanProductId·recipeId·userGrinderId — code NOT_FOUND"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BrewLogCreateRequest": {
+        "type": "object",
+        "properties": {
+          "brewedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "PRIVATE",
+              "FRIENDS",
+              "PUBLIC"
+            ]
+          },
+          "actualDoseG": {
+            "type": "number"
+          },
+          "actualWaterG": {
+            "type": "number"
+          },
+          "actualWaterTempC": {
+            "type": "number",
+            "nullable": true
+          },
+          "actualTotalTimeSeconds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "actualDrawdownSeconds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "recipeId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanBatchId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanProductId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "roastedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "userGrinderId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "actualGrindSettingValue": {
+            "type": "number",
+            "nullable": true
+          },
+          "beverageWeightG": {
+            "type": "number",
+            "nullable": true
+          },
+          "tdsPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "nullable": true
+          },
+          "acidity": {
+            "type": "integer",
+            "nullable": true
+          },
+          "sweetness": {
+            "type": "integer",
+            "nullable": true
+          },
+          "body": {
+            "type": "integer",
+            "nullable": true
+          },
+          "bitterness": {
+            "type": "integer",
+            "nullable": true
+          },
+          "aftertaste": {
+            "type": "integer",
+            "nullable": true
+          },
+          "overallNote": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "actualDoseG",
+          "actualWaterG"
+        ]
+      },
+      "BrewLogPatchRequest": {
+        "type": "object",
+        "properties": {
+          "brewedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "PRIVATE",
+              "FRIENDS",
+              "PUBLIC"
+            ]
+          },
+          "actualDoseG": {
+            "type": "number",
+            "nullable": true
+          },
+          "actualWaterG": {
+            "type": "number",
+            "nullable": true
+          },
+          "actualWaterTempC": {
+            "type": "number",
+            "nullable": true
+          },
+          "actualTotalTimeSeconds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "actualDrawdownSeconds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanProductId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "roastedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "userGrinderId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "actualGrindSettingValue": {
+            "type": "number",
+            "nullable": true
+          },
+          "beverageWeightG": {
+            "type": "number",
+            "nullable": true
+          },
+          "tdsPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "nullable": true
+          },
+          "acidity": {
+            "type": "integer",
+            "nullable": true
+          },
+          "sweetness": {
+            "type": "integer",
+            "nullable": true
+          },
+          "body": {
+            "type": "integer",
+            "nullable": true
+          },
+          "bitterness": {
+            "type": "integer",
+            "nullable": true
+          },
+          "aftertaste": {
+            "type": "integer",
+            "nullable": true
+          },
+          "overallNote": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "BrewLog": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "integer"
+          },
+          "recipeId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanBatchId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanProductId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "roastedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "brewedAt": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string"
+          },
+          "actualDoseG": {
+            "type": "number"
+          },
+          "actualWaterG": {
+            "type": "number"
+          },
+          "actualWaterTempC": {
+            "type": "number",
+            "nullable": true
+          },
+          "actualTotalTimeSeconds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "actualDrawdownSeconds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "userGrinderId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "actualGrindSettingValue": {
+            "type": "number",
+            "nullable": true
+          },
+          "actualGrindMicronEstimated": {
+            "type": "number",
+            "nullable": true
+          },
+          "beverageWeightG": {
+            "type": "number",
+            "nullable": true
+          },
+          "tdsPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "daysOffRoast": {
+            "type": "integer",
+            "nullable": true
+          },
+          "degassingStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "brewRatio": {
+            "type": "number"
+          },
+          "extractionYieldPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "strengthZone": {
+            "type": "string",
+            "nullable": true
+          },
+          "extractionZone": {
+            "type": "string",
+            "nullable": true
+          },
+          "diagnosis": {
+            "type": "string",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "nullable": true
+          },
+          "acidity": {
+            "type": "integer",
+            "nullable": true
+          },
+          "sweetness": {
+            "type": "integer",
+            "nullable": true
+          },
+          "body": {
+            "type": "integer",
+            "nullable": true
+          },
+          "bitterness": {
+            "type": "integer",
+            "nullable": true
+          },
+          "aftertaste": {
+            "type": "integer",
+            "nullable": true
+          },
+          "overallNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "brewedAt",
+          "visibility",
+          "actualDoseG",
+          "actualWaterG",
+          "brewRatio",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "BrewLogDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "integer"
+          },
+          "recipeId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanBatchId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanProductId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "roastedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "brewedAt": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string"
+          },
+          "actualDoseG": {
+            "type": "number"
+          },
+          "actualWaterG": {
+            "type": "number"
+          },
+          "actualWaterTempC": {
+            "type": "number",
+            "nullable": true
+          },
+          "actualTotalTimeSeconds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "actualDrawdownSeconds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "userGrinderId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "actualGrindSettingValue": {
+            "type": "number",
+            "nullable": true
+          },
+          "actualGrindMicronEstimated": {
+            "type": "number",
+            "nullable": true
+          },
+          "beverageWeightG": {
+            "type": "number",
+            "nullable": true
+          },
+          "tdsPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "daysOffRoast": {
+            "type": "integer",
+            "nullable": true
+          },
+          "degassingStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "brewRatio": {
+            "type": "number"
+          },
+          "extractionYieldPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "strengthZone": {
+            "type": "string",
+            "nullable": true
+          },
+          "extractionZone": {
+            "type": "string",
+            "nullable": true
+          },
+          "diagnosis": {
+            "type": "string",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "nullable": true
+          },
+          "acidity": {
+            "type": "integer",
+            "nullable": true
+          },
+          "sweetness": {
+            "type": "integer",
+            "nullable": true
+          },
+          "body": {
+            "type": "integer",
+            "nullable": true
+          },
+          "bitterness": {
+            "type": "integer",
+            "nullable": true
+          },
+          "aftertaste": {
+            "type": "integer",
+            "nullable": true
+          },
+          "overallNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "recipeSnapshot": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "brewedAt",
+          "visibility",
+          "actualDoseG",
+          "actualWaterG",
+          "brewRatio",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "BrewLogSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "integer"
+          },
+          "recipeId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanBatchId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanProductId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "beanName": {
+            "type": "string",
+            "nullable": true
+          },
+          "roastedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "brewedAt": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string"
+          },
+          "actualDoseG": {
+            "type": "number"
+          },
+          "actualWaterG": {
+            "type": "number"
+          },
+          "actualWaterTempC": {
+            "type": "number",
+            "nullable": true
+          },
+          "actualTotalTimeSeconds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "actualDrawdownSeconds": {
+            "type": "integer",
+            "nullable": true
+          },
+          "userGrinderId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "actualGrindSettingValue": {
+            "type": "number",
+            "nullable": true
+          },
+          "actualGrindMicronEstimated": {
+            "type": "number",
+            "nullable": true
+          },
+          "beverageWeightG": {
+            "type": "number",
+            "nullable": true
+          },
+          "tdsPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "daysOffRoast": {
+            "type": "integer",
+            "nullable": true
+          },
+          "degassingStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "brewRatio": {
+            "type": "number"
+          },
+          "extractionYieldPercent": {
+            "type": "number",
+            "nullable": true
+          },
+          "strengthZone": {
+            "type": "string",
+            "nullable": true
+          },
+          "extractionZone": {
+            "type": "string",
+            "nullable": true
+          },
+          "diagnosis": {
+            "type": "string",
+            "nullable": true
+          },
+          "rating": {
+            "type": "number",
+            "nullable": true
+          },
+          "acidity": {
+            "type": "integer",
+            "nullable": true
+          },
+          "sweetness": {
+            "type": "integer",
+            "nullable": true
+          },
+          "body": {
+            "type": "integer",
+            "nullable": true
+          },
+          "bitterness": {
+            "type": "integer",
+            "nullable": true
+          },
+          "aftertaste": {
+            "type": "integer",
+            "nullable": true
+          },
+          "overallNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "brewedAt",
+          "visibility",
+          "actualDoseG",
+          "actualWaterG",
+          "brewRatio",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PageOfBrewLogSummary": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BrewLogSummary"
+            }
+          },
+          "page": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "totalElements": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          },
+          "hasNext": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "content",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages",
+          "hasNext"
+        ]
+      }
+    }
+  }
+}

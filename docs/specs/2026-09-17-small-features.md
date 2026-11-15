@@ -16,6 +16,7 @@ plan: docs/archive/plans/2026-09-17-plan-small-features.md
 > `recipeId`를 `@NotNull`로 받고, 레시피 삭제는 soft delete라 기록의 `recipeId`가 남으며, 프론트
 > 스키마도 `recipeId`를 필수로 둔다(컬럼만 nullable). 코드의 가드(`recipeId !== undefined`)는 남아 있다.
 > 이 AC를 어떻게 할지는 사람이 정한다.
+> *(2026-11-15 개정: [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md) Task 13·시안 C1 도입으로 `AC-SMALL-11` 본문을 C1 「다시 내리기」 버튼 기준으로 고쳤다.)*
 
 > **2026-09-25 확인 — 분할하지 않는다.** 승인만 되고 미구현인 채로 로드맵 정리
 > (`docs/ROADMAP.md` M0)에서 발견돼, 처음에는 M2·M3로 쪼개 새 스펙으로 다시 쓰려 했다.
@@ -72,7 +73,7 @@ plan: docs/archive/plans/2026-09-17-plan-small-features.md
 
 - 차이 문구: `RecipeComparison`이 이미 `targets`와 `log`를 둘 다 들고 있다
 - 「이 값으로 기록」: 환산 결과의 대상 그라인더·설정값을 쿼리 파라미터로 넘긴다
-- 「다시 내리기」: `/brews/new?recipeId=<기록의 recipeId>`
+- 「다시 내리기」: `/brews/new?recipeId=<기록의 recipeId>` (`recipeId` 없으면 빠른 기록 ① `openQuickBrew()`)
 
 ## 어떻게 동작 — 인수 조건
 
@@ -148,11 +149,13 @@ plan: docs/archive/plans/2026-09-17-plan-small-features.md
 - **When** 액션 영역을 읽는다
 - **Then** **「다시 내리기」** 링크가 `/brews/new?recipeId=12`를 가리킨다
 
-#### AC-SMALL-11 · 즉흥 추출에는 없다
+#### AC-SMALL-11 · 레시피 없는 기록(C1)은 빠른 기록 ①을 연다
 
-- **Given** `recipeId`가 없는 기록(즉흥 추출)
+- **Given** `recipeId`가 없는 기록(C1)의 상세
 - **When** 액션 영역을 읽는다
-- **Then** 「다시 내리기」가 **없다** — 다시 내릴 레시피가 없다
+- **Then** **「다시 내리기」** 버튼이 있고, 누르면 그 기록 값으로 빠른 기록 ①이 열린다
+
+> **본문 개정 (2026-11-15 · Task 13).** 기존에는 레시피 없는 즉흥 추출에 「다시 내리기」가 없다고 두었으나, [`2026-11-14-quick-brew.md`](2026-11-14-quick-brew.md) `AC-QUICKBREW-33`(시안 C1) 도입으로 레시피 없이도 그 기록의 값(원두·원두량·물량·온도·공개 범위, 내 기록이면 그라인더·분쇄도)을 채운 빠른 기록 ①(`amount`)을 열 수 있게 되어 C1 버튼 기준으로 본문을 고쳤다. (`recipeId`가 있는 C2 기록의 `/brews/new?recipeId=...` 링크 동작은 `AC-SMALL-10` 그대로 유지한다.)
 
 ## 열어둔 결정
 

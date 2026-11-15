@@ -1206,7 +1206,7 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 - [x] **Task 13: 기록 상세 · 편집** — Covers: AC-QUICKBREW-32, 33, 34
   C1/C2 분기, 「다시 내리기」 → 빠른 기록 ①, 편집 화면이 선택값 null을 견딘다. DECISIONS 4절 「스냅샷 항상 채움」 문구 갱신.
 
-- [ ] **Task 14: ② 「자세히」 확장** — Covers: AC-QUICKBREW-70~82
+- [x] **Task 14: ② 「자세히」 확장** — Covers: AC-QUICKBREW-70~82
   `QuickBrewSheet` `TasteStep`의 「자세히」에 총 시간 · 드로다운(기존 `parseMinSec`·`MIN_SEC_MESSAGE`), 맛 5축(kit `TasteDots`),
   TDS · 음료 중량 · 수율(기존 `previewYield`), 레시피 연결(새 `RecipeLinkSheet` — 시트 위 한 장 더, 내 서랍 `size=50`)을
   시안 B4 · B4b · B4c 순서로 넣는다. `Draft`·`toBody`에 필드 추가, 지난번 `recipeId` 이어받기(볼 수 없으면 비움).

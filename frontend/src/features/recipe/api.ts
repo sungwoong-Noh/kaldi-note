@@ -22,6 +22,8 @@ export interface RecipeSearchFilter {
   dripper?: Array<"V60" | "KALITA" | "ORIGAMI" | "CLEVER">;
   owner?: "MINE" | "SAVED";
   sort?: "RECENT";
+  /** 기본 20(`RECIPE_PAGE_SIZE`). 빠른 기록 레시피 연결 시트처럼 한 번에 더 불러올 때 쓴다. */
+  size?: number;
 }
 
 export function searchRecipes(
@@ -31,7 +33,7 @@ export function searchRecipes(
 ): Promise<RecipePage> {
   const query = new URLSearchParams({
     page: String(page),
-    size: String(RECIPE_PAGE_SIZE),
+    size: String(filter.size ?? RECIPE_PAGE_SIZE),
     scope: filter.scope,
   });
   if (filter.owner) query.set("owner", filter.owner);

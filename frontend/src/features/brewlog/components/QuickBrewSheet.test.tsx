@@ -7,12 +7,16 @@ import { closeQuickBrew, openQuickBrew } from "@/lib/quickBrew";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
   fritzRoaster,
+  hoffmann,
+  hoffmannSummary,
   me,
   myComandante,
+  pageOf,
   yirgacheffeProduct,
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
+import { MIN_SEC_MESSAGE } from "../formState";
 import { QuickBrewHost } from "./QuickBrewHost";
 import { QuickBrewSheet } from "./QuickBrewSheet";
 
@@ -811,5 +815,467 @@ describe("다시 내리기 프리필 (Task 13)", () => {
       actualGrindSettingValue: 26,
       visibility: "PUBLIC",
     });
+  });
+});
+
+describe("② 「자세히」 확장 (Task 14)", () => {
+  const recipe12Summary = {
+    ...hoffmannSummary,
+    id: 12,
+    sourceType: "USER" as const,
+    title: "아침 V60 15g",
+    doseG: 15,
+    waterG: 240,
+    ratio: 16.0,
+    waterTempC: 92,
+    authorDisplayName: "민수",
+  };
+
+  const recipe12Detail = {
+    ...hoffmann,
+    ...recipe12Summary,
+    steps: [],
+  };
+
+  async function openSameDetails() {
+    open("same");
+    await userEvent.click(
+      await screen.findByRole("button", { name: /자세히/ }),
+    );
+  }
+
+  function expectOrder(elements: HTMLElement[]) {
+    for (let i = 0; i < elements.length - 1; i += 1) {
+      const relation = elements[i].compareDocumentPosition(elements[i + 1]);
+      expect(relation & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  }
+
+  it("AC-QUICKBREW-70 · 「자세히」 칸 순서와 메모 칸 제외", async () => {
+    given([{ ...last, userGrinderId: undefined }]);
+    await openSameDetails();
+
+    await userEvent.selectOptions(
+      screen.getByLabelText("그라인더"),
+      String(myComandante.id),
+    );
+
+    const orderLabels = [
+      screen.getByText("물 온도"),
+      screen.getByText("총 시간"),
+      screen.getByText("드로다운"),
+      screen.getByText("그라인더"),
+      screen.getByText("분쇄도"),
+      screen.getByText("맛 5축"),
+      screen.getByText("산미"),
+      screen.getByText("단맛"),
+      screen.getByText("바디"),
+      screen.getByText("쓴맛"),
+      screen.getByText("여운"),
+      screen.getByText("TDS (선택)"),
+      screen.getByText("음료 중량 (선택)"),
+      screen.getByText("수율"),
+      screen.getByText("공개 범위"),
+      screen.getByText("로스팅 날짜 (선택)"),
+      screen.getByText("레시피 연결 (선택)"),
+    ];
+    expectOrder(orderLabels);
+
+    const memoInputs = screen.getAllByLabelText(/메모/);
+    expect(memoInputs).toHaveLength(1);
+    const detailsToggle = screen.getByRole("button", { name: /자세히/ });
+    expect(
+      memoInputs[0].compareDocumentPosition(detailsToggle) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("AC-QUICKBREW-71 · 「자세히」 값이 저장 본문에 실리고 비운 맛 축은 빠진다", async () => {
+    const posted = given([last]);
+    await openSameDetails();
+
+    await userEvent.type(screen.getByLabelText("총 시간"), "2:45");
+    await userEvent.type(screen.getByLabelText("드로다운"), "0:35");
+    await userEvent.click(screen.getByRole("button", { name: "산미 4" }));
+    await userEvent.click(screen.getByRole("button", { name: "단맛 5" }));
+    await userEvent.type(screen.getByLabelText("TDS"), "1.38");
+    await userEvent.type(screen.getByLabelText("음료 중량"), "212");
+
+    await userEvent.click(screen.getByRole("button", { name: "저장" }));
+    await waitFor(() => expect(posted).toHaveLength(1));
+    expect(posted[0]).toMatchObject({
+      actualTotalTimeSeconds: 165,
+      actualDrawdownSeconds: 35,
+      acidity: 4,
+      sweetness: 5,
+      tdsPercent: 1.38,
+      beverageWeightG: 212,
+    });
+    expect(posted[0]).not.toHaveProperty("body");
+    expect(posted[0]).not.toHaveProperty("bitterness");
+    expect(posted[0]).not.toHaveProperty("aftertaste");
+  });
+
+  it("AC-QUICKBREW-72 · TDS·음료 중량으로 수율을 실시간 계산하고 TDS를 지우면 안내가 뜬다", async () => {
+    given([last]);
+    await openSameDetails();
+
+    await userEvent.type(screen.getByLabelText("음료 중량"), "212");
+    await userEvent.type(screen.getByLabelText("TDS"), "1.38");
+
+    const yieldRow = screen.getByText("수율").parentElement!;
+    expect(yieldRow).toHaveTextContent("수율 18.3 %");
+
+    await userEvent.clear(screen.getByLabelText("TDS"));
+    expect(yieldRow).toHaveTextContent("수율 —");
+    expect(
+      screen.getByText("TDS가 없으면 수율을 계산할 수 없습니다."),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-QUICKBREW-73 · 레시피 연결은 양을 덮어쓰지 않고 저장 본문에 recipeId를 싣거나 비운다", async () => {
+    const posted = given([last]);
+    server.use(
+      http.get(`${BASE}/recipes`, () =>
+        HttpResponse.json(pageOf([recipe12Summary], { size: 50 })),
+      ),
+    );
+    await openSameDetails();
+
+    await userEvent.click(screen.getByRole("button", { name: /레시피 연결/ }));
+    expect(
+      await screen.findByText("15g → 240g · 1:16.0 · 92°C"),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /아침 V60 15g/ }));
+
+    expect(
+      screen.queryByRole("dialog", { name: "레시피 연결" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /레시피 연결/ }),
+    ).toHaveTextContent("아침 V60 15g");
+
+    await userEvent.click(screen.getByRole("button", { name: "저장" }));
+    await waitFor(() => expect(posted).toHaveLength(1));
+    expect(posted[0]).toMatchObject({
+      actualDoseG: 16,
+      actualWaterG: 250,
+      recipeId: 12,
+    });
+
+    // 다시 열어 「연결 안 함」을 고르면 recipeId 키가 빠진다.
+    const posted2 = given([last]);
+    server.use(
+      http.get(`${BASE}/recipes`, () =>
+        HttpResponse.json(pageOf([recipe12Summary], { size: 50 })),
+      ),
+    );
+    await openSameDetails();
+    await userEvent.click(screen.getByRole("button", { name: /레시피 연결/ }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: /아침 V60 15g/ }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: /레시피 연결/ }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: /연결 안 함/ }),
+    );
+    expect(
+      screen.getByRole("button", { name: /레시피 연결/ }),
+    ).toHaveTextContent("연결 안 함");
+
+    await userEvent.click(screen.getByRole("button", { name: "저장" }));
+    await waitFor(() => expect(posted2).toHaveLength(1));
+    expect(posted2[0]).not.toHaveProperty("recipeId");
+  });
+
+  it("AC-QUICKBREW-74 · 지난번 recipeId를 이어받고 403·404면 비워 보낸다", async () => {
+    const postedValid = given([{ ...last, recipeId: 12 }]);
+    server.use(
+      http.get(`${BASE}/recipes/12`, () => HttpResponse.json(recipe12Detail)),
+    );
+
+    const first = renderWithQuery(
+      <QuickBrewSheet start="same" onClose={vi.fn()} />,
+    );
+    await userEvent.click(
+      await screen.findByRole("button", { name: /자세히/ }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: /레시피 연결/ }),
+      ).toHaveTextContent("아침 V60 15g"),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "저장" }));
+    await waitFor(() => expect(postedValid).toHaveLength(1));
+    expect(postedValid[0]).toMatchObject({ recipeId: 12 });
+    first.unmount();
+
+    for (const status of [403, 404]) {
+      const postedMissing = given([{ ...last, recipeId: 99 }]);
+      server.use(
+        http.get(`${BASE}/recipes/99`, () =>
+          HttpResponse.json(
+            { code: status === 403 ? "FORBIDDEN" : "NOT_FOUND", message: "x" },
+            { status },
+          ),
+        ),
+      );
+      const onClose = vi.fn();
+      const view = renderWithQuery(
+        <QuickBrewSheet start="same" onClose={onClose} />,
+      );
+      await userEvent.click(
+        await screen.findByRole("button", { name: /자세히/ }),
+      );
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", { name: /레시피 연결/ }),
+        ).toHaveTextContent("연결 안 함"),
+      );
+      // 403/404로 비워졌을 뿐 사용자 수정은 아니므로 바로 닫힌다.
+      await userEvent.click(screen.getByRole("button", { name: "닫기" }));
+      expect(onClose).toHaveBeenCalledTimes(1);
+      view.unmount();
+
+      const view2 = renderWithQuery(
+        <QuickBrewSheet start="same" onClose={vi.fn()} />,
+      );
+      await userEvent.click(
+        await screen.findByRole("button", { name: "저장" }),
+      );
+      await waitFor(() => expect(postedMissing).toHaveLength(1));
+      expect(postedMissing[0]).not.toHaveProperty("recipeId");
+      view2.unmount();
+    }
+  });
+
+  it("AC-QUICKBREW-76 · 레시피 목록 500 실패 후 뒤로 가도 빠른 기록 입력값은 그대로다", async () => {
+    given([last]);
+    server.use(
+      http.get(`${BASE}/recipes`, () =>
+        HttpResponse.json(
+          { code: "INTERNAL_ERROR", message: "fail" },
+          { status: 500 },
+        ),
+      ),
+    );
+    await openSameDetails();
+    await userEvent.type(screen.getByLabelText("한 줄 메모 (선택)"), "꽃향");
+    await userEvent.type(screen.getByLabelText("총 시간"), "2:45");
+
+    await userEvent.click(screen.getByRole("button", { name: /레시피 연결/ }));
+    expect(
+      await screen.findByText("레시피를 불러오지 못했어요."),
+    ).toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    expect(
+      screen.queryByRole("dialog", { name: "레시피 연결" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByLabelText("한 줄 메모 (선택)")).toHaveValue("꽃향");
+    expect(screen.getByLabelText("총 시간")).toHaveValue("2:45");
+  });
+
+  it("AC-QUICKBREW-77 · 같은 맛 점을 다시 누르면 비고 acidity 키가 빠진다", async () => {
+    const posted = given([last]);
+    await openSameDetails();
+
+    const dot4 = screen.getByRole("button", { name: "산미 4" });
+    await userEvent.click(dot4);
+    expect(dot4).toHaveAttribute("aria-pressed", "true");
+    await userEvent.click(dot4);
+    expect(dot4).toHaveAttribute("aria-pressed", "false");
+
+    await userEvent.click(screen.getByRole("button", { name: "저장" }));
+    await waitFor(() => expect(posted).toHaveLength(1));
+    expect(posted[0]).not.toHaveProperty("acidity");
+  });
+
+  it("AC-QUICKBREW-78 · 시간·맛 5축·TDS·음료 중량은 지난번 기록에서 채우지 않는다", async () => {
+    given([
+      {
+        ...last,
+        actualTotalTimeSeconds: 165,
+        actualDrawdownSeconds: 35,
+        acidity: 4,
+        tdsPercent: 1.38,
+        beverageWeightG: 212,
+      },
+    ]);
+    open("record");
+    await userEvent.click(
+      await screen.findByRole("button", { name: "바꿀래요" }),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "다음" }));
+    await userEvent.click(screen.getByRole("button", { name: /자세히/ }));
+
+    expect(screen.getByLabelText("총 시간")).toHaveValue("");
+    expect(screen.getByLabelText("드로다운")).toHaveValue("");
+    expect(screen.getByLabelText("TDS")).toHaveValue("");
+    expect(screen.getByLabelText("음료 중량")).toHaveValue("");
+    for (const axis of ["산미", "단맛", "바디", "쓴맛", "여운"]) {
+      for (let score = 1; score <= 5; score += 1) {
+        expect(
+          screen.getByRole("button", { name: `${axis} ${score}` }),
+        ).toHaveAttribute("aria-pressed", "false");
+      }
+    }
+  });
+
+  it("AC-QUICKBREW-79 · 총 시간 2:75·abc·0:00은 오류와 함께 POST를 막고 드로다운 0:00은 허용한다", async () => {
+    for (const bad of ["2:75", "abc", "0:00"]) {
+      const posted = given([last]);
+      const view = renderWithQuery(
+        <QuickBrewSheet start="same" onClose={vi.fn()} />,
+      );
+      await userEvent.click(
+        await screen.findByRole("button", { name: /자세히/ }),
+      );
+      await userEvent.type(screen.getByLabelText("총 시간"), bad);
+      await userEvent.click(screen.getByRole("button", { name: "저장" }));
+
+      expect(screen.getByText(MIN_SEC_MESSAGE)).toBeInTheDocument();
+      expect(screen.getByLabelText("총 시간")).toHaveAttribute(
+        "aria-invalid",
+        "true",
+      );
+      expect(posted).toHaveLength(0);
+      view.unmount();
+    }
+
+    const postedOk = given([last]);
+    await openSameDetails();
+    await userEvent.type(screen.getByLabelText("드로다운"), "0:00");
+    await userEvent.click(screen.getByRole("button", { name: "저장" }));
+    await waitFor(() => expect(postedOk).toHaveLength(1));
+    expect(postedOk[0]).toMatchObject({ actualDrawdownSeconds: 0 });
+  });
+
+  it("AC-QUICKBREW-80 · TDS [0.01, 99.99] · 음료 중량 [0.1, 9999.9] 경계 검증", async () => {
+    for (const badTds of ["0", "100"]) {
+      const posted = given([last]);
+      const view = renderWithQuery(
+        <QuickBrewSheet start="same" onClose={vi.fn()} />,
+      );
+      await userEvent.click(
+        await screen.findByRole("button", { name: /자세히/ }),
+      );
+      await userEvent.type(screen.getByLabelText("TDS"), badTds);
+      await userEvent.click(screen.getByRole("button", { name: "저장" }));
+      const tdsInput = screen.getByLabelText("TDS");
+      expect(tdsInput).toHaveAttribute("aria-invalid", "true");
+      expect(tdsInput).toHaveAccessibleDescription(/.+/);
+      expect(posted).toHaveLength(0);
+      view.unmount();
+    }
+
+    for (const goodTds of [0.01, 99.99]) {
+      const posted = given([last]);
+      const view = renderWithQuery(
+        <QuickBrewSheet start="same" onClose={vi.fn()} />,
+      );
+      await userEvent.click(
+        await screen.findByRole("button", { name: /자세히/ }),
+      );
+      await userEvent.type(screen.getByLabelText("TDS"), String(goodTds));
+      await userEvent.click(screen.getByRole("button", { name: "저장" }));
+      await waitFor(() => expect(posted).toHaveLength(1));
+      expect(posted[0]).toMatchObject({ tdsPercent: goodTds });
+      view.unmount();
+    }
+
+    for (const badWeight of ["0", "10000"]) {
+      const posted = given([last]);
+      const view = renderWithQuery(
+        <QuickBrewSheet start="same" onClose={vi.fn()} />,
+      );
+      await userEvent.click(
+        await screen.findByRole("button", { name: /자세히/ }),
+      );
+      await userEvent.type(screen.getByLabelText("음료 중량"), badWeight);
+      await userEvent.click(screen.getByRole("button", { name: "저장" }));
+      const weightInput = screen.getByLabelText("음료 중량");
+      expect(weightInput).toHaveAttribute("aria-invalid", "true");
+      expect(weightInput).toHaveAccessibleDescription(/.+/);
+      expect(posted).toHaveLength(0);
+      view.unmount();
+    }
+
+    for (const goodWeight of [0.1, 9999.9]) {
+      const posted = given([last]);
+      const view = renderWithQuery(
+        <QuickBrewSheet start="same" onClose={vi.fn()} />,
+      );
+      await userEvent.click(
+        await screen.findByRole("button", { name: /자세히/ }),
+      );
+      await userEvent.type(
+        screen.getByLabelText("음료 중량"),
+        String(goodWeight),
+      );
+      await userEvent.click(screen.getByRole("button", { name: "저장" }));
+      await waitFor(() => expect(posted).toHaveLength(1));
+      expect(posted[0]).toMatchObject({ beverageWeightG: goodWeight });
+      view.unmount();
+    }
+  });
+
+  it("AC-QUICKBREW-81 · POST가 400 또는 403으로 거절해도 「자세히」 값이 그대로 남는다", async () => {
+    for (const status of [400, 403]) {
+      given([last], () =>
+        HttpResponse.json(
+          { code: status === 400 ? "INVALID" : "FORBIDDEN", message: "err" },
+          { status },
+        ),
+      );
+      server.use(
+        http.get(`${BASE}/recipes`, () =>
+          HttpResponse.json(pageOf([recipe12Summary], { size: 50 })),
+        ),
+      );
+
+      const view = renderWithQuery(
+        <QuickBrewSheet start="same" onClose={vi.fn()} />,
+      );
+      await userEvent.click(
+        await screen.findByRole("button", { name: /자세히/ }),
+      );
+      await userEvent.type(screen.getByLabelText("총 시간"), "2:45");
+      await userEvent.type(screen.getByLabelText("TDS"), "1.38");
+      await userEvent.click(
+        screen.getByRole("button", { name: /레시피 연결/ }),
+      );
+      await userEvent.click(
+        await screen.findByRole("button", { name: /아침 V60 15g/ }),
+      );
+      await userEvent.click(screen.getByRole("button", { name: "저장" }));
+
+      expect(
+        await screen.findByText(
+          "저장하지 못했어요. 입력한 내용은 그대로 있어요.",
+        ),
+      ).toBeInTheDocument();
+      expect(screen.getByLabelText("총 시간")).toHaveValue("2:45");
+      expect(screen.getByLabelText("TDS")).toHaveValue("1.38");
+      expect(
+        screen.getByRole("button", { name: /레시피 연결/ }),
+      ).toHaveTextContent("아침 V60 15g");
+      view.unmount();
+    }
+  });
+
+  it("AC-QUICKBREW-82 · TDS·음료 중량은 decimal 키패드, 총 시간·드로다운은 inputMode 없음", async () => {
+    given([last]);
+    await openSameDetails();
+
+    expect(screen.getByLabelText("TDS")).toHaveAttribute(
+      "inputmode",
+      "decimal",
+    );
+    expect(screen.getByLabelText("음료 중량")).toHaveAttribute(
+      "inputmode",
+      "decimal",
+    );
+    expect(screen.getByLabelText("총 시간")).not.toHaveAttribute("inputmode");
+    expect(screen.getByLabelText("드로다운")).not.toHaveAttribute("inputmode");
   });
 });

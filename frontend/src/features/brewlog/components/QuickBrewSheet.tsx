@@ -9,16 +9,24 @@ import {
   type MouseEvent,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { NumberCell, Segmented, useNumberText } from "@/components/kit";
+import {
+  NumberCell,
+  Segmented,
+  TasteDots,
+  useNumberText,
+} from "@/components/kit";
 import { SELECT_EXTRA } from "@/components/ui/Field";
 import { useBeanProducts, useRoasters } from "@/features/catalog/api";
 import type { BeanProduct } from "@/features/catalog/schema";
 import { useUserGrinders } from "@/features/gear/queries";
+import { fetchRecipe } from "@/features/recipe/api";
 import { useMe } from "@/features/user/queries";
 import type { BrewLogCreateRequest } from "@/types/generated/2026-11-14-quick-brew";
 import type { QuickBrewPrefill } from "@/lib/quickBrew";
 import { createBrewLog, fetchBrewLogPage } from "../api";
+import { MIN_SEC_MESSAGE, parseMinSec, previewYield } from "../formState";
 import type { BrewLog, BrewLogSummary } from "../schema";
+import { RecipeLinkSheet } from "./RecipeLinkSheet";
 
 /**
  * 빠른 기록 시트 — docs/specs/2026-11-14-quick-brew.md Task 7~9, 시안 `10 Brew First` B.
@@ -42,27 +50,64 @@ const VISIBILITY_OPTIONS = [
   { value: "PUBLIC", label: "전체" },
 ] as const satisfies readonly { value: Visibility; label: string }[];
 
+const TASTE_AXES = [
+  { key: "acidity", label: "산미" },
+  { key: "sweetness", label: "단맛" },
+  { key: "body", label: "바디" },
+  { key: "bitterness", label: "쓴맛" },
+  { key: "aftertaste", label: "여운" },
+] as const;
+
+type DetailErrorKey =
+  "totalTimeText" | "drawdownText" | "tdsPercent" | "beverageWeightG";
+type DetailErrors = Partial<Record<DetailErrorKey, string>>;
+
 interface Draft {
   beanProductId: number | null;
   beanName: string | null;
   doseG: number | null;
   waterG: number | null;
   waterTempC: number | null;
+  totalTimeText: string;
+  drawdownText: string;
   userGrinderId: number | null;
   grindValue: number | null;
+  acidity: number | null;
+  sweetness: number | null;
+  body: number | null;
+  bitterness: number | null;
+  aftertaste: number | null;
+  tdsPercent: number | null;
+  beverageWeightG: number | null;
   roastedAt: string;
   visibility: Visibility;
+  recipeId: number | null;
   rating: number | null;
   note: string;
 }
 
-/** 미리 채우는 값 — 원두·양·장비·온도·공개 범위. 별점·메모는 매번 새로 쓴다(AC-QUICKBREW-24). */
+/** 미리 채우는 값 — 원두·양·장비·온도·공개 범위·레시피. 별점·메모·측정값은 매번 새로 쓴다(AC-QUICKBREW-24·74·78). */
 function draftFrom(
   last: BrewLogSummary | undefined,
   prefill?: QuickBrewPrefill,
 ): Draft {
+  const emptyMeasurements = {
+    totalTimeText: "",
+    drawdownText: "",
+    acidity: null,
+    sweetness: null,
+    body: null,
+    bitterness: null,
+    aftertaste: null,
+    tdsPercent: null,
+    beverageWeightG: null,
+    roastedAt: "",
+    rating: null,
+    note: "",
+  };
   if (prefill) {
     return {
+      ...emptyMeasurements,
       beanProductId: prefill.beanProductId ?? null,
       beanName: prefill.beanName ?? null,
       doseG: prefill.doseG ?? null,
@@ -70,13 +115,12 @@ function draftFrom(
       waterTempC: prefill.waterTempC ?? null,
       userGrinderId: prefill.userGrinderId ?? null,
       grindValue: prefill.grindValue ?? null,
-      roastedAt: "",
       visibility: prefill.visibility ?? "PRIVATE",
-      rating: null,
-      note: "",
+      recipeId: null,
     };
   }
   return {
+    ...emptyMeasurements,
     beanProductId: last?.beanProductId ?? null,
     beanName: last?.beanName ?? null,
     doseG: last?.actualDoseG ?? null,
@@ -84,26 +128,62 @@ function draftFrom(
     waterTempC: last?.actualWaterTempC ?? null,
     userGrinderId: last?.userGrinderId ?? null,
     grindValue: last?.actualGrindSettingValue ?? null,
-    roastedAt: "",
     visibility: last?.visibility ?? "PRIVATE",
-    rating: null,
-    note: "",
+    recipeId: last?.recipeId ?? null,
   };
+}
+
+/** 총 시간(1초 이상)·드로다운(0초 이상)·TDS [0.01, 99.99]·음료 중량 [0.1, 9999.9]을 검사한다(AC-QUICKBREW-79·80). */
+function validateDetails(d: Draft): DetailErrors {
+  const errors: DetailErrors = {};
+  const total = parseMinSec(d.totalTimeText);
+  if (total === "invalid" || total === 0) {
+    errors.totalTimeText = MIN_SEC_MESSAGE;
+  }
+  if (parseMinSec(d.drawdownText) === "invalid") {
+    errors.drawdownText = MIN_SEC_MESSAGE;
+  }
+  if (d.tdsPercent !== null) {
+    if (d.tdsPercent < 0.01) errors.tdsPercent = "0.01 이상이어야 합니다";
+    else if (d.tdsPercent > 99.99) errors.tdsPercent = "99.99 이하여야 합니다";
+  }
+  if (d.beverageWeightG !== null) {
+    if (d.beverageWeightG < 0.1)
+      errors.beverageWeightG = "0.1 이상이어야 합니다";
+    else if (d.beverageWeightG > 9999.9)
+      errors.beverageWeightG = "9999.9 이하여야 합니다";
+  }
+  return errors;
 }
 
 /** 값이 있는 키만 싣는다 — 백엔드 `non_null` 응답과 대칭(formState.omitEmpty와 같은 규칙). */
 function toBody(d: Draft): BrewLogCreateRequest {
+  const totalTime = parseMinSec(d.totalTimeText);
+  const drawdown = parseMinSec(d.drawdownText);
   const entries: [string, unknown][] = [
+    ["recipeId", d.recipeId],
     ["actualDoseG", d.doseG],
     ["actualWaterG", d.waterG],
     ["beanProductId", d.beanProductId],
     ["beanName", d.beanName],
     ["roastedAt", d.roastedAt || null],
     ["actualWaterTempC", d.waterTempC],
+    [
+      "actualTotalTimeSeconds",
+      typeof totalTime === "number" && totalTime > 0 ? totalTime : null,
+    ],
+    ["actualDrawdownSeconds", typeof drawdown === "number" ? drawdown : null],
     ["userGrinderId", d.userGrinderId],
     ["actualGrindSettingValue", d.userGrinderId === null ? null : d.grindValue],
+    ["beverageWeightG", d.beverageWeightG],
+    ["tdsPercent", d.tdsPercent],
     ["visibility", d.visibility],
     ["rating", d.rating],
+    ["acidity", d.acidity],
+    ["sweetness", d.sweetness],
+    ["body", d.body],
+    ["bitterness", d.bitterness],
+    ["aftertaste", d.aftertaste],
     ["overallNote", d.note.trim() || null],
   ];
   return Object.fromEntries(
@@ -197,12 +277,62 @@ function Sheet({
   const last = logs[0];
   const [initial] = useState(() => draftFrom(last, prefill));
   const [draft, setDraft] = useState(initial);
-  const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }));
+  const [detailErrors, setDetailErrors] = useState<DetailErrors>({});
+  const [details, setDetails] = useState(false);
+  const [pickedRecipe, setPickedRecipe] = useState<{
+    id: number;
+    title: string;
+  } | null>(null);
+  const [pickingRecipe, setPickingRecipe] = useState(false);
+  const patch = (p: Partial<Draft>) => {
+    setDraft((d) => ({ ...d, ...p }));
+    setDetailErrors((prev) => {
+      if (Object.keys(prev).length === 0) return prev;
+      let changed = false;
+      const next = { ...prev };
+      for (const key of [
+        "totalTimeText",
+        "drawdownText",
+        "tdsPercent",
+        "beverageWeightG",
+      ] as const) {
+        if (key in p && next[key]) {
+          delete next[key];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  };
   const [step, setStep] = useState<Step>(
     prefill || !last ? "amount" : start === "same" ? "taste" : "confirm",
   );
   const [changing, setChanging] = useState(false);
   const [confirmingClose, setConfirmingClose] = useState(false);
+
+  const inheritedRecipeId = prefill ? null : (last?.recipeId ?? null);
+  const inheritedRecipe = useQuery({
+    queryKey: ["recipe", inheritedRecipeId],
+    queryFn: () => fetchRecipe(inheritedRecipeId as number),
+    enabled: inheritedRecipeId !== null,
+    retry: false,
+    staleTime: 30_000,
+  });
+
+  // 403/404로 못 보는 지난번 레시피는 UI·저장에서 비우되 dirty 판정은 건드리지 않는다(AC-QUICKBREW-74·44).
+  const inheritedUnavailable =
+    draft.recipeId !== null &&
+    draft.recipeId === inheritedRecipeId &&
+    inheritedRecipe.isError;
+  const effectiveRecipeId = inheritedUnavailable ? null : draft.recipeId;
+  const linkedRecipeTitle =
+    effectiveRecipeId === null
+      ? null
+      : pickedRecipe?.id === effectiveRecipeId
+        ? pickedRecipe.title
+        : effectiveRecipeId === inheritedRecipeId
+          ? (inheritedRecipe.data?.title ?? null)
+          : null;
 
   const products = useBeanProducts();
   const roasters = useRoasters();
@@ -223,10 +353,49 @@ function Sheet({
     },
   });
   const lastBody = useRef<BrewLogCreateRequest | null>(null);
+  const submittingRef = useRef(false);
+  const saveDraft = async (overrideRating?: number | null) => {
+    if (save.isPending || submittingRef.current) return;
+    const targetDraft: Draft = {
+      ...draft,
+      recipeId: effectiveRecipeId,
+      ...(overrideRating !== undefined ? { rating: overrideRating } : {}),
+    };
+    const errors = validateDetails(targetDraft);
+    if (Object.keys(errors).length > 0) {
+      setDetailErrors(errors);
+      setDetails(true);
+      return;
+    }
+    submittingRef.current = true;
+    try {
+      let resolvedRecipeId = targetDraft.recipeId;
+      if (
+        resolvedRecipeId !== null &&
+        resolvedRecipeId === inheritedRecipeId &&
+        pickedRecipe?.id !== resolvedRecipeId
+      ) {
+        try {
+          await queryClient.fetchQuery({
+            queryKey: ["recipe", resolvedRecipeId],
+            queryFn: () => fetchRecipe(resolvedRecipeId as number),
+            retry: false,
+            staleTime: 30_000,
+          });
+        } catch {
+          resolvedRecipeId = null;
+        }
+      }
+      lastBody.current =
+        lastBody.current ??
+        toBody({ ...targetDraft, recipeId: resolvedRecipeId });
+      save.mutate(lastBody.current);
+    } finally {
+      submittingRef.current = false;
+    }
+  };
   const submit = () => {
-    if (save.isPending) return;
-    lastBody.current = lastBody.current ?? toBody(draft);
-    save.mutate(lastBody.current);
+    void saveDraft();
   };
   const showSaving = useDelayedFlag(save.isPending, SAVING_LABEL_DELAY_MS);
 
@@ -345,6 +514,7 @@ function Sheet({
       if (!open || e.defaultPrevented || e.isComposing || e.keyCode === 229) {
         return;
       }
+      if (pickingRecipe) return;
       if (e.key === "Escape") {
         e.preventDefault();
         if (confirmingClose) {
@@ -510,6 +680,11 @@ function Sheet({
         {step === "taste" && (
           <TasteStep
             draft={draft}
+            details={details}
+            onToggleDetails={() => setDetails((d) => !d)}
+            errors={detailErrors}
+            linkedRecipeTitle={linkedRecipeTitle}
+            onPickRecipe={() => setPickingRecipe(true)}
             patch={(p) => {
               lastBody.current = null;
               patch(p);
@@ -519,12 +694,30 @@ function Sheet({
             onSave={submit}
             onSkip={() => {
               patch({ rating: null });
-              lastBody.current = toBody({ ...draft, rating: null });
-              save.mutate(lastBody.current);
+              void saveDraft(null);
             }}
           />
         )}
         {step === "done" && <DoneStep draft={draft} onConfirm={onClose} />}
+
+        {pickingRecipe && (
+          <RecipeLinkSheet
+            selectedId={effectiveRecipeId}
+            onSelect={(recipe) => {
+              lastBody.current = null;
+              setPickedRecipe(
+                recipe ? { id: recipe.id, title: recipe.title } : null,
+              );
+              patch({ recipeId: recipe ? recipe.id : null });
+              setPickingRecipe(false);
+            }}
+            onBack={() => setPickingRecipe(false)}
+            onClose={() => {
+              setPickingRecipe(false);
+              close();
+            }}
+          />
+        )}
 
         {confirmingClose && (
           <div
@@ -902,8 +1095,42 @@ function Stars({
   );
 }
 
+/** `NumberCell`의 오류 id·ARIA·안내 줄 한 쌍을 묶는다. */
+function fieldErrorProps(id: string, message?: string) {
+  return {
+    "aria-invalid": message ? (true as const) : undefined,
+    "aria-describedby": message ? id : undefined,
+  };
+}
+
+function DetailField({
+  errorId,
+  error,
+  children,
+}: {
+  errorId: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 flex-col gap-[4px]">
+      {children}
+      {error && (
+        <span id={errorId} role="alert" className="text-[12.5px] text-danger">
+          {error}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function TasteStep({
   draft,
+  details,
+  onToggleDetails,
+  errors,
+  linkedRecipeTitle,
+  onPickRecipe,
   patch,
   saving,
   failed,
@@ -911,20 +1138,36 @@ function TasteStep({
   onSkip,
 }: {
   draft: Draft;
+  details: boolean;
+  onToggleDetails: () => void;
+  errors: DetailErrors;
+  linkedRecipeTitle: string | null;
+  onPickRecipe: () => void;
   patch: (p: Partial<Draft>) => void;
   saving: boolean;
   failed: boolean;
   onSave: () => void;
   onSkip: () => void;
 }) {
-  const [details, setDetails] = useState(false);
   const temp = useNumberText(draft.waterTempC, (waterTempC) =>
     patch({ waterTempC }),
   );
   const grind = useNumberText(draft.grindValue, (grindValue) =>
     patch({ grindValue }),
   );
+  const tds = useNumberText(draft.tdsPercent, (tdsPercent) =>
+    patch({ tdsPercent }),
+  );
+  const beverageWeight = useNumberText(
+    draft.beverageWeightG,
+    (beverageWeightG) => patch({ beverageWeightG }),
+  );
   const grinders = useUserGrinders();
+  const yieldPercent = previewYield(
+    draft.doseG,
+    draft.beverageWeightG,
+    draft.tdsPercent,
+  );
 
   return (
     <>
@@ -944,7 +1187,7 @@ function TasteStep({
       <button
         type="button"
         aria-expanded={details}
-        onClick={() => setDetails((d) => !d)}
+        onClick={onToggleDetails}
         className="hit-44 text-left text-[14px] text-ink-2"
       >
         {details ? "▾ 자세히" : "▸ 자세히"}
@@ -957,7 +1200,31 @@ function TasteStep({
             unit="°C"
             {...temp}
           />
-          <label className="flex items-center justify-between gap-[8px] text-[13.5px] text-ink-3">
+          <DetailField errorId="qb-err-total-time" error={errors.totalTimeText}>
+            <NumberCell
+              label="총 시간"
+              accessibleName="총 시간"
+              unit="m:ss"
+              placeholder="0:00"
+              inputMode={undefined}
+              value={draft.totalTimeText}
+              onChange={(e) => patch({ totalTimeText: e.target.value.trim() })}
+              {...fieldErrorProps("qb-err-total-time", errors.totalTimeText)}
+            />
+          </DetailField>
+          <DetailField errorId="qb-err-drawdown" error={errors.drawdownText}>
+            <NumberCell
+              label="드로다운"
+              accessibleName="드로다운"
+              unit="m:ss"
+              placeholder="0:00"
+              inputMode={undefined}
+              value={draft.drawdownText}
+              onChange={(e) => patch({ drawdownText: e.target.value.trim() })}
+              {...fieldErrorProps("qb-err-drawdown", errors.drawdownText)}
+            />
+          </DetailField>
+          <label className="flex min-h-[44px] items-center justify-between gap-[8px] text-[13.5px] text-ink-3">
             그라인더
             <select
               aria-label="그라인더"
@@ -968,7 +1235,7 @@ function TasteStep({
                     e.target.value === "" ? null : Number(e.target.value),
                 })
               }
-              className={`${SELECT_EXTRA} hit-44 bg-transparent text-[14px] text-ink`}
+              className={`${SELECT_EXTRA} hit-44 min-h-[44px] bg-transparent text-[14px] text-ink`}
             >
               <option value="">선택 안 함</option>
               {(grinders.data ?? []).map((g) => (
@@ -986,6 +1253,61 @@ function TasteStep({
               {...grind}
             />
           )}
+          <div className="flex flex-col gap-[6px]">
+            <span className="font-mono text-[10px] font-medium tracking-[0.12em] text-ink-3 uppercase">
+              맛 5축
+            </span>
+            {TASTE_AXES.map(({ key, label }) => (
+              <TasteDots
+                key={key}
+                label={label}
+                value={draft[key]}
+                onChange={(value) => patch({ [key]: value })}
+              />
+            ))}
+          </div>
+          <DetailField errorId="qb-err-tds" error={errors.tdsPercent}>
+            <NumberCell
+              label="TDS (선택)"
+              accessibleName="TDS"
+              unit="%"
+              {...tds}
+              {...fieldErrorProps("qb-err-tds", errors.tdsPercent)}
+            />
+          </DetailField>
+          <DetailField errorId="qb-err-beverage" error={errors.beverageWeightG}>
+            <NumberCell
+              label="음료 중량 (선택)"
+              accessibleName="음료 중량"
+              unit="g"
+              {...beverageWeight}
+              {...fieldErrorProps("qb-err-beverage", errors.beverageWeightG)}
+            />
+          </DetailField>
+          <div className="flex flex-col gap-[4px]">
+            <div className="flex items-center justify-between text-[13.5px] text-ink-3">
+              <span>수율</span>{" "}
+              <span className="font-mono text-[14px] text-ink tabular-nums">
+                {yieldPercent !== null ? `${yieldPercent} %` : "—"}
+              </span>
+            </div>
+            {draft.tdsPercent === null && (
+              <p className="text-[12px] text-ink-3">
+                TDS가 없으면 수율을 계산할 수 없습니다.
+              </p>
+            )}
+          </div>
+          <div className="flex flex-col gap-[6px]">
+            <span className="text-[12.5px] font-medium text-ink-2">
+              공개 범위
+            </span>
+            <Segmented
+              label="공개 범위"
+              options={VISIBILITY_OPTIONS}
+              value={draft.visibility}
+              onChange={(visibility) => patch({ visibility })}
+            />
+          </div>
           <NumberCell
             label="로스팅 날짜 (선택)"
             accessibleName="로스팅 날짜"
@@ -994,12 +1316,27 @@ function TasteStep({
             value={draft.roastedAt}
             onChange={(e) => patch({ roastedAt: e.target.value })}
           />
-          <Segmented
-            label="공개 범위"
-            options={VISIBILITY_OPTIONS}
-            value={draft.visibility}
-            onChange={(visibility) => patch({ visibility })}
-          />
+          <div className="flex flex-col gap-[6px]">
+            <span className="text-[12.5px] font-medium text-ink-2">
+              레시피 연결 (선택)
+            </span>
+            <button
+              type="button"
+              aria-label={`레시피 연결 ${linkedRecipeTitle ?? "연결 안 함"} 고르기`}
+              onClick={onPickRecipe}
+              className="kn-press hit-44 flex min-h-[44px] w-full items-center justify-between gap-[8px] rounded-[7px] border border-border bg-paper px-[14px] py-[12px] text-left text-[14.5px]"
+            >
+              <span className={linkedRecipeTitle ? "text-ink" : "text-ink-3"}>
+                {linkedRecipeTitle ?? "연결 안 함"}
+              </span>
+              <span className="shrink-0 text-[13px] font-medium text-accent">
+                고르기
+              </span>
+            </button>
+            <p className="text-[12px] text-ink-3">
+              연결하면 상세에 레시피 / 실제 비교가 생겨요.
+            </p>
+          </div>
         </div>
       )}
       {failed && !saving && (

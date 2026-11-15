@@ -16,13 +16,20 @@ import { useIsWide } from "@/lib/useIsWide";
 import { useMe } from "@/features/user/queries";
 import { formatDuration, formatGrams, formatTemperature } from "@/lib/format";
 import { formatKstStamp } from "@/lib/kstDate";
+import { openQuickBrew } from "@/lib/quickBrew";
 import { deleteBrewLog, fetchBrewLog } from "../api";
+import { beanName } from "../entityLabel";
 import type { BrewLog } from "../schema";
+import {
+  formatCompactDoseWater,
+  resolveBeanSummary,
+} from "../todayPresentation";
 import {
   useBeanLabel,
   useRecipeLabel,
   type RecipeTargets,
 } from "../useEntityLabels";
+import { useBeanMetadataSources } from "../useTodayMetadata";
 import { GRIND_UNIT_LABEL } from "./brewFormFields";
 import { RecipeComparison, type GrindComparison } from "./RecipeComparison";
 import { DeleteBrewLogDialog } from "./DeleteBrewLogDialog";
@@ -43,8 +50,22 @@ export function BrewDetail({ id }: { id: number }) {
   const me = useMe(onSessionLost);
 
   const recipeId = logQuery.data?.recipeId;
+  const isC1 = recipeId === undefined;
   const recipe = useRecipeLabel(recipeId, ready, onSessionLost);
-  const bean = useBeanLabel(logQuery.data?.beanBatchId, ready, onSessionLost);
+  const beanBatchId = logQuery.data?.beanBatchId;
+  // beanProductId·beanName이 없을 때만 batch→product→roaster 체인을 탄다(403·404 폴백 보존).
+  const useLegacyBeanChain =
+    ready &&
+    logQuery.data !== undefined &&
+    logQuery.data.beanProductId === undefined &&
+    logQuery.data.beanName === undefined &&
+    beanBatchId !== undefined;
+  const bean = useBeanLabel(beanBatchId, useLegacyBeanChain, onSessionLost);
+  const beanSources = useBeanMetadataSources(
+    logQuery.data !== undefined && !useLegacyBeanChain ? [logQuery.data] : [],
+    ready,
+    onSessionLost,
+  );
   const brewers = useBrewers(onSessionLost);
   const wide = useIsWide();
   // 분쇄도 비교에 내 그라인더 모델이 필요하다. 남의 기록이면 부르지 않는다(남의 그라인더는 읽을 수 없다).
@@ -82,16 +103,44 @@ export function BrewDetail({ id }: { id: number }) {
   }
 
   const log = logQuery.data;
+  const beanSummary = useLegacyBeanChain
+    ? undefined
+    : resolveBeanSummary(log, beanSources);
+  const beanDisplay =
+    beanSummary !== undefined
+      ? beanSummary.isDirectName
+        ? beanSummary.name
+        : beanName(
+            { name: beanSummary.name },
+            beanSummary.roasterName !== undefined
+              ? { name: beanSummary.roasterName }
+              : undefined,
+          )
+      : useLegacyBeanChain && bean.label !== ""
+        ? bean.label
+        : undefined;
+  const beanRoastedAt =
+    log.roastedAt ?? (useLegacyBeanChain ? bean.roastedAt : undefined);
+
+  const c1BeanName =
+    beanSummary?.name ?? (bean.isReady ? bean.label : undefined);
+  const c1Title =
+    c1BeanName ??
+    formatCompactDoseWater(log.actualDoseG, log.actualWaterG) ??
+    "레시피 없이 기록";
+
   // `프릿츠 예가체프 · 로스팅 08.28 · Hario V60 02` — 못 읽은 조각은 뺀다(대체 문구를 줄에 쓰지 않는다).
   const brewer = brewers.data?.find((item) => item.id === recipe.brewerId);
-  const subline = [
-    bean.isReady && bean.label,
-    bean.roastedAt !== undefined &&
-      `로스팅 ${bean.roastedAt.slice(5, 7)}.${bean.roastedAt.slice(8, 10)}`,
-    brewer !== undefined && `${brewer.brand} ${brewer.name}`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const subline = isC1
+    ? "레시피 없이 기록"
+    : [
+        useLegacyBeanChain ? bean.isReady && bean.label : beanDisplay,
+        beanRoastedAt !== undefined &&
+          `로스팅 ${beanRoastedAt.slice(5, 7)}.${beanRoastedAt.slice(8, 10)}`,
+        brewer !== undefined && `${brewer.brand} ${brewer.name}`,
+      ]
+        .filter(Boolean)
+        .join(" · ");
   const isMine = me.data !== undefined && log.userId === me.data.id;
 
   const title = (
@@ -109,7 +158,9 @@ export function BrewDetail({ id }: { id: number }) {
         흔들리지 않게 한다.
       */}
       <h1 className="mt-[6px] text-page-title font-semibold min-[1100px]:text-[30px]">
-        {recipeId !== undefined && recipe.isReady ? (
+        {isC1 ? (
+          c1Title
+        ) : recipe.isReady ? (
           <Link
             href={`/recipes/${recipeId}`}
             className="hit-44 underline-offset-2 hover:underline"
@@ -133,17 +184,17 @@ export function BrewDetail({ id }: { id: number }) {
     recipe.targets?.grindSettingUnit === undefined
       ? ""
       : GRIND_UNIT_LABEL[recipe.targets.grindSettingUnit];
-  const showBean = log.beanBatchId !== undefined && bean.label !== "";
+  const showBean = beanDisplay !== undefined && beanDisplay !== "";
   const gear = (showBean || log.actualGrindSettingValue !== undefined) && (
     <div className="flex flex-col">
       {showBean && (
         <LedgerField
           label="원두"
-          value={bean.label}
+          value={beanDisplay}
           sub={
             [
-              bean.roastedAt !== undefined &&
-                `로스팅 ${bean.roastedAt.slice(5, 7)}.${bean.roastedAt.slice(8, 10)}`,
+              beanRoastedAt !== undefined &&
+                `로스팅 ${beanRoastedAt.slice(5, 7)}.${beanRoastedAt.slice(8, 10)}`,
               log.daysOffRoast !== undefined && `${log.daysOffRoast}일차`,
             ]
               .filter(Boolean)
@@ -202,32 +253,35 @@ export function BrewDetail({ id }: { id: number }) {
     />
   );
 
-  // 레시피를 못 읽었으면(403·404) 비교표 대신 실측값을 원장 행으로 보인다(AC-BDETAIL-18·AC-STRUCT-13).
-  // 조회 중(`label`이 빈 문자열)에는 그리지 않는다 — 곧 비교표로 바뀌면 깜빡인다.
-  const measured = recipe.targets === undefined && recipe.label !== "" && (
-    <div className="flex flex-col">
-      {[
-        { label: "원두량", value: formatGrams(log.actualDoseG) },
-        { label: "물량", value: formatGrams(log.actualWaterG) },
-        log.actualWaterTempC !== undefined && {
-          label: "물 온도",
-          value: formatTemperature(log.actualWaterTempC),
-        },
-        log.actualTotalTimeSeconds !== undefined && {
-          label: "추출 시간",
-          value: formatDuration(log.actualTotalTimeSeconds),
-        },
-      ]
-        .filter((row): row is { label: string; value: string } => Boolean(row))
-        .map((row) => (
-          <LedgerField
-            key={row.label}
-            label={row.label}
-            value={<span className="font-mono">{row.value}</span>}
-          />
-        ))}
-    </div>
-  );
+  // C1(레시피 없음)이거나 레시피를 못 읽었으면(403·404) 비교표 대신 실측값을 원장 행으로 보인다(AC-BDETAIL-18·AC-STRUCT-13·AC-QUICKBREW-32).
+  // C2 조회 중(`label`이 빈 문자열)에는 그리지 않는다 — 곧 비교표로 바뀌면 깜빡인다.
+  const measured = recipe.targets === undefined &&
+    (isC1 || recipe.label !== "") && (
+      <div className="flex flex-col">
+        {[
+          { label: "원두량", value: formatGrams(log.actualDoseG) },
+          { label: "물량", value: formatGrams(log.actualWaterG) },
+          log.actualWaterTempC !== undefined && {
+            label: "물 온도",
+            value: formatTemperature(log.actualWaterTempC),
+          },
+          log.actualTotalTimeSeconds !== undefined && {
+            label: "추출 시간",
+            value: formatDuration(log.actualTotalTimeSeconds),
+          },
+        ]
+          .filter((row): row is { label: string; value: string } =>
+            Boolean(row),
+          )
+          .map((row) => (
+            <LedgerField
+              key={row.label}
+              label={row.label}
+              value={<span className="font-mono">{row.value}</span>}
+            />
+          ))}
+      </div>
+    );
 
   /*
     푸어 스텝. **읽기 전용이다** — 푸어링을 바꾸는 것은 새 레시피를 만드는 일이라
@@ -253,20 +307,52 @@ export function BrewDetail({ id }: { id: number }) {
     </p>
   );
 
+  const handleRebrew = () => {
+    const batchProductId =
+      log.beanBatchId !== undefined
+        ? beanSources.batchesById.get(log.beanBatchId)?.beanProductId
+        : undefined;
+    openQuickBrew("record", {
+      beanProductId: log.beanProductId ?? batchProductId ?? null,
+      beanName: log.beanName ?? null,
+      doseG: log.actualDoseG,
+      waterG: log.actualWaterG,
+      waterTempC: log.actualWaterTempC ?? null,
+      userGrinderId: isMine ? (log.userGrinderId ?? null) : null,
+      grindValue: isMine ? (log.actualGrindSettingValue ?? null) : null,
+      visibility: log.visibility,
+    });
+  };
+
+  const rebrewAction = (mobile?: boolean) =>
+    isC1 ? (
+      <Button
+        variant="primary"
+        className={mobile ? "w-full" : undefined}
+        onClick={handleRebrew}
+      >
+        다시 내리기
+      </Button>
+    ) : (
+      <ButtonLink
+        href={`/brews/new?recipeId=${recipeId}`}
+        variant="primary"
+        className={mobile ? "w-full" : undefined}
+      >
+        다시 내리기
+      </ButtonLink>
+    );
+
   /*
     `PATCH`·`DELETE`는 소유자만 받는다. 남의 로그에 버튼을 두면 눌렀을 때 403이 난다.
     `me`가 아직 안 왔으면 남의 것으로 본다 — 파괴적 버튼은 늦게 나타나는 편이 안전하다.
 
-    「다시 내리기」는 내 기록이 아니어도 보인다 — 남의 기록을 보고 같은 레시피로
-    내려보는 것이 이 서비스의 쓰임이다(docs/specs/2026-09-17-small-features.md).
+    「다시 내리기」는 내 기록이 아니어도 보인다 — 남의 기록을 보고 같은 레시피나
+    값으로 다시 내려보는 것이 이 서비스의 쓰임이다(docs/specs/2026-09-17-small-features.md).
   */
   const actions = (
     <>
-      {recipeId !== undefined && (
-        <ButtonLink href={`/brews/new?recipeId=${recipeId}`} variant="primary">
-          다시 내리기
-        </ButtonLink>
-      )}
+      {rebrewAction()}
       {isMine && (
         <>
           <ButtonLink href={`/brews/${id}/edit`}>수정</ButtonLink>
@@ -335,17 +421,9 @@ export function BrewDetail({ id }: { id: number }) {
           </Link>
         </TopBarActions>
       )}
-      {recipeId !== undefined && (
-        <div className="sticky bottom-0 z-10 -mx-6 border-t border-divider bg-paper px-6 py-3">
-          <ButtonLink
-            href={`/brews/new?recipeId=${recipeId}`}
-            variant="primary"
-            className="w-full"
-          >
-            다시 내리기
-          </ButtonLink>
-        </div>
-      )}
+      <div className="sticky bottom-0 z-10 -mx-6 border-t border-divider bg-paper px-6 py-3">
+        {rebrewAction(true)}
+      </div>
       {isMine && (
         <button
           type="button"

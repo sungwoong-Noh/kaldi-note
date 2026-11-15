@@ -2,7 +2,9 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, delay, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { QuickBrewHost } from "@/features/brewlog/components/QuickBrewHost";
 import type { Recipe } from "@/features/recipe/schema";
+import { closeQuickBrew } from "@/lib/quickBrew";
 import { clearSession, setAccessToken } from "@/lib/session";
 import {
   brewers,
@@ -837,5 +839,294 @@ describe("BrewDetailPage — 실패 경로", () => {
     const before = calls;
     await user.click(screen.getByRole("button", { name: "다시 시도" }));
     await waitFor(() => expect(calls).toBe(before + 1));
+  });
+});
+
+describe("빠른 기록 C1 상세 · 다시 내리기 — docs/specs/2026-11-14-quick-brew.md", () => {
+  afterEach(() => {
+    closeQuickBrew();
+    vi.unstubAllGlobals();
+  });
+
+  function renderDetailWithHost() {
+    return BrewDetailPage({ params: Promise.resolve({ id: "42" }) }).then(
+      (ui) =>
+        renderWithQuery(
+          <>
+            {ui}
+            <QuickBrewHost />
+          </>,
+        ),
+    );
+  }
+
+  it("AC-QUICKBREW-32 · AC-QUICKBREW-30 · C1 카탈로그 원두 기록은 원두명이 제목이고 부제·실측 행·기존 대표 수치 우선순위를 보인다", async () => {
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({
+          ...brewLogWithTds,
+          id: 42,
+          recipeId: undefined,
+          beanBatchId: undefined,
+          beanProductId: yirgacheffeProduct.id,
+          roastedAt: "2026-11-02",
+          daysOffRoast: 12,
+          degassingStatus: "IDEAL",
+          actualDoseG: 16,
+          actualWaterG: 250,
+          brewRatio: 15.6,
+          actualWaterTempC: 92,
+          actualTotalTimeSeconds: 185,
+        }),
+      ),
+    );
+
+    await renderDetail();
+
+    const h1 = await screen.findByRole("heading", {
+      level: 1,
+      name: "예가체프",
+    });
+    expect(within(h1).queryByRole("link")).toBeNull();
+    expect(screen.getByText("레시피 없이 기록")).toBeInTheDocument();
+    expect(document.querySelector("[data-compare]")).toBeNull();
+    expect(screen.queryByText("푸어 스텝")).toBeNull();
+    expect(screen.queryByRole("button", { name: "레시피로 저장" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "레시피로 저장" })).toBeNull();
+
+    for (const [label, value] of [
+      ["원두량", "16 g"],
+      ["물량", "250 g"],
+      ["물 온도", "92 °C"],
+      ["추출 시간", "3:05"],
+    ]) {
+      expect(ledgerRow(label)).toHaveTextContent(value);
+    }
+
+    await waitFor(() =>
+      expect(ledgerRow("원두")).toHaveTextContent("프릿츠 예가체프"),
+    );
+    expect(ledgerRow("원두")).toHaveTextContent("로스팅 11.02 · 12일차");
+
+    const leads = leadElements();
+    expect(leads).toHaveLength(1);
+    expect(leadLabel(leads[0])).toBe("Extraction yield");
+    expect(leads[0].textContent).toBe("17.6 %");
+  });
+
+  it("AC-QUICKBREW-32 · C1 직접 입력 원두는 추가 조회 없이 원두명과 비율 대표 수치를 보인다", async () => {
+    let extraMetaCalls = 0;
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({
+          ...brewLogWithoutTds,
+          id: 42,
+          recipeId: undefined,
+          beanBatchId: undefined,
+          beanName: "하늘 블렌드",
+          actualDoseG: 16,
+          actualWaterG: 250,
+          brewRatio: 15.6,
+          daysOffRoast: undefined,
+          degassingStatus: undefined,
+        }),
+      ),
+      http.get(`${BASE}/recipes/*`, () => {
+        extraMetaCalls += 1;
+        return HttpResponse.json(grindedRecipe);
+      }),
+      http.get(`${BASE}/bean-batches/*`, () => {
+        extraMetaCalls += 1;
+        return HttpResponse.json(yirgacheffeBatch);
+      }),
+      http.get(`${BASE}/bean-products/*`, () => {
+        extraMetaCalls += 1;
+        return HttpResponse.json(yirgacheffeProduct);
+      }),
+      http.get(`${BASE}/roasters`, () => {
+        extraMetaCalls += 1;
+        return HttpResponse.json([fritzRoaster]);
+      }),
+    );
+
+    await renderDetail();
+
+    const h1 = await screen.findByRole("heading", {
+      level: 1,
+      name: "하늘 블렌드",
+    });
+    expect(within(h1).queryByRole("link")).toBeNull();
+    expect(screen.getByText("레시피 없이 기록")).toBeInTheDocument();
+    expect(ledgerRow("원두")).toHaveTextContent("하늘 블렌드");
+    expect(extraMetaCalls).toBe(0);
+
+    const leads = leadElements();
+    expect(leads).toHaveLength(1);
+    expect(leadLabel(leads[0])).toBe("Ratio");
+    expect(leads[0].textContent).toBe("1:15.6");
+  });
+
+  it("AC-QUICKBREW-32 · C1 원두가 없으면 dose → water를 제목으로 쓰고 C2는 비교표를 유지한다", async () => {
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({
+          ...brewLogWithoutTds,
+          id: 42,
+          recipeId: undefined,
+          beanBatchId: undefined,
+          actualDoseG: 16,
+          actualWaterG: 250,
+          brewRatio: 15.6,
+        }),
+      ),
+    );
+
+    const first = await renderDetail();
+    const h1 = await screen.findByRole("heading", {
+      level: 1,
+      name: "16g → 250g",
+    });
+    expect(within(h1).queryByRole("link")).toBeNull();
+    expect(screen.getByText("레시피 없이 기록")).toBeInTheDocument();
+    expect(ledgerRow("원두")).toBeNull();
+    expect(document.querySelector("[data-compare]")).toBeNull();
+    first.unmount();
+
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({ ...brewLogWithTds, id: 42, recipeId: 1 }),
+      ),
+    );
+    await renderDetail();
+    await waitFor(() => expect(compareRow("원두량")).not.toBeNull());
+  });
+
+  it("AC-QUICKBREW-33 · AC-SMALL-11 · C1 「다시 내리기」 버튼은 그 기록 값으로 빠른 기록 ①을 연다", async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({
+          ...brewLogWithoutTds,
+          id: 42,
+          userId: me.id,
+          recipeId: undefined,
+          beanBatchId: undefined,
+          beanProductId: yirgacheffeProduct.id,
+          actualDoseG: 15,
+          actualWaterG: 240,
+          actualWaterTempC: 93,
+          userGrinderId: myComandante.id,
+          actualGrindSettingValue: 24,
+          visibility: "FRIENDS",
+          brewRatio: 16.0,
+        }),
+      ),
+      http.get(`${BASE}/brew-logs`, () =>
+        HttpResponse.json({
+          content: [
+            {
+              ...brewLogWithoutTds,
+              id: 99,
+              actualDoseG: 20,
+              actualWaterG: 300,
+            },
+          ],
+          page: 0,
+          size: 20,
+          totalElements: 1,
+          totalPages: 1,
+          hasNext: false,
+        }),
+      ),
+      http.get(`${BASE}/bean-products`, () =>
+        HttpResponse.json([yirgacheffeProduct]),
+      ),
+    );
+
+    await renderDetailWithHost();
+    const button = await screen.findByRole("button", { name: "다시 내리기" });
+    expect(screen.queryByRole("link", { name: "다시 내리기" })).toBeNull();
+
+    await user.click(button);
+
+    expect(
+      await screen.findByRole("heading", { name: "얼마나 내렸나요?" }),
+    ).toBeInTheDocument();
+    expect(
+      await within(
+        screen.getByRole("dialog", { name: "빠른 기록" }),
+      ).findByText("예가체프"),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("원두량")).toHaveValue("15");
+    expect(screen.getByLabelText("물량")).toHaveValue("240");
+
+    await user.click(screen.getByRole("button", { name: "다음" }));
+    await user.click(screen.getByRole("button", { name: /자세히/ }));
+    expect(screen.getByLabelText("물 온도")).toHaveValue("93");
+    expect(screen.getByLabelText("그라인더")).toHaveValue(
+      String(myComandante.id),
+    );
+    expect(screen.getByLabelText("분쇄도")).toHaveValue("24");
+    expect(screen.getByRole("radio", { name: "맞팔로우" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+  });
+
+  it("AC-QUICKBREW-33 · 남의 C1 기록과 모바일에서도 「다시 내리기」가 열리고 남의 그라인더는 복사하지 않는다", async () => {
+    mockViewportWidth(390);
+    const user = userEvent.setup();
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({
+          ...brewLogWithoutTds,
+          id: 42,
+          userId: 99,
+          recipeId: undefined,
+          beanBatchId: undefined,
+          beanName: "남의 원두",
+          actualDoseG: 15,
+          actualWaterG: 240,
+          userGrinderId: 999,
+          actualGrindSettingValue: 30,
+          visibility: "PUBLIC",
+          brewRatio: 16.0,
+        }),
+      ),
+      http.get(`${BASE}/brew-logs`, () =>
+        HttpResponse.json({
+          content: [],
+          page: 0,
+          size: 20,
+          totalElements: 0,
+          totalPages: 0,
+          hasNext: false,
+        }),
+      ),
+      http.get(`${BASE}/bean-products`, () => HttpResponse.json([])),
+    );
+
+    await renderDetailWithHost();
+    const button = await screen.findByRole("button", { name: "다시 내리기" });
+    expect(screen.queryByRole("link", { name: "수정" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "삭제" })).toBeNull();
+
+    await user.click(button);
+
+    expect(
+      await screen.findByRole("heading", { name: "얼마나 내렸나요?" }),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("dialog", { name: "빠른 기록" })).getByText(
+        "남의 원두",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("원두량")).toHaveValue("15");
+    expect(screen.getByLabelText("물량")).toHaveValue("240");
+
+    await user.click(screen.getByRole("button", { name: "다음" }));
+    await user.click(screen.getByRole("button", { name: /자세히/ }));
+    expect(screen.getByLabelText("그라인더")).toHaveValue("");
+    expect(screen.queryByLabelText("분쇄도")).toBeNull();
   });
 });

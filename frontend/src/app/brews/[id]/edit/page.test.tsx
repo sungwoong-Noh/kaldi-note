@@ -446,3 +446,165 @@ describe("BrewEditPage — 시안 정합", () => {
     expect(within(hero).getByText("1:15.0")).toBeInTheDocument();
   });
 });
+
+describe("BrewEditPage — 빠른 기록 · 선택값 null 견딤 — docs/specs/2026-11-14-quick-brew.md", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const minimalQuickBrewLog = {
+    id: 42,
+    userId: 11,
+    brewedAt: "2026-11-14T08:00:00Z",
+    visibility: "PRIVATE" as const,
+    actualDoseG: 16,
+    actualWaterG: 250,
+    brewRatio: 15.6,
+    diagnosis: "TDS가 없어 계산할 수 없다",
+    createdAt: "2026-11-14T08:00:00Z",
+    updatedAt: "2026-11-14T08:00:00Z",
+  };
+
+  it("AC-QUICKBREW-34 · AC-01 최소 기록은 추가 조회 없이 열리고 빈 레시피·원두를 보인다", async () => {
+    let extraMetaCalls = 0;
+    server.use(
+      http.get(DETAIL_URL, () => HttpResponse.json(minimalQuickBrewLog)),
+      http.get(`${BASE}/recipes/*`, () => {
+        extraMetaCalls += 1;
+        return HttpResponse.json(kasuyaRecipe);
+      }),
+      http.get(`${BASE}/bean-batches/*`, () => {
+        extraMetaCalls += 1;
+        return HttpResponse.json(yirgacheffeBatch);
+      }),
+      http.get(`${BASE}/bean-products/*`, () => {
+        extraMetaCalls += 1;
+        return HttpResponse.json(yirgacheffeProduct);
+      }),
+      http.get(`${BASE}/roasters`, () => {
+        extraMetaCalls += 1;
+        return HttpResponse.json([fritzRoaster]);
+      }),
+    );
+
+    await renderEditPage();
+
+    expect(await screen.findByLabelText("원두량")).toHaveValue("16");
+    expect(screen.getByLabelText("물량")).toHaveValue("250");
+    expect(fieldValue("레시피")).toHaveTextContent("레시피 없이 기록");
+    expect(fieldValue("원두")).toHaveTextContent("고르지 않음");
+    expect(document.querySelector("[data-recipe-diff]")).toBeNull();
+    expect(
+      within(document.querySelector<HTMLElement>("[data-hero]")!).getByText(
+        "1:15.6",
+      ),
+    ).toBeInTheDocument();
+    expect(extraMetaCalls).toBe(0);
+  });
+
+  it("AC-QUICKBREW-34 · AC-WEBLOGEDIT-11 · 최소 기록에서 별점을 바꿔 저장하면 PATCH 200이고 무변경 저장은 요청 0회다", async () => {
+    const user = userEvent.setup();
+    const captured = capturePatch();
+    server.use(
+      http.get(DETAIL_URL, () => HttpResponse.json(minimalQuickBrewLog)),
+    );
+
+    const first = await renderEditPage();
+    await screen.findByLabelText("원두량");
+    await user.click(screen.getByRole("button", { name: "저장" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/brews/42"));
+    expect(captured.calls).toBe(0);
+
+    push.mockClear();
+    first.unmount();
+
+    await renderEditPage();
+    await user.click(await screen.findByRole("button", { name: "별점 4" }));
+    await user.click(screen.getByRole("button", { name: "저장" }));
+
+    await waitFor(() => expect(captured.calls).toBe(1));
+    expect(captured.body).toEqual({ rating: 4 });
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/brews/42"));
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "기록을 저장했습니다.",
+    );
+  });
+
+  it("AC-QUICKBREW-34 · 카탈로그 원두(beanProductId)와 직접 입력 원두(beanName)를 배치 조회 없이 보인다", async () => {
+    let batchCalls = 0;
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({
+          ...minimalQuickBrewLog,
+          beanProductId: yirgacheffeProduct.id,
+        }),
+      ),
+      http.get(`${BASE}/bean-batches/*`, () => {
+        batchCalls += 1;
+        return HttpResponse.json(yirgacheffeBatch);
+      }),
+      http.get(`${BASE}/bean-products/${yirgacheffeProduct.id}`, () =>
+        HttpResponse.json(yirgacheffeProduct),
+      ),
+    );
+
+    const first = await renderEditPage();
+    await waitFor(() =>
+      expect(fieldValue("원두")).toHaveTextContent("프릿츠 예가체프"),
+    );
+    expect(batchCalls).toBe(0);
+    first.unmount();
+
+    let metaCalls = 0;
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({
+          ...minimalQuickBrewLog,
+          beanName: "하늘 블렌드",
+        }),
+      ),
+      http.get(`${BASE}/bean-batches/*`, () => {
+        metaCalls += 1;
+        return HttpResponse.json(yirgacheffeBatch);
+      }),
+      http.get(`${BASE}/bean-products/*`, () => {
+        metaCalls += 1;
+        return HttpResponse.json(yirgacheffeProduct);
+      }),
+      http.get(`${BASE}/roasters`, () => {
+        metaCalls += 1;
+        return HttpResponse.json([fritzRoaster]);
+      }),
+    );
+
+    await renderEditPage();
+    await waitFor(() =>
+      expect(fieldValue("원두")).toHaveTextContent("하늘 블렌드"),
+    );
+    expect(metaCalls).toBe(0);
+  });
+
+  it("AC-QUICKBREW-34 · 모바일(390px)에서도 선택값이 비어 있는 기록이 열리고 수정·저장된다", async () => {
+    mockViewportWidth(390);
+    const user = userEvent.setup();
+    const captured = capturePatch();
+    server.use(
+      http.get(DETAIL_URL, () => HttpResponse.json(minimalQuickBrewLog)),
+    );
+
+    await renderEditPage();
+    await screen.findByLabelText("원두량");
+    await waitFor(() =>
+      expect(fieldValue("레시피")).toHaveTextContent("레시피 없이 기록"),
+    );
+    expect(fieldValue("원두")).toHaveTextContent("고르지 않음");
+
+    await user.click(screen.getByRole("button", { name: "별점 5" }));
+    await user.click(screen.getAllByRole("button", { name: "저장" })[0]);
+
+    await waitFor(() => expect(captured.calls).toBe(1));
+    expect(captured.body).toEqual({ rating: 5 });
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/brews/42"));
+  });
+});

@@ -756,3 +756,60 @@ describe("키보드 Enter · 웹 패널 · 모바일 끌어 닫기 (Task 11)", (
     }
   });
 });
+
+describe("다시 내리기 프리필 (Task 13)", () => {
+  it("AC-QUICKBREW-33 · prefill을 넘기면 지난번 기록이 있어도 ① 입력 화면이 그 값으로 열리고 저장된다", async () => {
+    const posted = given([last]);
+    renderWithQuery(<QuickBrewHost />);
+
+    act(() =>
+      openQuickBrew("record", {
+        beanProductId: null,
+        beanName: "하늘 블렌드",
+        doseG: 15,
+        waterG: 240,
+        waterTempC: 93,
+        userGrinderId: myComandante.id,
+        grindValue: 26,
+        visibility: "PUBLIC",
+      }),
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "얼마나 내렸나요?" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("하늘 블렌드")).toBeInTheDocument();
+    expect(screen.getByLabelText("원두량")).toHaveValue("15");
+    expect(screen.getByLabelText("물량")).toHaveValue("240");
+
+    await userEvent.click(screen.getByRole("button", { name: "다음" }));
+    expect(screen.getByRole("radio", { name: "별 4" })).toHaveAttribute(
+      "aria-checked",
+      "false",
+    );
+    expect(screen.getByLabelText("한 줄 메모 (선택)")).toHaveValue("");
+
+    await userEvent.click(screen.getByRole("button", { name: /자세히/ }));
+    expect(screen.getByLabelText("물 온도")).toHaveValue("93");
+    expect(screen.getByLabelText("그라인더")).toHaveValue(
+      String(myComandante.id),
+    );
+    expect(screen.getByLabelText("분쇄도")).toHaveValue("26");
+    expect(screen.getByRole("radio", { name: "전체" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "저장" }));
+    await waitFor(() => expect(posted).toHaveLength(1));
+    expect(posted[0]).toEqual({
+      actualDoseG: 15,
+      actualWaterG: 240,
+      beanName: "하늘 블렌드",
+      actualWaterTempC: 93,
+      userGrinderId: myComandante.id,
+      actualGrindSettingValue: 26,
+      visibility: "PUBLIC",
+    });
+  });
+});

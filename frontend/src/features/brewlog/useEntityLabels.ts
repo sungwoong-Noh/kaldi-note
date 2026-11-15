@@ -107,7 +107,10 @@ export function useBeanLabel(
     enabled: enabled && productId !== undefined,
   });
 
-  const roasters = useRoasters(onSessionLost);
+  const roasters = useRoasters(
+    onSessionLost,
+    enabled && beanBatchId !== undefined,
+  );
   const roaster = roasters.data?.find(
     (candidate) => candidate.id === product.data?.roasterId,
   );

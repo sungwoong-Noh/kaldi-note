@@ -12,6 +12,7 @@ export function QuickBrewHost() {
   return (
     <QuickBrewSheet
       start={rendered.start}
+      prefill={rendered.prefill}
       open={open}
       onClose={closeQuickBrew}
       onExitComplete={onExitComplete}

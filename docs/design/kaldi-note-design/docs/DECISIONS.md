@@ -51,7 +51,7 @@ ORDER BY is_curated DESC, saved_count DESC, created_at DESC
 type Brew = {
   // ...
   recipeId: string | null;        // 내 서랍의 레시피로 내렸을 때만
-  recipeSnapshot: {               // 항상 채움
+  recipeSnapshot: {               // 레시피가 연결된 기록만
     title: string;
     authorName: string;
     dose: number;
@@ -78,7 +78,7 @@ type Brew = {
 TDS는 굴절계가 있어야 나오는 값이라 입문자에게는 대부분 빕니다. 규칙:
 
 - TDS가 없으면 **계산하지 않고** 수율 자리를 비웁니다(`—`). 0이나 추정값을 넣지 마세요.
-- 대표 수치 우선순위: **수율 → 별점**. 잔 목록·상세 모두 이 순서.
+- 대표 수치 우선순위: 잔 목록(오늘·기록 원장)은 **수율 → 별점**, 기록 상세 히어로는 기존 구현대로 **수율 → 비율 → 물 온도**(`AC-BDETAIL-02`·`AC-QUICKBREW-32`).
 - 웹 테이블의 수율 열은 비어도 열 자체를 없애지 않습니다(정렬 유지).
 - 안내 문구: `TDS가 없으면 수율을 계산할 수 없습니다.`
 

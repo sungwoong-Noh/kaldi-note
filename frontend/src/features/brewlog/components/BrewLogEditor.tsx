@@ -22,8 +22,11 @@ import {
   type BrewLogEditState,
   type BrewLogFormState,
 } from "../formState";
+import { beanName } from "../entityLabel";
 import type { BrewLog } from "../schema";
+import { resolveBeanSummary } from "../todayPresentation";
 import { useBeanLabel, useRecipeLabel } from "../useEntityLabels";
+import { useBeanMetadataSources } from "../useTodayMetadata";
 import { BrewForm } from "./BrewForm";
 import { LeaveConfirmDialog } from "@/components/LeaveConfirmDialog";
 import { FORM_SHELL_CLASS } from "./BrewFormLayout";
@@ -101,7 +104,38 @@ function Fields({
     log.recipeId !== undefined,
     onSessionLost,
   );
-  const bean = useBeanLabel(log.beanBatchId, true, onSessionLost);
+  const useLegacyBeanChain =
+    log.beanProductId === undefined &&
+    log.beanName === undefined &&
+    log.beanBatchId !== undefined;
+  const bean = useBeanLabel(log.beanBatchId, useLegacyBeanChain, onSessionLost);
+  const beanSources = useBeanMetadataSources(
+    log.beanProductId !== undefined ? [log] : [],
+    true,
+    onSessionLost,
+  );
+  const beanSummary =
+    log.beanProductId !== undefined || log.beanName !== undefined
+      ? resolveBeanSummary(log, beanSources)
+      : undefined;
+  const readOnlyBean =
+    log.beanProductId !== undefined
+      ? {
+          label:
+            beanSummary !== undefined
+              ? beanName(
+                  { name: beanSummary.name },
+                  beanSummary.roasterName !== undefined
+                    ? { name: beanSummary.roasterName }
+                    : undefined,
+                )
+              : "",
+        }
+      : log.beanName !== undefined && log.beanName.trim() !== ""
+        ? { label: log.beanName }
+        : state.beanBatchId === null
+          ? null
+          : { label: bean.label };
 
   const save = useMutation({
     mutationFn: () =>
@@ -174,9 +208,11 @@ function Fields({
         )
       }
       // 레시피와 원두는 PATCH DTO에 없어 서버가 무시한다. 값만 보여준다(AC-WEBLOGEDIT-06).
-      recipeTitle={recipe.label}
+      recipeTitle={
+        log.recipeId === undefined ? "레시피 없이 기록" : recipe.label
+      }
       targets={recipe.targets}
-      bean={state.beanBatchId === null ? null : { label: bean.label }}
+      bean={readOnlyBean}
       submitLabel="저장"
       submitting={save.isPending}
       submitDisabled={cleared.length > 0 || invalidTimes.length > 0}

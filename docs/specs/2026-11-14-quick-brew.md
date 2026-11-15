@@ -276,23 +276,23 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 
 #### AC-QUICKBREW-32 · 기록 상세 두 모양
 
-- **Given** 레시피 없는 기록 / `recipeId`가 있는 기록
+- **Given** 레시피 없는 기록(C1) / `recipeId`가 있는 기록(C2)
 - **When** `/brews/{id}`
-- **Then** 앞은 부제 「레시피 없이 기록」, 비교표 없음. 뒤는 「항목 · 레시피 · 실제」 비교표(기존). 대표 수치는 TDS가 있으면 수율, 없으면 별점(기존 우선순위)
+- **Then** 앞(C1)은 `h1`이 `원두명(카탈로그 → 직접 입력 → 배치) → "{dose}g → {water}g" → "레시피 없이 기록"` 순(링크 아님), 부제 `"레시피 없이 기록"`, 비교표 대신 실측 원장 행(`원두량`·`물량`·선택 `물 온도`/`추출 시간`), `원두` 원장 행은 `beanProductId`·`beanName`·`roastedAt`까지 표시한다(기존 메타 헬퍼 `useBeanMetadataSources`·`resolveBeanSummary` 재사용). 뒤(C2)는 「항목 · 레시피 · 실제」 비교표(기존). 두 모양 모두 상세 히어로 대표 수치는 기존 우선순위(수율 → 비율 → 물 온도)를 유지한다
 - **검증** 페이지 테스트
 
-#### AC-QUICKBREW-33 · 「다시 내리기」는 그 값으로 ①을 연다
+#### AC-QUICKBREW-33 · C1의 「다시 내리기」는 그 값으로 ①을 연다
 
-- **Given** 기록 상세(원두량 15 · 물량 240)
+- **Given** 레시피 없는 기록(C1) 상세(원두량 15 · 물량 240 등 선택값 포함) / `recipeId`가 있는 기록(C2) 상세
 - **When** 「다시 내리기」
-- **Then** 빠른 기록 ①이 열리고 원두량 15 · 물량 240이 보인다
-- **검증** 컴포넌트 테스트
+- **Then** C1은 `button`이며 누르면 `openQuickBrew()`로 그 기록의 값(원두·원두량·물량·온도·공개 범위, 내 기록이면 그라인더·분쇄도)을 채운 빠른 기록 ①(`amount`)이 열려 원두량 15 · 물량 240이 보인다. C2는 기존 `/brews/new?recipeId=...` 링크를 유지한다(`AC-BDETAIL-11·12·13·18·21`, `AC-SMALL-10` 그대로)
+- **검증** 컴포넌트 테스트 + 페이지 테스트
 
 #### AC-QUICKBREW-34 · 선택값이 빈 기록도 편집 화면이 열린다
 
-- **Given** AC-01로 만든 기록
-- **When** `/brews/{id}/edit`
-- **Then** 오류 없이 열리고 원두량 16 · 물량 250이 채워져 있다. 그대로 저장하면 `PATCH`가 200
+- **Given** AC-01로 만든 기록(또는 `recipeId` 없음·`beanProductId`/`beanName`만 있는 기록)
+- **When** `/brews/{id}/edit`를 열고 (a) 별점을 바꿔 저장한다 / (b) 아무것도 바꾸지 않고 저장한다
+- **Then** 오류 없이 열리고 원두량 16 · 물량 250이 채워져 있다. `recipeId`가 없으면 레시피 행은 `"레시피 없이 기록"`으로 보이고, `beanProductId`·`beanName`은 읽기 전용 원두 행에 표시되며 `beanBatchId`가 없으면 `useBeanLabel`은 조회하지 않는다. (a) 별점을 바꿔 저장하면 다른 빈 선택 칸을 채우지 않아도 `PATCH`가 200으로 성공하고, (b) 아무것도 바꾸지 않고 저장하면 요청 0회로 상세로 돌아간다(`AC-WEBLOGEDIT-11` 유지)
 - **검증** 페이지 테스트
 
 #### AC-QUICKBREW-35 · 웹 「달력」 모드는 720px 달력 카드와 선택 날짜 목록이다
@@ -1099,7 +1099,7 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 - [x] **Task 12: 「기록」 탭** — Covers: AC-QUICKBREW-31, 35, 36, 37 (승계 부품 AC 30건 `AC-HOMECAL-25~109` 재사용 + 승계 `AC-MYCUPS-01·02·03·12·13·16·17·19·20·23·24`)
   `/brews`를 시안 F(F1·F2·FW·H)로. 목록/달력 세그먼트, 모드별 스크롤 유지, 웹 300px(1024px~ 280px) 우측 달력 카드(‹ › 월 이동, 날짜 클릭 시 로드분 내 스크롤 / 미로드 시 달력 모드 전환), 웹 「달력」 모드 720px 카드+`DayList`, 760–1023px 이번 주 한 줄 접힘(탭 시 펼침), `MonthNav`·`DayList` 헤더 한국어 일괄 교체(`AC-HOMECAL-40~42`), `Calendar variant="web"` 및 `63·118·121` 제거.
 
-- [ ] **Task 13: 기록 상세 · 편집** — Covers: AC-QUICKBREW-32, 33, 34
+- [x] **Task 13: 기록 상세 · 편집** — Covers: AC-QUICKBREW-32, 33, 34
   C1/C2 분기, 「다시 내리기」 → 빠른 기록 ①, 편집 화면이 선택값 null을 견딘다. DECISIONS 4절 「스냅샷 항상 채움」 문구 갱신.
 
 ---

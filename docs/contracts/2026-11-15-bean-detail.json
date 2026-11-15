@@ -1,0 +1,451 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "원두 검색 · 원두 상세 — 11 Beans",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/bean-products": {
+      "get": {
+        "operationId": "searchBeanProducts",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "roasterId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "roastLevel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "LIGHT",
+                  "MEDIUM_LIGHT",
+                  "MEDIUM",
+                  "MEDIUM_DARK",
+                  "DARK"
+                ]
+              }
+            }
+          },
+          {
+            "name": "decaf",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "숨긴 원두와 남이 만든 사용자 원두를 뺀 검색 결과, 이름 오름차순 → id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageOfBeanProductSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "q 51자 이상, 잘못된 roastLevel, size 0 또는 51 이상, page<0 — code INVALID_REQUEST"
+          },
+          "401": {
+            "description": "인증 없음 — code UNAUTHORIZED"
+          }
+        }
+      }
+    },
+    "/api/v1/bean-products/{id}": {
+      "get": {
+        "operationId": "getBeanProduct",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "숨긴 원두도 200",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BeanProductDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증 없음 — code UNAUTHORIZED"
+          },
+          "404": {
+            "description": "없는 id — code NOT_FOUND"
+          }
+        }
+      }
+    },
+    "/api/v1/brew-logs/bean-summary": {
+      "get": {
+        "operationId": "getBeanBrewSummary",
+        "parameters": [
+          {
+            "name": "beanProductId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "beanName",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "호출한 사람 본인의 그 원두 기록 요약",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BeanBrewSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "beanProductId·beanName 둘 다 또는 둘 다 없음, beanName 공백뿐 — code INVALID_REQUEST"
+          },
+          "401": {
+            "description": "인증 없음 — code UNAUTHORIZED"
+          },
+          "404": {
+            "description": "없는 beanProductId — code NOT_FOUND"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BeanProductSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "roasterId": {
+            "type": "integer"
+          },
+          "roasterName": {
+            "type": "string"
+          },
+          "beanMix": {
+            "type": "string"
+          },
+          "roastLevel": {
+            "type": "string",
+            "nullable": true
+          },
+          "roastLevelAgtron": {
+            "type": "integer",
+            "nullable": true
+          },
+          "roastLevelCustom": {
+            "type": "string",
+            "nullable": true
+          },
+          "decaf": {
+            "type": "boolean"
+          },
+          "countries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "roasterId",
+          "roasterName",
+          "beanMix",
+          "decaf",
+          "countries"
+        ]
+      },
+      "PageOfBeanProductSummary": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BeanProductSummary"
+            }
+          },
+          "page": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "totalElements": {
+            "type": "integer"
+          },
+          "totalPages": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "content",
+          "page",
+          "size",
+          "totalElements",
+          "totalPages"
+        ]
+      },
+      "BeanOriginDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "country": {
+            "type": "string",
+            "nullable": true
+          },
+          "region": {
+            "type": "string",
+            "nullable": true
+          },
+          "farm": {
+            "type": "string",
+            "nullable": true
+          },
+          "altitudeMinM": {
+            "type": "integer",
+            "nullable": true
+          },
+          "altitudeMaxM": {
+            "type": "integer",
+            "nullable": true
+          },
+          "varietyId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "varietyName": {
+            "type": "string",
+            "nullable": true
+          },
+          "processId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "processName": {
+            "type": "string",
+            "nullable": true
+          },
+          "ratioPercent": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "BeanProductDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "roasterId": {
+            "type": "integer"
+          },
+          "roasterName": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "beanMix": {
+            "type": "string"
+          },
+          "roastLevel": {
+            "type": "string",
+            "nullable": true
+          },
+          "roastLevelAgtron": {
+            "type": "integer",
+            "nullable": true
+          },
+          "roastLevelCustom": {
+            "type": "string",
+            "nullable": true
+          },
+          "decaf": {
+            "type": "boolean"
+          },
+          "productUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "origins": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BeanOriginDetail"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "roasterId",
+          "roasterName",
+          "name",
+          "beanMix",
+          "decaf",
+          "verified",
+          "hidden",
+          "origins",
+          "createdAt"
+        ]
+      },
+      "BeanBrewRecent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "brewedAt": {
+            "type": "string"
+          },
+          "actualDoseG": {
+            "type": "number"
+          },
+          "actualWaterG": {
+            "type": "number"
+          },
+          "brewRatio": {
+            "type": "number"
+          },
+          "rating": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "brewedAt",
+          "actualDoseG",
+          "actualWaterG",
+          "brewRatio"
+        ]
+      },
+      "BeanBrewSummary": {
+        "type": "object",
+        "properties": {
+          "brewCount": {
+            "type": "integer"
+          },
+          "ratedCount": {
+            "type": "integer"
+          },
+          "averageRating": {
+            "type": "number",
+            "nullable": true
+          },
+          "frequentRatio": {
+            "type": "number",
+            "nullable": true
+          },
+          "frequentDoseG": {
+            "type": "number",
+            "nullable": true
+          },
+          "frequentWaterG": {
+            "type": "number",
+            "nullable": true
+          },
+          "recent": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BeanBrewRecent"
+            }
+          }
+        },
+        "required": [
+          "brewCount",
+          "ratedCount",
+          "recent"
+        ]
+      }
+    }
+  }
+}

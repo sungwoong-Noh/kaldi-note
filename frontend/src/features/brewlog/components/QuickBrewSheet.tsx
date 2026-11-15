@@ -19,7 +19,6 @@ import { SELECT_EXTRA } from "@/components/ui/Field";
 import { useBeanProducts, useRoasters } from "@/features/catalog/api";
 import type { BeanProduct } from "@/features/catalog/schema";
 import { useUserGrinders } from "@/features/gear/queries";
-import { fetchRecipe } from "@/features/recipe/api";
 import { useMe } from "@/features/user/queries";
 import type { BrewLogCreateRequest } from "@/types/generated/2026-11-14-quick-brew";
 import type { QuickBrewPrefill } from "@/lib/quickBrew";
@@ -129,7 +128,8 @@ function draftFrom(
     userGrinderId: last?.userGrinderId ?? null,
     grindValue: last?.actualGrindSettingValue ?? null,
     visibility: last?.visibility ?? "PRIVATE",
-    recipeId: last?.recipeId ?? null,
+    // 레시피 연결은 이어받지 않는다 — 매번 「자세히」에서 고른다(AC-QUICKBREW-74).
+    recipeId: null,
   };
 }
 
@@ -310,29 +310,10 @@ function Sheet({
   const [changing, setChanging] = useState(false);
   const [confirmingClose, setConfirmingClose] = useState(false);
 
-  const inheritedRecipeId = prefill ? null : (last?.recipeId ?? null);
-  const inheritedRecipe = useQuery({
-    queryKey: ["recipe", inheritedRecipeId],
-    queryFn: () => fetchRecipe(inheritedRecipeId as number),
-    enabled: inheritedRecipeId !== null,
-    retry: false,
-    staleTime: 30_000,
-  });
-
-  // 403/404로 못 보는 지난번 레시피는 UI·저장에서 비우되 dirty 판정은 건드리지 않는다(AC-QUICKBREW-74·44).
-  const inheritedUnavailable =
-    draft.recipeId !== null &&
-    draft.recipeId === inheritedRecipeId &&
-    inheritedRecipe.isError;
-  const effectiveRecipeId = inheritedUnavailable ? null : draft.recipeId;
   const linkedRecipeTitle =
-    effectiveRecipeId === null
-      ? null
-      : pickedRecipe?.id === effectiveRecipeId
-        ? pickedRecipe.title
-        : effectiveRecipeId === inheritedRecipeId
-          ? (inheritedRecipe.data?.title ?? null)
-          : null;
+    draft.recipeId !== null && pickedRecipe?.id === draft.recipeId
+      ? pickedRecipe.title
+      : null;
 
   const products = useBeanProducts();
   const roasters = useRoasters();
@@ -358,7 +339,6 @@ function Sheet({
     if (save.isPending || submittingRef.current) return;
     const targetDraft: Draft = {
       ...draft,
-      recipeId: effectiveRecipeId,
       ...(overrideRating !== undefined ? { rating: overrideRating } : {}),
     };
     const errors = validateDetails(targetDraft);
@@ -369,26 +349,7 @@ function Sheet({
     }
     submittingRef.current = true;
     try {
-      let resolvedRecipeId = targetDraft.recipeId;
-      if (
-        resolvedRecipeId !== null &&
-        resolvedRecipeId === inheritedRecipeId &&
-        pickedRecipe?.id !== resolvedRecipeId
-      ) {
-        try {
-          await queryClient.fetchQuery({
-            queryKey: ["recipe", resolvedRecipeId],
-            queryFn: () => fetchRecipe(resolvedRecipeId as number),
-            retry: false,
-            staleTime: 30_000,
-          });
-        } catch {
-          resolvedRecipeId = null;
-        }
-      }
-      lastBody.current =
-        lastBody.current ??
-        toBody({ ...targetDraft, recipeId: resolvedRecipeId });
+      lastBody.current = lastBody.current ?? toBody(targetDraft);
       save.mutate(lastBody.current);
     } finally {
       submittingRef.current = false;
@@ -702,7 +663,7 @@ function Sheet({
 
         {pickingRecipe && (
           <RecipeLinkSheet
-            selectedId={effectiveRecipeId}
+            selectedId={draft.recipeId}
             onSelect={(recipe) => {
               lastBody.current = null;
               setPickedRecipe(

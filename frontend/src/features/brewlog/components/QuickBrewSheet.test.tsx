@@ -988,65 +988,27 @@ describe("② 「자세히」 확장 (Task 14)", () => {
     expect(posted2[0]).not.toHaveProperty("recipeId");
   });
 
-  it("AC-QUICKBREW-74 · 지난번 recipeId를 이어받고 403·404면 비워 보낸다", async () => {
-    const postedValid = given([{ ...last, recipeId: 12 }]);
+  it("AC-QUICKBREW-74 · 지난번 recipeId가 있어도 레시피 연결은 비어 있고 레시피를 조회하지 않는다", async () => {
+    const posted = given([{ ...last, recipeId: 12 }]);
+    let recipeFetches = 0;
     server.use(
-      http.get(`${BASE}/recipes/12`, () => HttpResponse.json(recipe12Detail)),
+      http.get(`${BASE}/recipes/12`, () => {
+        recipeFetches += 1;
+        return HttpResponse.json(recipe12Detail);
+      }),
     );
 
-    const first = renderWithQuery(
-      <QuickBrewSheet start="same" onClose={vi.fn()} />,
-    );
+    renderWithQuery(<QuickBrewSheet start="same" onClose={vi.fn()} />);
     await userEvent.click(
       await screen.findByRole("button", { name: /자세히/ }),
     );
-    await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: /레시피 연결/ }),
-      ).toHaveTextContent("아침 V60 15g"),
-    );
+    expect(
+      screen.getByRole("button", { name: /레시피 연결/ }),
+    ).toHaveTextContent("연결 안 함");
     await userEvent.click(screen.getByRole("button", { name: "저장" }));
-    await waitFor(() => expect(postedValid).toHaveLength(1));
-    expect(postedValid[0]).toMatchObject({ recipeId: 12 });
-    first.unmount();
-
-    for (const status of [403, 404]) {
-      const postedMissing = given([{ ...last, recipeId: 99 }]);
-      server.use(
-        http.get(`${BASE}/recipes/99`, () =>
-          HttpResponse.json(
-            { code: status === 403 ? "FORBIDDEN" : "NOT_FOUND", message: "x" },
-            { status },
-          ),
-        ),
-      );
-      const onClose = vi.fn();
-      const view = renderWithQuery(
-        <QuickBrewSheet start="same" onClose={onClose} />,
-      );
-      await userEvent.click(
-        await screen.findByRole("button", { name: /자세히/ }),
-      );
-      await waitFor(() =>
-        expect(
-          screen.getByRole("button", { name: /레시피 연결/ }),
-        ).toHaveTextContent("연결 안 함"),
-      );
-      // 403/404로 비워졌을 뿐 사용자 수정은 아니므로 바로 닫힌다.
-      await userEvent.click(screen.getByRole("button", { name: "닫기" }));
-      expect(onClose).toHaveBeenCalledTimes(1);
-      view.unmount();
-
-      const view2 = renderWithQuery(
-        <QuickBrewSheet start="same" onClose={vi.fn()} />,
-      );
-      await userEvent.click(
-        await screen.findByRole("button", { name: "저장" }),
-      );
-      await waitFor(() => expect(postedMissing).toHaveLength(1));
-      expect(postedMissing[0]).not.toHaveProperty("recipeId");
-      view2.unmount();
-    }
+    await waitFor(() => expect(posted).toHaveLength(1));
+    expect(posted[0]).not.toHaveProperty("recipeId");
+    expect(recipeFetches).toBe(0);
   });
 
   it("AC-QUICKBREW-76 · 레시피 목록 500 실패 후 뒤로 가도 빠른 기록 입력값은 그대로다", async () => {

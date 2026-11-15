@@ -115,3 +115,4 @@ node scripts/generate-contract-types.mjs
 | `2026-10-10-my-cups-ledger.json` | `2026-10-10-my-cups-ledger.md` | 스펙 `초안` — `GET /brew-logs`에 `month`·`minRating` 추가 |
 | `2026-10-14-bean-crawler.json` | `2026-10-14-bean-crawler.md` | 관리자 원두 크롤러 4개 경로(`/api/v1/admin/crawl-sources`·`/crawl-runs`) |
 | `2026-11-14-quick-brew.json` | `2026-11-14-quick-brew.md` | 스펙 `승인` — 기록 생성 필수값 축소(원두량·물량), `beanProductId`·`beanName`·`roastedAt` 추가 |
+| `2026-11-15-bean-detail.json` | `2026-11-15-bean-detail.md` | 스펙 `초안` — `GET /bean-products` 검색·페이지로 대체, 상세 필드 추가, `GET /brew-logs/bean-summary` 신규 |

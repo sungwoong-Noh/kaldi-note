@@ -3,8 +3,10 @@ package com.kaldinote.catalog.application;
 import com.kaldinote.catalog.domain.BeanMix;
 import com.kaldinote.catalog.domain.BeanOrigin;
 import com.kaldinote.catalog.domain.BeanProduct;
+import com.kaldinote.catalog.domain.CoffeeProcess;
 import com.kaldinote.catalog.domain.RoastLevel;
 import com.kaldinote.catalog.domain.Roaster;
+import com.kaldinote.catalog.domain.Variety;
 import com.kaldinote.catalog.infrastructure.BeanProductRepository;
 import com.kaldinote.catalog.infrastructure.CoffeeProcessRepository;
 import com.kaldinote.catalog.infrastructure.RoasterRepository;
@@ -22,6 +24,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -93,7 +96,7 @@ public class BeanCatalogService {
   }
 
   public BeanProductResponse getBeanProduct(Long id) {
-    return BeanProductResponse.from(findBeanProduct(id));
+    return toResponse(findBeanProduct(id));
   }
 
   @Transactional
@@ -127,7 +130,30 @@ public class BeanCatalogService {
             userId);
     product.attachOrigins(origins);
 
-    return BeanProductResponse.from(beanProductRepository.save(product));
+    return toResponse(beanProductRepository.save(product));
+  }
+
+  private BeanProductResponse toResponse(BeanProduct p) {
+    String roasterName =
+        roasterRepository.findById(p.getRoasterId()).map(Roaster::getName).orElse(null);
+    List<Long> varietyIds =
+        p.getOrigins().stream().map(BeanOrigin::getVarietyId).filter(Objects::nonNull).toList();
+    List<Long> processIds =
+        p.getOrigins().stream().map(BeanOrigin::getProcessId).filter(Objects::nonNull).toList();
+    Map<Long, String> varietyNames =
+        varietyRepository.findAllById(varietyIds).stream()
+            .collect(
+                Collectors.toMap(Variety::getId, v -> displayName(v.getNameKo(), v.getName())));
+    Map<Long, String> processNames =
+        processRepository.findAllById(processIds).stream()
+            .collect(
+                Collectors.toMap(
+                    CoffeeProcess::getId, c -> displayName(c.getNameKo(), c.getName())));
+    return BeanProductResponse.from(p, roasterName, varietyNames, processNames);
+  }
+
+  private static String displayName(String nameKo, String name) {
+    return nameKo != null ? nameKo : name;
   }
 
   private BeanProduct findBeanProduct(Long id) {

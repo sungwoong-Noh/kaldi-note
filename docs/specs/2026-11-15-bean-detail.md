@@ -570,7 +570,7 @@ supersedes:
   페이지)로 바꾼다 — 로스터 이름 검색에 조인이 필요해 `RecipeRepository.searchPublic`과 같은 null-safe 패턴을 따랐다. 응답 `PageResponse<BeanProductSummaryResponse>`. 로스터 이름은 한 번에 읽어 붙인다(N+1 금지).
   `findAllBeanProducts()`는 지운다.
 
-- [ ] **Task 3: 상세 응답 확장** — Covers: AC-BEANDETAIL-11, 12, 51
+- [x] **Task 3: 상세 응답 확장** — Covers: AC-BEANDETAIL-11, 12, 51
   `BeanProductResponse`에 `roasterName` · `hidden`, `BeanOriginResponse`에 `varietyName` · `processName`(`name_ko ?? name`).
 
 - [ ] **Task 4: 내 기록 요약 API** — Covers: AC-BEANDETAIL-13, 14, 15, 16, 17, 18, 19, 52, 53, 54

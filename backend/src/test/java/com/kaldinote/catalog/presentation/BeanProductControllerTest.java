@@ -13,10 +13,15 @@ import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
 import com.kaldinote.catalog.domain.BeanMix;
 import com.kaldinote.catalog.domain.BeanOrigin;
 import com.kaldinote.catalog.domain.BeanProduct;
+import com.kaldinote.catalog.domain.CoffeeProcess;
+import com.kaldinote.catalog.domain.ProcessCategory;
 import com.kaldinote.catalog.domain.RoastLevel;
 import com.kaldinote.catalog.domain.Roaster;
+import com.kaldinote.catalog.domain.Variety;
 import com.kaldinote.catalog.infrastructure.BeanProductRepository;
+import com.kaldinote.catalog.infrastructure.CoffeeProcessRepository;
 import com.kaldinote.catalog.infrastructure.RoasterRepository;
+import com.kaldinote.catalog.infrastructure.VarietyRepository;
 import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.UserRepository;
 import jakarta.persistence.EntityManager;
@@ -42,6 +47,8 @@ class BeanProductControllerTest extends AbstractIntegrationTest {
   @Autowired private UserRepository userRepository;
   @Autowired private RoasterRepository roasterRepository;
   @Autowired private BeanProductRepository beanProductRepository;
+  @Autowired private VarietyRepository varietyRepository;
+  @Autowired private CoffeeProcessRepository processRepository;
   @PersistenceContext private EntityManager entityManager;
 
   private Long userId;
@@ -287,5 +294,74 @@ class BeanProductControllerTest extends AbstractIntegrationTest {
         .perform(get("/api/v1/bean-products").param("q", "구지"))
         // 보안 필터의 401은 본문이 없다(docs/specs/2026-09-05-http-error-contract.md)
         .andExpect(status().isUnauthorized());
+  }
+
+  private ResultActions detail(Object id) throws Exception {
+    entityManager.flush();
+    entityManager.clear();
+    return mockMvc.perform(
+        get("/api/v1/bean-products/{id}", id).header(HttpHeaders.AUTHORIZATION, token));
+  }
+
+  @Test
+  @DisplayName("AC-BEANDETAIL-11 · 상세에 로스터 이름 · 숨김 · 품종 · 가공 이름이 온다")
+  void 상세에_로스터_이름_숨김_품종_가공_이름이_온다() throws Exception {
+    login();
+    Long varietyId =
+        varietyRepository.save(Variety.createByUser("Heirloom T3", "에어룸 T3", null)).getId();
+    Long processId =
+        processRepository
+            .save(CoffeeProcess.createByUser("Washed T3", null, ProcessCategory.WASHED, null))
+            .getId();
+    BeanProduct p =
+        BeanProduct.createByUser(
+            roaster("산책 로스터스"),
+            "상세 블렌드",
+            BeanMix.BLEND,
+            RoastLevel.LIGHT,
+            null,
+            null,
+            false,
+            null,
+            null,
+            null);
+    p.attachOrigins(
+        new ArrayList<>(
+            List.of(
+                BeanOrigin.of(
+                    "에티오피아", null, null, null, null, varietyId, processId, new BigDecimal("50.0")),
+                BeanOrigin.of(
+                    "콜롬비아", null, null, null, null, null, null, new BigDecimal("50.0")))));
+    Long id = beanProductRepository.save(p).getId();
+
+    detail(id)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.roasterName").value("산책 로스터스"))
+        .andExpect(jsonPath("$.hidden").value(false))
+        .andExpect(jsonPath("$.origins[0].varietyId").value(varietyId))
+        .andExpect(jsonPath("$.origins[0].varietyName").value("에어룸 T3"))
+        .andExpect(jsonPath("$.origins[0].processName").value("Washed T3"))
+        // 전역 non_null — null 값은 필드가 빠진다
+        .andExpect(jsonPath("$.origins[1].varietyName").doesNotExist())
+        .andExpect(jsonPath("$.origins[1].processName").doesNotExist());
+  }
+
+  @Test
+  @DisplayName("AC-BEANDETAIL-12 · 숨긴 원두도 상세는 열린다")
+  void 숨긴_원두도_상세는_열린다() throws Exception {
+    login();
+    BeanProduct p = bean(roaster("숨김 상세 로스터"), "숨긴 원두");
+    hide(p);
+
+    detail(p.getId()).andExpect(status().isOk()).andExpect(jsonPath("$.hidden").value(true));
+  }
+
+  @Test
+  @DisplayName("AC-BEANDETAIL-51 · 없는 원두 상세")
+  void 없는_원두_상세() throws Exception {
+    login();
+    detail(999999)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
   }
 }

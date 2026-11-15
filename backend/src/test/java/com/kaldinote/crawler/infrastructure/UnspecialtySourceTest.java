@@ -25,6 +25,12 @@ class UnspecialtySourceTest {
   }
 
   @Test
+  @DisplayName("언스페셜티는 추가 목록 페이지가 없다")
+  void 추가_목록_페이지가_없다() {
+    assertThat(source.listPages(read("unspecialty-sitemap.xml"))).isEmpty();
+  }
+
+  @Test
   @DisplayName("AC-CRAWL-04 · 언스페셜티 상세의 스펙 표를 읽는다")
   void 상세의_스펙_표를_읽는다() {
     URI url = URI.create("https://unspecialty.com/product/detail.html?product_no=920");

@@ -29,6 +29,22 @@ class MomosSourceTest {
   }
 
   @Test
+  @DisplayName("모모스 1페이지에서 추가 목록 페이지 URL을 찾고 2페이지에서 상세 URL 13개를 모은다")
+  void 모모스_추가_목록_페이지와_2페이지_상세_URL을_모은다() {
+    assertThat(source.listPages(read("momos-list.html")))
+        .containsExactly(
+            URI.create("https://momos.co.kr/Product_CoffeeBeans/?&page=2&sort=recent"));
+
+    List<URI> page2Urls = source.parseList(read("momos-list-page2.html"));
+    assertThat(page2Urls).hasSize(13).doesNotHaveDuplicates();
+    assertThat(page2Urls)
+        .allSatisfy(
+            u ->
+                assertThat(u.toString())
+                    .startsWith("https://momos.co.kr/Product_CoffeeBeans/?idx="));
+  }
+
+  @Test
   @DisplayName("AC-CRAWL-02 · 모모스 상세에서 상품명을 분해한다")
   void 모모스_상세에서_상품명을_분해한다() {
     URI url = URI.create("https://momos.co.kr/Product_CoffeeBeans/?idx=4938");

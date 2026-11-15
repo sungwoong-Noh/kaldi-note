@@ -19,8 +19,10 @@ import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -126,9 +128,14 @@ public class CrawlRunService {
 
   private void crawl(Long runId, BeanSource source) {
     CrawlRun run = runRepository.findById(runId).orElseThrow();
-    List<URI> urls;
+    Set<URI> urls = new LinkedHashSet<>();
     try {
-      urls = source.parseList(fetcher.get(source.listUrl()));
+      String firstBody = fetcher.get(source.listUrl());
+      urls.addAll(source.parseList(firstBody));
+      for (URI pageUrl : source.listPages(firstBody)) {
+        sleeper.sleep(DELAY);
+        urls.addAll(source.parseList(fetcher.get(pageUrl)));
+      }
     } catch (RuntimeException e) {
       log.warn("crawl list failed source={}", source.key(), e);
       run.fail("목록 요청 실패: " + e.getMessage(), Instant.now());

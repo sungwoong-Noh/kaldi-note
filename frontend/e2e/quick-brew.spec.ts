@@ -1,13 +1,17 @@
 import { expect, test, type Locator, type Route } from "@playwright/test";
 import {
   brewLogPage,
+  brewLogWithTds,
   brewLogWithoutTds,
+  hoffmann,
+  hoffmannSummary,
   me,
   myComandante,
   pageOf,
   yirgacheffeProduct,
 } from "../src/test/fixtures";
-import { installStubs } from "./stubs";
+import { undersized } from "./hitArea";
+import { installStubs, installSwStubs, stubRecipeDetail } from "./stubs";
 
 const LAST_LOG = {
   ...brewLogWithoutTds,
@@ -412,5 +416,197 @@ test.describe("AC-QUICKBREW-68 · 모바일 바텀시트 손잡이 끌어 닫기
     ).toBeVisible();
     await dialog.getByRole("button", { name: "그만두기" }).click();
     await expect(dialog).toHaveCount(0);
+  });
+});
+
+test.describe("AC-QUICKBREW-82 · ② 「자세히」 터치 타깃·키패드·레시피 연결 저장 후 상세 비교표 (Task 14)", () => {
+  test("390×844에서 44×44 터치 타깃·inputMode를 확인하고 레시피를 연결해 저장하면 상세에 비교표가 보인다", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await installStubs(page);
+    await installSwStubs(page.context());
+
+    const recipe12Summary = {
+      ...hoffmannSummary,
+      id: 12,
+      sourceType: "USER" as const,
+      title: "아침 V60 15g",
+      doseG: 15,
+      waterG: 240,
+      ratio: 16.0,
+      waterTempC: 92,
+      authorDisplayName: me.nickname,
+    };
+    const recipe12Detail = {
+      ...hoffmann,
+      ...recipe12Summary,
+      steps: [],
+    };
+    await stubRecipeDetail(page.context(), recipe12Detail);
+
+    let savedLog: Record<string, unknown> | null = null;
+    const postedBodies: Array<Record<string, unknown>> = [];
+
+    await page.route("**/api/v1/gear/user-grinders", async (route: Route) => {
+      await route.fulfill({ json: [{ ...myComandante, id: 3 }] });
+    });
+    await page.route("**/api/v1/bean-products/**", async (route: Route) => {
+      await route.fulfill({ json: { ...yirgacheffeProduct, id: 41 } });
+    });
+    await page.route("**/api/v1/bean-products", async (route: Route) => {
+      await route.fulfill({ json: [{ ...yirgacheffeProduct, id: 41 }] });
+    });
+    await page.route(
+      /\/api\/v1\/recipes(?:\/\d+)?(?:\?.*)?$/,
+      async (route: Route) => {
+        const url = new URL(route.request().url());
+        if (url.pathname === "/api/v1/recipes/12") {
+          await route.fulfill({ json: recipe12Detail });
+          return;
+        }
+        if (url.pathname === "/api/v1/recipes") {
+          await route.fulfill({
+            json: pageOf([recipe12Summary], { size: 50 }),
+          });
+          return;
+        }
+        await route.fallback();
+      },
+    );
+    await page.route(
+      /\/api\/v1\/brew-logs(?:\/\d+)?(?:\?.*)?$/,
+      async (route: Route) => {
+        const req = route.request();
+        const url = new URL(req.url());
+        if (req.method() === "POST" && url.pathname === "/api/v1/brew-logs") {
+          const body = req.postDataJSON() as Record<string, unknown>;
+          postedBodies.push(body);
+          savedLog = {
+            ...LAST_LOG,
+            ...body,
+            id: 502,
+            brewRatio: 15.6,
+            extractionYieldPercent: 18.3,
+            strengthZone: "IDEAL",
+            diagnosis: brewLogWithTds.diagnosis,
+          };
+          await route.fulfill({ status: 201, json: savedLog });
+          return;
+        }
+        if (url.pathname === "/api/v1/brew-logs/502" && savedLog) {
+          await route.fulfill({ json: savedLog });
+          return;
+        }
+        if (url.pathname === "/api/v1/brew-logs") {
+          const content = savedLog ? [savedLog, LAST_LOG] : [LAST_LOG];
+          await route.fulfill({
+            json: {
+              ...brewLogPage,
+              ...pageOf(content),
+            },
+          });
+          return;
+        }
+        await route.fallback();
+      },
+    );
+
+    await page.goto("/");
+    await page.getByRole("button", { name: "이대로 기록" }).click();
+
+    const dialog = page.getByRole("dialog", { name: "빠른 기록" });
+    await expect(dialog).toBeVisible();
+    await waitForMotionSettled(dialog);
+
+    await dialog.getByRole("button", { name: /자세히/ }).click();
+
+    // inputMode: TDS·음료 중량은 decimal, 총 시간·드로다운은 없음
+    await expect(dialog.getByLabel("TDS")).toHaveAttribute(
+      "inputmode",
+      "decimal",
+    );
+    await expect(dialog.getByLabel("음료 중량")).toHaveAttribute(
+      "inputmode",
+      "decimal",
+    );
+    await expect(dialog.getByLabel("총 시간")).not.toHaveAttribute(
+      "inputmode",
+      /.*/,
+    );
+    await expect(dialog.getByLabel("드로다운")).not.toHaveAttribute(
+      "inputmode",
+      /.*/,
+    );
+
+    // 44×44px 터치 타깃: 맛 점 · 세그먼트 · 고르기
+    expect(
+      await dialog
+        .locator('[data-kit="taste-dots"] button')
+        .evaluateAll(undersized),
+    ).toEqual([]);
+    expect(
+      await dialog
+        .locator('[role="radiogroup"][aria-label="공개 범위"] button')
+        .evaluateAll(undersized),
+    ).toEqual([]);
+    const pickRecipeButton = dialog.getByRole("button", {
+      name: /레시피 연결/,
+    });
+    expect(await pickRecipeButton.evaluateAll(undersized)).toEqual([]);
+
+    await dialog.getByLabel("총 시간").fill("2:45");
+    await dialog.getByLabel("드로다운").fill("0:35");
+    await dialog.getByRole("button", { name: "산미 4" }).click();
+    await dialog.getByLabel("TDS").fill("1.38");
+    await dialog.getByLabel("음료 중량").fill("212");
+
+    await pickRecipeButton.click();
+    const linkDialog = page.getByRole("dialog", { name: "레시피 연결" });
+    await expect(linkDialog).toBeVisible();
+    await waitForMotionSettled(linkDialog);
+
+    const morningBtn = linkDialog.getByRole("button", {
+      name: /아침 V60 15g/,
+    });
+    await expect(morningBtn).toBeVisible();
+    expect(
+      await linkDialog.locator("ul button").evaluateAll(undersized),
+    ).toEqual([]);
+
+    await morningBtn.click();
+    await expect(linkDialog).toHaveCount(0);
+    await expect(pickRecipeButton).toContainText("아침 V60 15g");
+
+    await dialog.getByRole("button", { name: "저장" }).click();
+    await expect(
+      dialog.getByRole("heading", { name: "기록했어요" }),
+    ).toBeVisible();
+    expect(postedBodies).toHaveLength(1);
+    expect(postedBodies[0]).toMatchObject({
+      actualDoseG: 16,
+      actualWaterG: 250,
+      actualTotalTimeSeconds: 165,
+      actualDrawdownSeconds: 35,
+      acidity: 4,
+      tdsPercent: 1.38,
+      beverageWeightG: 212,
+      recipeId: 12,
+    });
+
+    await dialog.getByRole("button", { name: "확인" }).click();
+    await expect(dialog).toHaveCount(0);
+
+    await page.goto("/brews/502");
+    const compare = page.locator("[data-compare]");
+    await expect(compare).toBeVisible();
+    await expect(compare).toContainText("레시피대로 내렸나");
+    await expect(compare).toContainText("현재 레시피와 비교");
+    await expect(compare.locator('[data-compare-row="원두량"]')).toContainText(
+      "15",
+    );
+    await expect(compare.locator('[data-compare-row="원두량"]')).toContainText(
+      "16",
+    );
   });
 });

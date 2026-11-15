@@ -514,7 +514,7 @@ supersedes:
 #### AC-BEANDETAIL-54 · 인증 없이 검색 · 요약
 
 - **When** 토큰 없이 `GET /bean-products?q=구지` / `GET /brew-logs/bean-summary?beanProductId=41`
-- **Then** HTTP `401`과 `code: "UNAUTHORIZED"`를 반환한다
+- **Then** HTTP `401`을 반환한다 — 보안 필터의 401은 본문이 없다(`2026-09-05-http-error-contract.md`)
 - **검증** API 테스트 `BeanProductControllerTest` · `BrewLogControllerTest`
 
 #### AC-BEANDETAIL-55 · 상세를 불러오지 못하면 다시 시도할 수 있다
@@ -565,9 +565,9 @@ supersedes:
   }
   ```
 
-- [ ] **Task 2: 검색 API** — Covers: AC-BEANDETAIL-04, 05, 06, 07, 08, 09, 10, 40, 41, 42, 43, 50, 54, 60
-  `GET /bean-products`를 `BeanProductSearchCondition`(q · roasterId · roastLevel[] · decaf · country · page · size) +
-  JPA Specification으로 바꾼다. 응답 `PageResponse<BeanProductSummaryResponse>`. 로스터 이름은 한 번에 읽어 붙인다(N+1 금지).
+- [x] **Task 2: 검색 API** — Covers: AC-BEANDETAIL-04, 05, 06, 07, 08, 09, 10, 40, 41, 42, 43, 50, 54, 60
+  `GET /bean-products`를 네이티브 쿼리 `BeanProductRepository.search`(q · roasterId · roastLevel[] · decaf · country +
+  페이지)로 바꾼다 — 로스터 이름 검색에 조인이 필요해 `RecipeRepository.searchPublic`과 같은 null-safe 패턴을 따랐다. 응답 `PageResponse<BeanProductSummaryResponse>`. 로스터 이름은 한 번에 읽어 붙인다(N+1 금지).
   `findAllBeanProducts()`는 지운다.
 
 - [ ] **Task 3: 상세 응답 확장** — Covers: AC-BEANDETAIL-11, 12, 51

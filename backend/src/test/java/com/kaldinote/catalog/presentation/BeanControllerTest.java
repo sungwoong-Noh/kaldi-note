@@ -265,8 +265,9 @@ class BeanControllerTest extends AbstractIntegrationTest {
     mockMvc
         .perform(get("/api/v1/bean-products").header(HttpHeaders.AUTHORIZATION, token))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].name").value("가 상품"))
-        .andExpect(jsonPath("$[1].name").value("나 상품"));
+        // 응답은 페이지 객체다(docs/specs/2026-11-15-bean-detail.md 「검색」이 배열 응답을 대체)
+        .andExpect(jsonPath("$.content[0].name").value("가 상품"))
+        .andExpect(jsonPath("$.content[1].name").value("나 상품"));
   }
 
   @Test

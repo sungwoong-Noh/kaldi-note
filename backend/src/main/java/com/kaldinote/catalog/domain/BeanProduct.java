@@ -10,12 +10,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "bean_products")
@@ -71,6 +73,8 @@ public class BeanProduct extends BaseTimeEntity {
   private boolean manuallyEdited;
 
   @OneToMany(mappedBy = "beanProduct", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("id ASC")
+  @BatchSize(size = 50) // 검색 결과 한 페이지(최대 50개)의 산지를 한 번에 읽는다
   private List<BeanOrigin> origins = new ArrayList<>();
 
   private BeanProduct(

@@ -3,6 +3,7 @@ package com.kaldinote.catalog.application;
 import com.kaldinote.catalog.domain.BeanMix;
 import com.kaldinote.catalog.domain.BeanOrigin;
 import com.kaldinote.catalog.domain.BeanProduct;
+import com.kaldinote.catalog.domain.RoastLevel;
 import com.kaldinote.catalog.domain.Roaster;
 import com.kaldinote.catalog.infrastructure.BeanProductRepository;
 import com.kaldinote.catalog.infrastructure.CoffeeProcessRepository;
@@ -10,15 +11,22 @@ import com.kaldinote.catalog.infrastructure.RoasterRepository;
 import com.kaldinote.catalog.infrastructure.VarietyRepository;
 import com.kaldinote.catalog.presentation.dto.BeanProductCreateRequest;
 import com.kaldinote.catalog.presentation.dto.BeanProductResponse;
+import com.kaldinote.catalog.presentation.dto.BeanProductSummaryResponse;
 import com.kaldinote.catalog.presentation.dto.OriginRequest;
 import com.kaldinote.catalog.presentation.dto.RoasterResponse;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
+import com.kaldinote.common.response.PageParams;
+import com.kaldinote.common.response.PageResponse;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BeanCatalogService {
+
+  private static final int Q_MAX = 50;
 
   private final RoasterRepository roasterRepository;
   private final BeanProductRepository beanProductRepository;
@@ -45,10 +55,41 @@ public class BeanCatalogService {
     return RoasterResponse.from(saved);
   }
 
-  public List<BeanProductResponse> findAllBeanProducts() {
-    return beanProductRepository.findAllByOrderByNameAsc().stream()
-        .map(BeanProductResponse::from)
-        .toList();
+  public PageResponse<BeanProductSummaryResponse> searchBeanProducts(
+      Long userId,
+      String q,
+      Long roasterId,
+      List<RoastLevel> roastLevels,
+      Boolean decaf,
+      String country,
+      PageParams params) {
+    String keyword = q == null || q.isBlank() ? null : q.strip();
+    if (keyword != null && keyword.length() > Q_MAX) {
+      throw new BusinessException(
+          ErrorCode.INVALID_REQUEST, "q는 %d자 이하여야 합니다: %d".formatted(Q_MAX, keyword.length()));
+    }
+    String[] roast =
+        roastLevels == null || roastLevels.isEmpty()
+            ? null
+            : roastLevels.stream().map(RoastLevel::name).toArray(String[]::new);
+    Page<BeanProduct> page =
+        beanProductRepository.search(
+            userId,
+            keyword,
+            roasterId,
+            roast,
+            decaf,
+            country,
+            params.toPageable(Sort.unsorted())); // 정렬은 네이티브 쿼리의 ORDER BY가 정한다
+    // 로스터 이름은 한 번에 읽어 붙인다(N+1 금지)
+    Map<Long, String> roasterNames =
+        roasterRepository
+            .findAllById(
+                page.getContent().stream().map(BeanProduct::getRoasterId).distinct().toList())
+            .stream()
+            .collect(Collectors.toMap(Roaster::getId, Roaster::getName));
+    return PageResponse.from(
+        page, p -> BeanProductSummaryResponse.from(p, roasterNames.get(p.getRoasterId())));
   }
 
   public BeanProductResponse getBeanProduct(Long id) {

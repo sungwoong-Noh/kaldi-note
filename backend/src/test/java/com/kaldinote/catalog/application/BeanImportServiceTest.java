@@ -18,6 +18,8 @@ import com.kaldinote.crawler.domain.CrawledBean;
 import com.kaldinote.crawler.domain.CrawledOrigin;
 import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +42,7 @@ class BeanImportServiceTest extends AbstractIntegrationTest {
   @Autowired private VarietyRepository varietyRepository;
   @Autowired private CoffeeProcessRepository processRepository;
   @Autowired private UserRepository userRepository;
+  @PersistenceContext private EntityManager entityManager;
 
   private static CrawledBean bean(String name, String roastRaw, CrawledOrigin origin) {
     return new CrawledBean(ROASTER, name, URL, roastRaw, "로즈마리, 라벤더", List.of(origin));
@@ -235,5 +238,59 @@ class BeanImportServiceTest extends AbstractIntegrationTest {
     assertThat(result.outcome()).isEqualTo(Outcome.SKIPPED);
     assertThat(result.reason()).isEqualTo("PARSE_FAILED");
     assertThat(roasterRepository.findByName(ROASTER)).isEmpty();
+  }
+
+  /** 플래그를 켜는 API는 관리자 원두 스펙 몫이라, 여기서는 SQL로 켠다. */
+  private void setFlag(String column, String name) {
+    entityManager.flush();
+    entityManager
+        .createNativeQuery("update bean_products set " + column + " = true where name = :n")
+        .setParameter("n", name)
+        .executeUpdate();
+    entityManager.clear();
+  }
+
+  @Test
+  @DisplayName("AC-BEANDETAIL-02 · 크롤러는 숨김을 건드리지 않는다")
+  void 크롤러는_숨김을_건드리지_않는다() {
+    CrawledBean input = bean(NAME, "Light #92", origin(null, null, null));
+    service.importBean(input);
+    setFlag("hidden", NAME);
+
+    ImportResult result = service.importBean(input);
+
+    assertThat(result.outcome()).isEqualTo(Outcome.UPDATED);
+    assertThat(saved(NAME).isHidden()).isTrue();
+  }
+
+  @Test
+  @DisplayName("AC-BEANDETAIL-03 · 수동 수정 원두는 구매 링크만 갱신된다")
+  void 수동_수정_원두는_구매_링크만_갱신된다() {
+    service.importBean(
+        new CrawledBean(
+            ROASTER,
+            NAME,
+            "https://a.example/1",
+            "Medium Light",
+            "관리자 메모",
+            List.of(new CrawledOrigin("콜롬비아", null, null, null, null, null))));
+    setFlag("manually_edited", NAME);
+
+    ImportResult result =
+        service.importBean(
+            new CrawledBean(
+                ROASTER,
+                NAME,
+                "https://a.example/2",
+                "Light",
+                "새 설명",
+                List.of(new CrawledOrigin("페루", null, null, null, null, null))));
+
+    assertThat(result.outcome()).isEqualTo(Outcome.UPDATED);
+    BeanProduct product = saved(NAME);
+    assertThat(product.getProductUrl()).isEqualTo("https://a.example/2");
+    assertThat(product.getRoastLevel()).isEqualTo(RoastLevel.MEDIUM_LIGHT);
+    assertThat(product.getDescription()).isEqualTo("관리자 메모");
+    assertThat(product.getOrigins()).extracting(BeanOrigin::getCountry).containsExactly("콜롬비아");
   }
 }

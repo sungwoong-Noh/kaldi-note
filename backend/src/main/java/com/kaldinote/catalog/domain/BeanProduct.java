@@ -10,12 +10,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "bean_products")
@@ -62,7 +64,17 @@ public class BeanProduct extends BaseTimeEntity {
   @Column(name = "created_by_user_id")
   private Long createdByUserId;
 
+  /** 숨긴 원두. 크롤러는 읽지도 쓰지도 않는다. */
+  @Column(nullable = false)
+  private boolean hidden;
+
+  /** 관리자가 손으로 고친 원두. 크롤러는 구매 링크만 갱신한다. */
+  @Column(name = "manually_edited", nullable = false)
+  private boolean manuallyEdited;
+
   @OneToMany(mappedBy = "beanProduct", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("id ASC")
+  @BatchSize(size = 50) // 검색 결과 한 페이지(최대 50개)의 산지를 한 번에 읽는다
   private List<BeanOrigin> origins = new ArrayList<>();
 
   private BeanProduct(
@@ -150,6 +162,10 @@ public class BeanProduct extends BaseTimeEntity {
     this.roastLevelAgtron = roastLevelAgtron;
     this.productUrl = productUrl;
     this.description = description;
+  }
+
+  public void updateProductUrl(String productUrl) {
+    this.productUrl = productUrl;
   }
 
   public void attachOrigins(List<BeanOrigin> newOrigins) {

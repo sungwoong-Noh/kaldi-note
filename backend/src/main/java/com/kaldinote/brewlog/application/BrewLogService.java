@@ -1,5 +1,6 @@
 package com.kaldinote.brewlog.application;
 
+import com.kaldinote.brewlog.domain.BeanSummary;
 import com.kaldinote.brewlog.domain.BrewLog;
 import com.kaldinote.brewlog.domain.BrewLogPatch;
 import com.kaldinote.brewlog.domain.BrewLogVisibility;
@@ -296,6 +297,39 @@ public class BrewLogService {
             : recipeRepository.findById(favoriteRecipeId).map(Recipe::getTitle).orElse(null);
     return new BrewLogStatsResponse(
         (int) monthCount, averageRating, favoriteDoseG, favoriteRecipeId, favoriteRecipeTitle);
+  }
+
+  /**
+   * 내 「이 원두의 기록」 요약. {@code beanProductId}와 {@code beanName} 중 정확히 하나(공백뿐인 이름은 없는 것으로 본다). 공개 범위와
+   * 무관하게 본인 기록만 센다.
+   */
+  public BeanSummary beanSummary(Long userId, Long beanProductId, String beanName) {
+    String name = normalizeBeanName(beanName);
+    if ((beanProductId == null) == (name == null)) {
+      throw new BusinessException(
+          ErrorCode.INVALID_REQUEST, "beanProductId와 beanName 중 정확히 하나를 보내야 합니다.");
+    }
+    List<BrewLog> logs;
+    if (beanProductId != null) {
+      beanCatalogService.getBeanProduct(beanProductId); // 없으면 404
+      logs = brewLogRepository.findMineForBeanProduct(userId, beanProductId);
+    } else {
+      logs =
+          brewLogRepository.findByUserIdAndBeanNameAndDeletedAtIsNullOrderByBrewedAtDescIdDesc(
+              userId, name);
+    }
+    return BeanSummary.of(
+        logs.stream()
+            .map(
+                l ->
+                    new BeanSummary.Cup(
+                        l.getId(),
+                        l.getBrewedAt(),
+                        l.getActualDoseG(),
+                        l.getActualWaterG(),
+                        analyze(l).brewRatio(),
+                        l.getRating()))
+            .toList());
   }
 
   /** 날짜별 대표 레시피명. 쿼리가 brewedAt 내림차순이므로 **각 날짜에 처음 나타나는 행**이 그날 마지막 기록이다(AC-HOMECAL-66). */

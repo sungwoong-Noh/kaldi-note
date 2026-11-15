@@ -20,11 +20,16 @@ export const beanOriginSchema = z.object({
   varietyId: z.number().optional(),
   processId: z.number().optional(),
   ratioPercent: z.number().optional(),
+  /** 표시 이름(`name_ko ?? name`). 품종·가공이 없으면 키가 빠진다. */
+  varietyName: z.string().optional(),
+  processName: z.string().optional(),
 });
 
 export const beanProductSchema = z.object({
   id: z.number(),
   roasterId: z.number(),
+  /** 2026-11-15부터 상세가 준다. 그 전에 뜬 픽스처에는 없다. */
+  roasterName: z.string().optional(),
   name: z.string(),
   beanMix: z.enum(["SINGLE_ORIGIN", "BLEND"]),
   /** 크롤러가 가져온 원두는 배전도를 모를 수 있다 — 실제 응답에서는 키가 빠진다(AC-CRAWL-42·45). */
@@ -33,13 +38,43 @@ export const beanProductSchema = z.object({
     .nullish(),
   decaf: z.boolean(),
   verified: z.boolean(),
+  hidden: z.boolean().default(false),
   origins: z.array(beanOriginSchema).default([]),
   createdAt: z.string(),
 });
 
+/**
+ * 원두 검색 결과 행 — `GET /api/v1/bean-products`. 2026-11-15 로컬 응답에서 확인했다.
+ * `countries`는 산지 순서, 중복 없음. 산지가 없으면 `[]`.
+ */
+export const beanProductSummarySchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  roasterId: z.number(),
+  roasterName: z.string(),
+  beanMix: z.enum(["SINGLE_ORIGIN", "BLEND"]),
+  roastLevel: z
+    .enum(["LIGHT", "MEDIUM_LIGHT", "MEDIUM", "MEDIUM_DARK", "DARK"])
+    .optional(),
+  roastLevelAgtron: z.number().optional(),
+  roastLevelCustom: z.string().optional(),
+  decaf: z.boolean(),
+  countries: z.array(z.string()),
+});
+
+/** 백엔드 `PageResponse<T>`. 여섯 키 고정(recipe/schema.ts와 같은 모양 — feature끼리 import하지 않는다). */
+export const beanProductPageSchema = z.object({
+  content: z.array(beanProductSummarySchema),
+  page: z.number(),
+  size: z.number(),
+  totalElements: z.number(),
+  totalPages: z.number(),
+  hasNext: z.boolean(),
+});
+
 export const roasterListSchema = z.array(roasterSchema);
-export const beanProductListSchema = z.array(beanProductSchema);
 
 export type Roaster = z.infer<typeof roasterSchema>;
 export type BeanProduct = z.infer<typeof beanProductSchema>;
+export type BeanProductSummary = z.infer<typeof beanProductSummarySchema>;
 export type RoastLevel = NonNullable<BeanProduct["roastLevel"]>;

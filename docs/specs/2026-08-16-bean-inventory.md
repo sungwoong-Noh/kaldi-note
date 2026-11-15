@@ -271,6 +271,9 @@ plan:
 - **Then** HTTP `200`, 이름순 배열
 - **검증** API 테스트 `BeanControllerTest`
 
+> 2026-11-15 정정: 응답은 배열이 아니라 페이지 객체(`content`)다. 검색·필터·페이지 규칙은
+> `docs/specs/2026-11-15-bean-detail.md` 「검색」(AC-BEANDETAIL-04~10)이 정본이다.
+
 #### AC-BEAN-07 · 원두 상품 단건 조회는 산지를 포함한다
 
 - **Given** 산지 2건을 가진 블렌드 상품

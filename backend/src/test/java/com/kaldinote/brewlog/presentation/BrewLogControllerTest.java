@@ -2214,4 +2214,56 @@ class BrewLogControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.monthCount").value(0))
         .andExpect(jsonPath("$.favoriteRecipeId").doesNotExist());
   }
+
+  @Test
+  @DisplayName("AC-BEANDETAIL-52 · 요약 파라미터는 정확히 하나")
+  void 요약_파라미터는_정확히_하나() throws Exception {
+    String token = token("요약");
+    java.util.List<org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder>
+        cases =
+            java.util.List.of(
+                get("/api/v1/brew-logs/bean-summary"),
+                get("/api/v1/brew-logs/bean-summary")
+                    .param("beanProductId", "41")
+                    .param("beanName", "구지"),
+                get("/api/v1/brew-logs/bean-summary").param("beanName", "  "));
+    for (var request : cases) {
+      mockMvc
+          .perform(request.header(HttpHeaders.AUTHORIZATION, token))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
+  }
+
+  @Test
+  @DisplayName("AC-BEANDETAIL-53 · 없는 원두의 요약")
+  void 없는_원두의_요약() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/brew-logs/bean-summary")
+                .param("beanProductId", "999999")
+                .header(HttpHeaders.AUTHORIZATION, token("요약")))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  @DisplayName("AC-BEANDETAIL-54 · 인증 없이 요약")
+  void 인증_없이_요약() throws Exception {
+    mockMvc
+        .perform(get("/api/v1/brew-logs/bean-summary").param("beanProductId", "41"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void 요약은_직접_적은_원두_이름으로도_200이다() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/v1/brew-logs/bean-summary")
+                .param("beanName", "없는 이름")
+                .header(HttpHeaders.AUTHORIZATION, token("요약")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.brewCount").value(0))
+        .andExpect(jsonPath("$.recent").isEmpty());
+  }
 }

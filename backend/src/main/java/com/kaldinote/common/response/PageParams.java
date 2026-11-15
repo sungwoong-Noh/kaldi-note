@@ -19,16 +19,21 @@ public record PageParams(int page, int size) {
   private static final int MAX_SIZE = 100;
 
   public static PageParams of(Integer page, Integer size) {
+    return of(page, size, MAX_SIZE);
+  }
+
+  /** size 상한이 기본(100)과 다른 목록용. */
+  public static PageParams of(Integer page, Integer size, int maxSize) {
     int resolvedPage = page == null ? 0 : page;
     int resolvedSize = size == null ? DEFAULT_SIZE : size;
 
     if (resolvedPage < 0) {
       throw new BusinessException(ErrorCode.INVALID_REQUEST, "page는 0 이상이어야 합니다: " + resolvedPage);
     }
-    if (resolvedSize < MIN_SIZE || resolvedSize > MAX_SIZE) {
+    if (resolvedSize < MIN_SIZE || resolvedSize > maxSize) {
       throw new BusinessException(
           ErrorCode.INVALID_REQUEST,
-          "size는 %d 이상 %d 이하여야 합니다: %d".formatted(MIN_SIZE, MAX_SIZE, resolvedSize));
+          "size는 %d 이상 %d 이하여야 합니다: %d".formatted(MIN_SIZE, maxSize, resolvedSize));
     }
     return new PageParams(resolvedPage, resolvedSize);
   }

@@ -7,7 +7,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { showToast } from "@/components/Toast";
 import { useRequireSession } from "@/features/auth/useRequireSession";
-import { useBeanProducts, useRoasters } from "@/features/catalog/api";
+import { useBeanProductsByIds, useRoasters } from "@/features/catalog/api";
 import { useUserGrinders } from "@/features/gear/queries";
 import type { UserGrinder } from "@/features/gear/schema";
 import { useBeanBatches } from "@/features/inventory/api";
@@ -108,10 +108,14 @@ function Fields({
   onSessionLost: () => void;
 }) {
   const queryClient = useQueryClient();
-  // 원두 선택란 하나를 그리려고 세 목록을 다 부른다 — 재고는 `beanProductId`만 주고
-  // 제품은 `roasterId`만 주기 때문이다. 셋 다 사용자당 몇 건 수준이라 감당할 만하다.
+  // 원두 선택란 하나를 그리려고 재고 · 그 재고의 제품 · 로스터를 부른다 — 재고는 `beanProductId`만 주고
+  // 제품은 `roasterId`만 주기 때문이다.
   const batches = useBeanBatches(onSessionLost);
-  const products = useBeanProducts(onSessionLost);
+  // 이름을 붙일 원두는 내 재고의 제품뿐이다 — 전체 목록 대신 그 id만 읽는다.
+  const products = useBeanProductsByIds(
+    (batches.data ?? []).map((batch) => batch.beanProductId),
+    onSessionLost,
+  );
   const roasters = useRoasters(onSessionLost);
   // 초기값은 마운트 시점에 한 번만 계산한다. 이후 그라인더 목록이 갱신돼도
   // 사용자가 고쳐둔 값을 덮어쓰지 않는다.
@@ -192,7 +196,7 @@ function Fields({
       bean={
         chosen
           ? {
-              label: beanName(chosen, products.data ?? [], roasters.data ?? []),
+              label: beanName(chosen, products, roasters.data ?? []),
               sub: batchCaption(chosen),
             }
           : null
@@ -235,7 +239,7 @@ function Fields({
           open={pickerPresence.open}
           onExitComplete={pickerPresence.onExitComplete}
           batches={batches.data ?? []}
-          products={products.data ?? []}
+          products={products}
           roasters={roasters.data ?? []}
           onPick={(id) => {
             set("beanBatchId", id);

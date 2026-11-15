@@ -1,7 +1,7 @@
 ---
 id: BEAN
 title: 원두 검색 · 원두 상세 — 11 Beans
-status: 초안
+status: 승인
 milestone: P1
 supersedes:
 ---

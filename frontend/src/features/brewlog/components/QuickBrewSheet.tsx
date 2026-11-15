@@ -16,6 +16,7 @@ import type { BeanProduct } from "@/features/catalog/schema";
 import { useUserGrinders } from "@/features/gear/queries";
 import { useMe } from "@/features/user/queries";
 import type { BrewLogCreateRequest } from "@/types/generated/2026-11-14-quick-brew";
+import type { QuickBrewPrefill } from "@/lib/quickBrew";
 import { createBrewLog, fetchBrewLogPage } from "../api";
 import type { BrewLog, BrewLogSummary } from "../schema";
 
@@ -56,7 +57,25 @@ interface Draft {
 }
 
 /** 미리 채우는 값 — 원두·양·장비·온도·공개 범위. 별점·메모는 매번 새로 쓴다(AC-QUICKBREW-24). */
-function draftFrom(last: BrewLogSummary | undefined): Draft {
+function draftFrom(
+  last: BrewLogSummary | undefined,
+  prefill?: QuickBrewPrefill,
+): Draft {
+  if (prefill) {
+    return {
+      beanProductId: prefill.beanProductId ?? null,
+      beanName: prefill.beanName ?? null,
+      doseG: prefill.doseG ?? null,
+      waterG: prefill.waterG ?? null,
+      waterTempC: prefill.waterTempC ?? null,
+      userGrinderId: prefill.userGrinderId ?? null,
+      grindValue: prefill.grindValue ?? null,
+      roastedAt: "",
+      visibility: prefill.visibility ?? "PRIVATE",
+      rating: null,
+      note: "",
+    };
+  }
   return {
     beanProductId: last?.beanProductId ?? null,
     beanName: last?.beanName ?? null,
@@ -124,11 +143,13 @@ const DRAG_DISMISS_RATIO = 0.3;
 
 export function QuickBrewSheet({
   start,
+  prefill,
   open = true,
   onClose,
   onExitComplete,
 }: {
   start: QuickBrewStart;
+  prefill?: QuickBrewPrefill;
   open?: boolean;
   onClose: () => void;
   onExitComplete?: () => void;
@@ -142,40 +163,43 @@ export function QuickBrewSheet({
   });
 
   useEffect(() => {
-    if (!open && !logs.data) onExitComplete?.();
-  }, [open, logs.data, onExitComplete]);
+    if (!open && !logs.data && !prefill) onExitComplete?.();
+  }, [open, logs.data, prefill, onExitComplete]);
 
-  if (!logs.data) return null;
+  if (!prefill && !logs.data) return null;
   return (
     <Sheet
       start={start}
+      prefill={prefill}
       open={open}
       onClose={onClose}
       onExitComplete={onExitComplete}
-      logs={logs.data.content}
+      logs={logs.data?.content ?? []}
     />
   );
 }
 
 function Sheet({
   start,
+  prefill,
   open,
   onClose,
   onExitComplete,
   logs,
 }: {
   start: QuickBrewStart;
+  prefill?: QuickBrewPrefill;
   open: boolean;
   onClose: () => void;
   onExitComplete?: () => void;
   logs: BrewLogSummary[];
 }) {
   const last = logs[0];
-  const [initial] = useState(() => draftFrom(last));
+  const [initial] = useState(() => draftFrom(last, prefill));
   const [draft, setDraft] = useState(initial);
   const patch = (p: Partial<Draft>) => setDraft((d) => ({ ...d, ...p }));
   const [step, setStep] = useState<Step>(
-    !last ? "amount" : start === "same" ? "taste" : "confirm",
+    prefill || !last ? "amount" : start === "same" ? "taste" : "confirm",
   );
   const [changing, setChanging] = useState(false);
   const [confirmingClose, setConfirmingClose] = useState(false);

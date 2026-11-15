@@ -566,6 +566,43 @@ export const yirgacheffeProduct = {
 };
 
 /**
+ * 원두 검색 결과의 `yirgacheffeProduct` 행. 모양은 2026-11-15 로컬 `GET /api/v1/bean-products?q=에티`
+ * 응답에서 떴다(값만 이 픽스처 세계에 맞췄다). null 필드는 키가 없다.
+ */
+export const yirgacheffeSummary = {
+  id: 3,
+  name: "예가체프",
+  roasterId: 3,
+  roasterName: "프릿츠",
+  beanMix: "SINGLE_ORIGIN",
+  roastLevel: "MEDIUM_LIGHT",
+  decaf: false,
+  countries: ["에티오피아"],
+};
+
+/** `GET /api/v1/bean-products` 응답 봉투. 서버처럼 이름 · 로스터 이름 부분 일치로 거른다. */
+export function beanSearchPage(
+  rows: readonly { name: string; roasterName: string }[],
+  url: string,
+) {
+  const q = new URL(url).searchParams.get("q")?.trim().toLowerCase() ?? "";
+  const content = rows.filter(
+    (r) =>
+      !q ||
+      r.name.toLowerCase().includes(q) ||
+      r.roasterName.toLowerCase().includes(q),
+  );
+  return {
+    content,
+    page: 0,
+    size: 20,
+    totalElements: content.length,
+    totalPages: content.length === 0 ? 0 : 1,
+    hasNext: false,
+  };
+}
+
+/**
  * 크롤러가 가져온 모모스 원두 — 배전도를 모른다. 2026-10-14 로컬 `GET /api/v1/bean-products/22`에서 떴다.
  * `roastLevel` 키 자체가 없다(백엔드 `non_null`).
  */
@@ -744,7 +781,11 @@ export const homeCalendar = {
     { date: "2026-09-05", count: 2, primaryRecipeName: "Kasuya 4:6" },
     { date: "2026-09-12", count: 4, primaryRecipeName: "Kasuya 4:6" },
     // 오늘(2026-09-19)은 날짜 목록 스텁(brewLogPage 2건)이 있는 날이다 — 점도 찍혀야 맞는다.
-    { date: "2026-09-19", count: 2, primaryRecipeName: "James Hoffmann Ultimate V60" },
+    {
+      date: "2026-09-19",
+      count: 2,
+      primaryRecipeName: "James Hoffmann Ultimate V60",
+    },
   ],
 };
 

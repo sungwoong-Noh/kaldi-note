@@ -1,8 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { backendUrl } from "@/lib/api-client";
 import { authedRequest } from "@/lib/authed-fetch";
 import {
-  beanProductListSchema,
+  beanProductPageSchema,
   beanProductSchema,
   roasterListSchema,
   roasterSchema,
@@ -23,15 +23,53 @@ export function useRoasters(onSessionLost?: () => void, enabled = true) {
   });
 }
 
-export function useBeanProducts(onSessionLost?: () => void) {
+export type BeanSearchParams = {
+  q?: string;
+  roasterId?: number;
+  size?: number;
+};
+
+/**
+ * 원두 검색 — 숨긴 원두와 남이 만든 사용자 원두는 서버가 뺀다. 전체 목록 API는 없다
+ * (docs/specs/2026-11-15-bean-detail.md 「검색」).
+ */
+export function useBeanSearch(
+  params: BeanSearchParams,
+  onSessionLost?: () => void,
+  enabled = true,
+) {
+  const query = new URLSearchParams();
+  if (params.q) query.set("q", params.q);
+  if (params.roasterId !== undefined)
+    query.set("roasterId", String(params.roasterId));
+  query.set("size", String(params.size ?? 20));
   return useQuery({
-    queryKey: ["catalog", "bean-products"],
+    queryKey: ["catalog", "bean-search", params],
+    enabled,
     queryFn: () =>
-      authedRequest(backendUrl("/api/v1/bean-products"), {
-        schema: beanProductListSchema,
+      authedRequest(backendUrl(`/api/v1/bean-products?${query}`), {
+        schema: beanProductPageSchema,
         onSessionLost,
       }),
   });
+}
+
+/**
+ * 제품 여러 건을 id로. 화면에 이름을 붙일 원두가 몇 개뿐일 때 쓴다 — 캐시 키는 다른 화면의
+ * 단건 조회(`["catalog", "bean-product", id]`)와 같다. 도착한 것만 담는다.
+ */
+export function useBeanProductsByIds(
+  ids: readonly number[],
+  onSessionLost?: () => void,
+): BeanProduct[] {
+  const unique = [...new Set(ids)];
+  const queries = useQueries({
+    queries: unique.map((id) => ({
+      queryKey: ["catalog", "bean-product", id],
+      queryFn: () => fetchBeanProduct(id, onSessionLost),
+    })),
+  });
+  return queries.flatMap((q) => (q.data ? [q.data] : []));
 }
 
 /** 제품 한 건. 원두 이름을 만들려면 배치의 `beanProductId`로 이것을 읽어야 한다. */

@@ -11,6 +11,8 @@ import {
   myComandante,
   yirgacheffeBatch,
   yirgacheffeProduct,
+  beanSearchPage,
+  yirgacheffeSummary,
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
@@ -39,8 +41,11 @@ function baseHandlers() {
     http.get(`${BASE}/bean-batches`, () =>
       HttpResponse.json([yirgacheffeBatch]),
     ),
-    http.get(`${BASE}/bean-products`, () =>
-      HttpResponse.json([yirgacheffeProduct]),
+    http.get(`${BASE}/bean-products`, ({ request }) =>
+      HttpResponse.json(beanSearchPage([yirgacheffeSummary], request.url)),
+    ),
+    http.get(`${BASE}/bean-products/3`, () =>
+      HttpResponse.json(yirgacheffeProduct),
     ),
     http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
   ];

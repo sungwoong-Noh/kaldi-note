@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   createBeanProduct,
   createRoaster,
-  useBeanProducts,
+  useBeanSearch,
   useRoasters,
 } from "@/features/catalog/api";
 import type { RoastLevel } from "@/features/catalog/schema";
@@ -45,7 +45,6 @@ export function BeanBatchDialog({
   onSessionLost?: () => void;
 }) {
   const roasters = useRoasters(onSessionLost);
-  const products = useBeanProducts(onSessionLost);
 
   const [roasterId, setRoasterId] = useState<number | null>(null);
   const [roasterName, setRoasterName] = useState("");
@@ -112,9 +111,14 @@ export function BeanBatchDialog({
   const nameErrorFor = (stage: Stage) =>
     failedStage === stage ? mapped?.byField.name : undefined;
 
-  const productsOfRoaster = (products.data ?? []).filter(
-    (product) => product.roasterId === roasterId,
+  // ponytail: 로스터 하나의 원두를 한 페이지(50개)까지만 고를 수 있다. 넘는 로스터가 생기면 이름 검색을 붙인다.
+  const products = useBeanSearch(
+    { roasterId: roasterId ?? undefined, size: 50 },
+    onSessionLost,
+    roasterId !== null,
   );
+  const productsOfRoaster =
+    roasterId === null ? [] : (products.data?.content ?? []);
 
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -129,7 +133,10 @@ export function BeanBatchDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="bean-batch-title"
-        className={cardClass("flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto", { tone: "raised" })}
+        className={cardClass(
+          "flex max-h-full w-full max-w-sm flex-col gap-4 overflow-y-auto",
+          { tone: "raised" },
+        )}
       >
         <h2 id="bean-batch-title" className="text-card-title font-semibold">
           원두 등록
@@ -213,7 +220,8 @@ export function BeanBatchDialog({
             onFocus={(e) => e.currentTarget.select()}
             onChange={(e) => {
               const clean = stripLeadingZeros(e.currentTarget.value);
-              if (clean !== e.currentTarget.value) e.currentTarget.value = clean;
+              if (clean !== e.currentTarget.value)
+                e.currentTarget.value = clean;
               setWeightG(clean === "" ? null : Number(clean));
             }}
             aria-describedby={

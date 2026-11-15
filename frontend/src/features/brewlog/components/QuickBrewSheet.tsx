@@ -16,8 +16,7 @@ import {
   useNumberText,
 } from "@/components/kit";
 import { SELECT_EXTRA } from "@/components/ui/Field";
-import { useBeanProducts, useRoasters } from "@/features/catalog/api";
-import type { BeanProduct } from "@/features/catalog/schema";
+import { useBeanProductsByIds, useBeanSearch } from "@/features/catalog/api";
 import { useUserGrinders } from "@/features/gear/queries";
 import { useMe } from "@/features/user/queries";
 import type { BrewLogCreateRequest } from "@/types/generated/2026-11-14-quick-brew";
@@ -315,10 +314,14 @@ function Sheet({
       ? pickedRecipe.title
       : null;
 
-  const products = useBeanProducts();
-  const roasters = useRoasters();
+  const recent = recentBeans(logs);
+  // 이름을 붙일 원두는 최근 고른 것과 지금 고른 것뿐이다 — 전체 목록 대신 그 id만 읽는다.
+  const products = useBeanProductsByIds([
+    ...recent.flatMap((c) => (c.kind === "product" ? [c.id] : [])),
+    ...(draft.beanProductId !== null ? [draft.beanProductId] : []),
+  ]);
   const productName = (id: number) =>
-    products.data?.find((p) => p.id === id)?.name ?? "원두";
+    products.find((p) => p.id === id)?.name ?? "원두";
   const beanLabel =
     draft.beanProductId !== null
       ? productName(draft.beanProductId)
@@ -622,11 +625,7 @@ function Sheet({
         )}
         {step === "bean" && (
           <BeanStep
-            recent={recentBeans(logs)}
-            products={products.data ?? []}
-            roasterName={(id) =>
-              roasters.data?.find((r) => r.id === id)?.name ?? ""
-            }
+            recent={recent}
             productName={productName}
             onPick={(choice) => {
               patch(
@@ -915,25 +914,19 @@ function AmountStep({
 
 function BeanStep({
   recent,
-  products,
-  roasterName,
   productName,
   onPick,
 }: {
   recent: BeanChoice[];
-  products: BeanProduct[];
-  roasterName: (id: number) => string;
   productName: (id: number) => string;
   onPick: (choice: BeanChoice) => void;
 }) {
   const [query, setQuery] = useState("");
   const q = query.trim();
-  // ponytail: 카탈로그 전체를 프론트에서 거른다. 1,000건을 넘으면 서버 검색(스펙 「열어둔 결정」).
-  const matches = q
-    ? products.filter(
-        (p) => p.name.includes(q) || roasterName(p.roasterId).includes(q),
-      )
-    : [];
+  // 이름 · 로스터 이름으로 서버가 찾는다(숨긴 원두 · 남의 사용자 원두는 서버가 뺀다).
+  // ponytail: 글자마다 요청한다. 느려지면 디바운스를 붙인다.
+  const search = useBeanSearch({ q }, undefined, q !== "");
+  const matches = q ? (search.data?.content ?? []) : [];
   const row =
     "kn-press hit-44 block w-full py-[12px] text-left text-[15px] text-ink";
 
@@ -979,14 +972,14 @@ function BeanStep({
               >
                 {p.name}
                 <span className="block text-[12px] text-ink-3">
-                  {roasterName(p.roasterId)}
+                  {p.roasterName}
                 </span>
               </button>
             </li>
           ))}
         </ul>
       )}
-      {q && matches.length === 0 && (
+      {q && search.isSuccess && matches.length === 0 && (
         <p className="text-[14px] text-ink-2">「{q}」를 찾지 못했어요</p>
       )}
       {q && (

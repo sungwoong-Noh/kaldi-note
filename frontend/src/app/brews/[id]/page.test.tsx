@@ -16,6 +16,8 @@ import {
   myComandante,
   yirgacheffeBatch,
   yirgacheffeProduct,
+  beanSearchPage,
+  yirgacheffeSummary,
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
@@ -1038,8 +1040,11 @@ describe("빠른 기록 C1 상세 · 다시 내리기 — docs/specs/2026-11-14-
           hasNext: false,
         }),
       ),
-      http.get(`${BASE}/bean-products`, () =>
-        HttpResponse.json([yirgacheffeProduct]),
+      http.get(`${BASE}/bean-products`, ({ request }) =>
+        HttpResponse.json(beanSearchPage([yirgacheffeSummary], request.url)),
+      ),
+      http.get(`${BASE}/bean-products/3`, () =>
+        HttpResponse.json(yirgacheffeProduct),
       ),
     );
 
@@ -1103,7 +1108,9 @@ describe("빠른 기록 C1 상세 · 다시 내리기 — docs/specs/2026-11-14-
           hasNext: false,
         }),
       ),
-      http.get(`${BASE}/bean-products`, () => HttpResponse.json([])),
+      http.get(`${BASE}/bean-products`, ({ request }) =>
+        HttpResponse.json(beanSearchPage([], request.url)),
+      ),
     );
 
     await renderDetailWithHost();

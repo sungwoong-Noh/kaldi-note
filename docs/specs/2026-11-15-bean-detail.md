@@ -577,10 +577,11 @@ supersedes:
   계산은 순수 함수 `BeanSummary.of(List<BrewLog> newestFirst)`로 떼서 단위 테스트한다. 봉투 경유 기록은
   `bean_batch_id IN (그 상품의 봉투 id)`로 함께 읽는다.
 
-- [ ] **Task 5: 계약 · 프론트 API 층 이전** — Covers: AC-BEANDETAIL-61
+- [x] **Task 5: 계약 · 프론트 API 층 이전** — Covers: AC-BEANDETAIL-61
   `node scripts/generate-contract-types.mjs`. `features/catalog/api.ts`에 `useBeanSearch(params)` ·
-  `useBeanSummary(by)`, 상세 Zod 스키마에 새 필드. 전체 목록을 쓰던 4곳(`QuickBrewSheet` · `BeanPickerDialog` ·
-  `BrewLogForm` · `BeanBatchDialog`)을 검색 API / `fetchBeanProduct`로 옮기고 `useBeanProducts`를 지운다.
+  `useBeanProductsByIds(ids)`, 상세 Zod 스키마에 새 필드(`useBeanSummary`는 쓰는 곳인 Task 7에서). 전체 목록을 쓰던
+  곳(`QuickBrewSheet` · `BrewLogForm`→`BeanPickerDialog` · `BeanBatchDialog`)을 검색 API / id별 단건 조회로 옮기고
+  `useBeanProducts`를 지운다.
   테스트 픽스처는 로컬 실제 응답에서 뜬다.
 
 - [ ] **Task 6: 원두 고르기 행 보강 · 정보 시트** — Covers: AC-BEANDETAIL-20, 21, 31, 34, 44

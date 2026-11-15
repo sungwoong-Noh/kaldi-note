@@ -13,6 +13,8 @@ import {
   myComandante,
   pageOf,
   yirgacheffeProduct,
+  beanSearchPage,
+  yirgacheffeSummary,
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
@@ -74,8 +76,11 @@ function given(
       const size = Number(new URL(request.url).searchParams.get("size"));
       return HttpResponse.json(page(logs.slice(0, size)));
     }),
-    http.get(`${BASE}/bean-products`, () =>
-      HttpResponse.json([yirgacheffeProduct]),
+    http.get(`${BASE}/bean-products`, ({ request }) =>
+      HttpResponse.json(beanSearchPage([yirgacheffeSummary], request.url)),
+    ),
+    http.get(`${BASE}/bean-products/3`, () =>
+      HttpResponse.json(yirgacheffeProduct),
     ),
     http.get(`${BASE}/roasters`, () => HttpResponse.json([fritzRoaster])),
     http.get(`${BASE}/gear/user-grinders`, () =>

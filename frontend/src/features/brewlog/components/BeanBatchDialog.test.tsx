@@ -7,6 +7,7 @@ import {
   fritzRoaster,
   yirgacheffeBatch,
   yirgacheffeProduct,
+  beanSearchPage,
 } from "@/test/fixtures";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
@@ -92,7 +93,9 @@ beforeEach(() => {
   setAccessToken("a.b.c");
   server.use(
     http.get(`${BASE}/roasters`, () => HttpResponse.json([])),
-    http.get(`${BASE}/bean-products`, () => HttpResponse.json([])),
+    http.get(`${BASE}/bean-products`, ({ request }) =>
+      HttpResponse.json(beanSearchPage([], request.url)),
+    ),
   );
 });
 

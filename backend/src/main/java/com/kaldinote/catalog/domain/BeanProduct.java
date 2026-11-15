@@ -62,6 +62,14 @@ public class BeanProduct extends BaseTimeEntity {
   @Column(name = "created_by_user_id")
   private Long createdByUserId;
 
+  /** 숨긴 원두. 크롤러는 읽지도 쓰지도 않는다. */
+  @Column(nullable = false)
+  private boolean hidden;
+
+  /** 관리자가 손으로 고친 원두. 크롤러는 구매 링크만 갱신한다. */
+  @Column(name = "manually_edited", nullable = false)
+  private boolean manuallyEdited;
+
   @OneToMany(mappedBy = "beanProduct", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<BeanOrigin> origins = new ArrayList<>();
 
@@ -150,6 +158,10 @@ public class BeanProduct extends BaseTimeEntity {
     this.roastLevelAgtron = roastLevelAgtron;
     this.productUrl = productUrl;
     this.description = description;
+  }
+
+  public void updateProductUrl(String productUrl) {
+    this.productUrl = productUrl;
   }
 
   public void attachOrigins(List<BeanOrigin> newOrigins) {

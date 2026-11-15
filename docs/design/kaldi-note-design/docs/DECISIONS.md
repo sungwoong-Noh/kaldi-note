@@ -51,7 +51,7 @@ ORDER BY is_curated DESC, saved_count DESC, created_at DESC
 type Brew = {
   // ...
   recipeId: string | null;        // 내 서랍의 레시피로 내렸을 때만
-  recipeSnapshot: {               // 항상 채움
+  recipeSnapshot: {               // 레시피가 연결된 기록만
     title: string;
     authorName: string;
     dose: number;

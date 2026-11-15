@@ -1099,7 +1099,7 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 - [x] **Task 12: 「기록」 탭** — Covers: AC-QUICKBREW-31, 35, 36, 37 (승계 부품 AC 30건 `AC-HOMECAL-25~109` 재사용 + 승계 `AC-MYCUPS-01·02·03·12·13·16·17·19·20·23·24`)
   `/brews`를 시안 F(F1·F2·FW·H)로. 목록/달력 세그먼트, 모드별 스크롤 유지, 웹 300px(1024px~ 280px) 우측 달력 카드(‹ › 월 이동, 날짜 클릭 시 로드분 내 스크롤 / 미로드 시 달력 모드 전환), 웹 「달력」 모드 720px 카드+`DayList`, 760–1023px 이번 주 한 줄 접힘(탭 시 펼침), `MonthNav`·`DayList` 헤더 한국어 일괄 교체(`AC-HOMECAL-40~42`), `Calendar variant="web"` 및 `63·118·121` 제거.
 
-- [ ] **Task 13: 기록 상세 · 편집** — Covers: AC-QUICKBREW-32, 33, 34
+- [x] **Task 13: 기록 상세 · 편집** — Covers: AC-QUICKBREW-32, 33, 34
   C1/C2 분기, 「다시 내리기」 → 빠른 기록 ①, 편집 화면이 선택값 null을 견딘다. DECISIONS 4절 「스냅샷 항상 채움」 문구 갱신.
 
 ---

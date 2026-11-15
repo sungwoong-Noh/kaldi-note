@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,6 +26,7 @@ public class MomosSource implements BeanSource {
 
   private static final URI LIST_URL = URI.create("https://momos.co.kr/Product_CoffeeBeans");
   private static final String ROASTER = "모모스커피";
+  private static final Pattern PAGE_ONE = Pattern.compile("[?&]page=1(?:&|$)");
   private static final JsonMapper JSON = JsonMapper.builder().build();
 
   @Override
@@ -43,10 +45,19 @@ public class MomosSource implements BeanSource {
   }
 
   @Override
+  public List<URI> listPages(String firstListBody) {
+    return selectAbsUrls(firstListBody, "a[href*=/Product_CoffeeBeans/?&page=]").stream()
+        .filter(uri -> !PAGE_ONE.matcher(uri.toString()).find())
+        .toList();
+  }
+
+  @Override
   public List<URI> parseList(String body) {
-    return Jsoup.parse(body, LIST_URL.toString())
-        .select("a[href*=/Product_CoffeeBeans/?idx=]")
-        .stream()
+    return selectAbsUrls(body, "a[href*=/Product_CoffeeBeans/?idx=]");
+  }
+
+  private static List<URI> selectAbsUrls(String body, String cssQuery) {
+    return Jsoup.parse(body, LIST_URL.toString()).select(cssQuery).stream()
         .map(a -> a.absUrl("href"))
         .distinct()
         .map(URI::create)

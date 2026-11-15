@@ -13,6 +13,11 @@ public interface BeanSource {
 
   URI listUrl();
 
+  /** 1페이지 본문에서 찾은 추가 목록 페이지 URL(1페이지 자신 제외). */
+  default List<URI> listPages(String firstListBody) {
+    return List.of();
+  }
+
   /** 목록 응답 본문 → 상세 URL. */
   List<URI> parseList(String body);
 

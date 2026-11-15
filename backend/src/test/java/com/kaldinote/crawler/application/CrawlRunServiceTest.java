@@ -32,6 +32,8 @@ import org.springframework.web.client.RestClient;
 class CrawlRunServiceTest extends AbstractIntegrationTest {
 
   private static final String LIST = "https://momos.co.kr/Product_CoffeeBeans";
+  private static final String LIST_PAGE_2 =
+      "https://momos.co.kr/Product_CoffeeBeans/?&page=2&sort=recent";
   private static final String DETAIL = "https://momos.co.kr/Product_CoffeeBeans/?idx=";
 
   @Autowired private CrawlRunRepository runRepository;
@@ -190,5 +192,60 @@ class CrawlRunServiceTest extends AbstractIntegrationTest {
     assertThat(run.getStatus()).isEqualTo(CrawlRunStatus.FAILED);
     assertThat(run.getErrorMessage()).isEqualTo("목록 요청 실패: 중계 설정 없음: momos.co.kr");
     relayServer.verify();
+  }
+
+  @Test
+  @DisplayName("2페이지가 있으면 두 페이지 상세를 모두 요청하고 중복 URL은 한 번만 요청한다")
+  void 두_페이지_상세를_중복_없이_모두_요청한다() {
+    String page1 =
+        "<html><body>"
+            + "<a href=\"/Product_CoffeeBeans/?idx=1\">상품1</a>"
+            + "<a href=\"/Product_CoffeeBeans/?idx=2\">상품2</a>"
+            + "<a href=\"/Product_CoffeeBeans/?&page=1&sort=recent\">1</a>"
+            + "<a href=\"/Product_CoffeeBeans/?&page=2&sort=recent\">2</a>"
+            + "</body></html>";
+    String page2 =
+        "<html><body>"
+            + "<a href=\"/Product_CoffeeBeans/?idx=2\">상품2</a>"
+            + "<a href=\"/Product_CoffeeBeans/?idx=3\">상품3</a>"
+            + "</body></html>";
+    server.expect(requestTo(LIST)).andRespond(withSuccess(page1, MediaType.TEXT_HTML));
+    server.expect(requestTo(LIST_PAGE_2)).andRespond(withSuccess(page2, MediaType.TEXT_HTML));
+    expectDetail(1);
+    expectDetail(2);
+    expectDetail(3);
+
+    Long id = service.start("momos", null).id();
+
+    CrawlRun run = reload(id);
+    assertThat(run.getStatus()).isEqualTo(CrawlRunStatus.SUCCEEDED);
+    assertThat(run.getCreatedCount()).isEqualTo(3);
+    assertThat(sleeps)
+        .containsExactly(
+            Duration.ofMillis(1000),
+            Duration.ofMillis(1000),
+            Duration.ofMillis(1000),
+            Duration.ofMillis(1000));
+    server.verify();
+  }
+
+  @Test
+  @DisplayName("추가 목록 페이지 요청이 실패하면 실행이 FAILED")
+  void 추가_목록_페이지_요청이_실패하면_FAILED다() {
+    String page1 =
+        "<html><body>"
+            + "<a href=\"/Product_CoffeeBeans/?idx=1\">상품1</a>"
+            + "<a href=\"/Product_CoffeeBeans/?&page=2&sort=recent\">2</a>"
+            + "</body></html>";
+    server.expect(requestTo(LIST)).andRespond(withSuccess(page1, MediaType.TEXT_HTML));
+    server.expect(requestTo(LIST_PAGE_2)).andRespond(withServerError());
+
+    Long id = service.start("momos", null).id();
+
+    CrawlRun run = reload(id);
+    assertThat(run.getStatus()).isEqualTo(CrawlRunStatus.FAILED);
+    assertThat(run.getErrorMessage()).startsWith("목록 요청 실패");
+    assertThat(run.getCreatedCount()).isZero();
+    server.verify();
   }
 }

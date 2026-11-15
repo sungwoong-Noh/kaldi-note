@@ -492,12 +492,15 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 - **Then** 목록 행에 `아침 V60 15g`과 `15g → 240g · 1:16.0 · 92°C`(물 온도가 없는 레시피는 `· 92°C` 생략)가 보이고, 고르면 「레시피 연결」 줄이 `아침 V60 15g`이 되며 원두량 16 · 물량 250은 그대로다. 저장 본문에 `recipeId: 12` / 「연결 안 함」이면 `recipeId` 키가 없다
 - **검증** 컴포넌트 테스트 `RecipeLinkSheet.test.tsx` + `QuickBrewSheet.test.tsx`
 
-#### AC-QUICKBREW-74 · 지난번 레시피 연결을 이어받는다
+#### AC-QUICKBREW-74 · 레시피 연결은 지난번에서 이어받지 않는다
 
-- **Given** 지난번 기록 `recipeId: 12` / 지난번 `recipeId: 99`이고 `GET /api/v1/recipes/99`가 403 또는 404
-- **When** 「이대로 기록」 → 「저장」
-- **Then** 저장 본문에 `recipeId: 12`가 있고 「자세히」의 「레시피 연결」 줄이 그 레시피 이름이다 / 연결은 비어 있고 본문에 `recipeId` 키가 없다
+- **Given** 지난번 기록 `recipeId: 12`
+- **When** 「이대로 기록」 → 「자세히」 → 「저장」
+- **Then** 「레시피 연결」 줄이 「연결 안 함」이고 저장 본문에 `recipeId` 키가 없다. `GET /api/v1/recipes/12`를 부르지 않는다
 - **검증** 컴포넌트 테스트
+
+> **AC 개정 (2026-11-15, 사람 결정).** 처음에는 지난번 연결을 이어받기로 했으나(인터뷰 표 16번), 실사용에서 34일 전
+> 기록의 레시피가 「자세히」 안에 접힌 채 자동으로 붙었다. 연결은 매번 「자세히」에서 고른다.
 
 ### 엣지 — 「자세히」 확장
 
@@ -1209,7 +1212,7 @@ supersedes: docs/specs/2026-09-19-home-calendar.md
 - [x] **Task 14: ② 「자세히」 확장** — Covers: AC-QUICKBREW-70~82
   `QuickBrewSheet` `TasteStep`의 「자세히」에 총 시간 · 드로다운(기존 `parseMinSec`·`MIN_SEC_MESSAGE`), 맛 5축(kit `TasteDots`),
   TDS · 음료 중량 · 수율(기존 `previewYield`), 레시피 연결(새 `RecipeLinkSheet` — 시트 위 한 장 더, 내 서랍 `size=50`)을
-  시안 B4 · B4b · B4c 순서로 넣는다. `Draft`·`toBody`에 필드 추가, 지난번 `recipeId` 이어받기(볼 수 없으면 비움).
+  시안 B4 · B4b · B4c 순서로 넣는다. `Draft`·`toBody`에 필드 추가, 지난번 `recipeId`는 이어받지 않는다(AC-74 개정).
   메모 칸은 「자세히」에 다시 두지 않는다. e2e 1개(390: 「자세히」 → 레시피 연결 → 저장 → 상세에 비교표).
   비목표: 「레시피로 저장」(D) · 「이걸로 내리기」(B13) · 레시피 값으로 입력 채우기 · C2 「다시 내리기」 변경 — P2.
 

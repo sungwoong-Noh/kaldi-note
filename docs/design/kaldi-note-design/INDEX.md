@@ -40,6 +40,7 @@ kaldi-note-design/
 | `02 Recipes and Cups - Web` | `/recipes` `/brews` | 결정 패널 · 둘러보기 · 내 서랍 · 레시피 상세 · 내 잔 테이블 | 레시피는 현행 · **내 잔 테이블(BW1)은 대체됨** → 10 (F) |
 | `03 Recipe Edit` | `/recipes/new` `/[id]/edit` | 웹 · 모바일 · 스텝 시트 · 다크 · 상태 8 | **대체됨** → 10 (D 레시피로 저장, E 레시피 작성) |
 | `10 Brew First` | `/` `/brews` `/brews/new` 외 | **「기록 먼저」 재구성** — A 오늘 · B 빠른 기록 · C 기록 상세 · D 레시피로 저장 · E 레시피 작성 · F 「기록」 탭 · G 탭 바 · H 규격(모션) | **현행 (2026-11-14)** |
+| `11 Beans` | `/beans/[id]` · 원두 고르기 시트 | **원두 상세** — U1 페이지 · 쌓인 시트 · 웹, 상태 9(블렌드 · 원문 배전도 · 정보 적음 · 기록 0 · 직접 입력 · 숨김 · 로딩 · 실패 · 다크) · U2 원두 고르기 결과 행 「정보」 · 규격 · 질문 10 | **현행 (2026-11-15)** |
 | `04 Profile` | `/u/[id]` | 웹 · 모바일 · 관계 4종 · 404 · 상태 | 현행 |
 | `05 More and Settings` | `/more` `/settings` | 모바일 · 웹 아바타 메뉴 · 설정 · 상태 | 현행 |
 | `06 Gear` | `/more/gear` | 그라인더 목록 · 추가 · 상세 · 상태 | 현행 |
@@ -62,6 +63,8 @@ kaldi-note-design/
 | `/recipes/[id]` | 02 … Mobile (RM4) | 02 … Web (RW3) |
 | `/recipes/new` · `/[id]/edit` | 10 Brew First (D · E) | 10 Brew First (D · E) |
 | `/brews/[id]` 잔 상세 | 08 Other - Mobile (B2) · 10 Brew First (C) 참고 | 08 Other - Web (W3) |
+| `/beans/[id]` 원두 상세 | 11 Beans (U1a · U1c–U1k) | 11 Beans (UW) |
+| 원두 고르기 시트 · 「정보」 | 11 Beans (U1b · U2), 10 Brew First (B8–B10) | 10 Brew First (BW) |
 | 타이머 | 07 Timer and Feed (03) | — |
 | `/u/[id]` | 04 Profile (M1–M3) | 04 Profile (W) |
 | `/more` · `/settings` | 05 More (M1–M2) | 05 More (W) |
@@ -77,4 +80,4 @@ kaldi-note-design/
 
 ## 5. 열려 있는 결정
 
-없음 — 공개 범위 · 온도 · 배전도 · 스텝/방식/교반 · 분쇄도 단위는 `docs/DECISIONS.md` 기준으로 확정입니다. screens-v3의 Q 목록 18건도 `docs/DECISIONS.md` 5절로 확정됐습니다(2026-09-25).
+없음 — 공개 범위 · 온도 · 배전도 · 스텝/방식/교반 · 분쇄도 단위는 `docs/DECISIONS.md` 기준으로 확정입니다. screens-v3의 Q 목록 18건도 `docs/DECISIONS.md` 5절로 확정됐습니다(2026-09-25). 10 Brew First 질문은 6절, 11 Beans 질문과 원두 기획 결정은 7절입니다.

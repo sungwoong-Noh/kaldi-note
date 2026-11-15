@@ -97,3 +97,6 @@
   지정하지 않고 INSERT해 DEFAULT가 적용되는지, 또는 최종 제약조건이 걸렸는지로 대신 검증한다.
 - **응답 JSON은 `default-property-inclusion: non_null`이라 null 필드가 키째 빠진다.** 테스트는 `jsonPath(...).doesNotExist()`,
   프론트 zod는 `.optional()`(또는 null도 받아야 하면 `.nullish()`)로 받는다 — `isEmpty()`·`.nullable()`은 실제 응답에서 깨진다.
+- **빠른 기록(P1)부터 `brew_logs.recipe_id`·`bean_batch_id`·`user_grinder_id`가 null인 행이 흔하다.** 기록을 모아 집계·조회하는
+  코드에서 이 id들을 `Set.copyOf`·`Map.copyOf`·`List.of`에 넣으면 NPE(→ 500)이고, `putIfAbsent`는 null 값을 「없음」으로 보고 덮어쓴다.
+  `filter(Objects::nonNull)`·`containsKey`로 다룬다(달력 대표 레시피명 사고, 2026-11-15).

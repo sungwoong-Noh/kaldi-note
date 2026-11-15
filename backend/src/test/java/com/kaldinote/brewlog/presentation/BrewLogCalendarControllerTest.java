@@ -406,6 +406,54 @@ class BrewLogCalendarControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
+  @DisplayName("AC-HOMECAL-66 · 그날 마지막 기록이 레시피 없는 빠른 기록이면 200이고 대표 레시피명이 없다")
+  void 마지막_기록이_레시피_없으면_대표_레시피명이_없다() throws Exception {
+    User me = newUser("me-66-quick");
+    Fixture v60 = fixtureOf(me, "Hoffmann V60");
+    saveBrewLog(
+        me,
+        v60,
+        Instant.parse("2026-09-04T23:00:00Z"),
+        BrewLogVisibility.PRIVATE); // KST 09-05 08:00
+    mockMvc
+        .perform(
+            post("/api/v1/brew-logs")
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(me))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"actualDoseG":16.0,"actualWaterG":250.0,"brewedAt":"2026-09-05T05:00:00Z"}
+                    """))
+        .andExpect(status().isCreated()); // KST 09-05 14:00, recipeId 없음
+
+    getCalendar(me, "?month=2026-09")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.days[0].count").value(2))
+        .andExpect(jsonPath("$.days[0].primaryRecipeName").doesNotExist());
+  }
+
+  @Test
+  @DisplayName("AC-HOMECAL-66 · 레시피 없는 빠른 기록만 있는 날이 있어도 달력은 200이다")
+  void 레시피_없는_기록만_있는_날도_달력이_열린다() throws Exception {
+    User me = newUser("me-66-only-quick");
+    mockMvc
+        .perform(
+            post("/api/v1/brew-logs")
+                .header(HttpHeaders.AUTHORIZATION, tokenOf(me))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"actualDoseG":16.0,"actualWaterG":250.0,"brewedAt":"2026-09-05T05:00:00Z"}
+                    """))
+        .andExpect(status().isCreated());
+
+    getCalendar(me, "?month=2026-09")
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.days[0].date").value("2026-09-05"))
+        .andExpect(jsonPath("$.days[0].primaryRecipeName").doesNotExist());
+  }
+
+  @Test
   @DisplayName("AC-HOMECAL-67 · 기록이 없는 날은 days에 항목 자체가 없다")
   void 빈_날은_항목이_없다() throws Exception {
     User me = newUser("me-67");

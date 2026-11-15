@@ -45,6 +45,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -303,14 +304,21 @@ public class BrewLogService {
     Map<LocalDate, Long> firstRecipeIdByDay = new LinkedHashMap<>();
     for (BrewLogRepository.PrimaryRecipeRow row :
         brewLogRepository.findVisibleForPrimaryRecipe(viewerId, userId, start, end)) {
-      firstRecipeIdByDay.putIfAbsent(CalendarMonth.toKstDate(row.getBrewedAt()), row.getRecipeId());
+      // 레시피 없는 빠른 기록이면 recipeId가 null이다. putIfAbsent는 null 값을 「없음」으로 보고 덮어쓰므로
+      // containsKey로 그날 첫 행(=마지막 기록)만 남긴다.
+      LocalDate day = CalendarMonth.toKstDate(row.getBrewedAt());
+      if (!firstRecipeIdByDay.containsKey(day)) {
+        firstRecipeIdByDay.put(day, row.getRecipeId());
+      }
     }
-    if (firstRecipeIdByDay.isEmpty()) {
+    Set<Long> recipeIds =
+        firstRecipeIdByDay.values().stream().filter(Objects::nonNull).collect(Collectors.toSet());
+    if (recipeIds.isEmpty()) {
       return Map.of();
     }
 
     Map<Long, String> titles =
-        recipeRepository.findAllById(Set.copyOf(firstRecipeIdByDay.values())).stream()
+        recipeRepository.findAllById(recipeIds).stream()
             .collect(Collectors.toMap(Recipe::getId, Recipe::getTitle));
 
     Map<LocalDate, String> result = new LinkedHashMap<>();

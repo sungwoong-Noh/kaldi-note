@@ -16,6 +16,22 @@ public interface BrewLogRepository extends JpaRepository<BrewLog, Long> {
 
   Optional<BrewLog> findByIdAndDeletedAtIsNull(Long id);
 
+  /** 「이 원두의 기록」 — 내 기록 중 그 원두를 고른 것 + 그 원두의 봉투로 고른 예전 기록. 최신순. */
+  @Query(
+      """
+      select b from BrewLog b
+      where b.userId = :userId and b.deletedAt is null
+        and (b.beanProductId = :productId
+             or b.beanBatchId in (select bb.id from BeanBatch bb where bb.beanProductId = :productId))
+      order by b.brewedAt desc, b.id desc
+      """)
+  List<BrewLog> findMineForBeanProduct(
+      @Param("userId") Long userId, @Param("productId") Long productId);
+
+  /** 직접 적은 원두 — 이름이 정확히 같은 내 기록. 최신순. */
+  List<BrewLog> findByUserIdAndBeanNameAndDeletedAtIsNullOrderByBrewedAtDescIdDesc(
+      Long userId, String beanName);
+
   long countByRecipeIdAndDeletedAtIsNull(Long recipeId);
 
   /** 목록 한 페이지 안 레시피들의 brewCount(잔 수)를 한 번에 조회한다 — RecipeRepository.countSavedForIds와 같은 배치 패턴. */

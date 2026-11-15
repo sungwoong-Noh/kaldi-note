@@ -573,7 +573,7 @@ supersedes:
 - [x] **Task 3: 상세 응답 확장** — Covers: AC-BEANDETAIL-11, 12, 51
   `BeanProductResponse`에 `roasterName` · `hidden`, `BeanOriginResponse`에 `varietyName` · `processName`(`name_ko ?? name`).
 
-- [ ] **Task 4: 내 기록 요약 API** — Covers: AC-BEANDETAIL-13, 14, 15, 16, 17, 18, 19, 52, 53, 54
+- [x] **Task 4: 내 기록 요약 API** — Covers: AC-BEANDETAIL-13, 14, 15, 16, 17, 18, 19, 52, 53, 54
   계산은 순수 함수 `BeanSummary.of(List<BrewLog> newestFirst)`로 떼서 단위 테스트한다. 봉투 경유 기록은
   `bean_batch_id IN (그 상품의 봉투 id)`로 함께 읽는다.
 

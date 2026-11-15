@@ -2,6 +2,7 @@ package com.kaldinote.brewlog.presentation;
 
 import com.kaldinote.brewlog.application.BrewLogService;
 import com.kaldinote.brewlog.domain.CalendarMonth;
+import com.kaldinote.brewlog.presentation.dto.BeanSummaryResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCalendarResponse;
 import com.kaldinote.brewlog.presentation.dto.BrewLogCreateRequest;
 import com.kaldinote.brewlog.presentation.dto.BrewLogPatchRequest;
@@ -117,6 +118,21 @@ public class BrewLogController {
       description = "이번 달(KST) 건수, 평균 별점, 최빈 원두량, 즐겨 쓰는 레시피. 항상 호출자 본인 것만 조회된다.")
   public BrewLogStatsResponse stats(AuthenticatedUser user) {
     return brewLogService.stats(user.id());
+  }
+
+  @GetMapping("/bean-summary")
+  @Operation(
+      summary = "이 원두로 내린 내 기록 요약",
+      description = "beanProductId(카탈로그 원두) 또는 beanName(직접 적은 원두) 중 정확히 하나. 공개 범위와 무관하게 본인 기록만 센다.")
+  public BeanSummaryResponse beanSummary(
+      @Parameter(description = "카탈로그 원두 id. 그 원두의 봉투로 고른 예전 기록도 센다.")
+          @RequestParam(required = false)
+          Long beanProductId,
+      @Parameter(description = "직접 적은 원두 이름. 앞뒤 공백을 지운 뒤 정확히 같은 기록만 센다(대소문자 구분).")
+          @RequestParam(required = false)
+          String beanName,
+      AuthenticatedUser user) {
+    return BeanSummaryResponse.from(brewLogService.beanSummary(user.id(), beanProductId, beanName));
   }
 
   @GetMapping("/{id}")

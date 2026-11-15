@@ -71,6 +71,9 @@ public class MomosSource implements BeanSource {
       JsonNode node = JSON.readTree(script.data());
       if ("Product".equals(node.path("@type").asString(""))) {
         String name = node.path("name").asString("").strip();
+        if (!name.startsWith("원두 ")) {
+          return Optional.empty();
+        }
         String cupNotes = blankToNull(node.path("description").asString(""));
         return Optional.of(
             new CrawledBean(

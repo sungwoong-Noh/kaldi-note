@@ -61,6 +61,14 @@ class MomosSourceTest {
   }
 
   @Test
+  @DisplayName("원두로 시작하지 않는 모모스 상품은 결과가 없다")
+  void 원두_아닌_상품은_결과가_없다() {
+    URI url = URI.create("https://momos.co.kr/Product_CoffeeBeans/?idx=4788");
+
+    assertThat(source.parseDetail(url, read("momos-4788.html"), SEED_NAMES)).isEmpty();
+  }
+
+  @Test
   void 가공은_두_토큰을_먼저_찾는다() {
     assertThat(MomosSource.decompose("에티오피아 구지 무산소 내추럴", SEED_NAMES))
         .isEqualTo(new CrawledOrigin("에티오피아", null, "구지", null, null, "무산소 내추럴"));

@@ -1,7 +1,7 @@
 ---
 id: RELAY
 title: 크롤러 요청 중계 — 아임웹 클라우드 IP 차단을 Cloudflare Worker로 우회
-status: 승인
+status: 구현완료
 milestone:
 supersedes:
 ---
@@ -335,8 +335,10 @@ Worker 자체 오류 응답 본문은 `{"code":"<CODE>"}`, `Content-Type: applic
 
 ## 수동 확인
 
-- [ ] ★ Worker 배포 + VM `.env` 반영 후, 관리자 콘솔에서 모모스 수집 실행 → `status=SUCCEEDED`, `created + updated ≥ 1`
-- [ ] VM에서 `curl -s -o /dev/null -w "%{http_code}" "https://kaldi-fetch-relay.<계정>.workers.dev/?url=https%3A%2F%2Fmomos.co.kr%2F"` (토큰 없이) → `401`
+- [x] ★ Worker 배포 + VM `.env` 반영 후, 관리자 콘솔에서 모모스 수집 실행 → `status=SUCCEEDED`, `created + updated ≥ 1`
+  — 2026-11-14 19:23 KST 실행 #4 `SUCCEEDED`, created 21 · updated 0 · skipped 0, 39초 (중계 전 #3은 403 「접근 제한」으로 FAILED)
+- [x] VM에서 `curl -s -o /dev/null -w "%{http_code}" "https://kaldi-fetch-relay.<계정>.workers.dev/?url=https%3A%2F%2Fmomos.co.kr%2F"` (토큰 없이) → `401`
+  — 2026-11-14 VM에서 `401` 확인
 
 ## 열어둔 결정
 

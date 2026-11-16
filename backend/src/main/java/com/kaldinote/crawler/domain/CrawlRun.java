@@ -52,6 +52,13 @@ public class CrawlRun {
   @Column(name = "updated_count", nullable = false)
   private int updatedCount;
 
+  @Column(name = "unchanged_count", nullable = false)
+  private int unchangedCount;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(nullable = false, columnDefinition = "jsonb")
+  private List<ImportedItem> imported = new ArrayList<>();
+
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(nullable = false, columnDefinition = "jsonb")
   private List<SkippedItem> skipped = new ArrayList<>();

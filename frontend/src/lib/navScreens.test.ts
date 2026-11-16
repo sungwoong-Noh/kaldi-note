@@ -40,6 +40,9 @@ describe("backHref", () => {
     expect(backHref("/brews/2")).toBe("/brews");
     expect(backHref("/u/11")).toBe("/");
     expect(backHref("/gear/grind-converter")).toBe("/more");
+    // 원두 상세에 탭바가 뜨면 하단 「이 원두로 기록하기」를 가린다(#233)
+    expect(backHref("/beans/41")).toBe("/brews");
+    expect(backHref("/beans/named")).toBe("/brews");
   });
 
   it("AC-GRAMMAR-15 · 탭 화면은 뒤로가 없다", () => {

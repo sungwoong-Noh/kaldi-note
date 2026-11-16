@@ -19,6 +19,8 @@ import com.kaldinote.crawler.domain.MasterNames;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -62,6 +64,24 @@ public class BeanImportService {
     return new MasterNames(
         names(varietyRepository.findAll(), Variety::getName, Variety::getNameKo),
         names(processRepository.findAll(), CoffeeProcess::getName, CoffeeProcess::getNameKo));
+  }
+
+  /**
+   * 이름이 정확히 같은 원두가 하나뿐인 이름 → 그 원두 id. 0개 · 2개 이상은 빠진다(docs/specs/2026-11-15-admin-beans.md 「실행 상세
+   * 연결」). 수집 실행 결과에 상품 id를 저장하지 않으므로 조회 시점에 찾는다.
+   */
+  @Transactional(readOnly = true)
+  public Map<String, Long> uniqueIdsByName(Collection<String> names) {
+    if (names.isEmpty()) {
+      return Map.of();
+    }
+    Map<String, Long> out = new HashMap<>();
+    for (Object[] row : beanProductRepository.countByNames(names)) {
+      if (((Number) row[2]).longValue() == 1) {
+        out.put((String) row[0], ((Number) row[1]).longValue());
+      }
+    }
+    return out;
   }
 
   @Transactional

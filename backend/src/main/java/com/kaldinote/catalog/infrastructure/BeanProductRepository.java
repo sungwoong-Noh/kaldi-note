@@ -1,6 +1,7 @@
 package com.kaldinote.catalog.infrastructure;
 
 import com.kaldinote.catalog.domain.BeanProduct;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -162,4 +163,11 @@ public interface BeanProductRepository extends JpaRepository<BeanProduct, Long> 
               + " and (created_by_user_id is null or promoted)",
       nativeQuery = true)
   long countSameName(@Param("id") Long id, @Param("name") String name);
+
+  /** 이름별 [name, min(id), count]. 수집 실행 상세의 원문 → 원두 연결(이름이 정확히 같은 행이 1개일 때만 잇는다). */
+  @Query(
+      value =
+          "select name, min(id), count(*) from bean_products where name in (:names) group by name",
+      nativeQuery = true)
+  List<Object[]> countByNames(@Param("names") Collection<String> names);
 }

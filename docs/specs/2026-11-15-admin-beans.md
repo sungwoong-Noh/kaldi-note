@@ -554,7 +554,7 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
   bulk는 `findAllById` 결과 수가 고유 id 수와 다르면 404. 검색(`BeanProductRepository.search` 네이티브 쿼리)의
   `(bp.created_by_user_id is null or bp.created_by_user_id = :userId)`에 `or bp.promoted`를 더한다 — 본 쿼리와 `countQuery` 둘 다.
 
-- [ ] **Task 6: 실행 상세 연결** — Covers: AC-ADMINBEAN-23
+- [x] **Task 6: 실행 상세 연결** — Covers: AC-ADMINBEAN-23
 
   `CrawlRunService.run(id)`에서 unmapped 이름 목록으로 `SELECT name, min(id), count(*) … WHERE name IN (…) GROUP BY name` 1회,
   count=1인 것만 `beanProductId`. `CrawlRunResponse.Unmapped`에 필드 추가. 계약 파일

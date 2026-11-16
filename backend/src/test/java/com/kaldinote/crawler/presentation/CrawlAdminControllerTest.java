@@ -15,8 +15,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
 import com.kaldinote.catalog.application.BeanImportService;
+import com.kaldinote.catalog.domain.BeanMix;
+import com.kaldinote.catalog.domain.BeanProduct;
+import com.kaldinote.catalog.domain.RoastLevel;
+import com.kaldinote.catalog.domain.Roaster;
+import com.kaldinote.catalog.infrastructure.BeanProductRepository;
+import com.kaldinote.catalog.infrastructure.RoasterRepository;
 import com.kaldinote.crawler.domain.CrawlRun;
 import com.kaldinote.crawler.domain.MasterNames;
+import com.kaldinote.crawler.domain.UnmappedItem;
 import com.kaldinote.crawler.infrastructure.CrawlRunRepository;
 import com.kaldinote.crawler.infrastructure.CrawlerFixtures;
 import com.kaldinote.crawler.infrastructure.MomosSource;
@@ -44,6 +51,8 @@ class CrawlAdminControllerTest extends AbstractIntegrationTest {
   @Autowired private UserRepository userRepository;
   @Autowired private CrawlRunRepository runRepository;
   @Autowired private BeanImportService importService;
+  @Autowired private RoasterRepository roasterRepository;
+  @Autowired private BeanProductRepository beanProductRepository;
   @MockitoBean private PageFetcher fetcher;
 
   private Long adminId;
@@ -258,5 +267,41 @@ class CrawlAdminControllerTest extends AbstractIntegrationTest {
         .andExpect(jsonPath("$.content[0].imported[0].beanProductId", notNullValue()))
         .andExpect(jsonPath("$.content[0].imported[0].name").value("원두 에콰도르 농장1 파카마라 내추럴"))
         .andExpect(jsonPath("$.content[0].imported[0].outcome").value("CREATED"));
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-23 · 실행 상세의 원문은 이름이 하나로 맞을 때만 원두로 이어진다")
+  void 실행_상세의_원문은_이름이_하나로_맞을_때만_원두로_이어진다() throws Exception {
+    Long r1 = roasterRepository.save(Roaster.createBySystem("연결 로스터 1")).getId();
+    Long r2 = roasterRepository.save(Roaster.createBySystem("연결 로스터 2")).getId();
+    Long a = beanProductRepository.save(crawled(r1, "연결 A")).getId();
+    beanProductRepository.save(crawled(r1, "연결 C"));
+    beanProductRepository.save(crawled(r2, "연결 C"));
+    CrawlRun run = CrawlRun.start("momos", null, Instant.parse("2026-11-16T00:00:00Z"));
+    run.succeed(
+        0,
+        0,
+        0,
+        List.of(),
+        List.of(),
+        List.of(
+            new UnmappedItem("연결 A", "process", "허니 내추럴"),
+            new UnmappedItem("연결 B", "variety", "SL28"),
+            new UnmappedItem("연결 C", "roastLevel", "City+")),
+        Instant.parse("2026-11-16T00:01:00Z"));
+    Long runId = runRepository.save(run).getId();
+
+    mockMvc
+        .perform(as(adminToken(), get("/api/v1/admin/crawl-runs/" + runId)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.unmapped[0].beanProductId").value(a))
+        .andExpect(jsonPath("$.unmapped[0].raw").value("허니 내추럴"))
+        .andExpect(jsonPath("$.unmapped[1].beanProductId").doesNotExist())
+        .andExpect(jsonPath("$.unmapped[2].beanProductId").doesNotExist());
+  }
+
+  private static BeanProduct crawled(Long roasterId, String name) {
+    return BeanProduct.createByCrawler(
+        roasterId, name, BeanMix.SINGLE_ORIGIN, RoastLevel.LIGHT, null, null, null);
   }
 }

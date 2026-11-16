@@ -535,7 +535,7 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
   `findByProductUrl(url).or(() -> findByRoasterIdAndName(...))`로 바꾸고, ② 경로로 찾은 크롤러 원두는 `product_url` 갱신.
   `updateFromCrawl`은 이름을 받지 않는다(지금도 그렇다 — 확인만).
 
-- [ ] **Task 3: 목록 · 상세 API** — Covers: AC-ADMINBEAN-01~08, 40, 50(목록·상세), 60
+- [x] **Task 3: 목록 · 상세 API** — Covers: AC-ADMINBEAN-01~08, 40, 50(목록·상세), 60
 
   `catalog.presentation.AdminBeanProductController`, `catalog.application.AdminBeanProductService`.
   목록은 원두 id 페이지를 먼저 뽑고, 그 id들로 산지(품종·가공 포함)·기록 수·로스터·닉네임을 각각 **한 번씩** 묶어 조회한다

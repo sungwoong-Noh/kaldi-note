@@ -58,6 +58,7 @@ supersedes:
 |---|---|---|---|---|
 | `bean_products` | `promoted` | `BOOLEAN NOT NULL DEFAULT false` | N | **신규.** 카탈로그로 올린 사용자 원두 |
 | `bean_products` | `uq_bean_products_crawler_url` | `UNIQUE (product_url) WHERE created_by_user_id IS NULL` | — | **신규.** 부분 유일 인덱스. 크롤러 원두끼리만 구매 링크가 겹치지 않는다 |
+| `bean_origins` | `ratio_percent` | `NUMERIC(4,1)` | **Y** | **변경(NOT NULL 해제).** 블렌드 비율을 모를 때 비워 둔다(AC-ADMINBEAN-12②). 구현 중 발견 — 기존 값은 그대로 |
 
 운영 데이터(2026-11-15, #227·#228 모모스 수집 보강 **이전**): 원두 123개, `product_url` 있는 118개 전부 서로 다름, 사용자 원두 5개.
 그 뒤 수집이 늘었으므로 **구현 전에 다시 조회한다**(Task 1). 크롤러 원두끼리 겹치는 URL이 하나라도 있으면 마이그레이션이 운영에서 실패한다.
@@ -542,7 +543,7 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
   (`brewCount`: `brew_logs`를 `bean_product_id`와 `bean_batches.bean_product_id`로 묶은 `GROUP BY`). `missing`은 조회한 산지로 계산.
   `counts`는 같은 WHERE(status·missing 제외)로 집계 쿼리 1개.
 
-- [ ] **Task 4: 수정 API** — Covers: AC-ADMINBEAN-10, 11, 12, 41, 43, 51(수정), 52, 53, 54
+- [x] **Task 4: 수정 API** — Covers: AC-ADMINBEAN-10, 11, 12, 41, 43, 51(수정), 52, 53, 54
 
   `AdminBeanProductUpdateRequest`(생성 DTO 제약 + `roastLevel` nullable + `verified`·`hidden`). 산지 규칙은
   `BeanCatalogService.buildOrigins`와 다르므로(블렌드 0행·비율 null 허용) 관리자 전용 검증을 둔다. 내용 필드 비교로

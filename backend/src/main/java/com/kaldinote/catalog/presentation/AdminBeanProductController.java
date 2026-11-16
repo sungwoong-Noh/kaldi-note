@@ -5,13 +5,17 @@ import com.kaldinote.catalog.application.AdminBeanProductService.Source;
 import com.kaldinote.catalog.application.AdminBeanProductService.Status;
 import com.kaldinote.catalog.presentation.dto.AdminBeanProductDetailResponse;
 import com.kaldinote.catalog.presentation.dto.AdminBeanProductPageResponse;
+import com.kaldinote.catalog.presentation.dto.AdminBeanProductUpdateRequest;
 import com.kaldinote.common.response.PageParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,6 +45,15 @@ public class AdminBeanProductController {
       @RequestParam(required = false) Integer page,
       @Parameter(description = "1 이상 100 이하.") @RequestParam(required = false) Integer size) {
     return service.list(q, status, source, missing, decaf, roasterId, PageParams.of(page, size));
+  }
+
+  @PutMapping("/{id}")
+  @Operation(
+      summary = "원두 수정 — 전체 교체",
+      description = "내용이 바뀌면 manuallyEdited=true(다음 수집이 구매 링크만 갱신). verified · hidden만 바뀌면 그대로.")
+  public AdminBeanProductDetailResponse update(
+      @PathVariable Long id, @Valid @RequestBody AdminBeanProductUpdateRequest request) {
+    return service.update(id, request);
   }
 
   @GetMapping("/{id}")

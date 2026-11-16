@@ -41,6 +41,8 @@ public enum ErrorCode {
   // 원두 카탈로그 — docs/specs/2026-08-16-bean-inventory.md
   BEAN_MIX_ORIGIN_MISMATCH(HttpStatus.BAD_REQUEST, "beanMix와 origins 개수가 맞지 않습니다."),
   BEAN_ORIGIN_RATIO_MISMATCH(HttpStatus.BAD_REQUEST, "블렌드 산지의 ratioPercent 합계가 100이 아닙니다."),
+  // 크롤러 원두끼리 구매 링크가 겹치면 크롤러가 같은 원두를 찾지 못한다(V22 부분 유일 인덱스).
+  BEAN_PRODUCT_URL_DUPLICATE(HttpStatus.CONFLICT, "같은 구매 링크를 쓰는 다른 원두가 있습니다."),
   BEAN_BATCH_REMAINING_INVALID(HttpStatus.BAD_REQUEST, "remainingG가 0 미만이거나 weightG를 초과합니다."),
 
   // 원두 크롤러

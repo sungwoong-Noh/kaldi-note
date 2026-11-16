@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,6 +44,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
@@ -384,5 +386,199 @@ class AdminBeanProductControllerTest extends AbstractIntegrationTest {
           .perform(get(path).header(HttpHeaders.AUTHORIZATION, userToken))
           .andExpect(status().isForbidden());
     }
+  }
+
+  // ── 수정 — PUT /admin/bean-products/{id} (Task 4) ────────────────────────────
+
+  /** 싱글 · 정보 완전한 요청 본문. 필요한 키만 바꿔 쓴다. */
+  private String body(Long roasterId, String name, String overrides) {
+    return """
+        {"name":"%s","roasterId":%d,"beanMix":"SINGLE_ORIGIN","roastLevel":"LIGHT","decaf":false,
+         "origins":[{"country":"에티오피아","varietyId":%d,"processId":%d}],
+         "verified":false,"hidden":false%s}
+        """
+        .formatted(name, roasterId, varietyId, processId, overrides);
+  }
+
+  private String blend(Long roasterId, String name, String origins) {
+    return """
+        {"name":"%s","roasterId":%d,"beanMix":"BLEND","roastLevel":"LIGHT","decaf":false,
+         "origins":%s,"verified":false,"hidden":false}
+        """
+        .formatted(name, roasterId, origins);
+  }
+
+  private ResultActions update(Long id, String json) throws Exception {
+    entityManager.flush();
+    entityManager.clear();
+    return mockMvc.perform(
+        put(BASE + "/" + id)
+            .header(HttpHeaders.AUTHORIZATION, admin)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json));
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-10 · 빠진 배전도를 채우면 수동 수정됨이 된다")
+  void 빠진_배전도를_채우면_수동_수정됨이_된다() throws Exception {
+    Long r = roaster("수정 로스터");
+    Long id = bean(r, "원두 231", null, false, null).getId();
+
+    update(id, body(r, "원두 231", ",\"roastLevelAgtron\":92"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.roastLevel").value("LIGHT"))
+        .andExpect(jsonPath("$.roastLevelAgtron").value(92))
+        .andExpect(jsonPath("$.manuallyEdited").value(true))
+        .andExpect(jsonPath("$.verified").value(false));
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-11 · 상태만 바꾸면 수동 수정됨은 그대로다")
+  void 상태만_바꾸면_수동_수정됨은_그대로다() throws Exception {
+    Long r = roaster("상태만 로스터");
+    Long id = bean(r, "원두 231").getId();
+
+    update(id, body(r, "원두 231", "").replace("\"verified\":false", "\"verified\":true"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.verified").value(true))
+        .andExpect(jsonPath("$.manuallyEdited").value(false));
+  }
+
+  private Long blendBean(Long roasterId, String name) {
+    return beanProductRepository
+        .save(
+            BeanProduct.createByCrawler(
+                roasterId, name, BeanMix.BLEND, RoastLevel.LIGHT, null, null, null))
+        .getId();
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-12 · 블렌드는 산지 0행 · 비율 없음 · 합 100을 받는다")
+  void 블렌드는_산지_0행_비율_없음_합_100을_받는다() throws Exception {
+    Long r = roaster("블렌드 로스터");
+    Long id = blendBean(r, "블렌드");
+
+    update(id, blend(r, "블렌드", "[]")).andExpect(status().isOk());
+    update(id, blend(r, "블렌드", "[{\"country\":\"브라질\"},{\"country\":\"콜롬비아\"}]"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.origins[0].ratioPercent").doesNotExist())
+        .andExpect(jsonPath("$.origins[1].ratioPercent").doesNotExist());
+    update(
+            id,
+            blend(
+                r,
+                "블렌드",
+                "[{\"country\":\"브라질\",\"ratioPercent\":50.0},{\"country\":\"콜롬비아\",\"ratioPercent\":50.0}]"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.origins[0].ratioPercent").value(50.0))
+        .andExpect(jsonPath("$.origins[1].ratioPercent").value(50.0));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"49.9,50.0,400", "50.1,50.0,400", "40.0,60.0,200"})
+  @DisplayName("AC-ADMINBEAN-41 · 블렌드 비율 합 경계")
+  void 블렌드_비율_합_경계(String a, String b, int expected) throws Exception {
+    Long r = roaster("비율 로스터");
+    Long id = blendBean(r, "비율 블렌드");
+    ResultActions result =
+        update(
+                id,
+                blend(
+                    r,
+                    "비율 블렌드",
+                    "[{\"country\":\"브라질\",\"ratioPercent\":%s},{\"country\":\"콜롬비아\",\"ratioPercent\":%s}]"
+                        .formatted(a, b)))
+            .andExpect(status().is(expected));
+    if (expected == 400) {
+      result.andExpect(jsonPath("$.code").value("BEAN_ORIGIN_RATIO_MISMATCH"));
+    }
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-54 · 블렌드 비율 일부만")
+  void 블렌드_비율_일부만() throws Exception {
+    Long r = roaster("일부 로스터");
+    Long id = blendBean(r, "일부 블렌드");
+    update(
+            id,
+            blend(
+                r,
+                "일부 블렌드",
+                "[{\"country\":\"브라질\",\"ratioPercent\":60.0},{\"country\":\"콜롬비아\"}]"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("BEAN_ORIGIN_RATIO_MISMATCH"));
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-43 · 싱글 · 블렌드 산지 수 경계")
+  void 싱글_블렌드_산지_수_경계() throws Exception {
+    Long r = roaster("개수 로스터");
+    Long single = bean(r, "싱글").getId();
+    Long blendId = blendBean(r, "블렌드 하나");
+    String two = "[{\"country\":\"브라질\"},{\"country\":\"콜롬비아\"}]";
+
+    update(single, body(r, "싱글", "").replaceFirst("\"origins\":\\[[^\\]]*\\]", "\"origins\":[]"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("BEAN_MIX_ORIGIN_MISMATCH"));
+    update(
+            single,
+            body(r, "싱글", "").replaceFirst("\"origins\":\\[[^\\]]*\\]", "\"origins\":" + two))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("BEAN_MIX_ORIGIN_MISMATCH"));
+    update(blendId, blend(r, "블렌드 하나", "[{\"country\":\"브라질\"}]"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("BEAN_MIX_ORIGIN_MISMATCH"));
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-51 · 없는 대상은 404이고 일괄은 아무것도 바꾸지 않는다")
+  void 없는_대상은_404다() throws Exception {
+    Long r = roaster("없음 로스터");
+    Long id = bean(r, "있는 원두").getId();
+
+    list(get(BASE + "/999999"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+    update(999999L, body(r, "없는 원두", ""))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+    update(id, body(999999L, "있는 원두", "")).andExpect(status().isNotFound());
+    update(id, body(r, "있는 원두", "").replace("\"varietyId\":" + varietyId, "\"varietyId\":999999"))
+        .andExpect(status().isNotFound());
+    update(id, body(r, "있는 원두", "").replace("\"processId\":" + processId, "\"processId\":999999"))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-52 · 같은 로스터의 같은 이름")
+  void 같은_로스터의_같은_이름() throws Exception {
+    Long r = roaster("이름 로스터");
+    bean(r, "케냐 키리냐가");
+    Long nyeri = bean(r, "케냐 니에리").getId();
+
+    update(nyeri, body(r, "케냐 키리냐가", ""))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("DUPLICATE_NAME"));
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-53 · 다른 크롤러 원두의 구매 링크")
+  void 다른_크롤러_원두의_구매_링크() throws Exception {
+    Long r = roaster("링크 로스터");
+    Long owner = userRepository.save(User.create(null, "링크 주인", null)).getId();
+    Long ten = bean(r, "원두 10").getId();
+    Long eleven = bean(r, "원두 11").getId();
+    Long twelve = bean(r, "원두 12", RoastLevel.LIGHT, false, owner).getId();
+    sql("update bean_products set product_url = 'https://u.example/10' where id = :id", "id", ten);
+    sql(
+        "update bean_products set product_url = 'https://u.example/11' where id = :id",
+        "id",
+        eleven);
+
+    String url = ",\"productUrl\":\"https://u.example/10\"";
+    update(eleven, body(r, "원두 11", url))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("BEAN_PRODUCT_URL_DUPLICATE"));
+    update(twelve, body(r, "원두 12", url)).andExpect(status().isOk());
   }
 }

@@ -174,6 +174,46 @@ public class BeanProduct extends BaseTimeEntity {
     this.promoted = true;
   }
 
+  /**
+   * 관리자 수정 — 내용 필드 전체 교체. 내용이 하나라도 바뀌면 {@code manuallyEdited}를 켠다(이미 켜져 있으면 그대로). {@code verified}
+   * · {@code hidden}은 내용이 아니라 수정 여부와 무관하다. 저장할 산지는 {@code origins}로 교체한다.
+   */
+  public void editByAdmin(
+      Long roasterId,
+      String name,
+      BeanMix beanMix,
+      RoastLevel roastLevel,
+      Short roastLevelAgtron,
+      String roastLevelCustom,
+      boolean decaf,
+      String productUrl,
+      String description,
+      List<BeanOrigin> newOrigins,
+      boolean verified,
+      boolean hidden) {
+    boolean changed =
+        !Objects.equals(this.roasterId, roasterId)
+            || !Objects.equals(this.name, name)
+            || !Objects.equals(this.roastLevelCustom, roastLevelCustom)
+            || this.decaf != decaf
+            || !sameAs(beanMix, roastLevel, roastLevelAgtron, productUrl, description, newOrigins);
+    if (changed) {
+      this.roasterId = roasterId;
+      this.name = name;
+      this.beanMix = beanMix;
+      this.roastLevel = roastLevel;
+      this.roastLevelAgtron = roastLevelAgtron;
+      this.roastLevelCustom = roastLevelCustom;
+      this.decaf = decaf;
+      this.productUrl = productUrl;
+      this.description = description;
+      attachOrigins(newOrigins);
+      this.manuallyEdited = true;
+    }
+    this.verified = verified;
+    this.hidden = hidden;
+  }
+
   public void updateProductUrl(String productUrl) {
     this.productUrl = productUrl;
   }

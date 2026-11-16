@@ -4,3 +4,5 @@
 ALTER TABLE bean_products ADD COLUMN promoted BOOLEAN NOT NULL DEFAULT false;
 CREATE UNIQUE INDEX uq_bean_products_crawler_url ON bean_products (product_url)
     WHERE created_by_user_id IS NULL;
+-- 관리자가 블렌드 비율을 모를 때 비워 둘 수 있다(모두 비우거나 모두 채워 합 100 — AC-ADMINBEAN-12·54). 기존 값은 그대로다.
+ALTER TABLE bean_origins ALTER COLUMN ratio_percent DROP NOT NULL;

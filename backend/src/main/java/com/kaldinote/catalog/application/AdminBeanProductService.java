@@ -1,5 +1,6 @@
 package com.kaldinote.catalog.application;
 
+import com.kaldinote.catalog.domain.BeanMix;
 import com.kaldinote.catalog.domain.BeanOrigin;
 import com.kaldinote.catalog.domain.BeanProduct;
 import com.kaldinote.catalog.domain.CoffeeProcess;
@@ -14,12 +15,15 @@ import com.kaldinote.catalog.presentation.dto.AdminBeanProductPageResponse;
 import com.kaldinote.catalog.presentation.dto.AdminBeanProductPageResponse.Counts;
 import com.kaldinote.catalog.presentation.dto.AdminBeanProductPageResponse.MissingBy;
 import com.kaldinote.catalog.presentation.dto.AdminBeanProductRowResponse;
+import com.kaldinote.catalog.presentation.dto.AdminBeanProductUpdateRequest;
 import com.kaldinote.catalog.presentation.dto.BeanOriginResponse;
+import com.kaldinote.catalog.presentation.dto.OriginRequest;
 import com.kaldinote.common.error.BusinessException;
 import com.kaldinote.common.error.ErrorCode;
 import com.kaldinote.common.response.PageParams;
 import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.UserRepository;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,6 +32,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -54,6 +59,7 @@ public class AdminBeanProductService {
   }
 
   private static final int Q_MAX = 50;
+  private static final BigDecimal HUNDRED = new BigDecimal("100.0");
 
   private final BeanProductRepository beanProductRepository;
   private final RoasterRepository roasterRepository;
@@ -132,6 +138,97 @@ public class AdminBeanProductService {
         origins,
         p.getCreatedAt(),
         beanProductRepository.countSameName(p.getId(), p.getName()));
+  }
+
+  /**
+   * 수정 — 전체 교체. 싱글은 산지 정확히 1행(비율은 100.0으로), 블렌드는 0행 또는 2행 이상이고 비율은 모두 비우거나 모두 채워 합 100.0. 같은 로스터의
+   * 같은 이름 409, 크롤러 원두끼리 같은 구매 링크 409.
+   */
+  @Transactional
+  public AdminBeanProductDetailResponse update(Long id, AdminBeanProductUpdateRequest request) {
+    BeanProduct p =
+        beanProductRepository
+            .findById(id)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "원두를 찾을 수 없습니다: " + id));
+    if (!roasterRepository.existsById(request.roasterId())) {
+      throw new BusinessException(ErrorCode.NOT_FOUND, "로스터를 찾을 수 없습니다: " + request.roasterId());
+    }
+    for (OriginRequest o : request.origins()) {
+      if (o.varietyId() != null && !varietyRepository.existsById(o.varietyId())) {
+        throw new BusinessException(ErrorCode.NOT_FOUND, "품종을 찾을 수 없습니다: " + o.varietyId());
+      }
+      if (o.processId() != null && !processRepository.existsById(o.processId())) {
+        throw new BusinessException(ErrorCode.NOT_FOUND, "가공법을 찾을 수 없습니다: " + o.processId());
+      }
+    }
+    List<BeanOrigin> origins = origins(request.beanMix(), request.origins());
+    beanProductRepository
+        .findByRoasterIdAndName(request.roasterId(), request.name())
+        .filter(other -> !other.getId().equals(id))
+        .ifPresent(
+            other -> {
+              throw new BusinessException(ErrorCode.DUPLICATE_NAME);
+            });
+    if (p.isCrawled() && request.productUrl() != null) {
+      boolean taken =
+          beanProductRepository.findAllByProductUrl(request.productUrl()).stream()
+              .anyMatch(other -> other.isCrawled() && !other.getId().equals(id));
+      if (taken) {
+        throw new BusinessException(ErrorCode.BEAN_PRODUCT_URL_DUPLICATE);
+      }
+    }
+
+    p.editByAdmin(
+        request.roasterId(),
+        request.name(),
+        request.beanMix(),
+        request.roastLevel(),
+        request.roastLevelAgtron(),
+        request.roastLevelCustom(),
+        request.decaf(),
+        request.productUrl(),
+        request.description(),
+        origins,
+        request.verified(),
+        request.hidden());
+    try {
+      beanProductRepository.saveAndFlush(p);
+    } catch (DataIntegrityViolationException e) {
+      // 위 조회와 저장 사이에 다른 저장이 끼면 유일 인덱스가 막는다 — 같은 코드로 돌려준다
+      throw new BusinessException(ErrorCode.BEAN_PRODUCT_URL_DUPLICATE);
+    }
+    return get(id);
+  }
+
+  private static List<BeanOrigin> origins(BeanMix mix, List<OriginRequest> requests) {
+    if (mix == BeanMix.SINGLE_ORIGIN ? requests.size() != 1 : requests.size() == 1) {
+      throw new BusinessException(ErrorCode.BEAN_MIX_ORIGIN_MISMATCH);
+    }
+    long withRatio = requests.stream().filter(o -> o.ratioPercent() != null).count();
+    if (mix == BeanMix.BLEND && withRatio > 0) {
+      BigDecimal sum =
+          requests.stream()
+              .map(OriginRequest::ratioPercent)
+              .filter(Objects::nonNull)
+              .reduce(BigDecimal.ZERO, BigDecimal::add);
+      if (withRatio != requests.size() || sum.compareTo(HUNDRED) != 0) {
+        throw new BusinessException(ErrorCode.BEAN_ORIGIN_RATIO_MISMATCH);
+      }
+    }
+    List<BeanOrigin> out = new ArrayList<>();
+    for (OriginRequest o : requests) {
+      out.add(
+          BeanOrigin.of(
+              o.country(),
+              o.region(),
+              o.farm(),
+              o.altitudeMinM(),
+              o.altitudeMaxM(),
+              o.varietyId(),
+              o.processId(),
+              mix == BeanMix.SINGLE_ORIGIN ? HUNDRED : o.ratioPercent()));
+    }
+    return out;
   }
 
   private record Lookups(

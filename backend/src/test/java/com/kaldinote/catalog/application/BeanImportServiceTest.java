@@ -447,4 +447,73 @@ class BeanImportServiceTest extends AbstractIntegrationTest {
         .isEqualTo("https://momos.co.kr/Product_CoffeeBeans/?idx=2");
     assertThat(saved(NAME).getDescription()).isEqualTo("관리자 값");
   }
+
+  private static CrawledBean at(String name, String url) {
+    return new CrawledBean("해월커피", name, url, "Light", null, List.of(origin(null, null, null)));
+  }
+
+  private BeanProduct savedAt(String name) {
+    Long roasterId = roasterRepository.findByName("해월커피").orElseThrow().getId();
+    return beanProductRepository.findByRoasterIdAndName(roasterId, name).orElseThrow();
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-20 · 관리자가 이름을 고친 원두는 같은 링크로 다시 찾는다")
+  void 관리자가_이름을_고친_원두는_같은_링크로_다시_찾는다() {
+    service.importBean(at("에티오피아 반자 위요 내추", "https://u.example/231"));
+    entityManager.flush();
+    entityManager
+        .createNativeQuery("update bean_products set name = :n where product_url = :u")
+        .setParameter("n", "에티오피아 반자 위요 내추럴")
+        .setParameter("u", "https://u.example/231")
+        .executeUpdate();
+    entityManager.clear();
+    long before = beanProductRepository.count();
+
+    ImportResult result = service.importBean(at("에티오피아 반자 위요 내추", "https://u.example/231"));
+
+    assertThat(result.outcome()).isEqualTo(Outcome.UPDATED);
+    assertThat(savedAt("에티오피아 반자 위요 내추럴").getProductUrl()).isEqualTo("https://u.example/231");
+    assertThat(beanProductRepository.count()).isEqualTo(before);
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-21 · 링크로 못 찾으면 로스터 · 이름으로 찾고 링크를 갱신한다")
+  void 링크로_못_찾으면_로스터_이름으로_찾고_링크를_갱신한다() {
+    service.importBean(at("케냐 키리냐가", "https://u.example/old"));
+    long before = beanProductRepository.count();
+
+    ImportResult result = service.importBean(at("케냐 키리냐가", "https://u.example/new"));
+
+    assertThat(result.outcome()).isEqualTo(Outcome.UPDATED);
+    assertThat(savedAt("케냐 키리냐가").getProductUrl()).isEqualTo("https://u.example/new");
+    assertThat(beanProductRepository.count()).isEqualTo(before);
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-22 · 사용자 원두와 링크가 같으면 건너뛴다")
+  void 사용자_원두와_링크가_같으면_건너뛴다() {
+    Long userId = userRepository.save(User.create(null, "링크", null)).getId();
+    Long roasterId = roasterRepository.save(Roaster.createBySystem("해월커피")).getId();
+    beanProductRepository.save(
+        BeanProduct.createByUser(
+            roasterId,
+            "내 키리냐가",
+            BeanMix.BLEND,
+            RoastLevel.DARK,
+            null,
+            null,
+            false,
+            "https://u.example/77",
+            "내 메모",
+            userId));
+    long before = beanProductRepository.count();
+
+    ImportResult result = service.importBean(at("케냐 키리냐가", "https://u.example/77"));
+
+    assertThat(result.outcome()).isEqualTo(Outcome.SKIPPED);
+    assertThat(result.reason()).isEqualTo("USER_OWNED");
+    assertThat(beanProductRepository.count()).isEqualTo(before);
+    assertThat(savedAt("내 키리냐가").getDescription()).isEqualTo("내 메모");
+  }
 }

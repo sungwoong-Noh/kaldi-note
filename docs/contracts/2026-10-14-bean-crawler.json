@@ -142,7 +142,8 @@
         "properties": {
           "name": { "type": "string" },
           "field": { "type": "string", "enum": ["roastLevel", "variety", "process"] },
-          "raw": { "type": "string" }
+          "raw": { "type": "string" },
+          "beanProductId": { "type": "integer", "format": "int64", "description": "이름이 정확히 같은 원두가 1개일 때만(실행 상세 조회 시점). 0개 · 2개 이상이면 키가 없다 — docs/specs/2026-11-15-admin-beans.md" }
         },
         "required": ["name", "field", "raw"]
       },

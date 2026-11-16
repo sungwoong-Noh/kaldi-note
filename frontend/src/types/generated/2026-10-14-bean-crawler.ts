@@ -46,6 +46,7 @@ export interface UnmappedItem {
   name: string;
   field: "roastLevel" | "variety" | "process";
   raw: string;
+  beanProductId?: number;
 }
 
 export interface PageOfCrawlRun {

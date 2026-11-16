@@ -1,7 +1,7 @@
 ---
 id: ADMINBEAN
 title: 관리자 원두 메뉴 — 빠진 정보 채우기 · 확인 · 숨김 · 카탈로그로 올리기
-status: 승인
+status: 구현중
 milestone:
 supersedes:
 ---
@@ -52,12 +52,13 @@ supersedes:
 
 ## 데이터
 
-**마이그레이션 하나** — `V21`(원두 상세 스펙이 `V20`).
+**마이그레이션 하나** — `V22`(원두 상세 `V20`, 수집 결과 보기 `V21`).
 
 | 테이블 | 컬럼 / 인덱스 | 타입 | Null | 설명 |
 |---|---|---|---|---|
 | `bean_products` | `promoted` | `BOOLEAN NOT NULL DEFAULT false` | N | **신규.** 카탈로그로 올린 사용자 원두 |
 | `bean_products` | `uq_bean_products_crawler_url` | `UNIQUE (product_url) WHERE created_by_user_id IS NULL` | — | **신규.** 부분 유일 인덱스. 크롤러 원두끼리만 구매 링크가 겹치지 않는다 |
+| `bean_origins` | `ratio_percent` | `NUMERIC(4,1)` | **Y** | **변경(NOT NULL 해제).** 블렌드 비율을 모를 때 비워 둔다(AC-ADMINBEAN-12②). 구현 중 발견 — 기존 값은 그대로 |
 
 운영 데이터(2026-11-15, #227·#228 모모스 수집 보강 **이전**): 원두 123개, `product_url` 있는 118개 전부 서로 다름, 사용자 원두 5개.
 그 뒤 수집이 늘었으므로 **구현 전에 다시 조회한다**(Task 1). 크롤러 원두끼리 겹치는 URL이 하나라도 있으면 마이그레이션이 운영에서 실패한다.
@@ -333,7 +334,7 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
 
 - **Given** 크롤러 원두 `(해월커피, 에티오피아 반자 위요 내추)`, `product_url=https://u.example/231`. 관리자가 이름을 `에티오피아 반자 위요 내추럴`로 고침
 - **When** 크롤러가 이름 `에티오피아 반자 위요 내추`, URL `https://u.example/231`로 import
-- **Then** 결과 `UPDATED`, 이름은 `에티오피아 반자 위요 내추럴` 그대로, `bean_products` 행 수 변화 없음
+- **Then** 결과 `UNCHANGED`(크롤러는 이름을 바꾸지 않아 바뀐 값이 없다 — #236 수집 결과 보기의 「값이 그대로면 UNCHANGED」), 이름은 `에티오피아 반자 위요 내추럴` 그대로, `bean_products` 행 수 변화 없음
 - **검증** `BeanImportServiceTest`
 
 #### AC-ADMINBEAN-21 · 링크로 못 찾으면 로스터 · 이름으로 찾고 링크를 갱신한다
@@ -511,7 +512,7 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
 
 각 태스크는 TDD 사이클 하나(실패 테스트 → 실패 확인 → 최소 구현 → 통과 확인 → 커밋). **선행: 원두 상세 스펙의 마이그레이션·크롤러 규칙 — 충족(#230).**
 
-- [ ] **Task 1: 마이그레이션** — Covers: AC-ADMINBEAN-61
+- [x] **Task 1: 마이그레이션** — Covers: AC-ADMINBEAN-61
 
   **먼저 운영 DB에서 겹치는 구매 링크가 없는지 조회한다** — 결과가 0행이 아니면 멈추고 사람에게 알린다.
 
@@ -529,31 +530,31 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
 
   `BeanProduct`에 `promoted` 필드와 `promote()`.
 
-- [ ] **Task 2: 크롤러 매칭** — Covers: AC-ADMINBEAN-20, 21, 22
+- [x] **Task 2: 크롤러 매칭** — Covers: AC-ADMINBEAN-20, 21, 22
 
   `BeanProductRepository.findByProductUrl(String)` 추가. `importBean`의 `existing`을
   `findByProductUrl(url).or(() -> findByRoasterIdAndName(...))`로 바꾸고, ② 경로로 찾은 크롤러 원두는 `product_url` 갱신.
   `updateFromCrawl`은 이름을 받지 않는다(지금도 그렇다 — 확인만).
 
-- [ ] **Task 3: 목록 · 상세 API** — Covers: AC-ADMINBEAN-01~08, 40, 50(목록·상세), 60
+- [x] **Task 3: 목록 · 상세 API** — Covers: AC-ADMINBEAN-01~08, 40, 50(목록·상세), 60
 
   `catalog.presentation.AdminBeanProductController`, `catalog.application.AdminBeanProductService`.
   목록은 원두 id 페이지를 먼저 뽑고, 그 id들로 산지(품종·가공 포함)·기록 수·로스터·닉네임을 각각 **한 번씩** 묶어 조회한다
   (`brewCount`: `brew_logs`를 `bean_product_id`와 `bean_batches.bean_product_id`로 묶은 `GROUP BY`). `missing`은 조회한 산지로 계산.
   `counts`는 같은 WHERE(status·missing 제외)로 집계 쿼리 1개.
 
-- [ ] **Task 4: 수정 API** — Covers: AC-ADMINBEAN-10, 11, 12, 41, 43, 51(수정), 52, 53, 54
+- [x] **Task 4: 수정 API** — Covers: AC-ADMINBEAN-10, 11, 12, 41, 43, 51(수정), 52, 53, 54
 
   `AdminBeanProductUpdateRequest`(생성 DTO 제약 + `roastLevel` nullable + `verified`·`hidden`). 산지 규칙은
   `BeanCatalogService.buildOrigins`와 다르므로(블렌드 0행·비율 null 허용) 관리자 전용 검증을 둔다. 내용 필드 비교로
   `manually_edited`. `ErrorCode.BEAN_PRODUCT_URL_DUPLICATE`(409) 추가 — 저장 전 조회 + unique 위반 예외도 같은 코드로 변환.
 
-- [ ] **Task 5: 일괄 · 올리기 + 검색 규칙** — Covers: AC-ADMINBEAN-13, 14, 15, 42, 51(일괄·올리기), 55, 50(나머지)
+- [x] **Task 5: 일괄 · 올리기 + 검색 규칙** — Covers: AC-ADMINBEAN-13, 14, 15, 42, 51(일괄·올리기), 55, 50(나머지)
 
   bulk는 `findAllById` 결과 수가 고유 id 수와 다르면 404. 검색(`BeanProductRepository.search` 네이티브 쿼리)의
   `(bp.created_by_user_id is null or bp.created_by_user_id = :userId)`에 `or bp.promoted`를 더한다 — 본 쿼리와 `countQuery` 둘 다.
 
-- [ ] **Task 6: 실행 상세 연결** — Covers: AC-ADMINBEAN-23
+- [x] **Task 6: 실행 상세 연결** — Covers: AC-ADMINBEAN-23
 
   `CrawlRunService.run(id)`에서 unmapped 이름 목록으로 `SELECT name, min(id), count(*) … WHERE name IN (…) GROUP BY name` 1회,
   count=1인 것만 `beanProductId`. `CrawlRunResponse.Unmapped`에 필드 추가. 계약 파일

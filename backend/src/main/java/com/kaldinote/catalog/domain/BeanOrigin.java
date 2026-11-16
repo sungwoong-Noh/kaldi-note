@@ -50,7 +50,7 @@ public class BeanOrigin {
   @Column(name = "process_id")
   private Long processId;
 
-  @Column(name = "ratio_percent", nullable = false, precision = 4, scale = 1)
+  @Column(name = "ratio_percent", precision = 4, scale = 1)
   private BigDecimal ratioPercent;
 
   private BeanOrigin(

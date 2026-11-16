@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -92,10 +93,13 @@ public class CrawlRunService {
   }
 
   public CrawlRunResponse run(Long id) {
-    return runRepository
-        .findById(id)
-        .map(CrawlRunResponse::from)
-        .orElseThrow(() -> new BusinessException(ErrorCode.CRAWL_RUN_NOT_FOUND));
+    CrawlRun run =
+        runRepository
+            .findById(id)
+            .orElseThrow(() -> new BusinessException(ErrorCode.CRAWL_RUN_NOT_FOUND));
+    Set<String> names =
+        run.getUnmapped().stream().map(UnmappedItem::name).collect(Collectors.toSet());
+    return CrawlRunResponse.from(run, importService.uniqueIdsByName(names));
   }
 
   public CrawlRunResponse start(String key, Long userId) {

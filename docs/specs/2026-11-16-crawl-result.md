@@ -1,7 +1,7 @@
 ---
 id: CRAWLRESULT
 title: 수집 결과 보기 — 실행마다 생성 · 갱신된 원두 목록
-status: 초안
+status: 승인
 milestone:
 supersedes:
 ---

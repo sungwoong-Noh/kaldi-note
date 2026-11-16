@@ -41,7 +41,7 @@ supersedes:
 
 ## 데이터
 
-마이그레이션 `V21__crawl_runs_imported.sql` — **다음 빈 번호**를 쓴다(PR #220이 먼저 머지되어 V21을 쓰면 V22).
+마이그레이션 `V22__crawl_runs_imported.sql` — V21은 PR #220(관리자 원두, `promoted` + 크롤러 `product_url` 부분 유일 인덱스)이 쓴다.
 
 | 테이블 | 컬럼 | 타입 | Null | 설명 |
 |---|---|---|---|---|
@@ -192,9 +192,9 @@ supersedes:
 #### AC-CRAWLRESULT-30 · 마이그레이션이 기존 행을 기본값으로 채운다
 
 - **Given** 마이그레이션 전 `crawl_runs` 행 1개(SUCCEEDED, created 21)
-- **When** V21을 적용한다
+- **When** V22를 적용한다
 - **Then** 그 행의 `imported='[]'::jsonb`, `unchanged_count=0`이고 다른 칼럼 값은 그대로다
-- **검증** 통합 테스트 `CrawlRunMigrationTest`(Flyway `target` V20 → V21)
+- **검증** 통합 테스트 `CrawlRunMigrationTest`(Flyway `target` V21 → V22)
 
 ---
 

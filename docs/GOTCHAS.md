@@ -23,10 +23,8 @@
 - **스펙 frontmatter `supersedes:`는 스펙 경로 하나만 받는다.** AC 단위 대체 목록을 넣으면
   `check-docs.sh`가 경로로 읽어 CI에서 실패한다(로컬 `check-spec-coverage.sh`는 못 잡는다).
   일부 AC 대체는 본문 「대체하는 이전 AC」 섹션에 쓰고, 푸시 전 `./scripts/check-docs.sh`도 돌린다.
-
 - **스펙의 AC를 전부 대체하면 그 스펙은 `status: 대체됨`으로 바꾼다.** 「구현완료」인데 `#### AC-` 헤딩이
   0개면 `check-spec-coverage.sh`가 실패한다(2026-10-10 spacing-system). 마지막 줄만 보지 말고 종료 코드를 본다.
-
 - **CI 워크플로는 경로 필터가 있어 PR마다 다 돌지 않는다.** 프론트만 바뀌면 `backend.yml` run이 아예
   생기지 않는다 — `gh run list`로 「run이 생길 때까지」 기다리는 루프는 영원히 돈다(실제로 6시간 돌았다).
   기다릴 때는 `gh pr checks --watch`처럼 **PR에 실제로 붙은 체크**만 본다.
@@ -82,6 +80,7 @@
 
 ## 셸 스크립트
 
+- **`check-spec-coverage.sh`는 `frontend/src` 소스 주석의 AC ID도 「구현됨」으로 센다** — 주석엔 AC ID를 쓰지 않는다.
 - **`$VAR가`처럼 변수 뒤에 한글 조사가 바로 붙으면 일부 bash가 "unbound variable"을 낸다.**
   로케일에 따라 UTF-8 바이트를 변수명의 일부로 읽는다. 이 저장소 스크립트는 출력 문구가 전부
   한국어라 반복될 수 있는 함정이다 — `$VAR가`가 아니라 `${VAR}가`로 중괄호를 씌운다.

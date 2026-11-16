@@ -40,6 +40,20 @@ if [ ! -d "$SPEC_DIR" ]; then
   exit 0
 fi
 
+# 같은 AC 헤딩을 두 스펙이 소유하면 실패한다(상태와 무관). 검사는 ID 문자열이 테스트에 있는지만 보므로,
+# 겹치면 새 스펙의 AC가 옛 스펙의 테스트로 「구현됨」이 된다 — 원두 재고와 원두 상세가 둘 다 AC-BEAN을 가졌다(#229).
+# 「파일:#### ID」를 중복 제거(한 스펙 안의 반복은 세지 않는다)한 뒤 ID만 남겨, 두 파일 이상에 있는 ID를 찾는다.
+dup_ids=$(grep -oE "^#### $AC_PATTERN" "$SPEC_DIR"/*.md 2>/dev/null | sort -u \
+  | sed 's/^.*:#### //' | sort | uniq -d || true)
+if [ -n "$dup_ids" ]; then
+  for id in $dup_ids; do
+    echo "✗ $id 헤딩이 여러 스펙에 있습니다:"
+    grep -lE "^#### ${id}( |$)" "$SPEC_DIR"/*.md | sed 's/^/    /'
+  done
+  echo "    스펙 id(frontmatter)를 다른 접두어로 바꿔 AC ID가 겹치지 않게 하세요."
+  failed=1
+fi
+
 for spec in "$SPEC_DIR"/*.md; do
   [ -e "$spec" ] || continue
   case "$(basename "$spec")" in

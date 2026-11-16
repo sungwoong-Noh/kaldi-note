@@ -89,6 +89,29 @@ check "AC-RELAY-31 · 커버리지 검사가 Worker 테스트를 본다" "0" "$?
 spec_wf=$(grep -c 'node --test infra/fetch-relay/index.test.js' "$HERE/../.github/workflows/spec.yml" || true)
 check "AC-RELAY-32 · CI가 Worker 테스트를 돌린다" "1" "$spec_wf"
 
+# ── 같은 AC 헤딩을 두 스펙이 소유하면 실패한다 (#229) ─────────────────────
+#
+# 원두 재고(2026-08-16)와 원두 상세(2026-11-15 초안)가 둘 다 `#### AC-BEAN-01`을 가졌다.
+# 검사는 ID 문자열이 테스트에 있는지만 보므로, 새 스펙의 AC 44개가 옛 테스트로 「구현됨」이 됐다.
+# 초안이어도 잡는다 — 승인 전에 고쳐야 싸다. ID는 이어 붙여 만든다(이 파일 자체가 매칭되지 않게).
+mkdir -p "$TMP/dup"
+DUP_ID="AC-DUP""-01"
+for name in 2099-01-01-old 2099-01-02-new; do
+  cat > "$TMP/dup/$name.md" <<SPEC
+---
+id: DUP
+title: 중복 픽스처
+status: 초안
+---
+#### $DUP_ID · 하나
+SPEC
+done
+dup_out=$(SPEC_DIR="$TMP/dup" "$SCRIPT" 2>&1)
+dup_status=$?
+check "#229 · 같은 AC 헤딩을 두 스펙이 가지면 실패한다" "1" "$dup_status"
+dup_named=$(echo "$dup_out" | grep -c "$DUP_ID" || true)
+check "#229 · 실패 메시지에 겹친 AC ID가 나온다" "1" "$([ "$dup_named" -ge 1 ] && echo 1 || echo 0)"
+
 echo
 if [ "$failed" -eq 0 ]; then
   echo "전부 통과"

@@ -16,7 +16,7 @@ import {
   useNumberText,
 } from "@/components/kit";
 import { SELECT_EXTRA } from "@/components/ui/Field";
-import { useBeanProductsByIds, useBeanSearch } from "@/features/catalog/api";
+import { useBeanProductsByIds } from "@/features/catalog/api";
 import { useUserGrinders } from "@/features/gear/queries";
 import { useMe } from "@/features/user/queries";
 import type { BrewLogCreateRequest } from "@/types/generated/2026-11-14-quick-brew";
@@ -24,6 +24,8 @@ import type { QuickBrewPrefill } from "@/lib/quickBrew";
 import { createBrewLog, fetchBrewLogPage } from "../api";
 import { MIN_SEC_MESSAGE, parseMinSec, previewYield } from "../formState";
 import type { BrewLog, BrewLogSummary } from "../schema";
+import { type BeanChoice, BeanPickSheet } from "./BeanPickSheet";
+import { Heading, PrimaryButton, SecondaryButton } from "./quickBrewParts";
 import { RecipeLinkSheet } from "./RecipeLinkSheet";
 
 /**
@@ -196,8 +198,6 @@ function ratioText(doseG: number | null, waterG: number | null): string {
 }
 
 /** 최근 고른 원두 — 내 기록에서 카탈로그 상품·직접 입력 이름을 중복 없이, 최근 순(AC-QUICKBREW-26). */
-type BeanChoice =
-  { kind: "product"; id: number } | { kind: "name"; name: string };
 function recentBeans(logs: BrewLogSummary[]): BeanChoice[] {
   const seen = new Set<string>();
   const out: BeanChoice[] = [];
@@ -624,8 +624,12 @@ function Sheet({
           />
         )}
         {step === "bean" && (
-          <BeanStep
-            recent={recent}
+          <BeanPickSheet
+            recent={recent.filter(
+              (c) =>
+                c.kind !== "product" ||
+                products.find((p) => p.id === c.id)?.hidden !== true,
+            )}
             productName={productName}
             onPick={(choice) => {
               patch(
@@ -726,53 +730,6 @@ function useDelayedFlag(on: boolean, ms: number): boolean {
     };
   }, [on, ms]);
   return on && late;
-}
-
-function Heading({ children }: { children: string }) {
-  return (
-    <h2 className="kn-step-forward text-[21px] font-semibold tracking-[-0.02em] text-ink">
-      {children}
-    </h2>
-  );
-}
-
-function PrimaryButton({
-  children,
-  onClick,
-  disabled = false,
-}: {
-  children: string;
-  onClick: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      aria-disabled={disabled}
-      onClick={onClick}
-      className="kn-press block w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-medium text-on-ink aria-disabled:opacity-60"
-    >
-      {children}
-    </button>
-  );
-}
-
-function SecondaryButton({
-  children,
-  onClick,
-}: {
-  children: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="kn-press block w-full rounded-[8px] border border-border p-[15px] text-center text-[15px] text-ink"
-    >
-      {children}
-    </button>
-  );
 }
 
 function ConfirmStep({
@@ -908,85 +865,6 @@ function AmountStep({
       <PrimaryButton disabled={!ready} onClick={next}>
         다음
       </PrimaryButton>
-    </>
-  );
-}
-
-function BeanStep({
-  recent,
-  productName,
-  onPick,
-}: {
-  recent: BeanChoice[];
-  productName: (id: number) => string;
-  onPick: (choice: BeanChoice) => void;
-}) {
-  const [query, setQuery] = useState("");
-  const q = query.trim();
-  // 이름 · 로스터 이름으로 서버가 찾는다(숨긴 원두 · 남의 사용자 원두는 서버가 뺀다).
-  // ponytail: 글자마다 요청한다. 느려지면 디바운스를 붙인다.
-  const search = useBeanSearch({ q }, undefined, q !== "");
-  const matches = q ? (search.data?.content ?? []) : [];
-  const row =
-    "kn-press hit-44 block w-full py-[12px] text-left text-[15px] text-ink";
-
-  return (
-    <>
-      <Heading>어떤 원두인가요?</Heading>
-      <input
-        aria-label="원두 검색"
-        placeholder="원두 이름이나 로스터로 찾기"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="rounded-[8px] border border-border bg-paper px-[14px] py-[12px] text-[15px] text-ink"
-      />
-      {!q && (
-        <ul aria-label="최근 고른 원두" className="divide-y divide-border">
-          {recent.map((choice) => (
-            <li
-              key={
-                choice.kind === "product" ? `p${choice.id}` : `n${choice.name}`
-              }
-            >
-              <button
-                type="button"
-                className={row}
-                onClick={() => onPick(choice)}
-              >
-                {choice.kind === "product"
-                  ? productName(choice.id)
-                  : choice.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {q && matches.length > 0 && (
-        <ul aria-label="카탈로그" className="divide-y divide-border">
-          {matches.map((p) => (
-            <li key={p.id}>
-              <button
-                type="button"
-                className={row}
-                onClick={() => onPick({ kind: "product", id: p.id })}
-              >
-                {p.name}
-                <span className="block text-[12px] text-ink-3">
-                  {p.roasterName}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      {q && search.isSuccess && matches.length === 0 && (
-        <p className="text-[14px] text-ink-2">「{q}」를 찾지 못했어요</p>
-      )}
-      {q && (
-        <SecondaryButton onClick={() => onPick({ kind: "name", name: q })}>
-          {`「${q}」로 기록`}
-        </SecondaryButton>
-      )}
     </>
   );
 }

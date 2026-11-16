@@ -210,8 +210,9 @@ describe("원두 고르기", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: "원두 고르기" }));
     await userEvent.type(screen.getByLabelText("원두 검색"), "하늘 블렌드");
+    // 검색은 250ms 디바운스 뒤 서버가 답한다(AC-BEANDETAIL-44)
     expect(
-      screen.getByText("「하늘 블렌드」를 찾지 못했어요"),
+      await screen.findByText("「하늘 블렌드」를 찾지 못했어요"),
     ).toBeInTheDocument();
     await userEvent.click(
       screen.getByRole("button", { name: "「하늘 블렌드」로 기록" }),

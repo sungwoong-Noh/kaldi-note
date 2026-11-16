@@ -4,6 +4,7 @@ import { authedRequest } from "@/lib/authed-fetch";
 import {
   beanProductPageSchema,
   beanProductSchema,
+  beanSummarySchema,
   roasterListSchema,
   roasterSchema,
   type BeanProduct,
@@ -70,6 +71,34 @@ export function useBeanProductsByIds(
     })),
   });
   return queries.flatMap((q) => (q.data ? [q.data] : []));
+}
+
+/** 이 원두로 내린 내 기록 요약. 카탈로그 원두는 `beanProductId`, 직접 적은 원두는 `beanName`. */
+export function useBeanSummary(
+  by: { beanProductId: number } | { beanName: string },
+  onSessionLost?: () => void,
+) {
+  const query = new URLSearchParams(
+    "beanProductId" in by
+      ? { beanProductId: String(by.beanProductId) }
+      : { beanName: by.beanName },
+  );
+  return useQuery({
+    queryKey: ["catalog", "bean-summary", by],
+    queryFn: () =>
+      authedRequest(backendUrl(`/api/v1/brew-logs/bean-summary?${query}`), {
+        schema: beanSummarySchema,
+        onSessionLost,
+      }),
+  });
+}
+
+/** 단건 조회를 훅으로. 화면 하나가 원두 하나를 다룰 때. */
+export function useBeanProduct(id: number, onSessionLost?: () => void) {
+  return useQuery({
+    queryKey: ["catalog", "bean-product", id],
+    queryFn: () => fetchBeanProduct(id, onSessionLost),
+  });
 }
 
 /** 제품 한 건. 원두 이름을 만들려면 배치의 `beanProductId`로 이것을 읽어야 한다. */

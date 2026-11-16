@@ -584,7 +584,7 @@ supersedes:
   `useBeanProducts`를 지운다.
   테스트 픽스처는 로컬 실제 응답에서 뜬다.
 
-- [ ] **Task 6: 원두 고르기 행 보강 · 정보 시트** — Covers: AC-BEANDETAIL-20, 21, 31, 34, 44
+- [x] **Task 6: 원두 고르기 행 보강 · 정보 시트** — Covers: AC-BEANDETAIL-20, 21, 31, 34, 44
   결과 행(U2) · 쌓이는 시트(U1b) · 최근 원두에서 숨김 제외.
 
 - [ ] **Task 7: 원두 상세 화면** — Covers: AC-BEANDETAIL-22, 23, 24, 25, 26, 27, 28, 29, 55, 56

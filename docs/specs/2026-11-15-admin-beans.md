@@ -549,7 +549,7 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
   `BeanCatalogService.buildOrigins`와 다르므로(블렌드 0행·비율 null 허용) 관리자 전용 검증을 둔다. 내용 필드 비교로
   `manually_edited`. `ErrorCode.BEAN_PRODUCT_URL_DUPLICATE`(409) 추가 — 저장 전 조회 + unique 위반 예외도 같은 코드로 변환.
 
-- [ ] **Task 5: 일괄 · 올리기 + 검색 규칙** — Covers: AC-ADMINBEAN-13, 14, 15, 42, 51(일괄·올리기), 55, 50(나머지)
+- [x] **Task 5: 일괄 · 올리기 + 검색 규칙** — Covers: AC-ADMINBEAN-13, 14, 15, 42, 51(일괄·올리기), 55, 50(나머지)
 
   bulk는 `findAllById` 결과 수가 고유 id 수와 다르면 404. 검색(`BeanProductRepository.search` 네이티브 쿼리)의
   `(bp.created_by_user_id is null or bp.created_by_user_id = :userId)`에 `or bp.promoted`를 더한다 — 본 쿼리와 `countQuery` 둘 다.

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -380,10 +381,29 @@ class AdminBeanProductControllerTest extends AbstractIntegrationTest {
   void 관리자가_아니면_막는다() throws Exception {
     User user = userRepository.save(User.create(null, "사용자", null));
     String userToken = "Bearer " + tokenProvider.createAccessToken(user.getId(), user.getRole());
-    for (String path : List.of(BASE, BASE + "/1")) {
-      mockMvc.perform(get(path)).andExpect(status().isUnauthorized());
+    List<MockHttpServletRequestBuilder> paths =
+        List.of(
+            get(BASE),
+            get(BASE + "/1"),
+            put(BASE + "/1").contentType(MediaType.APPLICATION_JSON).content("{}"),
+            post(BASE + "/bulk")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"ids\":[1],\"action\":\"HIDE\"}"),
+            post(BASE + "/1/promote"));
+    for (MockHttpServletRequestBuilder path : paths) {
+      mockMvc.perform(path).andExpect(status().isUnauthorized());
+    }
+    for (MockHttpServletRequestBuilder path :
+        List.of(
+            get(BASE),
+            get(BASE + "/1"),
+            put(BASE + "/1").contentType(MediaType.APPLICATION_JSON).content("{}"),
+            post(BASE + "/bulk")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"ids\":[1],\"action\":\"HIDE\"}"),
+            post(BASE + "/1/promote"))) {
       mockMvc
-          .perform(get(path).header(HttpHeaders.AUTHORIZATION, userToken))
+          .perform(path.header(HttpHeaders.AUTHORIZATION, userToken))
           .andExpect(status().isForbidden());
     }
   }
@@ -580,5 +600,138 @@ class AdminBeanProductControllerTest extends AbstractIntegrationTest {
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code").value("BEAN_PRODUCT_URL_DUPLICATE"));
     update(twelve, body(r, "원두 12", url)).andExpect(status().isOk());
+  }
+
+  // ── 일괄 · 올리기 (Task 5) ────────────────────────────────────────────────
+
+  private ResultActions bulk(String json) throws Exception {
+    entityManager.flush();
+    entityManager.clear();
+    return mockMvc.perform(
+        post(BASE + "/bulk")
+            .header(HttpHeaders.AUTHORIZATION, admin)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(json));
+  }
+
+  private ResultActions promote(Long id) throws Exception {
+    entityManager.flush();
+    entityManager.clear();
+    return mockMvc.perform(
+        post(BASE + "/" + id + "/promote").header(HttpHeaders.AUTHORIZATION, admin));
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-13 · 일괄 확인 · 숨김 · 숨김 해제")
+  void 일괄_확인_숨김_숨김_해제() throws Exception {
+    Long r = roaster("일괄 로스터");
+    Long one = bean(r, "일괄 1").getId();
+    Long two = bean(r, "일괄 2").getId();
+    Long three = bean(r, "일괄 3").getId();
+
+    bulk("{\"ids\":[%d,%d,%d],\"action\":\"VERIFY\"}".formatted(one, two, three))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.updated").value(3));
+    bulk("{\"ids\":[%d,%d],\"action\":\"HIDE\"}".formatted(one, two))
+        .andExpect(jsonPath("$.updated").value(2));
+    bulk("{\"ids\":[%d],\"action\":\"UNHIDE\"}".formatted(two))
+        .andExpect(jsonPath("$.updated").value(1));
+
+    entityManager.flush();
+    entityManager.clear();
+    BeanProduct p1 = beanProductRepository.findById(one).orElseThrow();
+    org.assertj.core.api.Assertions.assertThat(p1.isHidden()).isTrue();
+    org.assertj.core.api.Assertions.assertThat(p1.isVerified()).isTrue();
+    org.assertj.core.api.Assertions.assertThat(
+            beanProductRepository.findAllById(List.of(one, two, three)))
+        .allSatisfy(p -> org.assertj.core.api.Assertions.assertThat(p.isManuallyEdited()).isFalse())
+        .filteredOn(p -> !p.getId().equals(one))
+        .allSatisfy(p -> org.assertj.core.api.Assertions.assertThat(p.isHidden()).isFalse());
+  }
+
+  @ParameterizedTest
+  @CsvSource({"0,400", "1,200", "100,200", "101,400"})
+  @DisplayName("AC-ADMINBEAN-42 · 일괄 ids 개수 경계")
+  void 일괄_ids_개수_경계(int count, int expected) throws Exception {
+    Long r = roaster("개수 경계 로스터");
+    List<Long> ids = new ArrayList<>();
+    for (int i = 0; i < Math.min(count, 100); i++) {
+      ids.add(bean(r, "경계 " + i).getId());
+    }
+    if (count == 101) {
+      ids.add(ids.get(0) + 100000); // 개수 검사가 먼저다 — 없는 id여도 400
+    }
+    String json =
+        "{\"ids\":%s,\"action\":\"VERIFY\"}"
+            .formatted(ids.stream().map(String::valueOf).toList().toString().replace(" ", ""));
+    ResultActions result = bulk(json).andExpect(status().is(expected));
+    if (expected == 400) {
+      result.andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
+  }
+
+  @Test
+  void 일괄에_없는_id가_있으면_404이고_아무것도_바꾸지_않는다() throws Exception {
+    // AC-ADMINBEAN-51 ③ — 같은 AC의 일괄 경로
+    Long one = bean(roaster("일괄 404 로스터"), "일괄 404").getId();
+
+    bulk("{\"ids\":[%d,999999],\"action\":\"HIDE\"}".formatted(one))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+    entityManager.flush();
+    entityManager.clear();
+    org.assertj.core.api.Assertions.assertThat(
+            beanProductRepository.findById(one).orElseThrow().isHidden())
+        .isFalse();
+    promote(999999L).andExpect(status().isNotFound());
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-14 · 올린 원두는 다른 사용자 검색에도 나온다")
+  void 올린_원두는_다른_사용자_검색에도_나온다() throws Exception {
+    Long u1 = userRepository.save(User.create(null, "하나", null)).getId();
+    User u2 = userRepository.save(User.create(null, "둘", null));
+    String u2Token = "Bearer " + tokenProvider.createAccessToken(u2.getId(), u2.getRole());
+    Long id = bean(roaster("올림 로스터"), "하늘 블렌드 A", RoastLevel.LIGHT, false, u1).getId();
+
+    entityManager.flush();
+    mockMvc
+        .perform(
+            get("/api/v1/bean-products")
+                .param("q", "하늘")
+                .header(HttpHeaders.AUTHORIZATION, u2Token))
+        .andExpect(jsonPath("$.content[*].name", empty()));
+
+    promote(id)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.promoted").value(true))
+        .andExpect(jsonPath("$.source").value("USER"));
+
+    mockMvc
+        .perform(
+            get("/api/v1/bean-products")
+                .param("q", "하늘")
+                .header(HttpHeaders.AUTHORIZATION, u2Token))
+        .andExpect(jsonPath("$.content[*].name", contains("하늘 블렌드 A")));
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-15 · 올리기는 멱등이다")
+  void 올리기는_멱등이다() throws Exception {
+    Long owner = userRepository.save(User.create(null, "멱등", null)).getId();
+    Long id = bean(roaster("멱등 로스터"), "멱등 원두", RoastLevel.LIGHT, false, owner).getId();
+
+    promote(id).andExpect(status().isOk());
+    promote(id).andExpect(status().isOk()).andExpect(jsonPath("$.promoted").value(true));
+  }
+
+  @Test
+  @DisplayName("AC-ADMINBEAN-55 · 크롤러 원두는 올릴 수 없다")
+  void 크롤러_원두는_올릴_수_없다() throws Exception {
+    Long id = bean(roaster("크롤러 올림 로스터"), "크롤러 원두").getId();
+
+    promote(id)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
   }
 }

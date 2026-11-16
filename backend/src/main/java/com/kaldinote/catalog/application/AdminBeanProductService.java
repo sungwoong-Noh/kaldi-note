@@ -10,6 +10,7 @@ import com.kaldinote.catalog.infrastructure.BeanProductRepository;
 import com.kaldinote.catalog.infrastructure.CoffeeProcessRepository;
 import com.kaldinote.catalog.infrastructure.RoasterRepository;
 import com.kaldinote.catalog.infrastructure.VarietyRepository;
+import com.kaldinote.catalog.presentation.dto.AdminBeanBulkRequest;
 import com.kaldinote.catalog.presentation.dto.AdminBeanProductDetailResponse;
 import com.kaldinote.catalog.presentation.dto.AdminBeanProductPageResponse;
 import com.kaldinote.catalog.presentation.dto.AdminBeanProductPageResponse.Counts;
@@ -197,6 +198,38 @@ public class AdminBeanProductService {
       // 위 조회와 저장 사이에 다른 저장이 끼면 유일 인덱스가 막는다 — 같은 코드로 돌려준다
       throw new BusinessException(ErrorCode.BEAN_PRODUCT_URL_DUPLICATE);
     }
+    return get(id);
+  }
+
+  /** 일괄 — 한 트랜잭션. 없는 id가 하나라도 있으면 404이고 아무것도 바꾸지 않는다. 이미 그 상태인 행도 센다. */
+  @Transactional
+  public int bulk(AdminBeanBulkRequest request) {
+    List<Long> ids = request.ids().stream().distinct().toList();
+    List<BeanProduct> products = beanProductRepository.findAllById(ids);
+    if (products.size() != ids.size()) {
+      throw new BusinessException(ErrorCode.NOT_FOUND, "없는 원두가 있습니다.");
+    }
+    for (BeanProduct p : products) {
+      switch (request.action()) {
+        case VERIFY -> p.verify();
+        case HIDE -> p.hide();
+        case UNHIDE -> p.unhide();
+      }
+    }
+    return products.size();
+  }
+
+  /** 사용자 원두를 카탈로그로 올린다(만든 사람은 그대로). 크롤러 원두는 400. 이미 올렸어도 200. */
+  @Transactional
+  public AdminBeanProductDetailResponse promote(Long id) {
+    BeanProduct p =
+        beanProductRepository
+            .findById(id)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "원두를 찾을 수 없습니다: " + id));
+    if (p.isCrawled()) {
+      throw new BusinessException(ErrorCode.INVALID_REQUEST, "크롤러 원두는 이미 카탈로그에 있습니다.");
+    }
+    p.promote();
     return get(id);
   }
 

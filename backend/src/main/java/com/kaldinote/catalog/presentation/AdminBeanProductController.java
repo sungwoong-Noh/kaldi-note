@@ -3,6 +3,7 @@ package com.kaldinote.catalog.presentation;
 import com.kaldinote.catalog.application.AdminBeanProductService;
 import com.kaldinote.catalog.application.AdminBeanProductService.Source;
 import com.kaldinote.catalog.application.AdminBeanProductService.Status;
+import com.kaldinote.catalog.presentation.dto.AdminBeanBulkRequest;
 import com.kaldinote.catalog.presentation.dto.AdminBeanProductDetailResponse;
 import com.kaldinote.catalog.presentation.dto.AdminBeanProductPageResponse;
 import com.kaldinote.catalog.presentation.dto.AdminBeanProductUpdateRequest;
@@ -11,9 +12,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,6 +57,18 @@ public class AdminBeanProductController {
   public AdminBeanProductDetailResponse update(
       @PathVariable Long id, @Valid @RequestBody AdminBeanProductUpdateRequest request) {
     return service.update(id, request);
+  }
+
+  @PostMapping("/bulk")
+  @Operation(summary = "일괄 확인 · 숨김 · 숨김 해제", description = "없는 id가 하나라도 있으면 404이고 아무것도 바뀌지 않는다.")
+  public Map<String, Integer> bulk(@Valid @RequestBody AdminBeanBulkRequest request) {
+    return Map.of("updated", service.bulk(request));
+  }
+
+  @PostMapping("/{id}/promote")
+  @Operation(summary = "사용자 원두를 카탈로그로 올리기", description = "만든 사람은 그대로. 크롤러 원두는 400, 이미 올렸어도 200.")
+  public AdminBeanProductDetailResponse promote(@PathVariable Long id) {
+    return service.promote(id);
   }
 
   @GetMapping("/{id}")

@@ -16,7 +16,8 @@ public interface BeanProductRepository extends JpaRepository<BeanProduct, Long> 
   List<BeanProduct> findAllByProductUrl(String productUrl);
 
   /**
-   * 원두 검색(docs/specs/2026-11-15-bean-detail.md 「검색」). 숨긴 원두와 남이 만든 사용자 원두는 항상 빠진다. 이름은 로스터 테이블에 있어
+   * 원두 검색(docs/specs/2026-11-15-bean-detail.md 「검색」). 숨긴 원두와 남이 만든 사용자 원두는 항상 빠진다 — 관리자가 올린 사용자
+   * 원두(promoted)는 모두에게 나온다(docs/specs/2026-11-15-admin-beans.md 「검색 규칙 변경」). 이름은 로스터 테이블에 있어
    * RecipeRepository.searchPublic과 같은 네이티브 + null-safe {@code (:param IS NULL OR ...)} 패턴을 쓴다.
    */
   @Query(
@@ -25,7 +26,7 @@ public interface BeanProductRepository extends JpaRepository<BeanProduct, Long> 
           select bp.* from bean_products bp
           join roasters r on r.id = bp.roaster_id
           where bp.hidden = false
-            and (bp.created_by_user_id is null or bp.created_by_user_id = :userId)
+            and (bp.created_by_user_id is null or bp.created_by_user_id = :userId or bp.promoted)
             and (cast(:q as text) is null
                  or bp.name ilike concat('%', cast(:q as text), '%')
                  or r.name ilike concat('%', cast(:q as text), '%'))
@@ -42,7 +43,7 @@ public interface BeanProductRepository extends JpaRepository<BeanProduct, Long> 
           select count(*) from bean_products bp
           join roasters r on r.id = bp.roaster_id
           where bp.hidden = false
-            and (bp.created_by_user_id is null or bp.created_by_user_id = :userId)
+            and (bp.created_by_user_id is null or bp.created_by_user_id = :userId or bp.promoted)
             and (cast(:q as text) is null
                  or bp.name ilike concat('%', cast(:q as text), '%')
                  or r.name ilike concat('%', cast(:q as text), '%'))

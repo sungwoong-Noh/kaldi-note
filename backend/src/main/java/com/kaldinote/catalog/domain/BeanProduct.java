@@ -169,6 +169,19 @@ public class BeanProduct extends BaseTimeEntity {
     this.description = description;
   }
 
+  /** 관리자 일괄 처리 — 내용이 아니라 상태라 {@code manuallyEdited}는 그대로다. */
+  public void verify() {
+    this.verified = true;
+  }
+
+  public void hide() {
+    this.hidden = true;
+  }
+
+  public void unhide() {
+    this.hidden = false;
+  }
+
   /** 카탈로그로 올린다. 사용자 원두만 — 크롤러 원두는 이미 모두에게 보인다. 이미 올렸어도 그대로(멱등). */
   public void promote() {
     this.promoted = true;

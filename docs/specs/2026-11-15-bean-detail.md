@@ -590,7 +590,7 @@ supersedes:
 - [x] **Task 7: 원두 상세 화면** — Covers: AC-BEANDETAIL-22, 23, 24, 25, 26, 27, 28, 29, 55, 56
   `/beans/[id]` · `/beans/named` — 모바일 + 웹 2열(UW), 로딩 뼈대 · 다크는 시안 그대로.
 
-- [ ] **Task 8: 「이 원두로 기록하기」 · 오늘 카드 진입** — Covers: AC-BEANDETAIL-30, 32
+- [x] **Task 8: 「이 원두로 기록하기」 · 오늘 카드 진입** — Covers: AC-BEANDETAIL-30, 32
 
 - [ ] **Task 9: 기록 상세 진입** — Covers: AC-BEANDETAIL-33
 

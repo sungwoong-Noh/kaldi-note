@@ -176,7 +176,7 @@ function Layout({
 
 /**
  * 「이 원두로 기록하기」 — 빠른 기록 ①을 이 원두 + 이 원두의 지난 값(`recent[0]`)으로 연다.
- * 이 원두로 내린 적이 없으면 전체 「지난번」 값을 쓴다(AC-BEANDETAIL-30).
+ * 이 원두로 내린 적이 없으면 전체 「지난번」 값을 쓴다.
  */
 function RecordButton({
   summary,

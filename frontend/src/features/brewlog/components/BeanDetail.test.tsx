@@ -4,6 +4,8 @@ import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { clearSession, setAccessToken } from "@/lib/session";
 import { me } from "@/test/fixtures";
+import { closeQuickBrew } from "@/lib/quickBrew";
+import { QuickBrewHost } from "./QuickBrewHost";
 import { server } from "@/test/msw-server";
 import { renderWithQuery } from "@/test/render";
 import { BeanDetail } from "./BeanDetail";
@@ -330,5 +332,85 @@ describe("원두 상세", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText("원두 정보를 불러오지 못했어요")).toBeNull();
     expect(screen.queryByRole("button", { name: "다시 시도" })).toBeNull();
+  });
+});
+
+describe("이 원두로 기록하기", () => {
+  /** 전체 「지난번」 — 다른 원두 · 16 · 250. 모양은 계약 2026-11-14-quick-brew.json. */
+  const lastOther = {
+    id: 700,
+    userId: me.id,
+    beanName: "다른 원두",
+    brewedAt: "2026-11-14T00:00:00Z",
+    visibility: "PRIVATE",
+    actualDoseG: 16.0,
+    actualWaterG: 250.0,
+    brewRatio: 15.6,
+    createdAt: "2026-11-14T00:00:00Z",
+    updatedAt: "2026-11-14T00:00:00Z",
+  };
+
+  it("AC-BEANDETAIL-30 · 「이 원두로 기록하기」는 이 원두의 지난 값을 채운다", async () => {
+    given(
+      { 41: single, 42: { ...single, id: 42, name: "원두 42" } },
+      {
+        41: {
+          ...summary,
+          recent: [
+            { ...summary.recent[0], actualDoseG: 18.0, actualWaterG: 270.0 },
+          ],
+        },
+        42: empty,
+      },
+    );
+    server.use(
+      http.get(`${BASE}/brew-logs`, () =>
+        HttpResponse.json({
+          content: [lastOther],
+          page: 0,
+          size: 1,
+          totalElements: 1,
+          totalPages: 1,
+          hasNext: false,
+        }),
+      ),
+      http.get(`${BASE}/gear/user-grinders`, () => HttpResponse.json([])),
+      http.get(`${BASE}/roasters`, () => HttpResponse.json([])),
+    );
+
+    const first = renderWithQuery(
+      <>
+        <BeanDetail id={41} />
+        <QuickBrewHost />
+      </>,
+    );
+    await userEvent.click(
+      await screen.findByRole("button", { name: "이 원두로 기록하기" }),
+    );
+    const sheet = await screen.findByRole("dialog", { name: "빠른 기록" });
+    expect(await within(sheet).findByText(single.name)).toBeInTheDocument();
+    expect(within(sheet).getByLabelText("원두량")).toHaveValue("18");
+    expect(within(sheet).getByLabelText("물량")).toHaveValue("270");
+    closeQuickBrew();
+    first.unmount();
+
+    renderWithQuery(
+      <>
+        <BeanDetail id={42} />
+        <QuickBrewHost />
+      </>,
+    );
+    const button = await screen.findByRole("button", {
+      name: "이 원두로 기록하기",
+    });
+    // 이 원두로 내린 적이 없으면 전체 「지난번」을 읽어 둔다
+    await waitFor(() => expect(button).toBeEnabled());
+    await new Promise((r) => setTimeout(r, 50));
+    await userEvent.click(button);
+    const sheet42 = await screen.findByRole("dialog", { name: "빠른 기록" });
+    expect(await within(sheet42).findByText("원두 42")).toBeInTheDocument();
+    expect(within(sheet42).getByLabelText("원두량")).toHaveValue("16");
+    expect(within(sheet42).getByLabelText("물량")).toHaveValue("250");
+    closeQuickBrew();
   });
 });

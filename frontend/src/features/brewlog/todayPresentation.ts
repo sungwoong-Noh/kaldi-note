@@ -97,6 +97,20 @@ export interface BeanSummary {
  * 원두 표기 우선순위(2026-11-14-quick-brew.md):
  * `bean_product_id`(제품명) → `bean_name` → `bean_batch_id`(배치 제품명) → 없음.
  */
+/**
+ * 기록의 원두 → 원두 상세 경로. 카탈로그 원두는 `/beans/41`, 직접 적은 원두는 `/beans/named?name=…`.
+ * 원두가 없으면(봉투로만 고른 예전 기록 포함) 링크가 없다.
+ */
+export function beanDetailHref(log: {
+  beanProductId?: number;
+  beanName?: string;
+}): string | undefined {
+  if (log.beanProductId !== undefined) return `/beans/${log.beanProductId}`;
+  const name = log.beanName?.trim();
+  if (name) return `/beans/named?${new URLSearchParams({ name })}`;
+  return undefined;
+}
+
 export function resolveBeanSummary(
   log: BrewLogSummary,
   sources: {

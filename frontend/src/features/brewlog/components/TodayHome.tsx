@@ -13,6 +13,7 @@ import {
   formatTodayEyebrow,
   observationOf,
   recentHeadlineMetric,
+  beanDetailHref,
   resolveBeanSummary,
   formatGrinderSetting,
   trimTrailingZero,
@@ -173,7 +174,7 @@ function TodayMobileCtaCard() {
   );
 }
 
-function TodayLastBrewCard({
+export function TodayLastBrewCard({
   log,
   todayKst,
   isWide,
@@ -185,6 +186,7 @@ function TodayLastBrewCard({
   metadata: TodayMetadata;
 }) {
   const bean = resolveBeanSummary(log, metadata);
+  const beanHref = beanDetailHref(log);
   const when = formatRelativeBrewStamp(log.brewedAt, todayKst);
   const grindSettingUnit =
     log.recipeId !== undefined
@@ -240,9 +242,18 @@ function TodayLastBrewCard({
           <div className="flex items-center gap-[11px]">
             <RoastDot roastLevel={bean.roastLevel} size={11} />
             <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-              <div className="truncate text-[15px] font-semibold text-ink">
-                {bean.name}
-              </div>
+              {beanHref ? (
+                <Link
+                  href={beanHref}
+                  className="truncate text-[15px] font-semibold text-ink"
+                >
+                  {bean.name}
+                </Link>
+              ) : (
+                <div className="truncate text-[15px] font-semibold text-ink">
+                  {bean.name}
+                </div>
+              )}
               {beanSub !== "" && (
                 <div className="truncate text-[12.5px] text-ink-3">
                   {beanSub}

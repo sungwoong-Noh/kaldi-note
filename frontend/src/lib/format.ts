@@ -13,7 +13,7 @@ export function formatDuration(totalSeconds: number): string {
 }
 
 /** 소수점 이하가 0이면 지운다. `100.0` → `100`, `93.5` → `93.5` */
-function trimTrailingZero(value: number): string {
+export function trimTrailingZero(value: number): string {
   return value.toFixed(1).replace(/\.0$/, "");
 }
 

@@ -39,6 +39,8 @@ export const beanProductSchema = z.object({
     .enum(["LIGHT", "MEDIUM_LIGHT", "MEDIUM", "MEDIUM_DARK", "DARK"])
     .nullish(),
   roastLevelAgtron: z.number().optional(),
+  /** 배전도 원문. 표준 배전도가 없을 때만 칩으로 보인다. */
+  roastLevelCustom: z.string().optional(),
   decaf: z.boolean(),
   productUrl: z.string().optional(),
   /** 로스터 설명 원문(컵노트). */

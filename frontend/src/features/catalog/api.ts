@@ -77,6 +77,7 @@ export function useBeanProductsByIds(
 export function useBeanSummary(
   by: { beanProductId: number } | { beanName: string },
   onSessionLost?: () => void,
+  enabled = true,
 ) {
   const query = new URLSearchParams(
     "beanProductId" in by
@@ -85,6 +86,7 @@ export function useBeanSummary(
   );
   return useQuery({
     queryKey: ["catalog", "bean-summary", by],
+    enabled,
     queryFn: () =>
       authedRequest(backendUrl(`/api/v1/brew-logs/bean-summary?${query}`), {
         schema: beanSummarySchema,
@@ -94,9 +96,14 @@ export function useBeanSummary(
 }
 
 /** 단건 조회를 훅으로. 화면 하나가 원두 하나를 다룰 때. */
-export function useBeanProduct(id: number, onSessionLost?: () => void) {
+export function useBeanProduct(
+  id: number,
+  onSessionLost?: () => void,
+  enabled = true,
+) {
   return useQuery({
     queryKey: ["catalog", "bean-product", id],
+    enabled,
     queryFn: () => fetchBeanProduct(id, onSessionLost),
   });
 }

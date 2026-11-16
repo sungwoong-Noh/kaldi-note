@@ -8,6 +8,8 @@
       "finishedAt": "2026-10-19T12:26:36.167353Z",
       "created": 0,
       "updated": 21,
+      "unchanged": 0,
+      "imported": [],
       "skipped": [],
       "unmapped": []
     },
@@ -19,6 +21,8 @@
       "finishedAt": "2026-10-14T11:57:10.064140Z",
       "created": 0,
       "updated": 72,
+      "unchanged": 0,
+      "imported": [],
       "skipped": [],
       "unmapped": [
         {
@@ -236,6 +240,8 @@
       "finishedAt": "2026-10-14T11:52:38.647808Z",
       "created": 72,
       "updated": 0,
+      "unchanged": 0,
+      "imported": [],
       "skipped": [],
       "unmapped": [
         {
@@ -488,6 +494,8 @@
       "finishedAt": "2026-10-14T11:49:31.329379Z",
       "created": 0,
       "updated": 21,
+      "unchanged": 0,
+      "imported": [],
       "skipped": [],
       "unmapped": []
     },
@@ -499,6 +507,8 @@
       "finishedAt": "2026-10-14T11:46:29.126949Z",
       "created": 21,
       "updated": 0,
+      "unchanged": 0,
+      "imported": [],
       "skipped": [],
       "unmapped": []
     }

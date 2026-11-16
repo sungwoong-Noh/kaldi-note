@@ -241,7 +241,7 @@ PR #220(관리자 원두 — `importBean`의 `product_url` 매칭)이 먼저 머
   `unchanged`(integer) · `imported`(array of `ImportedItem` {beanProductId integer, name string, outcome enum}) 추가 →
   `frontend/src/types/generated/2026-10-14-bean-crawler.ts` 재생성.
 
-- [ ] **Task 4: 실행 상세 화면** — Covers: AC-CRAWLRESULT-08~11
+- [x] **Task 4: 실행 상세 화면** — Covers: AC-CRAWLRESULT-08~11
 
   `frontend/src/features/admin/components/RunPanel.tsx` — 히어로 줄에 `변화 없음 {run.unchanged}`, 「건너뛴 상품」 절 위에
   「새로 생긴 원두 n」 · 「갱신된 원두 n」 절(기존 `<h3 className="text-[16px] font-semibold">` 형식), 0건이면 절 생략,

@@ -112,6 +112,14 @@ function Detail({ run, name }: { run: CrawlRun; name: string }) {
   const sk = run.skipped.length;
   const un = run.unmapped.length;
   const showLists = run.status === "SUCCEEDED";
+  const createdItems = run.imported.filter(
+    (item) => item.outcome === "CREATED",
+  );
+  const updatedItems = run.imported.filter(
+    (item) => item.outcome === "UPDATED",
+  );
+  const isLegacyEmptyList =
+    showLists && run.imported.length === 0 && run.created + run.updated > 0;
 
   return (
     <div className="flex flex-col gap-5 px-6 pt-2 pb-8">
@@ -149,8 +157,8 @@ function Detail({ run, name }: { run: CrawlRun; name: string }) {
         </span>
         <span className="font-mono text-[13px] text-ink-2">
           {totals
-            ? `갱신 ${run.updated} · 건너뜀 ${sk} · 미매핑 ${un}`
-            : "갱신 — · 건너뜀 — · 미매핑 —"}
+            ? `갱신 ${run.updated} · 변화 없음 ${run.unchanged} · 건너뜀 ${sk} · 미매핑 ${un}`
+            : "갱신 — · 변화 없음 — · 건너뜀 — · 미매핑 —"}
         </span>
       </div>
 
@@ -163,6 +171,26 @@ function Detail({ run, name }: { run: CrawlRun; name: string }) {
         >
           {run.errorMessage}
         </pre>
+      )}
+
+      {showLists && createdItems.length > 0 && (
+        <ImportedSection
+          title={`새로 생긴 원두 ${createdItems.length}`}
+          items={createdItems}
+        />
+      )}
+
+      {showLists && updatedItems.length > 0 && (
+        <ImportedSection
+          title={`갱신된 원두 ${updatedItems.length}`}
+          items={updatedItems}
+        />
+      )}
+
+      {isLegacyEmptyList && (
+        <p className="text-[13px] text-ink-3">
+          이 실행은 원두 목록을 남기지 않았습니다
+        </p>
       )}
 
       {showLists && sk > 0 && (
@@ -190,6 +218,30 @@ function Detail({ run, name }: { run: CrawlRun; name: string }) {
         </section>
       )}
     </div>
+  );
+}
+
+function ImportedSection({
+  title,
+  items,
+}: {
+  title: string;
+  items: CrawlRun["imported"];
+}) {
+  return (
+    <section className="flex flex-col gap-2">
+      <h3 className="text-[16px] font-semibold">{title}</h3>
+      <ul className="flex flex-col gap-1">
+        {items.map((item) => (
+          <li
+            key={item.beanProductId}
+            className="text-[12.5px] break-all text-ink-2"
+          >
+            {item.name}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

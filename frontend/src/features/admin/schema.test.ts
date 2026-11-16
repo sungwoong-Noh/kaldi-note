@@ -15,6 +15,8 @@ describe("admin schema", () => {
   it("실제 응답을 파싱한다", () => {
     expect(z.array(crawlSourceSchema).parse(sources)).toHaveLength(2);
     expect(crawlRunSchema.parse(running).finishedAt).toBeUndefined();
+    expect(crawlRunSchema.parse(running).unchanged).toBe(0);
+    expect(crawlRunSchema.parse(running).imported).toEqual([]);
     expect(crawlRunSchema.parse(unspecialty).unmapped).toHaveLength(41);
     expect(crawlRunPageSchema.parse(runsPage).content.length).toBeGreaterThan(
       0,

@@ -27,6 +27,12 @@ export const crawlSourceSchema = z.object({
 
 export type CrawlSource = z.infer<typeof crawlSourceSchema>;
 
+export const importedItemSchema = z.object({
+  beanProductId: z.number(),
+  name: z.string(),
+  outcome: z.enum(["CREATED", "UPDATED"]),
+});
+
 export const skippedItemSchema = z.object({
   name: z.string(),
   reason: z.string(),
@@ -47,6 +53,8 @@ export const crawlRunSchema = z.object({
   finishedAt: z.string().optional(),
   created: z.number(),
   updated: z.number(),
+  unchanged: z.number(),
+  imported: z.array(importedItemSchema),
   skipped: z.array(skippedItemSchema),
   unmapped: z.array(unmappedItemSchema),
   errorMessage: z.string().optional(),

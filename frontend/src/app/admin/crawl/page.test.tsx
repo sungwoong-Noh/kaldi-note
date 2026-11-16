@@ -1,4 +1,10 @@
-import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -131,7 +137,7 @@ describe("구매처", () => {
     expect(within(panel).getByText("● RUNNING")).toBeInTheDocument();
     expect(within(panel).getByText("진행 중")).toBeInTheDocument();
     expect(
-      within(panel).getByText("갱신 — · 건너뜀 — · 미매핑 —"),
+      within(panel).getByText("갱신 — · 변화 없음 — · 건너뜀 — · 미매핑 —"),
     ).toBeInTheDocument();
     expect(
       within(panel).getByText(
@@ -324,7 +330,7 @@ describe("실행 상세 패널", () => {
 
     expect(await within(panel).findByText("생성 19")).toBeInTheDocument();
     expect(
-      within(panel).getByText("갱신 42 · 건너뜀 3 · 미매핑 5"),
+      within(panel).getByText("갱신 42 · 변화 없음 0 · 건너뜀 3 · 미매핑 5"),
     ).toBeInTheDocument();
     expect(
       within(panel).getByText(
@@ -530,6 +536,156 @@ describe("실패", () => {
     expect(
       within(panel).queryByText("매핑하지 못한 원문"),
     ).not.toBeInTheDocument();
+  });
+
+  it("AC-CRAWLRESULT-08 · 실행 상세가 새로 생긴 원두 · 갱신된 원두를 순서대로 보여 준다", async () => {
+    currentSearch = "run=201";
+    stub({
+      run: {
+        ...momosRun,
+        created: 2,
+        updated: 1,
+        unchanged: 0,
+        imported: [
+          { beanProductId: 101, name: "원두 A", outcome: "CREATED" },
+          { beanProductId: 102, name: "원두 B", outcome: "CREATED" },
+          { beanProductId: 103, name: "원두 C", outcome: "UPDATED" },
+        ],
+        skipped: [{ name: "원두 S", reason: "USER_OWNED" }],
+        unmapped: [],
+      },
+    });
+    renderWithQuery(<CrawlPage />);
+    const panel = await screen.findByTestId("run-panel");
+
+    const headings = await within(panel).findAllByRole("heading", { level: 3 });
+    expect(headings.map((h) => h.textContent)).toEqual([
+      "새로 생긴 원두 2",
+      "갱신된 원두 1",
+      "건너뛴 상품",
+    ]);
+
+    const createdSection = headings[0].closest("section")!;
+    expect(
+      within(createdSection)
+        .getAllByRole("listitem")
+        .map((el) => el.textContent),
+    ).toEqual(["원두 A", "원두 B"]);
+    expect(within(createdSection).queryByRole("link")).not.toBeInTheDocument();
+
+    const updatedSection = headings[1].closest("section")!;
+    expect(
+      within(updatedSection)
+        .getAllByRole("listitem")
+        .map((el) => el.textContent),
+    ).toEqual(["원두 C"]);
+    expect(within(updatedSection).queryByRole("link")).not.toBeInTheDocument();
+  });
+
+  it("AC-CRAWLRESULT-09 · 히어로 줄에 변화 없음 건수가 들어간다", async () => {
+    currentSearch = "run=202";
+    stub({
+      run: {
+        ...momosRun,
+        created: 2,
+        updated: 1,
+        unchanged: 3,
+        imported: [
+          { beanProductId: 101, name: "원두 A", outcome: "CREATED" },
+          { beanProductId: 102, name: "원두 B", outcome: "CREATED" },
+          { beanProductId: 103, name: "원두 C", outcome: "UPDATED" },
+        ],
+        skipped: [],
+        unmapped: [],
+      },
+    });
+    const succeededView = renderWithQuery(<CrawlPage />);
+    const panel = await screen.findByTestId("run-panel");
+    expect(
+      await within(panel).findByText(
+        "갱신 1 · 변화 없음 3 · 건너뜀 0 · 미매핑 0",
+      ),
+    ).toBeInTheDocument();
+    succeededView.unmount();
+
+    currentSearch = "run=203";
+    stub({ run: { ...running, unchanged: 0, imported: [] } });
+    renderWithQuery(<CrawlPage />);
+    const runningPanel = await screen.findByTestId("run-panel");
+    expect(
+      await within(runningPanel).findByText(
+        "갱신 — · 변화 없음 — · 건너뜀 — · 미매핑 —",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("AC-CRAWLRESULT-10 · 0건인 절은 그리지 않는다", async () => {
+    currentSearch = "run=204";
+    stub({
+      run: {
+        ...momosRun,
+        created: 0,
+        updated: 1,
+        unchanged: 0,
+        imported: [{ beanProductId: 103, name: "원두 C", outcome: "UPDATED" }],
+      },
+    });
+    const updatedOnlyView = renderWithQuery(<CrawlPage />);
+    const panel = await screen.findByTestId("run-panel");
+    expect(
+      await within(panel).findByRole("heading", { name: "갱신된 원두 1" }),
+    ).toBeInTheDocument();
+    expect(within(panel).queryByText(/새로 생긴 원두/)).not.toBeInTheDocument();
+    updatedOnlyView.unmount();
+
+    currentSearch = "run=205";
+    stub({
+      run: {
+        ...momosRun,
+        created: 0,
+        updated: 0,
+        unchanged: 5,
+        imported: [],
+      },
+    });
+    renderWithQuery(<CrawlPage />);
+    const allUnchangedPanel = await screen.findByTestId("run-panel");
+    expect(
+      await within(allUnchangedPanel).findByText("생성 0"),
+    ).toBeInTheDocument();
+    expect(
+      within(allUnchangedPanel).queryByText(/새로 생긴 원두/),
+    ).not.toBeInTheDocument();
+    expect(
+      within(allUnchangedPanel).queryByText(/갱신된 원두/),
+    ).not.toBeInTheDocument();
+    expect(
+      within(allUnchangedPanel).queryByText(
+        "이 실행은 원두 목록을 남기지 않았습니다",
+      ),
+    ).not.toBeInTheDocument();
+  });
+
+  it("AC-CRAWLRESULT-11 · 목록을 남기지 않은 과거 실행", async () => {
+    currentSearch = "run=206";
+    stub({
+      run: {
+        ...momosRun,
+        status: "SUCCEEDED",
+        created: 21,
+        updated: 0,
+        unchanged: 0,
+        imported: [],
+      },
+    });
+    renderWithQuery(<CrawlPage />);
+    const panel = await screen.findByTestId("run-panel");
+
+    expect(
+      await within(panel).findByText("이 실행은 원두 목록을 남기지 않았습니다"),
+    ).toBeInTheDocument();
+    expect(within(panel).queryByText(/새로 생긴 원두/)).not.toBeInTheDocument();
+    expect(within(panel).queryByText(/갱신된 원두/)).not.toBeInTheDocument();
   });
 
   it("AC-ADMIN-33 · 없는 실행 딥링크", async () => {

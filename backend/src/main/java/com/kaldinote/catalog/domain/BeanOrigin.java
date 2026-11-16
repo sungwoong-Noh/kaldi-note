@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -86,5 +87,27 @@ public class BeanOrigin {
 
   void assignTo(BeanProduct product) {
     this.beanProduct = product;
+  }
+
+  /** 크롤러 비교 대상 값이 모두 같은지 판정한다. {@code ratioPercent}는 {@code compareTo}로 비교한다. */
+  public boolean sameValues(BeanOrigin other) {
+    if (other == null) {
+      return false;
+    }
+    return Objects.equals(country, other.country)
+        && Objects.equals(region, other.region)
+        && Objects.equals(farm, other.farm)
+        && Objects.equals(altitudeMinM, other.altitudeMinM)
+        && Objects.equals(altitudeMaxM, other.altitudeMaxM)
+        && Objects.equals(varietyId, other.varietyId)
+        && Objects.equals(processId, other.processId)
+        && sameRatio(ratioPercent, other.ratioPercent);
+  }
+
+  private static boolean sameRatio(BigDecimal a, BigDecimal b) {
+    if (a == null || b == null) {
+      return a == null && b == null;
+    }
+    return a.compareTo(b) == 0;
   }
 }

@@ -213,7 +213,7 @@ PR #220(관리자 원두 — `importBean`의 `product_url` 매칭)이 먼저 머
   `CrawlRun`에 `List<ImportedItem> imported`(`@JdbcTypeCode(SqlTypes.JSON)`), `int unchangedCount`. 새 record
   `crawler/domain/ImportedItem(Long beanProductId, String name, String outcome)`.
 
-- [ ] **Task 2: 가져오기 결과에 id와 UNCHANGED** — Covers: AC-CRAWLRESULT-01~05
+- [x] **Task 2: 가져오기 결과에 id와 UNCHANGED** — Covers: AC-CRAWLRESULT-01~05
 
   ```java
   public record ImportResult(Outcome outcome, Long beanProductId, String reason, List<Unmapped> unmapped) {

@@ -14,6 +14,7 @@ import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -172,5 +173,31 @@ public class BeanProduct extends BaseTimeEntity {
     newOrigins.forEach(o -> o.assignTo(this));
     this.origins.clear();
     this.origins.addAll(newOrigins);
+  }
+
+  /** 크롤러 비교 대상 값(혼합, 배전도, 애그트론, URL, 컵노트, 산지 순서·값)이 모두 같은지 판정한다. */
+  public boolean sameAs(
+      BeanMix beanMix,
+      RoastLevel roastLevel,
+      Short roastLevelAgtron,
+      String productUrl,
+      String description,
+      List<BeanOrigin> otherOrigins) {
+    if (this.beanMix != beanMix
+        || this.roastLevel != roastLevel
+        || !Objects.equals(this.roastLevelAgtron, roastLevelAgtron)
+        || !Objects.equals(this.productUrl, productUrl)
+        || !Objects.equals(this.description, description)) {
+      return false;
+    }
+    if (otherOrigins == null || this.origins.size() != otherOrigins.size()) {
+      return false;
+    }
+    for (int i = 0; i < this.origins.size(); i++) {
+      if (!this.origins.get(i).sameValues(otherOrigins.get(i))) {
+        return false;
+      }
+    }
+    return true;
   }
 }

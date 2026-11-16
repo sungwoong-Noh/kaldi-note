@@ -333,7 +333,7 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
 
 - **Given** 크롤러 원두 `(해월커피, 에티오피아 반자 위요 내추)`, `product_url=https://u.example/231`. 관리자가 이름을 `에티오피아 반자 위요 내추럴`로 고침
 - **When** 크롤러가 이름 `에티오피아 반자 위요 내추`, URL `https://u.example/231`로 import
-- **Then** 결과 `UPDATED`, 이름은 `에티오피아 반자 위요 내추럴` 그대로, `bean_products` 행 수 변화 없음
+- **Then** 결과 `UNCHANGED`(크롤러는 이름을 바꾸지 않아 바뀐 값이 없다 — #236 수집 결과 보기의 「값이 그대로면 UNCHANGED」), 이름은 `에티오피아 반자 위요 내추럴` 그대로, `bean_products` 행 수 변화 없음
 - **검증** `BeanImportServiceTest`
 
 #### AC-ADMINBEAN-21 · 링크로 못 찾으면 로스터 · 이름으로 찾고 링크를 갱신한다
@@ -529,7 +529,7 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
 
   `BeanProduct`에 `promoted` 필드와 `promote()`.
 
-- [ ] **Task 2: 크롤러 매칭** — Covers: AC-ADMINBEAN-20, 21, 22
+- [x] **Task 2: 크롤러 매칭** — Covers: AC-ADMINBEAN-20, 21, 22
 
   `BeanProductRepository.findByProductUrl(String)` 추가. `importBean`의 `existing`을
   `findByProductUrl(url).or(() -> findByRoasterIdAndName(...))`로 바꾸고, ② 경로로 찾은 크롤러 원두는 `product_url` 갱신.

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,7 +76,7 @@ public class BeanImportService {
         roasterRepository
             .findByName(bean.roasterName())
             .orElseGet(() -> roasterRepository.save(Roaster.createBySystem(bean.roasterName())));
-    var existing = beanProductRepository.findByRoasterIdAndName(roaster.getId(), bean.name());
+    var existing = findExisting(roaster.getId(), bean);
     if (existing.isPresent() && !existing.get().isCrawled()) {
       return ImportResult.skipped("USER_OWNED");
     }
@@ -136,6 +137,26 @@ public class BeanImportService {
     product.attachOrigins(new ArrayList<>(origins));
     BeanProduct saved = beanProductRepository.save(product);
     return new ImportResult(outcome, saved.getId(), null, unmapped);
+  }
+
+  /**
+   * 기존 원두를 ① 구매 링크로, ② 없으면 (로스터, 이름)으로 찾는다 — 관리자가 고친 이름은 다시 수집해도 그대로다
+   * (docs/specs/2026-11-15-admin-beans.md 「크롤러 매칭 변경」). 링크가 같은 행 중 크롤러 원두가 우선이고, 사용자 원두만 있으면 그 행을
+   * 돌려줘 USER_OWNED로 건너뛰게 한다.
+   */
+  private Optional<BeanProduct> findExisting(Long roasterId, CrawledBean bean) {
+    if (bean.productUrl() != null) {
+      List<BeanProduct> byUrl = beanProductRepository.findAllByProductUrl(bean.productUrl());
+      Optional<BeanProduct> hit =
+          byUrl.stream()
+              .filter(BeanProduct::isCrawled)
+              .findFirst()
+              .or(() -> byUrl.stream().findFirst());
+      if (hit.isPresent()) {
+        return hit;
+      }
+    }
+    return beanProductRepository.findByRoasterIdAndName(roasterId, bean.name());
   }
 
   private BeanOrigin origin(CrawledOrigin o, List<Unmapped> unmapped) {

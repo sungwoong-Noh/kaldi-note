@@ -472,7 +472,7 @@ class BeanImportServiceTest extends AbstractIntegrationTest {
 
     ImportResult result = service.importBean(at("에티오피아 반자 위요 내추", "https://u.example/231"));
 
-    assertThat(result.outcome()).isEqualTo(Outcome.UPDATED);
+    assertThat(result.outcome()).isEqualTo(Outcome.UNCHANGED);
     assertThat(savedAt("에티오피아 반자 위요 내추럴").getProductUrl()).isEqualTo("https://u.example/231");
     assertThat(beanProductRepository.count()).isEqualTo(before);
   }

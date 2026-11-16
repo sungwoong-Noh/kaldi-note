@@ -1,6 +1,7 @@
 package com.kaldinote.catalog.infrastructure;
 
 import com.kaldinote.catalog.domain.BeanProduct;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface BeanProductRepository extends JpaRepository<BeanProduct, Long> {
   Optional<BeanProduct> findByRoasterIdAndName(Long roasterId, String name);
+
+  /** 크롤러 매칭 ①. 크롤러 원두끼리는 유일하지만(V22 부분 인덱스) 사용자 원두는 겹칠 수 있어 목록이다. */
+  List<BeanProduct> findAllByProductUrl(String productUrl);
 
   /**
    * 원두 검색(docs/specs/2026-11-15-bean-detail.md 「검색」). 숨긴 원두와 남이 만든 사용자 원두는 항상 빠진다. 이름은 로스터 테이블에 있어

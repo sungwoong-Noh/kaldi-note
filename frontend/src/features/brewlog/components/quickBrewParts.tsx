@@ -22,7 +22,7 @@ export function PrimaryButton({
       type="button"
       aria-disabled={disabled}
       onClick={onClick}
-      className="kn-press block w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-medium text-on-ink aria-disabled:opacity-60"
+      className="kn-press block w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-semibold tracking-[-0.01em] text-on-ink aria-disabled:opacity-60"
     >
       {children}
     </button>

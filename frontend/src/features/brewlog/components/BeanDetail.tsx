@@ -2,7 +2,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { LoadingState } from "@/components/LoadingState";
 import { RoastDot, Shell } from "@/components/ui";
@@ -14,6 +13,7 @@ import { ApiError } from "@/lib/api-client";
 import { formatRatio, trimTrailingZero } from "@/lib/format";
 import { formatKstStamp } from "@/lib/kstDate";
 import { openQuickBrew, type QuickBrewPrefill } from "@/lib/quickBrew";
+import { useIsWide } from "@/lib/useIsWide";
 import { fetchBrewLogPage } from "../api";
 import { ROAST_LEVEL_LABEL } from "../todayPresentation";
 
@@ -25,6 +25,8 @@ export function BeanDetail({ id }: { id: number }) {
   const { ready, onSessionLost } = useRequireSession();
   const product = useBeanProduct(id, onSessionLost, ready);
   const summary = useBeanSummary({ beanProductId: id }, onSessionLost, ready);
+  // 구매처 링크 자리 — 웹(≥1100)은 왼쪽 열 산지 아래, 그보다 좁으면 주 버튼 아래(UW · U1a)
+  const wide = useIsWide();
 
   if (!ready || product.isPending) {
     return (
@@ -38,7 +40,6 @@ export function BeanDetail({ id }: { id: number }) {
       product.error instanceof ApiError && product.error.code === "NOT_FOUND";
     return (
       <Shell stack>
-        <BackButton />
         {notFound ? (
           <p className="py-12 text-center text-[15px] text-ink-2">
             찾을 수 없는 원두입니다.
@@ -66,19 +67,27 @@ export function BeanDetail({ id }: { id: number }) {
     <Layout
       info={
         <>
-          <Title eyebrow={p.roasterName} name={p.name} />
+          <Title eyebrow={p.roasterName} name={p.name}>
+            {!p.hidden && !isSparse(p) && <BeanChips product={p} />}
+          </Title>
           {p.hidden ? (
-            <p className="rounded-[10px] bg-sunken px-[16px] py-[14px] text-[14px] text-ink-2">
+            <p className="rounded-[0_8px_8px_0] border-l-2 border-border bg-surface px-[14px] py-[12px] text-[13.5px] leading-[1.6] text-ink-2">
               카탈로그에서 내려간 원두예요. 내 기록은 그대로 남아 있어요.
             </p>
           ) : (
             <CatalogInfo product={p} />
           )}
+          {wide && !p.hidden && p.productUrl && (
+            <ProductLink
+              href={p.productUrl}
+              className="self-start underline underline-offset-2"
+            />
+          )}
         </>
       }
       summary={summary.data}
       prefill={{ beanProductId: id }}
-      productUrl={p.hidden ? undefined : p.productUrl}
+      productUrl={wide || p.hidden ? undefined : p.productUrl}
     />
   );
 }
@@ -99,10 +108,11 @@ export function BeanNamedDetail({ name }: { name: string }) {
     <Layout
       info={
         <>
-          <Title name={name} />
-          <p className="text-[14px] text-ink-3">
-            내가 이름만 적어 만든 원두 · 나만 보여요
-          </p>
+          <Title eyebrow="직접 적은 원두" name={name}>
+            <p className="text-[12.5px] text-ink-3">
+              내가 이름만 적어 만든 원두 · 나만 보여요
+            </p>
+          </Title>
         </>
       }
       summary={summary.data}
@@ -111,27 +121,48 @@ export function BeanNamedDetail({ name }: { name: string }) {
   );
 }
 
-function BackButton() {
-  const router = useRouter();
+/**
+ * 머리말(로스터) → 이름 → 칩을 한 덩어리로(간격 6). 웹(≥1100, 상단 바에 「뒤로」가 없다)은 머리말 앞에 경로형
+ * 「‹ 기록」을 붙인다(UW). 뒤로는 고정 부모 경로다 — `router.back()`은 새로고침 뒤 앱 밖으로 나간다(navScreens).
+ */
+function Title({
+  eyebrow,
+  name,
+  children,
+}: {
+  eyebrow?: string;
+  name: string;
+  children?: ReactNode;
+}) {
   return (
-    <button
-      type="button"
-      onClick={() => router.back()}
-      className="hit-44 self-start text-[14.5px] text-ink-2"
-    >
-      ‹ 이전
-    </button>
-  );
-}
-
-function Title({ eyebrow, name }: { eyebrow?: string; name: string }) {
-  return (
-    <div className="flex flex-col gap-[6px]">
-      {eyebrow && <div className="text-[13.5px] text-ink-3">{eyebrow}</div>}
+    <div className="flex flex-col gap-[6px] min-[1024px]:gap-[8px]">
+      <div className="text-[13.5px] text-ink-3 min-[1024px]:text-[14px]">
+        <span className="hidden min-[1100px]:inline">
+          <Link href="/brews" className="underline underline-offset-2">
+            ‹ 기록
+          </Link>
+          {eyebrow && " · "}
+        </span>
+        {eyebrow}
+      </div>
       <h1 className="text-[24px] leading-[1.3] font-semibold tracking-[-0.025em] text-ink min-[1024px]:text-[34px] min-[1024px]:leading-[1.2] min-[1024px]:tracking-[-0.03em]">
         {name}
       </h1>
+      {children}
     </div>
+  );
+}
+
+function ProductLink({ href, className }: { href: string; className: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`hit-44 text-[13.5px] text-accent ${className}`}
+    >
+      구매처에서 보기 ↗
+    </a>
   );
 }
 
@@ -147,8 +178,8 @@ function Layout({
   productUrl?: string;
 }) {
   return (
-    <Shell stack wide className="max-w-[1080px]">
-      <BackButton />
+    // 내용 1080 = 왼쪽 열 + 48 + 오른쪽 360(UW). Shell의 웹 거터 48×2를 더한다.
+    <Shell stack wide className="max-w-[1176px]">
       <div className="flex flex-col gap-[20px] min-[1024px]:grid min-[1024px]:grid-cols-[minmax(0,1fr)_320px] min-[1024px]:items-start min-[1024px]:gap-[48px] min-[1280px]:grid-cols-[minmax(0,1fr)_360px]">
         <div className="flex min-w-0 flex-col gap-[20px] min-[1024px]:gap-[24px]">
           {info}
@@ -158,14 +189,10 @@ function Layout({
           <div className="sticky bottom-0 -mx-[24px] flex flex-col gap-[2px] border-t border-divider bg-paper px-[24px] pt-[12px] pb-[6px] min-[1024px]:static min-[1024px]:mx-0 min-[1024px]:border-t-0 min-[1024px]:p-0">
             <RecordButton summary={summary} prefill={prefill} />
             {productUrl && (
-              <a
+              <ProductLink
                 href={productUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hit-44 self-center px-[8px] py-[10px] text-[13.5px] text-accent"
-              >
-                구매처에서 보기 ↗
-              </a>
+                className="self-center px-[8px] py-[10px]"
+              />
             )}
           </div>
         </div>
@@ -205,7 +232,7 @@ function RecordButton({
           waterG: amounts?.actualWaterG ?? null,
         })
       }
-      className="kn-press block w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-medium text-on-ink"
+      className="kn-press block w-full rounded-[8px] bg-ink p-[15px] text-center text-[15px] font-semibold tracking-[-0.01em] text-on-ink"
     >
       이 원두로 기록하기
     </button>
@@ -216,7 +243,7 @@ const sectionLabel =
   "font-mono text-[10px] font-medium tracking-[0.12em] text-ink-3 uppercase";
 
 /** 정보가 이름 · 로스터뿐인지. 그러면 칩 · 컵노트 · 산지 대신 안내 한 줄. */
-function isSparse(p: BeanProduct): boolean {
+export function isSparse(p: BeanProduct): boolean {
   return (
     !p.roastLevel &&
     !p.roastLevelCustom &&
@@ -236,7 +263,6 @@ function CatalogInfo({ product: p }: { product: BeanProduct }) {
   }
   return (
     <>
-      <Chips product={p} />
       {p.description && <CupNote text={p.description} />}
       {p.beanMix === "BLEND" ? (
         <BlendOrigins origins={p.origins} />
@@ -251,7 +277,7 @@ const chip =
   "inline-flex items-center gap-[6px] rounded-[3px] px-[9px] py-[5px] font-mono text-[11.5px] whitespace-nowrap";
 
 /** 싱글/블렌드 · 배전도(없으면 원문) · Agtron · 디카페인. 디카페인이 아니면 칩이 없다(질문 01). */
-function Chips({ product: p }: { product: BeanProduct }) {
+export function BeanChips({ product: p }: { product: BeanProduct }) {
   return (
     <ul
       aria-label="원두 요약"
@@ -361,7 +387,17 @@ function BlendOrigins({ origins }: { origins: BeanProduct["origins"] }) {
   const hasRatio = origins.every((o) => o.ratioPercent !== undefined);
   return (
     <div className="flex flex-col gap-[10px]">
-      <div className={sectionLabel}>산지 · 블렌드 {origins.length}곳</div>
+      <div className="flex items-baseline justify-between">
+        <div className={sectionLabel}>산지 · 블렌드 {origins.length}곳</div>
+        {hasRatio && (
+          <span className="font-mono text-[11px] text-ink-3">
+            합{" "}
+            {percent(
+              origins.reduce((sum, o) => sum + (o.ratioPercent ?? 0), 0),
+            )}
+          </span>
+        )}
+      </div>
       {hasRatio && (
         <div
           role="img"

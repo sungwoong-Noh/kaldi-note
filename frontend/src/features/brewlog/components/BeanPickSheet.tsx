@@ -14,6 +14,7 @@ import type {
   BeanSummary,
 } from "@/features/catalog/schema";
 import { ROAST_LEVEL_LABEL } from "../todayPresentation";
+import { BeanChips, isSparse } from "./BeanDetail";
 import { Heading, PrimaryButton, SecondaryButton } from "./quickBrewParts";
 
 /** 빠른 기록 ①에서 고르는 원두 — 카탈로그 원두이거나 이름만 적은 원두. */
@@ -60,7 +61,7 @@ export function BeanPickSheet({
         placeholder="원두 이름이나 로스터로 찾기"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="rounded-[8px] border border-border bg-paper px-[14px] py-[12px] text-[15px] text-ink"
+        className="rounded-[8px] border border-border bg-paper px-[14px] py-[12px] text-[15px] text-ink outline-none focus:border-accent focus:ring-[3px] focus:ring-accent/12"
       />
       {!q && (
         <ul aria-label="최근 고른 원두" className="divide-y divide-border">
@@ -109,9 +110,14 @@ export function BeanPickSheet({
         <p className="text-[14px] text-ink-2">「{q}」를 찾지 못했어요</p>
       )}
       {q && (
-        <SecondaryButton onClick={() => onPick({ kind: "name", name: q })}>
+        // 문구는 AC-QUICKBREW-27이 고정한다. 모양만 시안(U2 — 1px 점선 · 14px ink-2)
+        <button
+          type="button"
+          onClick={() => onPick({ kind: "name", name: q })}
+          className="kn-press block w-full rounded-[8px] border border-dashed border-border p-[13px] text-center text-[14px] text-ink-2"
+        >
           {`「${q}」로 기록`}
-        </SecondaryButton>
+        </button>
       )}
       {infoId !== null && (
         <BeanInfoSheet
@@ -251,94 +257,109 @@ function BeanInfoSheet({
   const line = summary.data ? summaryLine(summary.data) : null;
 
   return (
-    <section
-      role="dialog"
-      aria-label={p?.name ?? "원두 정보"}
-      className="absolute inset-x-0 top-[56px] bottom-0 z-10 flex animate-[sheet-slide-in_240ms_cubic-bezier(0.2,0.8,0.2,1)] flex-col gap-[18px] overflow-y-auto rounded-t-[14px] border-t border-border bg-paper px-[20px] pt-[10px] pb-[20px] min-[760px]:top-0 min-[760px]:rounded-none min-[760px]:border-t-0 min-[760px]:px-[28px] motion-reduce:animate-none"
-    >
-      <div className="flex items-center justify-between text-[14px] text-ink-2">
-        <button type="button" onClick={onBack} className="hit-44">
-          ‹ 이전
-        </button>
-      </div>
-      {product.isError && (
-        <div className="flex flex-col gap-[12px]">
-          <p className="text-[14px] text-ink-2">
-            원두 정보를 불러오지 못했어요
-          </p>
-          <SecondaryButton onClick={() => void product.refetch()}>
-            다시 시도
-          </SecondaryButton>
+    <>
+      {/* 모바일은 화면 기준으로 위 56px만 남기고 쌓는다 — 아래 시트 높이는 내용만큼이라 그 안에 두면 중간부터 쌓인다(이슈 233) */}
+      <div
+        aria-hidden="true"
+        onClick={onBack}
+        className="fixed inset-0 z-50 bg-scrim min-[760px]:hidden"
+      />
+      <section
+        role="dialog"
+        aria-label={p?.name ?? "원두 정보"}
+        className="fixed inset-x-0 top-[56px] bottom-0 z-50 flex animate-[sheet-slide-in_240ms_cubic-bezier(0.2,0.8,0.2,1)] flex-col gap-[18px] overflow-y-auto rounded-t-[14px] border-t border-border bg-paper px-[20px] pt-[9px] pb-[20px] min-[760px]:absolute min-[760px]:inset-0 min-[760px]:rounded-none min-[760px]:border-t-0 min-[760px]:px-[28px] min-[760px]:pt-[22px] motion-reduce:animate-none"
+      >
+        <div
+          aria-hidden="true"
+          className="flex justify-center min-[760px]:hidden"
+        >
+          <span className="h-[4px] w-[36px] rounded-full bg-border" />
         </div>
-      )}
-      {p && (
-        <>
-          <div className="flex flex-col gap-[6px]">
-            {p.roasterName && (
-              <div className="text-[13.5px] text-ink-3">{p.roasterName}</div>
-            )}
-            <h3 className="text-[24px] leading-[1.3] font-semibold tracking-[-0.025em] text-ink">
-              {p.name}
-            </h3>
-            <div className="flex flex-wrap items-center gap-[6px]">
-              <Tag>{p.beanMix === "BLEND" ? "블렌드" : "싱글"}</Tag>
-              {p.roastLevel && <Tag>{ROAST_LEVEL_LABEL[p.roastLevel]}</Tag>}
-              {p.roastLevelAgtron !== undefined && (
-                <Tag>{`Agtron ${p.roastLevelAgtron}`}</Tag>
-              )}
-              {p.decaf && <Tag accent>디카페인</Tag>}
-            </div>
+        <div className="flex min-h-[32px] items-center justify-between text-[14px] text-ink-2">
+          <button type="button" onClick={onBack} className="hit-44">
+            <span className="min-[760px]:hidden">‹ 이전</span>
+            <span className="hidden min-[760px]:inline">← 뒤로</span>
+          </button>
+          <button
+            type="button"
+            onClick={onBack}
+            className="hit-44 min-[760px]:hidden"
+          >
+            닫기
+          </button>
+        </div>
+        {product.isError && (
+          <div className="flex flex-col gap-[12px]">
+            <p className="text-[14px] text-ink-2">
+              원두 정보를 불러오지 못했어요
+            </p>
+            <SecondaryButton onClick={() => void product.refetch()}>
+              다시 시도
+            </SecondaryButton>
           </div>
-          {p.description && (
+        )}
+        {p && (
+          <>
             <div className="flex flex-col gap-[6px]">
-              <div className="font-mono text-[10px] font-medium tracking-[0.12em] text-ink-3 uppercase">
-                컵노트 · 로스터 설명 원문
-              </div>
-              <p className="text-[15.5px] leading-[1.6] text-ink-2 italic">
-                “{p.description}”
-              </p>
-            </div>
-          )}
-          {originRows(p).length > 0 ? (
-            <dl className="border-b border-divider-strong">
-              {originRows(p).map(([label, value]) => (
-                <div
-                  key={label}
-                  className="flex items-center justify-between gap-[12px] border-t border-divider py-[13px] first:border-divider-strong"
-                >
-                  <dt className="text-[13.5px] text-ink-2">{label}</dt>
-                  <dd className="text-right font-mono text-[14px] font-medium text-ink">
-                    {value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          ) : (
-            !p.description && (
-              <p className="text-[14px] text-ink-2">
-                로스터가 알려 준 정보가 아직 많지 않습니다.
-              </p>
-            )
-          )}
-          {summary.data && (
-            <div className="flex items-center justify-between rounded-[10px] bg-sunken px-[16px] py-[14px]">
-              <span className="text-[13.5px] text-ink-2">
-                {line
-                  ? "이 원두로 내린 기록"
-                  : "아직 이 원두로 내린 기록이 없어요"}
-              </span>
-              {line && (
-                <span className="font-mono text-[14px] font-medium">
-                  {line}
-                </span>
+              {p.roasterName && (
+                <div className="text-[13.5px] text-ink-3">{p.roasterName}</div>
               )}
+              <h3 className="text-[24px] leading-[1.3] font-semibold tracking-[-0.025em] text-ink">
+                {p.name}
+              </h3>
+              {!isSparse(p) && <BeanChips product={p} />}
             </div>
-          )}
-          <div className="mt-auto">
-            <PrimaryButton onClick={onPick}>이 원두 고르기</PrimaryButton>
-          </div>
-        </>
-      )}
-    </section>
+            {p.description && (
+              <div className="flex flex-col gap-[6px]">
+                <div className="font-mono text-[10px] font-medium tracking-[0.12em] text-ink-3 uppercase">
+                  컵노트 · 로스터 설명 원문
+                </div>
+                <p className="text-[15.5px] leading-[1.6] text-ink-2 italic">
+                  “{p.description}”
+                </p>
+              </div>
+            )}
+            {originRows(p).length > 0 ? (
+              <dl className="border-b border-divider-strong">
+                {originRows(p).map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between gap-[12px] border-t border-divider py-[13px] first:border-divider-strong"
+                  >
+                    <dt className="text-[13.5px] text-ink-2">{label}</dt>
+                    <dd className="text-right font-mono text-[14px] font-medium text-ink">
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              !p.description && (
+                <p className="text-[14px] text-ink-2">
+                  로스터가 알려 준 정보가 아직 많지 않습니다.
+                </p>
+              )
+            )}
+            {summary.data && (
+              <div className="flex items-center justify-between rounded-[10px] bg-surface px-[16px] py-[14px]">
+                <span className="text-[13.5px] text-ink-2">
+                  {line
+                    ? "이 원두로 내린 기록"
+                    : "아직 이 원두로 내린 기록이 없어요"}
+                </span>
+                {line && (
+                  <span className="font-mono text-[14px] font-medium">
+                    {line}
+                  </span>
+                )}
+              </div>
+            )}
+            <div className="mt-auto">
+              <PrimaryButton onClick={onPick}>이 원두 고르기</PrimaryButton>
+            </div>
+          </>
+        )}
+      </section>
+    </>
   );
 }

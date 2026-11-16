@@ -53,6 +53,8 @@ const BACK_TARGETS: [RegExp, string][] = [
   [/^\/brews\/[^/]+$/, "/brews"],
   [/^\/u\/[^/]+$/, "/"],
   [/^\/gear\/grind-converter$/, "/more"],
+  // 원두 상세는 기록 상세 · 오늘 카드 · 원두 고르기에서 들어온다. 고정 부모는 「기록」(시안 11 Beans U1a 「‹ 기록」).
+  [/^\/beans\/[^/]+$/, "/brews"],
 ];
 
 export function backHref(pathname: string): string | null {

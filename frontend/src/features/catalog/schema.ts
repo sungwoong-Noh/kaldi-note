@@ -17,6 +17,8 @@ export const beanOriginSchema = z.object({
   country: z.string(),
   region: z.string().optional(),
   farm: z.string().optional(),
+  altitudeMinM: z.number().optional(),
+  altitudeMaxM: z.number().optional(),
   varietyId: z.number().optional(),
   processId: z.number().optional(),
   ratioPercent: z.number().optional(),
@@ -36,7 +38,13 @@ export const beanProductSchema = z.object({
   roastLevel: z
     .enum(["LIGHT", "MEDIUM_LIGHT", "MEDIUM", "MEDIUM_DARK", "DARK"])
     .nullish(),
+  roastLevelAgtron: z.number().optional(),
+  /** 배전도 원문. 표준 배전도가 없을 때만 칩으로 보인다. */
+  roastLevelCustom: z.string().optional(),
   decaf: z.boolean(),
+  productUrl: z.string().optional(),
+  /** 로스터 설명 원문(컵노트). */
+  description: z.string().optional(),
   verified: z.boolean(),
   hidden: z.boolean().default(false),
   origins: z.array(beanOriginSchema).default([]),
@@ -72,9 +80,33 @@ export const beanProductPageSchema = z.object({
   hasNext: z.boolean(),
 });
 
+/**
+ * 내 「이 원두의 기록」 요약 — `GET /api/v1/brew-logs/bean-summary`. 2026-11-16 로컬 응답에서 확인했다.
+ * 0잔이면 `averageRating` · `frequent*` 키가 없고, 별점 없는 잔은 `rating` 키가 없다.
+ */
+export const beanSummarySchema = z.object({
+  brewCount: z.number(),
+  ratedCount: z.number(),
+  averageRating: z.number().optional(),
+  frequentRatio: z.number().optional(),
+  frequentDoseG: z.number().optional(),
+  frequentWaterG: z.number().optional(),
+  recent: z.array(
+    z.object({
+      id: z.number(),
+      brewedAt: z.string(),
+      actualDoseG: z.number(),
+      actualWaterG: z.number(),
+      brewRatio: z.number(),
+      rating: z.number().optional(),
+    }),
+  ),
+});
+
 export const roasterListSchema = z.array(roasterSchema);
 
 export type Roaster = z.infer<typeof roasterSchema>;
 export type BeanProduct = z.infer<typeof beanProductSchema>;
 export type BeanProductSummary = z.infer<typeof beanProductSummarySchema>;
+export type BeanSummary = z.infer<typeof beanSummarySchema>;
 export type RoastLevel = NonNullable<BeanProduct["roastLevel"]>;

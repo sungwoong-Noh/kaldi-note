@@ -102,7 +102,7 @@ public class BeanImportService {
     BeanProduct product;
     Outcome outcome;
     if (existing.isPresent() && existing.get().isManuallyEdited()) {
-      // 관리자가 고친 값을 지키고 구매 링크만 따라간다. 미매핑 원문은 그대로 집계한다(AC-BEAN-03)
+      // 관리자가 고친 값을 지키고 구매 링크만 따라간다. 미매핑 원문은 그대로 집계한다
       existing.get().updateProductUrl(bean.productUrl());
       return new ImportResult(Outcome.UPDATED, null, unmapped);
     }

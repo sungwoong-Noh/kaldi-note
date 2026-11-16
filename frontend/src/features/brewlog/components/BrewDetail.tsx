@@ -21,6 +21,7 @@ import { deleteBrewLog, fetchBrewLog } from "../api";
 import { beanName } from "../entityLabel";
 import type { BrewLog } from "../schema";
 import {
+  beanDetailHref,
   formatCompactDoseWater,
   resolveBeanSummary,
 } from "../todayPresentation";
@@ -185,12 +186,24 @@ export function BrewDetail({ id }: { id: number }) {
       ? ""
       : GRIND_UNIT_LABEL[recipe.targets.grindSettingUnit];
   const showBean = beanDisplay !== undefined && beanDisplay !== "";
+  const beanHref = beanDetailHref(log);
   const gear = (showBean || log.actualGrindSettingValue !== undefined) && (
     <div className="flex flex-col">
       {showBean && (
         <LedgerField
           label="원두"
-          value={beanDisplay}
+          value={
+            beanHref ? (
+              <Link
+                href={beanHref}
+                className="underline-offset-2 hover:underline"
+              >
+                {beanDisplay}
+              </Link>
+            ) : (
+              beanDisplay
+            )
+          }
           sub={
             [
               beanRoastedAt !== undefined &&

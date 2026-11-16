@@ -1137,3 +1137,61 @@ describe("빠른 기록 C1 상세 · 다시 내리기 — docs/specs/2026-11-14-
     expect(screen.queryByLabelText("분쇄도")).toBeNull();
   });
 });
+
+describe("원두 행 → 원두 상세", () => {
+  function beanLink() {
+    const row = ledgerRow("원두");
+    return row?.querySelector("a") ?? null;
+  }
+
+  it("AC-BEANDETAIL-33 · 기록 상세의 원두 행은 원두 상세로 간다", async () => {
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({
+          ...brewLogWithTds,
+          id: 42,
+          recipeId: undefined,
+          beanBatchId: undefined,
+          beanProductId: yirgacheffeProduct.id,
+        }),
+      ),
+    );
+    const first = await renderDetail();
+    await waitFor(() => expect(beanLink()).not.toBeNull());
+    expect(beanLink()).toHaveAttribute(
+      "href",
+      `/beans/${yirgacheffeProduct.id}`,
+    );
+    first.unmount();
+
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({
+          ...brewLogWithoutTds,
+          id: 42,
+          recipeId: undefined,
+          beanBatchId: undefined,
+          beanName: "하늘 블렌드",
+        }),
+      ),
+    );
+    const second = await renderDetail();
+    await waitFor(() => expect(beanLink()).not.toBeNull());
+    const url = new URL(beanLink()?.getAttribute("href") ?? "", "http://x");
+    expect(url.pathname).toBe("/beans/named");
+    expect(url.searchParams.get("name")).toBe("하늘 블렌드");
+    second.unmount();
+
+    // 카탈로그 원두도 이름도 없는 기록(봉투로만 고른 예전 기록) — 원두 행은 있지만 링크가 아니다
+    server.use(
+      http.get(DETAIL_URL, () =>
+        HttpResponse.json({ ...brewLogWithTds, id: 42, recipeId: 1 }),
+      ),
+    );
+    await renderDetail();
+    await waitFor(() =>
+      expect(ledgerRow("원두")).toHaveTextContent("프릿츠 예가체프"),
+    );
+    expect(beanLink()).toBeNull();
+  });
+});

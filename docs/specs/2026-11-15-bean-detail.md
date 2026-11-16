@@ -592,7 +592,7 @@ supersedes:
 
 - [x] **Task 8: 「이 원두로 기록하기」 · 오늘 카드 진입** — Covers: AC-BEANDETAIL-30, 32
 
-- [ ] **Task 9: 기록 상세 진입** — Covers: AC-BEANDETAIL-33
+- [x] **Task 9: 기록 상세 진입** — Covers: AC-BEANDETAIL-33
 
 ---
 

@@ -73,6 +73,10 @@ public class BeanProduct extends BaseTimeEntity {
   @Column(name = "manually_edited", nullable = false)
   private boolean manuallyEdited;
 
+  /** 관리자가 카탈로그로 올린 사용자 원두. 만든 사람이 아니어도 검색된다. */
+  @Column(nullable = false)
+  private boolean promoted;
+
   @OneToMany(mappedBy = "beanProduct", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("id ASC")
   @BatchSize(size = 50) // 검색 결과 한 페이지(최대 50개)의 산지를 한 번에 읽는다
@@ -163,6 +167,11 @@ public class BeanProduct extends BaseTimeEntity {
     this.roastLevelAgtron = roastLevelAgtron;
     this.productUrl = productUrl;
     this.description = description;
+  }
+
+  /** 카탈로그로 올린다. 사용자 원두만 — 크롤러 원두는 이미 모두에게 보인다. 이미 올렸어도 그대로(멱등). */
+  public void promote() {
+    this.promoted = true;
   }
 
   public void updateProductUrl(String productUrl) {

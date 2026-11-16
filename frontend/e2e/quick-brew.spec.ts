@@ -162,7 +162,8 @@ test.describe("AC-QUICKBREW-65 · 오늘 홈 300ms 지연 로딩 뼈대 규칙",
       await route.fulfill({ json: me });
     });
     await page.route(/\/api\/v1\/brew-logs(?:\?.*)?$/, async (route: Route) => {
-      await new Promise((resolve) => setTimeout(resolve, 250));
+      // 「250ms 이내」 중 150ms — 300ms 타이머까지 여유가 50ms뿐이면 느린 CI에서 사용자 조회 · 렌더만으로 넘친다(#222)
+      await new Promise((resolve) => setTimeout(resolve, 150));
       await route.fulfill({ json: pageOf([]) });
     });
 

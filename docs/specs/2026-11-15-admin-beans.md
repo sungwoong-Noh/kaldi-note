@@ -1,7 +1,7 @@
 ---
 id: ADMINBEAN
 title: 관리자 원두 메뉴 — 빠진 정보 채우기 · 확인 · 숨김 · 카탈로그로 올리기
-status: 초안
+status: 승인
 milestone:
 supersedes:
 ---
@@ -22,10 +22,10 @@ supersedes:
 
 입력: 시안 `docs/design/admin/design/Admin.dc.html` 「원두」 화면, `docs/design/admin/README.md` 1-1절, 결정
 `docs/design/kaldi-note-design/docs/DECISIONS.md` 7절(B1~B10, 관리자 원두 질문 12건), 원두 상세 스펙
-`docs/specs/2026-11-15-bean-detail.md`(브랜치 `spec/bean-detail`).
+`docs/specs/2026-11-15-bean-detail.md`.
 
-**선행:** 원두 상세 스펙이 만드는 `bean_products.hidden` · `manually_edited` 컬럼과 크롤러 규칙(숨김 유지, 수동 수정 원두는
-`product_url`만 갱신)이 먼저 구현돼 있어야 한다. 이 스펙은 그 컬럼을 켜고 끄는 관리자 API·화면과, 크롤러의 **찾는 열쇠**만
+**선행(충족 — #230, V20):** 원두 상세 스펙이 만든 `bean_products.hidden` · `manually_edited` 컬럼과 크롤러 규칙(숨김 유지,
+수동 수정 원두는 `product_url`만 갱신). 이 스펙은 그 컬럼을 켜고 끄는 관리자 API·화면과, 크롤러의 **찾는 열쇠**만
 바꾼다. 원두 상세 스펙의 「열어둔 결정」 중 「관리자가 이름을 바꾼 원두의 다음 수집」과 「플래그를 켜는 API」를 해소한다.
 
 ### 범위 밖 (Non-goals)
@@ -52,14 +52,15 @@ supersedes:
 
 ## 데이터
 
-**마이그레이션 하나** (번호는 구현 시점의 다음 번호 — 원두 상세 스펙의 마이그레이션 다음).
+**마이그레이션 하나** — `V21`(원두 상세 스펙이 `V20`).
 
 | 테이블 | 컬럼 / 인덱스 | 타입 | Null | 설명 |
 |---|---|---|---|---|
 | `bean_products` | `promoted` | `BOOLEAN NOT NULL DEFAULT false` | N | **신규.** 카탈로그로 올린 사용자 원두 |
 | `bean_products` | `uq_bean_products_crawler_url` | `UNIQUE (product_url) WHERE created_by_user_id IS NULL` | — | **신규.** 부분 유일 인덱스. 크롤러 원두끼리만 구매 링크가 겹치지 않는다 |
 
-운영 데이터(2026-11-15): 원두 123개, `product_url` 있는 118개 전부 서로 다름, 사용자 원두 5개 → 인덱스 생성으로 깨지는 행 없음.
+운영 데이터(2026-11-15, #227·#228 모모스 수집 보강 **이전**): 원두 123개, `product_url` 있는 118개 전부 서로 다름, 사용자 원두 5개.
+그 뒤 수집이 늘었으므로 **구현 전에 다시 조회한다**(Task 1). 크롤러 원두끼리 겹치는 URL이 하나라도 있으면 마이그레이션이 운영에서 실패한다.
 데이터 보정 마이그레이션은 없다.
 
 ### 크롤러 매칭 변경 (`docs/specs/2026-10-14-bean-crawler.md` 「저장 규칙」의 「상품 동일성」 대체)
@@ -83,7 +84,7 @@ supersedes:
 
 ## 계약
 
-모두 ADMIN 전용 — 기존 `SecurityConfig`의 `/api/v1/admin/**` → `hasRole("ADMIN")`. 인증 없음 401 `UNAUTHORIZED`, USER 403 `FORBIDDEN`.
+모두 ADMIN 전용 — 기존 `SecurityConfig`의 `/api/v1/admin/**` → `hasRole("ADMIN")`. 인증 없음 401, USER 403 — 보안 필터가 내는 응답이라 본문이 없다(`2026-09-05-http-error-contract.md`).
 
 | 메서드 | 경로 | 성공 | 설명 |
 |---|---|---|---|
@@ -446,7 +447,7 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
 
 - **Given** 목록·상세·수정·일괄·올리기 다섯 경로
 - **When** ① 인증 없음 ② USER 토큰
-- **Then** ① HTTP `401`과 `code: "UNAUTHORIZED"` ② HTTP `403`과 `code: "FORBIDDEN"` (다섯 경로 모두)
+- **Then** ① HTTP `401` ② HTTP `403` (다섯 경로 모두). 보안 필터의 401·403은 본문이 없다(`2026-09-05-http-error-contract.md`)
 - **검증** `AdminBeanProductControllerTest`
 
 #### AC-ADMINBEAN-51 · 없는 대상은 404이고 일괄은 아무것도 바꾸지 않는다
@@ -508,9 +509,17 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
 
 ## 구현 순서
 
-각 태스크는 TDD 사이클 하나(실패 테스트 → 실패 확인 → 최소 구현 → 통과 확인 → 커밋). **선행: 원두 상세 스펙의 마이그레이션·크롤러 규칙.**
+각 태스크는 TDD 사이클 하나(실패 테스트 → 실패 확인 → 최소 구현 → 통과 확인 → 커밋). **선행: 원두 상세 스펙의 마이그레이션·크롤러 규칙 — 충족(#230).**
 
 - [ ] **Task 1: 마이그레이션** — Covers: AC-ADMINBEAN-61
+
+  **먼저 운영 DB에서 겹치는 구매 링크가 없는지 조회한다** — 결과가 0행이 아니면 멈추고 사람에게 알린다.
+
+  ```sql
+  SELECT product_url, count(*) FROM bean_products
+  WHERE created_by_user_id IS NULL AND product_url IS NOT NULL
+  GROUP BY product_url HAVING count(*) > 1;
+  ```
 
   ```sql
   ALTER TABLE bean_products ADD COLUMN promoted BOOLEAN NOT NULL DEFAULT false;
@@ -541,8 +550,8 @@ README 1-1절)이 정본이다(ADR 0010). 아래는 동작 규칙만.
 
 - [ ] **Task 5: 일괄 · 올리기 + 검색 규칙** — Covers: AC-ADMINBEAN-13, 14, 15, 42, 51(일괄·올리기), 55, 50(나머지)
 
-  bulk는 `findAllById` 결과 수가 고유 id 수와 다르면 404. 검색(`BeanProductQuery` 등 원두 상세 스펙 구현)의 사용자 원두 제외
-  조건에 `AND promoted = false`.
+  bulk는 `findAllById` 결과 수가 고유 id 수와 다르면 404. 검색(`BeanProductRepository.search` 네이티브 쿼리)의
+  `(bp.created_by_user_id is null or bp.created_by_user_id = :userId)`에 `or bp.promoted`를 더한다 — 본 쿼리와 `countQuery` 둘 다.
 
 - [ ] **Task 6: 실행 상세 연결** — Covers: AC-ADMINBEAN-23
 

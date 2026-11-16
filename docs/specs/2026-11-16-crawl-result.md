@@ -1,7 +1,7 @@
 ---
 id: CRAWLRESULT
 title: 수집 결과 보기 — 실행마다 생성 · 갱신된 원두 목록
-status: 승인
+status: 구현중
 milestone:
 supersedes:
 ---
@@ -41,7 +41,7 @@ supersedes:
 
 ## 데이터
 
-마이그레이션 `V22__crawl_runs_imported.sql` — V21은 PR #220(관리자 원두, `promoted` + 크롤러 `product_url` 부분 유일 인덱스)이 쓴다.
+마이그레이션 `V21__crawl_runs_imported.sql` — 관리자 원두 구현보다 먼저 머지돼 V21을 쓴다(관리자 원두 쪽이 V22로 옮긴다).
 
 | 테이블 | 컬럼 | 타입 | Null | 설명 |
 |---|---|---|---|---|
@@ -192,9 +192,9 @@ supersedes:
 #### AC-CRAWLRESULT-30 · 마이그레이션이 기존 행을 기본값으로 채운다
 
 - **Given** 마이그레이션 전 `crawl_runs` 행 1개(SUCCEEDED, created 21)
-- **When** V22를 적용한다
+- **When** V21을 적용한다
 - **Then** 그 행의 `imported='[]'::jsonb`, `unchanged_count=0`이고 다른 칼럼 값은 그대로다
-- **검증** 통합 테스트 `CrawlRunMigrationTest`(Flyway `target` V21 → V22)
+- **검증** 통합 테스트 `CrawlRunMigrationTest`(Flyway `target` V20 → V21)
 
 ---
 
@@ -202,7 +202,7 @@ supersedes:
 
 PR #220(관리자 원두 — `importBean`의 `product_url` 매칭)이 먼저 머지되면 그 위에서 시작한다. 같은 메서드를 바꾼다.
 
-- [ ] **Task 1: 스키마 · 엔티티** — Covers: AC-CRAWLRESULT-30
+- [x] **Task 1: 스키마 · 엔티티** — Covers: AC-CRAWLRESULT-30
 
   ```sql
   ALTER TABLE crawl_runs
@@ -213,7 +213,7 @@ PR #220(관리자 원두 — `importBean`의 `product_url` 매칭)이 먼저 머
   `CrawlRun`에 `List<ImportedItem> imported`(`@JdbcTypeCode(SqlTypes.JSON)`), `int unchangedCount`. 새 record
   `crawler/domain/ImportedItem(Long beanProductId, String name, String outcome)`.
 
-- [ ] **Task 2: 가져오기 결과에 id와 UNCHANGED** — Covers: AC-CRAWLRESULT-01~05
+- [x] **Task 2: 가져오기 결과에 id와 UNCHANGED** — Covers: AC-CRAWLRESULT-01~05
 
   ```java
   public record ImportResult(Outcome outcome, Long beanProductId, String reason, List<Unmapped> unmapped) {
@@ -232,7 +232,7 @@ PR #220(관리자 원두 — `importBean`의 `product_url` 매칭)이 먼저 머
 
   `BeanProduct.sameAs(...)`는 용어 「비교 대상 값」을 그대로 비교한다(산지는 `BeanOrigin.sameValues(other)`).
 
-- [ ] **Task 3: 실행이 목록을 모은다 + API · 계약** — Covers: AC-CRAWLRESULT-06, 07, 12, 20, 21
+- [x] **Task 3: 실행이 목록을 모은다 + API · 계약** — Covers: AC-CRAWLRESULT-06, 07, 12, 20, 21
 
   `CrawlRunService.crawl`의 `switch`에 `UNCHANGED -> unchanged++`, CREATED · UPDATED면
   `imported.add(new ImportedItem(result.beanProductId(), name, outcome.name()))`.
@@ -241,7 +241,7 @@ PR #220(관리자 원두 — `importBean`의 `product_url` 매칭)이 먼저 머
   `unchanged`(integer) · `imported`(array of `ImportedItem` {beanProductId integer, name string, outcome enum}) 추가 →
   `frontend/src/types/generated/2026-10-14-bean-crawler.ts` 재생성.
 
-- [ ] **Task 4: 실행 상세 화면** — Covers: AC-CRAWLRESULT-08~11
+- [x] **Task 4: 실행 상세 화면** — Covers: AC-CRAWLRESULT-08~11
 
   `frontend/src/features/admin/components/RunPanel.tsx` — 히어로 줄에 `변화 없음 {run.unchanged}`, 「건너뛴 상품」 절 위에
   「새로 생긴 원두 n」 · 「갱신된 원두 n」 절(기존 `<h3 className="text-[16px] font-semibold">` 형식), 0건이면 절 생략,

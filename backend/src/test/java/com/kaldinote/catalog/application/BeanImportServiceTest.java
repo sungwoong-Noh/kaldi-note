@@ -21,6 +21,7 @@ import com.kaldinote.user.infrastructure.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,7 +55,11 @@ class BeanImportServiceTest extends AbstractIntegrationTest {
   }
 
   private BeanProduct saved(String name) {
-    Long roasterId = roasterRepository.findByName(ROASTER).orElseThrow().getId();
+    return saved(ROASTER, name);
+  }
+
+  private BeanProduct saved(String roasterName, String name) {
+    Long roasterId = roasterRepository.findByName(roasterName).orElseThrow().getId();
     return beanProductRepository.findByRoasterIdAndName(roasterId, name).orElseThrow();
   }
 
@@ -88,7 +93,7 @@ class BeanImportServiceTest extends AbstractIntegrationTest {
 
     ImportResult second = service.importBean(input);
 
-    assertThat(second.outcome()).isEqualTo(Outcome.UPDATED);
+    assertThat(second.outcome()).isEqualTo(Outcome.UNCHANGED);
     assertThat(roasterRepository.count()).isEqualTo(roasters);
     assertThat(beanProductRepository.count()).isEqualTo(products);
     assertThat(saved(NAME).getOrigins()).hasSize(1);
@@ -257,7 +262,7 @@ class BeanImportServiceTest extends AbstractIntegrationTest {
     service.importBean(input);
     setFlag("hidden", NAME);
 
-    ImportResult result = service.importBean(input);
+    ImportResult result = service.importBean(bean(NAME, "Medium", origin(null, null, null)));
 
     assertThat(result.outcome()).isEqualTo(Outcome.UPDATED);
     assertThat(saved(NAME).isHidden()).isTrue();
@@ -292,5 +297,154 @@ class BeanImportServiceTest extends AbstractIntegrationTest {
     assertThat(product.getRoastLevel()).isEqualTo(RoastLevel.MEDIUM_LIGHT);
     assertThat(product.getDescription()).isEqualTo("관리자 메모");
     assertThat(product.getOrigins()).extracting(BeanOrigin::getCountry).containsExactly("콜롬비아");
+  }
+
+  @Test
+  @DisplayName("AC-CRAWLRESULT-01 · 새 원두는 CREATED와 저장된 id를 돌려준다")
+  void 새_원두는_CREATED와_저장된_id를_돌려준다() {
+    String name = "원두 케냐 카구뉴 워시드";
+    CrawledBean input =
+        new CrawledBean(
+            "모모스커피",
+            name,
+            "https://momos.co.kr/Product_CoffeeBeans/?idx=140",
+            null,
+            "자두, 꿀",
+            List.of(new CrawledOrigin("케냐", null, "카구뉴", null, null, "워시드")));
+
+    ImportResult result = service.importBean(input);
+
+    assertThat(result.outcome()).isEqualTo(Outcome.CREATED);
+    assertThat(result.beanProductId()).isEqualTo(saved("모모스커피", name).getId());
+  }
+
+  @Test
+  @DisplayName("AC-CRAWLRESULT-02 · 컵노트만 바뀌면 UPDATED")
+  void 컵노트만_바뀌면_UPDATED다() {
+    CrawledBean initial =
+        new CrawledBean(
+            ROASTER, NAME, URL, "Light #92", "자두, 꿀", List.of(origin("2,200m", "Geisha", "워시드")));
+    service.importBean(initial);
+    entityManager.flush();
+    entityManager
+        .createNativeQuery(
+            "update bean_products set updated_at = updated_at - interval '1 minute'"
+                + " where name = :n")
+        .setParameter("n", NAME)
+        .executeUpdate();
+    entityManager.clear();
+    BeanProduct before = saved(NAME);
+    Long beforeId = before.getId();
+    Instant beforeUpdatedAt = before.getUpdatedAt();
+
+    ImportResult result =
+        service.importBean(
+            new CrawledBean(
+                ROASTER,
+                NAME,
+                URL,
+                "Light #92",
+                "자두, 꿀, 홍차",
+                List.of(origin("2,200m", "Geisha", "워시드"))));
+    entityManager.flush();
+    entityManager.clear();
+
+    BeanProduct after = saved(NAME);
+    assertThat(result.outcome()).isEqualTo(Outcome.UPDATED);
+    assertThat(result.beanProductId()).isEqualTo(beforeId);
+    assertThat(after.getDescription()).isEqualTo("자두, 꿀, 홍차");
+    assertThat(after.getUpdatedAt()).isAfter(beforeUpdatedAt);
+  }
+
+  @Test
+  @DisplayName("AC-CRAWLRESULT-03 · 값이 전부 같으면 UNCHANGED이고 저장하지 않는다")
+  void 값이_전부_같으면_UNCHANGED이고_저장하지_않는다() {
+    CrawledBean input =
+        new CrawledBean(
+            ROASTER, NAME, URL, "Light #92", "자두, 꿀", List.of(origin("2,200m", "Geisha", "워시드")));
+    service.importBean(input);
+    entityManager.flush();
+    entityManager.clear();
+    BeanProduct before = saved(NAME);
+    Long beforeId = before.getId();
+    Instant beforeUpdatedAt = before.getUpdatedAt();
+    Long beforeOriginId = before.getOrigins().get(0).getId();
+
+    ImportResult result = service.importBean(input);
+    entityManager.flush();
+    entityManager.clear();
+
+    BeanProduct after = saved(NAME);
+    assertThat(result.outcome()).isEqualTo(Outcome.UNCHANGED);
+    assertThat(result.beanProductId()).isEqualTo(beforeId);
+    assertThat(after.getUpdatedAt()).isEqualTo(beforeUpdatedAt);
+    assertThat(after.getOrigins()).extracting(BeanOrigin::getId).containsExactly(beforeOriginId);
+  }
+
+  @Test
+  @DisplayName("AC-CRAWLRESULT-04 · 산지 가공만 바뀌어도 UPDATED")
+  void 산지_가공만_바뀌어도_UPDATED다() {
+    service.importBean(
+        new CrawledBean(
+            ROASTER, NAME, URL, "Light #92", "자두, 꿀", List.of(origin("2,200m", "Geisha", "워시드"))));
+
+    ImportResult result =
+        service.importBean(
+            new CrawledBean(
+                ROASTER,
+                NAME,
+                URL,
+                "Light #92",
+                "자두, 꿀",
+                List.of(origin("2,200m", "Geisha", "내추럴"))));
+
+    Long naturalId =
+        processRepository.findAll().stream()
+            .filter(p -> p.getName().equals("Natural"))
+            .findFirst()
+            .orElseThrow()
+            .getId();
+    assertThat(result.outcome()).isEqualTo(Outcome.UPDATED);
+    assertThat(saved(NAME).getOrigins().get(0).getProcessId()).isEqualTo(naturalId);
+  }
+
+  @Test
+  @DisplayName("AC-CRAWLRESULT-05 · 수동 수정 원두는 구매 링크가 바뀔 때만 UPDATED")
+  void 수동_수정_원두는_구매_링크가_바뀔_때만_UPDATED다() {
+    service.importBean(
+        new CrawledBean(
+            ROASTER,
+            NAME,
+            "https://momos.co.kr/Product_CoffeeBeans/?idx=1",
+            "Light #92",
+            "관리자 값",
+            List.of(origin("2,200m", "Geisha", "워시드"))));
+    setFlag("manually_edited", NAME);
+
+    ImportResult unchanged =
+        service.importBean(
+            new CrawledBean(
+                ROASTER,
+                NAME,
+                "https://momos.co.kr/Product_CoffeeBeans/?idx=1",
+                "Dark",
+                "크롤러 값",
+                List.of(origin("2,200m", "Geisha", "내추럴"))));
+    assertThat(unchanged.outcome()).isEqualTo(Outcome.UNCHANGED);
+    assertThat(saved(NAME).getDescription()).isEqualTo("관리자 값");
+
+    ImportResult updated =
+        service.importBean(
+            new CrawledBean(
+                ROASTER,
+                NAME,
+                "https://momos.co.kr/Product_CoffeeBeans/?idx=2",
+                "Dark",
+                "크롤러 값",
+                List.of(origin("2,200m", "Geisha", "내추럴"))));
+    assertThat(updated.outcome()).isEqualTo(Outcome.UPDATED);
+    assertThat(saved(NAME).getProductUrl())
+        .isEqualTo("https://momos.co.kr/Product_CoffeeBeans/?idx=2");
+    assertThat(saved(NAME).getDescription()).isEqualTo("관리자 값");
   }
 }

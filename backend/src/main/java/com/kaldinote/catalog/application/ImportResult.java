@@ -3,11 +3,13 @@ package com.kaldinote.catalog.application;
 import java.util.List;
 
 /** 크롤링한 원두 하나를 가져온 결과. */
-public record ImportResult(Outcome outcome, String reason, List<Unmapped> unmapped) {
+public record ImportResult(
+    Outcome outcome, Long beanProductId, String reason, List<Unmapped> unmapped) {
 
   public enum Outcome {
     CREATED,
     UPDATED,
+    UNCHANGED,
     SKIPPED
   }
 
@@ -15,6 +17,6 @@ public record ImportResult(Outcome outcome, String reason, List<Unmapped> unmapp
   public record Unmapped(String field, String raw) {}
 
   static ImportResult skipped(String reason) {
-    return new ImportResult(Outcome.SKIPPED, reason, List.of());
+    return new ImportResult(Outcome.SKIPPED, null, reason, List.of());
   }
 }

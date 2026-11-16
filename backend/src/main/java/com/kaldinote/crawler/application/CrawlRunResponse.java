@@ -2,6 +2,7 @@ package com.kaldinote.crawler.application;
 
 import com.kaldinote.crawler.domain.CrawlRun;
 import com.kaldinote.crawler.domain.CrawlRunStatus;
+import com.kaldinote.crawler.domain.ImportedItem;
 import com.kaldinote.crawler.domain.SkippedItem;
 import com.kaldinote.crawler.domain.UnmappedItem;
 import java.time.Instant;
@@ -15,6 +16,8 @@ public record CrawlRunResponse(
     Instant finishedAt,
     int created,
     int updated,
+    int unchanged,
+    List<ImportedItem> imported,
     List<SkippedItem> skipped,
     List<UnmappedItem> unmapped,
     String errorMessage) {
@@ -28,6 +31,8 @@ public record CrawlRunResponse(
         run.getFinishedAt(),
         run.getCreatedCount(),
         run.getUpdatedCount(),
+        run.getUnchangedCount(),
+        List.copyOf(run.getImported()),
         List.copyOf(run.getSkipped()),
         List.copyOf(run.getUnmapped()),
         run.getErrorMessage());

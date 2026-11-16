@@ -14,9 +14,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.auth.infrastructure.jwt.JwtTokenProvider;
+import com.kaldinote.catalog.application.BeanImportService;
 import com.kaldinote.crawler.domain.CrawlRun;
+import com.kaldinote.crawler.domain.MasterNames;
 import com.kaldinote.crawler.infrastructure.CrawlRunRepository;
 import com.kaldinote.crawler.infrastructure.CrawlerFixtures;
+import com.kaldinote.crawler.infrastructure.MomosSource;
 import com.kaldinote.crawler.infrastructure.PageFetcher;
 import com.kaldinote.user.domain.User;
 import com.kaldinote.user.infrastructure.UserRepository;
@@ -40,6 +43,7 @@ class CrawlAdminControllerTest extends AbstractIntegrationTest {
   @Autowired private JwtTokenProvider tokenProvider;
   @Autowired private UserRepository userRepository;
   @Autowired private CrawlRunRepository runRepository;
+  @Autowired private BeanImportService importService;
   @MockitoBean private PageFetcher fetcher;
 
   private Long adminId;
@@ -63,7 +67,7 @@ class CrawlAdminControllerTest extends AbstractIntegrationTest {
 
   private CrawlRun finishedRun(String source, String startedAt) {
     CrawlRun run = CrawlRun.start(source, null, Instant.parse(startedAt));
-    run.succeed(0, 0, List.of(), List.of(), Instant.parse(startedAt).plusSeconds(60));
+    run.succeed(0, 0, 0, List.of(), List.of(), List.of(), Instant.parse(startedAt).plusSeconds(60));
     return runRepository.save(run);
   }
 
@@ -187,5 +191,72 @@ class CrawlAdminControllerTest extends AbstractIntegrationTest {
         .andExpect(status().isForbidden());
     mockMvc.perform(as(token, get("/api/v1/admin/crawl-runs"))).andExpect(status().isForbidden());
     mockMvc.perform(as(token, get("/api/v1/admin/crawl-runs/1"))).andExpect(status().isForbidden());
+  }
+
+  @Test
+  @DisplayName("AC-CRAWLRESULT-07 · API가 imported와 unchanged를 돌려준다")
+  void API가_imported와_unchanged를_돌려준다() throws Exception {
+    String token = adminToken();
+    MomosSource source = new MomosSource();
+    MasterNames names = importService.masterNames();
+    String baseDetail = CrawlerFixtures.read("momos-4938.html");
+    for (int i = 3; i <= 6; i++) {
+      URI uri = URI.create("https://momos.co.kr/Product_CoffeeBeans/?idx=" + i);
+      importService.importBean(
+          source.parseDetail(uri, baseDetail.replace("산 어거스틴", "농장" + i), names).orElseThrow());
+    }
+
+    String listHtml =
+        "<a href=\"/Product_CoffeeBeans/?idx=1\"></a>"
+            + "<a href=\"/Product_CoffeeBeans/?idx=2\"></a>"
+            + "<a href=\"/Product_CoffeeBeans/?idx=3\"></a>"
+            + "<a href=\"/Product_CoffeeBeans/?idx=4\"></a>"
+            + "<a href=\"/Product_CoffeeBeans/?idx=5\"></a>"
+            + "<a href=\"/Product_CoffeeBeans/?idx=6\"></a>";
+    given(fetcher.get(any()))
+        .willAnswer(
+            inv -> {
+              URI uri = inv.getArgument(0);
+              if (uri.equals(LIST)) {
+                return listHtml;
+              }
+              String idx = uri.getQuery().replace("idx=", "");
+              String html = baseDetail.replace("산 어거스틴", "농장" + idx);
+              if ("3".equals(idx)) {
+                return html.replace("적포도, 블랙커런트, 건 무화과, 발효차, 와인같은", "적포도, 홍차");
+              }
+              return html;
+            });
+
+    String body =
+        mockMvc
+            .perform(as(token, post("/api/v1/admin/crawl-sources/momos/runs")))
+            .andExpect(status().isAccepted())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    long id = Long.parseLong(body.replaceAll(".*\"id\":(\\d+).*", "$1"));
+
+    mockMvc
+        .perform(as(token, get("/api/v1/admin/crawl-runs/" + id)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.unchanged").value(3))
+        .andExpect(jsonPath("$.imported", hasSize(3)))
+        .andExpect(jsonPath("$.imported[0].beanProductId", notNullValue()))
+        .andExpect(jsonPath("$.imported[0].name").value("원두 에콰도르 농장1 파카마라 내추럴"))
+        .andExpect(jsonPath("$.imported[0].outcome").value("CREATED"))
+        .andExpect(jsonPath("$.imported[1].name").value("원두 에콰도르 농장2 파카마라 내추럴"))
+        .andExpect(jsonPath("$.imported[1].outcome").value("CREATED"))
+        .andExpect(jsonPath("$.imported[2].name").value("원두 에콰도르 농장3 파카마라 내추럴"))
+        .andExpect(jsonPath("$.imported[2].outcome").value("UPDATED"));
+
+    mockMvc
+        .perform(as(token, get("/api/v1/admin/crawl-runs").param("source", "momos")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == " + id + ")].unchanged", contains(3)))
+        .andExpect(jsonPath("$.content[0].imported", hasSize(3)))
+        .andExpect(jsonPath("$.content[0].imported[0].beanProductId", notNullValue()))
+        .andExpect(jsonPath("$.content[0].imported[0].name").value("원두 에콰도르 농장1 파카마라 내추럴"))
+        .andExpect(jsonPath("$.content[0].imported[0].outcome").value("CREATED"));
   }
 }

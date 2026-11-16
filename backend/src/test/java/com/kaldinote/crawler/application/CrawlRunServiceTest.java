@@ -7,14 +7,27 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import com.kaldinote.AbstractIntegrationTest;
 import com.kaldinote.catalog.application.BeanImportService;
+import com.kaldinote.catalog.domain.BeanMix;
+import com.kaldinote.catalog.domain.BeanProduct;
+import com.kaldinote.catalog.domain.RoastLevel;
+import com.kaldinote.catalog.domain.Roaster;
+import com.kaldinote.catalog.infrastructure.BeanProductRepository;
+import com.kaldinote.catalog.infrastructure.RoasterRepository;
 import com.kaldinote.crawler.domain.CrawlRun;
 import com.kaldinote.crawler.domain.CrawlRunStatus;
+import com.kaldinote.crawler.domain.ImportedItem;
+import com.kaldinote.crawler.domain.MasterNames;
 import com.kaldinote.crawler.domain.SkippedItem;
 import com.kaldinote.crawler.infrastructure.CrawlRunRepository;
 import com.kaldinote.crawler.infrastructure.CrawlerFixtures;
 import com.kaldinote.crawler.infrastructure.MomosSource;
 import com.kaldinote.crawler.infrastructure.PageFetcher;
 import com.kaldinote.crawler.infrastructure.PageFetcher.RelaySettings;
+import com.kaldinote.user.domain.User;
+import com.kaldinote.user.infrastructure.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -38,7 +51,12 @@ class CrawlRunServiceTest extends AbstractIntegrationTest {
 
   @Autowired private CrawlRunRepository runRepository;
   @Autowired private BeanImportService importService;
+  @Autowired private RoasterRepository roasterRepository;
+  @Autowired private BeanProductRepository beanProductRepository;
+  @Autowired private UserRepository userRepository;
+  @PersistenceContext private EntityManager entityManager;
 
+  private final MomosSource momosSource = new MomosSource();
   private MockRestServiceServer server;
   private final List<Duration> sleeps = new ArrayList<>();
   private CrawlRunService service;
@@ -49,7 +67,7 @@ class CrawlRunServiceTest extends AbstractIntegrationTest {
     server = MockRestServiceServer.bindTo(builder).build();
     service =
         new CrawlRunService(
-            List.of(new MomosSource()),
+            List.of(momosSource),
             runRepository,
             importService,
             new PageFetcher(builder.build()),
@@ -246,6 +264,141 @@ class CrawlRunServiceTest extends AbstractIntegrationTest {
     assertThat(run.getStatus()).isEqualTo(CrawlRunStatus.FAILED);
     assertThat(run.getErrorMessage()).startsWith("목록 요청 실패");
     assertThat(run.getCreatedCount()).isZero();
+    server.verify();
+  }
+
+  private Long importMomosBean(int i) {
+    MasterNames names = importService.masterNames();
+    return importService
+        .importBean(momosSource.parseDetail(URI.create(DETAIL + i), detail(i), names).orElseThrow())
+        .beanProductId();
+  }
+
+  private Long momosProductId(String name) {
+    Long roasterId = roasterRepository.findByName("모모스커피").orElseThrow().getId();
+    return beanProductRepository.findByRoasterIdAndName(roasterId, name).orElseThrow().getId();
+  }
+
+  private Long runSixBeansScenario() {
+    for (int i = 3; i <= 6; i++) {
+      importMomosBean(i);
+    }
+    expectList(6);
+    expectDetail(1);
+    expectDetail(2);
+    server
+        .expect(requestTo(DETAIL + 3))
+        .andRespond(
+            withSuccess(
+                detail(3).replace("적포도, 블랙커런트, 건 무화과, 발효차, 와인같은", "적포도, 홍차"), MediaType.TEXT_HTML));
+    expectDetail(4);
+    expectDetail(5);
+    expectDetail(6);
+    return service.start("momos", null).id();
+  }
+
+  @Test
+  @DisplayName("AC-CRAWLRESULT-06 · 실행이 생성 · 갱신 목록과 변화 없음 건수를 저장한다")
+  void 실행이_생성_갱신_목록과_변화_없음_건수를_저장한다() {
+    Long id = runSixBeansScenario();
+
+    CrawlRun run = reload(id);
+    String name1 = "원두 에콰도르 농장1 파카마라 내추럴";
+    String name2 = "원두 에콰도르 농장2 파카마라 내추럴";
+    String name3 = "원두 에콰도르 농장3 파카마라 내추럴";
+    assertThat(run.getStatus()).isEqualTo(CrawlRunStatus.SUCCEEDED);
+    assertThat(run.getCreatedCount()).isEqualTo(2);
+    assertThat(run.getUpdatedCount()).isEqualTo(1);
+    assertThat(run.getUnchangedCount()).isEqualTo(3);
+    assertThat(run.getImported())
+        .containsExactly(
+            new ImportedItem(momosProductId(name1), name1, "CREATED"),
+            new ImportedItem(momosProductId(name2), name2, "CREATED"),
+            new ImportedItem(momosProductId(name3), name3, "UPDATED"));
+    server.verify();
+  }
+
+  @Test
+  @DisplayName("AC-CRAWLRESULT-12 · 이름은 수집 시점 값이다")
+  void 이름은_수집_시점_값이다() {
+    Long id = runSixBeansScenario();
+    String originalName = "원두 에콰도르 농장1 파카마라 내추럴";
+    Long productId = momosProductId(originalName);
+    entityManager
+        .createNativeQuery("update bean_products set name = '바뀐 이름' where id = :id")
+        .setParameter("id", productId)
+        .executeUpdate();
+    entityManager.flush();
+    entityManager.clear();
+
+    CrawlRunResponse response = service.run(id);
+
+    assertThat(response.imported().get(0).name()).isEqualTo(originalName);
+  }
+
+  @Test
+  @DisplayName("AC-CRAWLRESULT-20 · 실패한 실행은 목록이 비어 있다")
+  void 실패한_실행은_목록이_비어_있다() {
+    server.expect(requestTo(LIST)).andRespond(withServerError());
+
+    Long id = service.start("momos", null).id();
+
+    CrawlRun run = reload(id);
+    assertThat(run.getStatus()).isEqualTo(CrawlRunStatus.FAILED);
+    assertThat(run.getImported()).isEmpty();
+    assertThat(run.getUnchangedCount()).isZero();
+  }
+
+  @Test
+  @DisplayName("AC-CRAWLRESULT-21 · 건너뛴 원두는 imported에 없다")
+  void 건너뛴_원두는_imported에_없다() {
+    Long userId = userRepository.save(User.create(null, "소유자", null)).getId();
+    Long roasterId = roasterRepository.save(Roaster.createBySystem("모모스커피")).getId();
+    String userBeanName = "원두 에콰도르 농장2 파카마라 내추럴";
+    beanProductRepository.save(
+        BeanProduct.createByUser(
+            roasterId,
+            userBeanName,
+            BeanMix.SINGLE_ORIGIN,
+            RoastLevel.LIGHT,
+            null,
+            null,
+            false,
+            null,
+            null,
+            userId));
+    expectList(2);
+    expectDetail(1);
+    expectDetail(2);
+
+    Long id = service.start("momos", null).id();
+
+    CrawlRun run = reload(id);
+    String name1 = "원두 에콰도르 농장1 파카마라 내추럴";
+    assertThat(run.getImported())
+        .containsExactly(new ImportedItem(momosProductId(name1), name1, "CREATED"));
+    assertThat(run.getSkipped()).containsExactly(new SkippedItem(userBeanName, "USER_OWNED"));
+    assertThat(run.getUnchangedCount()).isZero();
+    server.verify();
+  }
+
+  @Test
+  @DisplayName("모두 UNCHANGED여도 원두로 인식한 상품이므로 SUCCEEDED다")
+  void 모두_UNCHANGED여도_SUCCEEDED다() {
+    importMomosBean(1);
+    importMomosBean(2);
+    expectList(2);
+    expectDetail(1);
+    expectDetail(2);
+
+    Long id = service.start("momos", null).id();
+
+    CrawlRun run = reload(id);
+    assertThat(run.getStatus()).isEqualTo(CrawlRunStatus.SUCCEEDED);
+    assertThat(run.getCreatedCount()).isZero();
+    assertThat(run.getUpdatedCount()).isZero();
+    assertThat(run.getUnchangedCount()).isEqualTo(2);
+    assertThat(run.getImported()).isEmpty();
     server.verify();
   }
 }

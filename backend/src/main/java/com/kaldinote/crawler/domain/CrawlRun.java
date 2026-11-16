@@ -52,6 +52,13 @@ public class CrawlRun {
   @Column(name = "updated_count", nullable = false)
   private int updatedCount;
 
+  @Column(name = "unchanged_count", nullable = false)
+  private int unchangedCount;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(nullable = false, columnDefinition = "jsonb")
+  private List<ImportedItem> imported = new ArrayList<>();
+
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(nullable = false, columnDefinition = "jsonb")
   private List<SkippedItem> skipped = new ArrayList<>();
@@ -75,12 +82,16 @@ public class CrawlRun {
   public void succeed(
       int created,
       int updated,
+      int unchanged,
+      List<ImportedItem> imported,
       List<SkippedItem> skipped,
       List<UnmappedItem> unmapped,
       Instant now) {
     this.status = CrawlRunStatus.SUCCEEDED;
     this.createdCount = created;
     this.updatedCount = updated;
+    this.unchangedCount = unchanged;
+    this.imported = new ArrayList<>(imported);
     this.skipped = new ArrayList<>(skipped);
     this.unmapped = new ArrayList<>(unmapped);
     this.finishedAt = now;

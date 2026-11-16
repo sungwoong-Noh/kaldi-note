@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -103,8 +104,18 @@ public class BeanImportService {
     Outcome outcome;
     if (existing.isPresent() && existing.get().isManuallyEdited()) {
       // 관리자가 고친 값을 지키고 구매 링크만 따라간다. 미매핑 원문은 그대로 집계한다
-      existing.get().updateProductUrl(bean.productUrl());
-      return new ImportResult(Outcome.UPDATED, null, unmapped);
+      boolean changed = !Objects.equals(existing.get().getProductUrl(), bean.productUrl());
+      if (changed) {
+        existing.get().updateProductUrl(bean.productUrl());
+      }
+      return new ImportResult(
+          changed ? Outcome.UPDATED : Outcome.UNCHANGED, existing.get().getId(), null, unmapped);
+    }
+    if (existing.isPresent()
+        && existing
+            .get()
+            .sameAs(mix, roastLevel, agtron, bean.productUrl(), bean.cupNotes(), origins)) {
+      return new ImportResult(Outcome.UNCHANGED, existing.get().getId(), null, unmapped);
     }
     if (existing.isPresent()) {
       product = existing.get();
@@ -123,8 +134,8 @@ public class BeanImportService {
       outcome = Outcome.CREATED;
     }
     product.attachOrigins(new ArrayList<>(origins));
-    beanProductRepository.save(product);
-    return new ImportResult(outcome, null, unmapped);
+    BeanProduct saved = beanProductRepository.save(product);
+    return new ImportResult(outcome, saved.getId(), null, unmapped);
   }
 
   private BeanOrigin origin(CrawledOrigin o, List<Unmapped> unmapped) {

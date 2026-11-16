@@ -10,6 +10,7 @@ import com.kaldinote.crawler.domain.BeanSource;
 import com.kaldinote.crawler.domain.CrawlRun;
 import com.kaldinote.crawler.domain.CrawlRunStatus;
 import com.kaldinote.crawler.domain.CrawledBean;
+import com.kaldinote.crawler.domain.ImportedItem;
 import com.kaldinote.crawler.domain.MasterNames;
 import com.kaldinote.crawler.domain.SkippedItem;
 import com.kaldinote.crawler.domain.UnmappedItem;
@@ -152,6 +153,8 @@ public class CrawlRunService {
     MasterNames names = importService.masterNames();
     int created = 0;
     int updated = 0;
+    int unchanged = 0;
+    List<ImportedItem> imported = new ArrayList<>();
     List<SkippedItem> skipped = new ArrayList<>();
     List<UnmappedItem> unmapped = new ArrayList<>();
     for (URI url : urls) {
@@ -183,18 +186,25 @@ public class CrawlRunService {
         continue;
       }
       switch (result.outcome()) {
-        case CREATED -> created++;
-        case UPDATED -> updated++;
+        case CREATED -> {
+          created++;
+          imported.add(new ImportedItem(result.beanProductId(), name, "CREATED"));
+        }
+        case UPDATED -> {
+          updated++;
+          imported.add(new ImportedItem(result.beanProductId(), name, "UPDATED"));
+        }
+        case UNCHANGED -> unchanged++;
         case SKIPPED -> skipped.add(new SkippedItem(name, result.reason()));
       }
       result.unmapped().forEach(u -> unmapped.add(new UnmappedItem(name, u.field(), u.raw())));
     }
-    if (created + updated + skipped.size() == 0) {
+    if (created + updated + unchanged + skipped.size() == 0) {
       run.fail("원두로 인식한 상품이 없습니다 (상품 " + urls.size() + "개)", Instant.now());
       runRepository.save(run);
       return;
     }
-    run.succeed(created, updated, skipped, unmapped, Instant.now());
+    run.succeed(created, updated, unchanged, imported, skipped, unmapped, Instant.now());
     runRepository.save(run);
   }
 }

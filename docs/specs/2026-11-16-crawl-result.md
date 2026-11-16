@@ -232,7 +232,7 @@ PR #220(관리자 원두 — `importBean`의 `product_url` 매칭)이 먼저 머
 
   `BeanProduct.sameAs(...)`는 용어 「비교 대상 값」을 그대로 비교한다(산지는 `BeanOrigin.sameValues(other)`).
 
-- [ ] **Task 3: 실행이 목록을 모은다 + API · 계약** — Covers: AC-CRAWLRESULT-06, 07, 12, 20, 21
+- [x] **Task 3: 실행이 목록을 모은다 + API · 계약** — Covers: AC-CRAWLRESULT-06, 07, 12, 20, 21
 
   `CrawlRunService.crawl`의 `switch`에 `UNCHANGED -> unchanged++`, CREATED · UPDATED면
   `imported.add(new ImportedItem(result.beanProductId(), name, outcome.name()))`.

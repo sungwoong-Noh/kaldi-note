@@ -112,11 +112,22 @@
           "finishedAt": { "type": "string" },
           "created": { "type": "integer" },
           "updated": { "type": "integer" },
+          "unchanged": { "type": "integer" },
+          "imported": { "type": "array", "items": { "$ref": "#/components/schemas/ImportedItem" } },
           "skipped": { "type": "array", "items": { "$ref": "#/components/schemas/SkippedItem" } },
           "unmapped": { "type": "array", "items": { "$ref": "#/components/schemas/UnmappedItem" } },
           "errorMessage": { "type": "string" }
         },
-        "required": ["id", "source", "status", "startedAt", "created", "updated", "skipped", "unmapped"]
+        "required": ["id", "source", "status", "startedAt", "created", "updated", "unchanged", "imported", "skipped", "unmapped"]
+      },
+      "ImportedItem": {
+        "type": "object",
+        "properties": {
+          "beanProductId": { "type": "integer" },
+          "name": { "type": "string" },
+          "outcome": { "type": "string", "enum": ["CREATED", "UPDATED"] }
+        },
+        "required": ["beanProductId", "name", "outcome"]
       },
       "SkippedItem": {
         "type": "object",

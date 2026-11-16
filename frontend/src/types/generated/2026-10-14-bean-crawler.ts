@@ -24,9 +24,17 @@ export interface CrawlRun {
   finishedAt?: string;
   created: number;
   updated: number;
+  unchanged: number;
+  imported: ImportedItem[];
   skipped: SkippedItem[];
   unmapped: UnmappedItem[];
   errorMessage?: string;
+}
+
+export interface ImportedItem {
+  beanProductId: number;
+  name: string;
+  outcome: "CREATED" | "UPDATED";
 }
 
 export interface SkippedItem {
